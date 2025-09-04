@@ -2,8 +2,8 @@ name: Deploy child theme (FTP/FTPS)
 
 on:
   push:
-    branches: [ "main" ]   # Tự động deploy khi push lên nhánh main
-  workflow_dispatch: {}    # Có thể chạy thủ công từ tab Actions
+    branches: [ "main" ]
+  workflow_dispatch: {}
 
 concurrency:
   group: deploy-child-theme
@@ -22,7 +22,7 @@ jobs:
       FTP_PORT:     ${{ secrets.FTP_PORT }}
 
     steps:
-      # 1) Checkout đủ history để diff chính xác
+      # 1) Checkout repo với đủ history để diff chính xác
       - name: Checkout source
         uses: actions/checkout@v4
         with:
@@ -30,38 +30,35 @@ jobs:
 
       # 2) Lấy danh sách file thay đổi trong child theme
       - name: Get changed files (child theme only)
-        id: changes
-        uses: tj-actions/changed-files@v45
-        with:
-          files: |
-            wp-content/themes/elessi-theme-child/**
-          separator: "\n"
-          fetch_depth: 0
-          diff_relative: false
-          use_posix_path_separator: true
-          json: false
-
-      # 3) Debug: in ra SHA và danh sách file
-      - name: Show commit range and changed files
+        id: diff
         run: |
-          echo "BASE SHA: ${{ steps.changes.outputs.base_sha }}"
-          echo "HEAD SHA: ${{ steps.changes.outputs.sha }}"
-          echo
-          echo "Added/Modified:"
-          printf '%s\n' "${{ steps.changes.outputs.added_modified_files }}"
-          echo
-          echo "Deleted:"
-          printf '%s\n' "${{ steps.changes.outputs.deleted_files }}"
-          echo
-          echo "Last 2 commits:"
-          git log -2 --oneline
+          # So sánh với nhánh origin/main trước khi push
+          git fetch origin main --depth=50
 
-      # 4) Upload các file đã thêm/sửa
-      - name: Upload added/modified via (F)TPS
-        if: ${{ steps.changes.outputs.added_modified_files != '' }}
+          echo "🔎 Changed files in wp-content/themes/elessi-theme-child/:"
+          git diff --name-only origin/main HEAD -- wp-content/themes/elessi-theme-child/ > changed.txt || true
+          cat changed.txt
+
+          # Xuất output cho bước sau
+          echo "files<<EOF" >> $GITHUB_OUTPUT
+          cat changed.txt >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      # 3) Debug: in ra commit và danh sách file
+      - name: Debug info
         run: |
-          set -euo pipefail
-          printf '%s\n' "${{ steps.changes.outputs.added_modified_files }}" | while IFS= read -r FILE; do
+          echo "BASE: origin/main"
+          echo "HEAD: $(git rev-parse HEAD)"
+          echo "Last 3 commits:"
+          git log -3 --oneline
+          echo "Changed files from diff:"
+          cat changed.txt || true
+
+      # 4) Upload file thay đổi qua FTP/FTPS
+      - name: Upload changed files
+        if: ${{ steps.diff.outputs.files != '' }}
+        run: |
+          while IFS= read -r FILE; do
             [ -z "$FILE" ] && continue
             echo "→ Upload $FILE"
             curl --fail --show-error --silent \
@@ -69,19 +66,4 @@ jobs:
                  --user "${FTP_USERNAME}:${FTP_PASSWORD}" \
                  -T "$FILE" \
                  "ftp://${FTP_SERVER}:${FTP_PORT}${REMOTE_ROOT}/${FILE}"
-          done
-
-      # 5) Xóa file đã bị xóa trong repo
-      - name: Delete removed files on server
-        if: ${{ steps.changes.outputs.deleted_files != '' }}
-        run: |
-          set -euo pipefail
-          printf '%s\n' "${{ steps.changes.outputs.deleted_files }}" | while IFS= read -r FILE; do
-            [ -z "$FILE" ] && continue
-            echo "→ Delete $FILE"
-            curl --fail --show-error --silent \
-                 --ftp-method nocwd --ftp-pasv --ssl-reqd \
-                 --user "${FTP_USERNAME}:${FTP_PASSWORD}" \
-                 "ftp://${FTP_SERVER}:${FTP_PORT}/" \
-                 -Q "DELE ${REMOTE_ROOT}/${FILE}" || true
-          done
+          done < changed.txt
