@@ -27,3 +27,8 @@ h5.nasa-title-vertical-menu {
 .section-title.nasa-title-vertical-menu {
     display: none !important;
 }
+
+/* Test workflow - Hide powered by text in footer */
+.footer-powered-by {
+    display: none !important;
+}
