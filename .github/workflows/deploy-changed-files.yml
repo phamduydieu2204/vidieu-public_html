@@ -67,7 +67,7 @@ jobs:
             [ -z "$FILE" ] && continue
             echo "→ Upload $FILE"
             curl --fail --show-error --silent \
-                 --ftp-method nocwd --ftp-pasv --ftp-create-dirs --ssl-reqd \
+                 --ftp-method nocwd --ftp-pasv --ftp-create-dirs \
                  --user "${FTP_USERNAME}:${FTP_PASSWORD}" \
                  -T "$FILE" \
                  "ftp://${FTP_SERVER}:${FTP_PORT}${REMOTE_ROOT}/${FILE}"
@@ -82,7 +82,7 @@ jobs:
             [ -z "$FILE" ] && continue
             echo "→ Delete $FILE"
             curl --fail --show-error --silent \
-                 --ftp-method nocwd --ftp-pasv --ssl-reqd \
+                 --ftp-method nocwd --ftp-pasv \
                  --user "${FTP_USERNAME}:${FTP_PASSWORD}" \
                  "ftp://${FTP_SERVER}:${FTP_PORT}/" \
                  -Q "DELE ${REMOTE_ROOT}/${FILE}" || true
