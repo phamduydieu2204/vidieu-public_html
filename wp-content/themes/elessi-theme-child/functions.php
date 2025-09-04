@@ -99,16 +99,20 @@ function elessi_child_fix_vietnamese_fonts($url) {
 add_action('wp_head', 'elessi_child_vietnamese_font_css', 5);
 function elessi_child_vietnamese_font_css() {
     ?>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <style>
-        /* Ensure Vietnamese characters display properly with fallback fonts */
-        body, 
-        p, 
-        h1, h2, h3, h4, h5, h6,
-        .product-name,
-        .price,
-        .button,
-        .vd-buy-now-button {
-            font-family: "Open Sans", "Noto Sans", "Roboto", -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+        /* Force Vietnamese font for all text elements */
+        * {
+            font-family: "Open Sans", "Noto Sans", "Roboto", -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif !important;
+        }
+        
+        /* Specific overrides for problematic elements */
+        .vd-home-section-title,
+        h2.vd-home-section-title,
+        .nasa-title-menu,
+        a.nasa-title-menu {
+            font-family: "Open Sans", "Noto Sans", "Roboto", -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif !important;
         }
         
         /* Force font-display swap for better loading performance */
@@ -139,6 +143,24 @@ function elessi_child_force_vietnamese_subset($subsets) {
     }
     
     return $subsets;
+}
+
+/**
+ * Manually enqueue Google Fonts with Vietnamese subset
+ * This ensures fonts are loaded even if theme doesn't do it properly
+ */
+add_action('wp_enqueue_scripts', 'elessi_child_enqueue_vietnamese_fonts', 5);
+function elessi_child_enqueue_vietnamese_fonts() {
+    // Remove any existing Open Sans to avoid conflicts
+    wp_deregister_style('open-sans');
+    
+    // Enqueue Open Sans with Vietnamese subset
+    wp_enqueue_style(
+        'open-sans-vietnamese',
+        'https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;500;600;700;800&display=swap&subset=latin,latin-ext,vietnamese',
+        array(),
+        null
+    );
 }
 
 /**

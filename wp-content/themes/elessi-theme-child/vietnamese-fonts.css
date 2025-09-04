@@ -24,7 +24,23 @@ button {
 /* Specific elements that might have different font declarations */
 h1, h2, h3, h4, h5, h6,
 .h1, .h2, .h3, .h4, .h5, .h6 {
-    font-family: var(--vietnamese-font-stack);
+    font-family: var(--vietnamese-font-stack) !important;
+}
+
+/* Specific problematic elements - Force Vietnamese font */
+.vd-home-section-title,
+.vd-section-title,
+h2.vd-home-section-title {
+    font-family: var(--vietnamese-font-stack) !important;
+}
+
+/* NASA theme menu elements */
+.nasa-title-menu,
+a.nasa-title-menu,
+.nasa-nav-menu a,
+.vertical-menu a,
+.menu-item a {
+    font-family: var(--vietnamese-font-stack) !important;
 }
 
 /* WooCommerce specific */
