@@ -1,18 +1,15 @@
-# giữ repo nhẹ, không động vào media/cache
-wp-content/uploads/
-wp-content/cache/
-wp-content/upgrade/
-wp-content/wflogs/
+# Media/cache - không đồng bộ
+wp-content/uploads/**
+wp-content/cache/**
+wp-content/upgrade/**
+wp-content/wflogs/**
 
-# file/dir nhạy cảm
+# File nhạy cảm - không nên deploy qua Git
 wp-config.php
 .htaccess
 
-# rác dev
+# Rác dev
 **/*.log
-node_modules/
-vendor/**/tests/
+node_modules/**
+vendor/**/tests/**
 .DS_Store
-.git/
-.github/           # vẫn ignore .github chung...
-!/.github/         # ...nhưng cho phép .github ở ROOT (workflow deploy)
