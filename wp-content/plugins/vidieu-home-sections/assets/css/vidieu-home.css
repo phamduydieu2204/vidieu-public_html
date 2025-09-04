@@ -2158,6 +2158,7 @@ html body .vd-home-posts .vd-posts-grid.vd-posts-grid.vd-posts-grid {
 }
 
 /* Simple products always have orange color */
+/* TEST COMMENT: Deploy from GitHub to Hosting - 2025-09-04 */
 .vd-buy-now-button.vd-buy-now-simple {
     background-color: #F76B6A !important;
 }
