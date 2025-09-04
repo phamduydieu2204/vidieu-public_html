@@ -11,7 +11,7 @@ git add -A
 git commit -m "tự động: cập nhật từ Claude CLI $(date '+%Y-%m-%d %H:%M:%S')"
 git push
 Nếu không có thay đổi (git status sạch) thì bỏ qua commit/push.
-Commit message phải ngắn gọn, mô tả thay đổi hoặc dùng format mặc định trên.
+Commit message phải ngắn gọn, bằng ngôn ngữ tiếng việt, mô tả thay đổi hoặc dùng format mặc định trên.
 Yêu cầu an toàn:
 Không làm ảnh hưởng tới wp-admin/ và các chức năng khác của frontend.
 Không xoá/ghi đè wp-config.php hoặc .htaccess.
@@ -27,3 +27,4 @@ Khi thử nghiệm thay đổi lớn, có thể tạo nhánh phụ:
 git checkout -b test-claude
 Sau đó merge vào main khi đã ổn định.
 Rollback nhanh: git revert <commit> rồi git push.
+Lưu ý: comit và message bắt buộc phải bằng tiếng việt
