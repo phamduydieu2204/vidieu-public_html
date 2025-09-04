@@ -3,7 +3,7 @@ name: Deploy changed files only (FTP/FTPS)
 on:
   push:
     branches: [ "main" ]
-  workflow_dispatch: {}           # cho phép chạy tay
+  workflow_dispatch: {}
 
 concurrency:
   group: deploy-changed-only
@@ -14,71 +14,75 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
 
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+    env:
+      REMOTE_ROOT: /domains/vidieu.vn/public_html
+      FTP_SERVER:   ${{ secrets.FTP_SERVER }}
+      FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
+      FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+      FTP_PORT:     ${{ secrets.FTP_PORT }}
 
-      - name: Get changed files
+    steps:
+      # 1) Lấy full history để diff chắc chắn
+      - name: Checkout (full history)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # 2) Bắt diff đúng 2 SHA của sự kiện push
+      - name: Get changed files (child theme only)
         id: changes
         uses: tj-actions/changed-files@v45
         with:
+          base_sha: ${{ github.event.before }}
+          sha:      ${{ github.sha }}
           files: |
-            **                                      # theo dõi toàn repo
+            wp-content/themes/elessi-theme-child/**
           separator: "\n"
-          fetch_depth: 0                            # lấy full history để diff chắc hơn
-          since_last_remote_commit: true            # diff so với commit trước đó trên remote
           diff_relative: false
           use_posix_path_separator: true
+          fetch_depth: 0
           json: false
 
-      - name: Show summary
+      # 3) In SHA & danh sách file để tự đối chiếu
+      - name: Show summary + fallback diff
         run: |
-          echo "BASE..HEAD:"
-          echo "${{ steps.changes.outputs.base_sha }} .. ${{ steps.changes.outputs.sha }}"
+          echo "BASE: ${{ steps.changes.outputs.base_sha }}"
+          echo "HEAD: ${{ steps.changes.outputs.sha }}"
           echo
-          echo "Added/Modified:"
-          echo "${{ steps.changes.outputs.added_modified_files }}"
+          echo "Added/Modified (from action):"
+          printf '%s\n' "${{ steps.changes.outputs.added_modified_files }}"
           echo
-          echo "Deleted:"
-          echo "${{ steps.changes.outputs.deleted_files }}"
+          echo "Deleted (from action):"
+          printf '%s\n' "${{ steps.changes.outputs.deleted_files }}"
+          echo
+          echo "Fallback git diff (for debug):"
+          git diff --name-status "${{ steps.changes.outputs.base_sha }}" "${{ steps.changes.outputs.sha }}" -- wp-content/themes/elessi-theme-child/
 
-      # Upload CHỈ các file thêm/sửa
-      - name: Upload added/modified files via (F)TPS
+      # 4) Upload CHỈ file đã thêm/sửa
+      - name: Upload added/modified via (F)TPS
         if: ${{ steps.changes.outputs.added_modified_files != '' }}
-        env:
-          FTP_SERVER:   ${{ secrets.FTP_SERVER }}
-          FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
-          FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
-          FTP_PORT:     ${{ secrets.FTP_PORT }}    # thường 21
-          REMOTE_ROOT:  /domains/vidieu.vn/public_html
         run: |
           set -euo pipefail
-          echo "${{ steps.changes.outputs.added_modified_files }}" | while IFS= read -r FILE; do
+          printf '%s\n' "${{ steps.changes.outputs.added_modified_files }}" | while IFS= read -r FILE; do
             [ -z "$FILE" ] && continue
             echo "→ Upload $FILE"
             curl --fail --show-error --silent \
-                 --ftp-method nocwd --ftp-pasv --ftp-create-dirs \
+                 --ftp-method nocwd --ftp-pasv --ftp-create-dirs --ssl-reqd \
                  --user "${FTP_USERNAME}:${FTP_PASSWORD}" \
                  -T "$FILE" \
                  "ftp://${FTP_SERVER}:${FTP_PORT}${REMOTE_ROOT}/${FILE}"
           done
 
-      # XÓA trên host những file đã bị xoá trong repo (nếu có)
-      - name: Delete removed files on server
+      # 5) XÓA trên host các file đã bị xóa trong repo
+      - name: Delete removed on server
         if: ${{ steps.changes.outputs.deleted_files != '' }}
-        env:
-          FTP_SERVER:   ${{ secrets.FTP_SERVER }}
-          FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
-          FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
-          FTP_PORT:     ${{ secrets.FTP_PORT }}
-          REMOTE_ROOT:  /domains/vidieu.vn/public_html
         run: |
           set -euo pipefail
-          echo "${{ steps.changes.outputs.deleted_files }}" | while IFS= read -r FILE; do
+          printf '%s\n' "${{ steps.changes.outputs.deleted_files }}" | while IFS= read -r FILE; do
             [ -z "$FILE" ] && continue
             echo "→ Delete $FILE"
             curl --fail --show-error --silent \
-                 --ftp-method nocwd --ftp-pasv \
+                 --ftp-method nocwd --ftp-pasv --ssl-reqd \
                  --user "${FTP_USERNAME}:${FTP_PASSWORD}" \
                  "ftp://${FTP_SERVER}:${FTP_PORT}/" \
                  -Q "DELE ${REMOTE_ROOT}/${FILE}" || true
