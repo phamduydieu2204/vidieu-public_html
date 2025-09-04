@@ -102,22 +102,44 @@ function elessi_child_vietnamese_font_css() {
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <style>
-        /* Force Vietnamese font for all text elements */
-        * {
-            font-family: "Open Sans", "Noto Sans", "Roboto", -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif !important;
+        /* Override all fonts with Roboto which has excellent Vietnamese support */
+        *, 
+        *::before, 
+        *::after {
+            font-family: "Roboto", "Noto Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif !important;
         }
         
-        /* Specific overrides for problematic elements */
-        .vd-home-section-title,
-        h2.vd-home-section-title,
+        /* Specific overrides for NASA theme elements */
+        body,
         .nasa-title-menu,
-        a.nasa-title-menu {
-            font-family: "Open Sans", "Noto Sans", "Roboto", -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif !important;
+        a.nasa-title-menu,
+        .vd-home-section-title,
+        h1.vd-home-section-title,
+        h2.vd-home-section-title,
+        h3.vd-home-section-title,
+        .vd-section-title,
+        .product-name,
+        .price,
+        .button,
+        .nasa-nav-menu a,
+        .vertical-menu a,
+        .menu-item a,
+        input, textarea, select {
+            font-family: "Roboto", "Noto Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif !important;
         }
         
-        /* Force font-display swap for better loading performance */
+        /* Override Jost font from parent theme */
         @font-face {
+            font-family: 'Jost';
+            src: local('Roboto');
             font-display: swap;
+        }
+        
+        /* Ensure proper rendering of Vietnamese diacritics */
+        body {
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            text-rendering: optimizeLegibility;
         }
     </style>
     <?php
@@ -146,21 +168,130 @@ function elessi_child_force_vietnamese_subset($subsets) {
 }
 
 /**
- * Manually enqueue Google Fonts with Vietnamese subset
- * This ensures fonts are loaded even if theme doesn't do it properly
+ * Remove theme's Google Fonts and replace with Vietnamese-supported fonts
  */
-add_action('wp_enqueue_scripts', 'elessi_child_enqueue_vietnamese_fonts', 5);
-function elessi_child_enqueue_vietnamese_fonts() {
-    // Remove any existing Open Sans to avoid conflicts
-    wp_deregister_style('open-sans');
+add_action('wp_enqueue_scripts', 'elessi_child_remove_google_fonts', 100);
+function elessi_child_remove_google_fonts() {
+    // Remove NASA theme fonts
+    wp_dequeue_style('nasa-fonts');
+    wp_deregister_style('nasa-fonts');
     
-    // Enqueue Open Sans with Vietnamese subset
+    // Remove Open Sans if exists
+    wp_dequeue_style('open-sans');
+    wp_deregister_style('open-sans');
+}
+
+/**
+ * Enqueue local fonts with Vietnamese support
+ */
+add_action('wp_enqueue_scripts', 'elessi_child_enqueue_vietnamese_fonts', 101);
+function elessi_child_enqueue_vietnamese_fonts() {
+    // Load Roboto with Vietnamese subset as primary font
     wp_enqueue_style(
-        'open-sans-vietnamese',
-        'https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;500;600;700;800&display=swap&subset=latin,latin-ext,vietnamese',
+        'roboto-vietnamese',
+        'https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Noto+Sans:wght@400;600;700&display=swap&subset=latin,latin-ext,vietnamese',
         array(),
         null
     );
+}
+
+/**
+ * Override theme font URL generation
+ */
+add_filter('elessi_google_fonts_url', '__return_false', 999);
+add_filter('nasa_google_fonts_url', '__return_false', 999);
+
+/**
+ * Replace Google Fonts with Local Fonts
+ * This properly dequeues the parent theme's Google Fonts and replaces with local fonts
+ * @since 2025-09-04
+ */
+add_action('wp_enqueue_scripts', 'elessi_child_replace_google_fonts', 999);
+function elessi_child_replace_google_fonts() {
+    // Dequeue Google Fonts từ parent theme (handle chính xác là 'nasa-fonts')
+    wp_dequeue_style('nasa-fonts');
+    wp_deregister_style('nasa-fonts');
+    
+    // Enqueue our Google Fonts blocking CSS
+    wp_enqueue_style(
+        'block-google-fonts',
+        get_stylesheet_directory_uri() . '/block-google-fonts.css',
+        array(),
+        '1.0.0',
+        'all'
+    );
+    
+    // Check if we have local Jost font files
+    $local_font_path = get_stylesheet_directory() . '/assets/fonts/jost/jost.css';
+    if (file_exists($local_font_path)) {
+        // Enqueue local Jost fonts với cùng handle để đảm bảo thay thế hoàn toàn
+        wp_enqueue_style(
+            'nasa-fonts',
+            get_stylesheet_directory_uri() . '/assets/fonts/jost/jost.css',
+            array(),
+            '1.0.0'
+        );
+    }
+}
+
+/**
+ * Hook vào filter để thay đổi Google Fonts URL thành local
+ * This catches any Google Fonts URLs that slip through
+ * @since 2025-09-04
+ */
+add_filter('style_loader_src', 'elessi_child_replace_google_fonts_url', 999, 2);
+function elessi_child_replace_google_fonts_url($src, $handle) {
+    // Kiểm tra nếu đây là Google Fonts
+    if ($handle === 'nasa-fonts' && strpos($src, 'fonts.googleapis.com') !== false) {
+        // Check if we have local Jost font files
+        $local_font_path = get_stylesheet_directory() . '/assets/fonts/jost/jost.css';
+        if (file_exists($local_font_path)) {
+            // Thay thế bằng local fonts
+            return get_stylesheet_directory_uri() . '/assets/fonts/jost/jost.css';
+        }
+    }
+    return $src;
+}
+
+/**
+ * Override parent theme's Google Fonts URL function
+ * This prevents the parent theme from generating Google Fonts URLs
+ * @since 2025-09-04
+ */
+if (!function_exists('elessi_google_fonts_url')) {
+    function elessi_google_fonts_url($font_families = array(), $font_set = array()) {
+        // Always return false to prevent loading Google Fonts
+        // The local fonts will be loaded by our replacement function above
+        return false;
+    }
+}
+
+/**
+ * Remove parent theme's font registration action
+ * This runs early to prevent the parent theme from registering fonts
+ * @since 2025-09-04
+ */
+add_action('init', 'elessi_child_remove_parent_font_actions', 1);
+function elessi_child_remove_parent_font_actions() {
+    // Remove parent theme's font registration
+    remove_action('wp_enqueue_scripts', 'elessi_register_fonts');
+}
+
+/**
+ * Debug: Log what fonts are being loaded
+ * Remove this in production
+ * @since 2025-09-04
+ */
+add_action('wp_print_styles', 'elessi_child_debug_font_styles', 999);
+function elessi_child_debug_font_styles() {
+    global $wp_styles;
+    
+    // Look for any Google Fonts being loaded
+    foreach ($wp_styles->registered as $handle => $style) {
+        if (strpos($style->src, 'fonts.googleapis.com') !== false) {
+            error_log('Google Font detected: Handle=' . $handle . ', URL=' . $style->src);
+        }
+    }
 }
 
 /**
@@ -228,6 +359,27 @@ function elessi_child_inline_hide_breadcrumb() {
             #top-bar:not(:has(.login)):not(:has(.register)):not(:has(.account)) {
                 display: none !important;
             }
+        }
+    </style>
+    <?php
+}
+
+/**
+ * Block Google Fonts with inline CSS (loads very early)
+ * @since 2025-09-04
+ */
+add_action('wp_head', 'elessi_child_block_google_fonts_inline', 0);
+function elessi_child_block_google_fonts_inline() {
+    ?>
+    <style id="block-google-fonts-critical">
+        /* Override any Google Fonts imports */
+        @import url('https://fonts.googleapis.com/css') {
+            /* This blocks the import */
+        }
+        
+        /* Use system fonts as immediate fallback */
+        body, h1, h2, h3, h4, h5, h6, p, span, div {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important;
         }
     </style>
     <?php

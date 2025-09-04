@@ -1,0 +1,87 @@
+/**
+ * Block Google Fonts and Use System Fonts
+ * This CSS file provides fallback system fonts when Google Fonts are blocked
+ */
+
+/* Override Jost font with system fonts */
+@font-face {
+    font-family: 'Jost';
+    src: local('Arial'), local('Helvetica'), local('sans-serif');
+    font-weight: 300;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Jost';
+    src: local('Arial'), local('Helvetica'), local('sans-serif');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Jost';
+    src: local('Arial'), local('Helvetica'), local('sans-serif');
+    font-weight: 500;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Jost';
+    src: local('Arial'), local('Helvetica'), local('sans-serif');
+    font-weight: 600;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Jost';
+    src: local('Arial Bold'), local('Helvetica Bold'), local('sans-serif');
+    font-weight: 700;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Jost';
+    src: local('Arial Bold'), local('Helvetica Bold'), local('sans-serif');
+    font-weight: 800;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Jost';
+    src: local('Arial Black'), local('Helvetica Bold'), local('sans-serif');
+    font-weight: 900;
+    font-style: normal;
+    font-display: swap;
+}
+
+/* Force all text to use system fonts */
+body,
+h1, h2, h3, h4, h5, h6,
+p, span, div, 
+.nasa-title,
+.product-name,
+.price {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji" !important;
+}
+
+/* Specific font overrides for Vietnamese support */
+body {
+    font-family: "Helvetica Neue", Arial, "Noto Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+}
+
+/* Ensure Vietnamese characters display properly */
+html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* Block any @import of Google Fonts */
+@import url('https://fonts.googleapis.com/*') {
+    /* Empty rule blocks the import */
+}
