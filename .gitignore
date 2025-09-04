@@ -1,0 +1,11 @@
+.git/
+.github/
+wp-content/uploads/
+wp-content/cache/
+wp-content/upgrade/
+wp-content/wflogs/
+node_modules/
+vendor/**/tests/**
+*.log
+.DS_Store
+

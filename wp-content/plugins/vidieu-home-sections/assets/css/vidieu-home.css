@@ -1,0 +1,2955 @@
+/**
+ * Vidieu Home Sections - CSS
+ * 
+ * @package VidieuHomeSections
+ * @version 1.1.1
+ */
+
+/* ==========================================================================
+   CSS Variables
+   ========================================================================== */
+
+:root {
+    --vd-max-width: 1400px;
+    --vd-sidebar-width: 20%;
+    --vd-main-width: 80%;
+    --vd-gap: 24px;
+    --vd-mobile-breakpoint: 991px;
+    --vd-panel-z-index: 9999;
+    --vd-transition: all 0.3s ease;
+    
+    /* Posts specific variables */
+    --vd-posts-sidebar-width: 20%;
+    --vd-posts-main-width: 80%;
+    --vd-posts-gap: 30px;
+}
+
+/* ==========================================================================
+   Container & Layout
+   ========================================================================== */
+
+.vd-container {
+    max-width: var(--vd-max-width);
+    margin-inline: auto;
+    padding: 0 16px;
+    width: 100%;
+}
+
+/* Reduce side padding for Posts to give more space to content */
+.vd-home-posts .vd-container {
+    padding: 0 12px;
+}
+
+.vd-row {
+    display: flex;
+    gap: var(--vd-gap);
+    align-items: flex-start;
+}
+
+.vd-sidebar {
+    flex: 0 0 var(--vd-sidebar-width);
+    max-width: var(--vd-sidebar-width);
+    position: sticky;
+    top: 20px;
+}
+
+.vd-main {
+    flex: 0 0 var(--vd-main-width);
+    max-width: var(--vd-main-width);
+    min-width: 0;
+}
+
+/* Posts Section - Optimized 1/5-4/5 Layout */
+.vd-home-posts .vd-row {
+    gap: var(--vd-posts-gap);
+}
+
+.vd-home-posts .vd-sidebar {
+    flex: 0 0 var(--vd-posts-sidebar-width);
+    max-width: var(--vd-posts-sidebar-width);
+    position: sticky;
+    top: 20px;
+}
+
+.vd-home-posts .vd-main {
+    flex: 0 0 var(--vd-posts-main-width);
+    max-width: var(--vd-posts-main-width);
+    min-width: 0;
+}
+
+/* ==========================================================================
+   Home Sections
+   ========================================================================== */
+
+.vd-home-section {
+    margin: 40px 0;
+    padding: 30px 0;
+}
+
+/* Hide Compare button in home sections to maintain consistency */
+.vd-home-section .btn-compare,
+.vd-home-section .compare-button,
+.vd-home-section .nasa-compare,
+.vd-home-section .product-interactions .btn-link:has(.nasa-icon-compare),
+.vd-home-section a.compare.button,
+.vd-home-section .compare-icon,
+.vd-home-section a[href*="yith-woocompare-add-product"],
+.vd-home-section .nasa-icon.icon-nasa-refresh {
+    display: none !important;
+}
+
+/* Also hide parent element if it only contains compare button */
+.vd-home-section .nasa-group-btns .btn-compare {
+    display: none !important;
+}
+
+/* Specific selectors for Elessi theme compare buttons */
+.vd-home-products .nasa-group-btns a.btn-compare.nasa-compare,
+.vd-home-products .product-item a.compare.button,
+.vd-home-posts .nasa-group-btns a.btn-compare.nasa-compare,
+.vd-home-posts .product-item a.compare.button {
+    display: none !important;
+}
+
+.vd-home-section-title {
+    font-size: 32px;
+    font-weight: 700;
+    margin-bottom: 30px;
+    text-align: center;
+    color: #333;
+}
+
+/* ==========================================================================
+   Filter Toggle (Mobile)
+   ========================================================================== */
+
+.vd-filter-toggle {
+    display: none;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 24px;
+    margin-bottom: 20px;
+    background: #007cba;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--vd-transition);
+}
+
+.vd-filter-toggle:hover {
+    background: #005a87;
+}
+
+/* Posts: Hide filter toggle by default - only show on mobile */
+.vd-home-posts .vd-filter-toggle {
+    display: none;
+}
+
+.vd-filter-toggle .icon {
+    width: 20px;
+    height: 20px;
+    display: inline-block;
+}
+
+/* Funnel icon SVG */
+.vd-filter-toggle .icon::before {
+    content: '';
+    display: block;
+    width: 100%;
+    height: 100%;
+    background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" fill="white" viewBox="0 0 24 24"><path d="M3 4h18v2H3V4zm2 5h14v2H5V9zm3 5h8v2H8v-2z"/></svg>') no-repeat center;
+    background-size: contain;
+}
+
+/* ==========================================================================
+   Filter Panel (Mobile)
+   ========================================================================== */
+
+.vd-filter-panel {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100dvh;
+    width: min(88vw, 360px);
+    background: #fff;
+    box-shadow: 2px 0 20px rgba(0,0,0,0.1);
+    z-index: 1000;
+    transform: translateX(-100%);
+    transition: transform 0.25s ease;
+    overflow-y: auto;
+}
+
+/* Panel open state */
+.vd-filter-open .vd-filter-panel {
+    transform: translateX(0);
+}
+
+.vd-filter-panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    border-bottom: 1px solid #eee;
+}
+
+.vd-filter-panel-title {
+    font-size: 18px;
+    font-weight: 600;
+    margin: 0;
+}
+
+.vd-filter-panel-close {
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    padding: 0;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.vd-filter-panel-body {
+    padding: 20px;
+}
+
+/* Panel overlay - Initially invisible and non-interactive */
+.vd-filter-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease;
+}
+
+/* Overlay active state - visible and interactive */
+.vd-filter-open .vd-filter-overlay {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+/* Scroll lock when filter panel is open */
+body.vd-scroll-lock {
+    overflow: hidden;
+    touch-action: none;
+}
+
+/* ==========================================================================
+   Sidebar Menu
+   ========================================================================== */
+
+.vd-sidebar-menu {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.vd-sidebar-menu li {
+    margin: 0;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.vd-sidebar-menu li:last-child {
+    border-bottom: none;
+}
+
+.vd-sidebar-menu a {
+    display: block;
+    padding: 14px 20px;
+    text-decoration: none;
+    color: #495057;
+    font-weight: 500;
+    font-size: 15px;
+    transition: var(--vd-transition);
+    position: relative;
+}
+
+.vd-sidebar-menu a:hover,
+.vd-sidebar-menu a.active {
+    background-color: #007cba;
+    color: #fff;
+}
+
+.vd-sidebar-menu a::after {
+    content: '';
+    position: absolute;
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 6px;
+    height: 6px;
+    border-right: 2px solid currentColor;
+    border-bottom: 2px solid currentColor;
+    transform: translateY(-50%) rotate(-45deg);
+    transition: transform 0.3s ease;
+}
+
+.vd-sidebar-menu a:hover::after {
+    transform: translateY(-50%) rotate(-45deg) translateX(3px);
+}
+
+.vd-menu-fallback {
+    background: #fff3cd;
+    border: 1px solid #ffeaa7;
+    border-radius: 8px;
+    padding: 20px;
+    text-align: center;
+    color: #856404;
+}
+
+/* ==========================================================================
+   Placeholder Content
+   ========================================================================== */
+
+.vd-placeholder-message {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 300px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    text-align: center;
+}
+
+.vd-placeholder-content {
+    max-width: 400px;
+    padding: 40px 20px;
+}
+
+.vd-placeholder-content h3 {
+    font-size: 24px;
+    color: #333;
+    margin-bottom: 15px;
+    font-weight: 600;
+}
+
+.vd-placeholder-content p {
+    font-size: 16px;
+    color: #666;
+    line-height: 1.5;
+    margin: 0;
+}
+
+/* ==========================================================================
+   Products Grid - WooCommerce/Elessi Integration
+   ========================================================================== */
+
+.vd-products-grid {
+    position: relative;
+}
+
+/* Ensure WooCommerce product cards have consistent height */
+.vd-home-products ul.products {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    margin: 0 -15px;
+    list-style: none;
+}
+
+.vd-home-products ul.products li.product-warp-item {
+    display: flex !important;
+    margin-bottom: 30px;
+    padding: 0 15px;
+    height: auto !important; /* Prevent height stretching */
+    align-items: flex-start !important; /* Align to top */
+}
+
+.vd-home-products ul.products li.product-warp-item .product {
+    width: 100%;
+    overflow: hidden;
+    /* Height and display handled by flex styles above */
+    /* Border styles moved to dedicated section below */
+}
+
+/* Hover and border styles moved to dedicated section below */
+
+/* Product Image - Natural height based on image */
+.vd-home-products .product-img-wrap {
+    flex-shrink: 0;
+    position: relative;
+    overflow: hidden;
+    width: 100%;
+    background: #f8f8f8;
+    padding-bottom: 0 !important; /* Override any inline styles */
+    height: auto !important; /* Let content determine height */
+}
+
+/* Hide any duplicate img tags that might appear after .main-img */
+.vd-home-products .product-img-wrap .main-img ~ img {
+    display: none !important;
+}
+
+/* Main image container - with fixed aspect ratio */
+.vd-home-products .product-img-wrap .main-img {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 5/6; /* Fixed 5:6 ratio for all images */
+    overflow: hidden;
+    background: #f8f8f8;
+    display: block !important;
+}
+
+/* Support for older browsers without aspect-ratio */
+@supports not (aspect-ratio: 5/6) {
+    .vd-home-products .product-img-wrap .main-img {
+        padding-bottom: 120%; /* 6/5 * 100% = 120% */
+        height: 0;
+    }
+}
+
+/* Product image - fill container */
+.vd-home-products .product-img-wrap .main-img img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* Fill container while maintaining aspect ratio */
+    display: block !important;
+    transition: transform 0.3s ease;
+}
+
+/* Placeholder images should also fill container */
+.vd-home-products .product-img-wrap .main-img img.placeholder-image {
+    object-fit: contain; /* Show placeholder clearly */
+    background: #f8f8f8;
+}
+
+/* Remove min-height from product-img-wrap to prevent stretching */
+.vd-home-products .product-img-wrap {
+    min-height: 0 !important;
+}
+
+/* Ensure hover effect works with placeholder images */
+.vd-home-products .product-item:hover .product-img-wrap .main-img img {
+    transform: scale(1.05);
+}
+
+/* Fix for first product initial load */
+.vd-home-products .products li.product-warp-item:first-child .product-img-wrap {
+    min-height: 0 !important;
+    height: auto !important;
+}
+
+/* Ensure first product image loads correctly */
+.vd-home-products .products li.product-warp-item:first-child .main-img {
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
+/* Product info consistent layout - fixed height issue */
+.vd-home-products .product-info-wrap.info {
+    flex: 0 0 auto !important; /* Prevent flex growing/shrinking */
+    display: block !important; /* Changed from flex to block */
+    height: auto !important; /* Let content determine height */
+    max-height: none !important; /* Override any max-height restrictions */
+    min-height: 0 !important; /* Prevent min-height issues */
+}
+
+/* Ensure ALL product info wraps have same styling - not just first child */
+.vd-home-products ul.products li.product-warp-item .product-info-wrap.info {
+    padding: 10px 10px 20px 10px !important; /* Balanced padding for all products */
+    margin: 0 !important;
+    box-sizing: border-box !important;
+}
+
+/* Remove any special styling for first child that might cause size differences */
+.vd-home-products ul.products li.product-warp-item:first-child .product-info-wrap.info {
+    /* Inherit same styles as other products */
+    padding: 10px 10px 20px 10px !important;
+    margin: 0 !important;
+}
+
+/* Ensure consistent product card heights */
+.vd-home-products ul.products {
+    display: flex !important;
+    flex-wrap: wrap !important;
+}
+
+.vd-home-products ul.products li.product-warp-item {
+    display: flex !important;
+    flex-direction: column !important;
+}
+
+.vd-home-products ul.products li.product-warp-item .product,
+.vd-home-products ul.products li.product-warp-item .product-inner {
+    flex: 1 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    height: 100% !important;
+}
+
+.vd-home-products .product-img-wrap {
+    flex: 0 0 auto !important;
+}
+
+.vd-home-products .product-info-wrap.info {
+    flex: 1 !important;
+    display: flex !important;
+    flex-direction: column !important;
+}
+
+/* Product name - flexible height with line clamping */
+.vd-home-products .info .name {
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    /* Heights removed - now handled by High Priority section */
+}
+
+.vd-home-products .info .name a {
+    line-height: 1.4;
+    font-size: 15px;
+}
+
+/* Price consistent spacing */
+.vd-home-products .info .price-wrap {
+    /* Spacing now handled by High Priority section */
+}
+
+/* Buttons spacing - fixed to prevent height stretching */
+.vd-home-products .info .product-interactions {
+    margin-top: 10px !important; /* Fixed margin instead of auto */
+}
+
+/* Position variant selector at TOP-LEFT of thumbnail - preserve original styling */
+.vd-home-section.vd-home-products .nasa-product-content-select-wrap {
+    position: absolute !important;
+    top: 0 !important; /* Anchored to TOP edge of thumbnail */
+    left: 0 !important; /* Aligned with left edge of thumbnail */
+    right: 0 !important;
+    z-index: 15 !important;
+    pointer-events: auto !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+    background: #ffffff !important;
+}
+
+/* Position variant selector container when inside thumbnail wrapper */
+.vd-home-section.vd-home-products .product-img-wrap .nasa-product-content-variable-warp {
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    z-index: 16 !important;
+    width: 100% !important;
+    height: auto !important;
+    pointer-events: none !important;
+}
+
+/* Re-enable pointer events for the actual selector panel inside thumbnail */
+.vd-home-section.vd-home-products .product-img-wrap .nasa-product-content-select-wrap {
+    pointer-events: auto !important;
+}
+
+/* Ensure product card allows absolute positioning for variant selector */
+.vd-home-section.vd-home-products .product {
+    position: relative !important;
+    overflow: visible !important;
+    z-index: 1 !important;
+}
+
+/* Position thumbnail wrapper as relative to contain variant selector with expansion space */
+.vd-home-section.vd-home-products .product-img-wrap {
+    position: relative !important;
+    overflow: visible !important;
+    z-index: 1 !important;
+}
+
+
+/* Ensure panel can extend downward naturally */
+.vd-home-section.vd-home-products .product-img-wrap .nasa-product-content-select-wrap {
+    position: relative !important;
+    top: auto !important;
+    left: auto !important;
+    right: auto !important;
+    width: 100% !important;
+    pointer-events: auto !important;
+}
+
+/* Fallback styles for variant selector when not yet repositioned by JS */
+.vd-home-section.vd-home-products .nasa-product-content-variable-warp {
+    position: absolute !important;
+    z-index: 14 !important;
+    pointer-events: none !important;
+}
+
+/* Minimal styling override - only ensure panel doesn't interfere with layout */
+.vd-home-section.vd-home-products .product-info-wrap.info {
+    position: relative !important;
+    z-index: 1 !important;
+    height: auto !important; /* Prevent height stretching */
+    max-height: none !important; /* Remove any height restrictions */
+}
+
+/* Column widths */
+.vd-home-products ul.products.columns-4 > li {
+    width: 25%;
+}
+
+.vd-home-products ul.products.columns-3 > li {
+    width: 33.333%;
+}
+
+.vd-home-products ul.products.columns-2 > li {
+    width: 50%;
+}
+
+/* Center align cart icon for all screen sizes */
+.vd-home-products .add_to_cart_button {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 5px !important;
+    text-align: center !important;
+}
+
+.vd-home-products .cart-icon.nasa-df-plus {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    margin: 0 !important;
+    vertical-align: middle !important;
+    line-height: 1 !important;
+}
+
+/* Ensure text and icon alignment */
+.vd-home-products .add_to_cart_text {
+    display: inline-flex !important;
+    align-items: center !important;
+    vertical-align: middle !important;
+    line-height: 1 !important;
+}
+
+/* ==========================================================================
+   Posts Grid - New Design with 5:6 Aspect Ratio & CSS Grid
+   ========================================================================== */
+
+.vd-posts-grid {
+    position: relative;
+    display: grid !important;
+    grid-template-columns: repeat(var(--vd-posts-cols, 3), minmax(0, 1fr)) !important;
+    gap: 24px !important;
+    width: 100%;
+    margin: 0 auto;
+    max-width: 100%;
+    /* Override any theme/plugin conflicts */
+    flex-direction: unset !important;
+    flex-wrap: unset !important;
+    flex: unset !important;
+}
+
+/* Posts Grid Variables - Final Responsive System */
+:root {
+    --vd-posts-cols-desktop: 3;    /* Desktop default */
+    --vd-posts-cols-tablet: 2;     /* 768-1023px */
+    --vd-posts-cols-mobile: 1;     /* <768px */
+}
+
+/* Desktop: 3 columns (default) */
+.vd-posts-grid {
+    --vd-posts-cols: var(--vd-posts-cols-desktop, 3);
+}
+
+/* Grid Column Control */
+.vd-posts-grid.columns-1 { --vd-posts-cols: 1; }
+.vd-posts-grid.columns-2 { --vd-posts-cols: 2; }
+.vd-posts-grid.columns-3 { --vd-posts-cols: 3; }
+.vd-posts-grid.columns-4 { --vd-posts-cols: 4; }
+
+/* Post Card - Improved Design with Nested Grid Prevention */
+.vd-post-card {
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+    overflow: hidden;
+    display: flex !important;
+    flex-direction: column !important;
+    height: 100%;
+    transition: all 0.18s ease;
+    position: relative;
+    min-width: 0; /* Prevent flex item overflow */
+    width: 100%;
+    /* Prevent any nested grid/column structures */
+    grid-template-columns: unset !important;
+    grid-template-rows: unset !important;
+    grid-auto-columns: unset !important;
+    grid-auto-rows: unset !important;
+    columns: unset !important;
+    column-count: unset !important;
+}
+
+/* Ensure all children of .vd-posts-grid are post cards only */
+.vd-posts-grid > * {
+    /* Remove any display grid or flex from direct children */
+    display: flex !important;
+    flex-direction: column !important;
+    grid-template-columns: unset !important;
+    columns: unset !important;
+}
+
+/* Override any wrapper elements that might create nested grids */
+.vd-posts-grid .post,
+.vd-posts-grid .post-item,
+.vd-posts-grid .grid-item,
+.vd-posts-grid .column,
+.vd-posts-grid .col,
+.vd-posts-grid [class*="col-"],
+.vd-posts-grid [class*="grid-"],
+.vd-posts-grid .vc_column,
+.vd-posts-grid .vc_row,
+.vd-posts-grid .wpb_column,
+.vd-posts-grid .elementor-column,
+.vd-posts-grid .elementor-widget,
+.vd-posts-grid .elementor-element,
+.vd-posts-grid > div:not(.vd-post-card):not(.vd-load-more-wrapper):not(.vd-no-results) {
+    display: contents !important; /* Make wrapper transparent */
+}
+
+/* High-priority CSS Grid enforcements */
+.vd-home-posts .vd-posts-grid {
+    display: grid !important;
+    grid-template-columns: repeat(var(--vd-posts-cols, 3), minmax(0, 1fr)) !important;
+    gap: 24px !important;
+    /* Reset any inherited styles */
+    flex: unset !important;
+    flex-direction: unset !important;
+    flex-wrap: unset !important;
+    float: none !important;
+    width: 100% !important;
+    margin: 0 auto !important;
+    /* Prevent grid auto-flow issues */
+    grid-auto-flow: row !important;
+    grid-auto-columns: unset !important;
+    grid-auto-rows: auto !important;
+}
+
+/* Ensure direct children are cards only */
+.vd-home-posts .vd-posts-grid > .vd-post-card {
+    display: flex !important;
+    flex-direction: column !important;
+    width: auto !important;
+    float: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    /* Prevent spanning full width */
+    grid-column: auto !important;
+    grid-row: auto !important;
+    grid-column-start: auto !important;
+    grid-column-end: auto !important;
+    grid-row-start: auto !important;
+    grid-row-end: auto !important;
+}
+
+/* High-priority override for ALL children of posts grid */
+.vd-home-posts .vd-posts-grid > * {
+    /* Prevent full-width spanning */
+    grid-column: auto !important;
+    grid-row: auto !important;
+    grid-column-start: auto !important;
+    grid-column-end: auto !important;
+    grid-area: auto !important;
+    /* Reset any width overrides */
+    width: auto !important;
+    max-width: none !important;
+    min-width: 0 !important;
+    flex: none !important;
+}
+
+/* Remove any CSS columns or grids from theme */
+.vd-home-posts .vd-posts-grid,
+.vd-home-posts .vd-posts-grid * {
+    column-count: unset !important;
+    column-gap: unset !important;
+    column-width: unset !important;
+    columns: unset !important;
+}
+
+/* Ultimate Grid Layout Enforcement - Maximum Specificity */
+body .vd-home-posts .vd-posts-grid.vd-posts-grid {
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    grid-template-rows: none !important;
+    gap: 24px !important;
+    grid-auto-flow: row !important;
+    align-items: start !important;
+    justify-items: stretch !important;
+}
+
+/* Desktop explicit column count - 3 columns default */
+body .vd-home-posts .vd-posts-grid.columns-3 {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+}
+
+body .vd-home-posts .vd-posts-grid.columns-2 {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+}
+
+/* Override any theme CSS that might cause single column */
+body .vd-home-posts .vd-posts-grid > article,
+body .vd-home-posts .vd-posts-grid > .vd-post-card {
+    grid-column: span 1 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    flex: none !important;
+    display: flex !important;
+    flex-direction: column !important;
+}
+
+/* Handle Load More and No Results elements that should span full width */
+.vd-posts-grid > .vd-load-more-wrapper,
+.vd-posts-grid > .vd-no-results {
+    grid-column: 1 / -1 !important; /* Span all columns */
+    width: 100% !important;
+    margin-top: 20px !important;
+    text-align: center !important;
+}
+
+
+/* Nuclear option - override absolutely everything that could interfere */
+html body .vd-home-posts .vd-posts-grid.vd-posts-grid.vd-posts-grid {
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    grid-auto-flow: row !important;
+    grid-auto-columns: unset !important;
+    grid-auto-rows: auto !important;
+    grid-template-rows: none !important;
+    gap: 24px !important;
+    align-items: start !important;
+    justify-items: stretch !important;
+    width: 100% !important;
+    margin: 0 auto !important;
+    /* Override any display or layout properties */
+    flex: none !important;
+    flex-direction: unset !important;
+    flex-wrap: unset !important;
+    float: none !important;
+    position: relative !important;
+    transform: none !important;
+}
+
+/* Responsive grid columns with nuclear specificity */
+@media (min-width: 768px) and (max-width: 1023px) {
+    html body .vd-home-posts .vd-posts-grid.vd-posts-grid.vd-posts-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    }
+}
+
+@media (max-width: 767px) {
+    html body .vd-home-posts .vd-posts-grid.vd-posts-grid.vd-posts-grid {
+        grid-template-columns: repeat(1, minmax(0, 1fr)) !important;
+        gap: 20px !important;
+    }
+}
+
+.vd-post-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+}
+
+/* Post Thumbnail - 16:9 Aspect Ratio */
+.vd-post-thumb {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16/9;
+    overflow: hidden;
+    background: #f8f8f8;
+    border-radius: 16px 16px 0 0;
+}
+
+.vd-post-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.18s ease;
+    display: block;
+}
+
+.vd-post-card:hover .vd-post-thumb img {
+    transform: scale(1.03);
+}
+
+/* Placeholder for posts without images */
+.vd-post-thumb.no-image {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+.vd-post-thumb.no-image::before {
+    content: '\f03e';
+    font-family: 'Font Awesome 5 Free', dashicons;
+    font-size: 3rem;
+    color: #adb5bd;
+    font-weight: 900;
+}
+
+/* Post Body */
+.vd-post-body {
+    padding: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    flex: 1;
+    min-height: 0; /* Allow flex item to shrink */
+}
+
+/* Post Meta */
+.vd-post-meta {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 12px;
+    color: #6c757d;
+    margin-bottom: 4px;
+}
+
+.vd-post-date {
+    font-weight: 500;
+}
+
+.vd-post-categories {
+    display: flex;
+    gap: 6px;
+}
+
+.vd-post-categories a {
+    color: #007cba;
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.15s ease;
+}
+
+.vd-post-categories a:hover {
+    color: #005a87;
+    text-decoration: underline;
+}
+
+/* Post Title with Line Clamp */
+.vd-post-title {
+    font-size: 17px;
+    font-weight: 700;
+    line-height: 1.4;
+    margin: 0;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    word-break: break-word;
+    hyphens: auto;
+    min-height: calc(2 * 1.4em); /* Reserve space for 2 lines */
+}
+
+.vd-post-title a {
+    color: #212529;
+    text-decoration: none;
+    transition: color 0.15s ease;
+}
+
+.vd-post-title a:hover {
+    color: #007cba;
+}
+
+/* Post Excerpt with Line Clamp */
+.vd-post-excerpt {
+    font-size: 14px;
+    line-height: 1.5;
+    color: #6c757d;
+    margin: 6px 0;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    word-break: break-word;
+    hyphens: auto;
+    min-height: calc(2 * 1.5em); /* Reserve space for 2 lines */
+    flex: 1;
+}
+
+/* Post Footer */
+.vd-post-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: auto;
+    padding-top: 8px;
+}
+
+.vd-read-more {
+    color: #007cba;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 13px;
+    padding: 8px 16px;
+    border-radius: 20px;
+    background: rgba(0, 124, 186, 0.1);
+    transition: all 0.18s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+    align-self: flex-start;
+}
+
+.vd-read-more:hover {
+    background: #007cba;
+    color: #fff;
+    transform: translateX(2px);
+}
+
+.vd-read-more::after {
+    content: '→';
+    font-size: 12px;
+    transition: transform 0.18s ease;
+}
+
+.vd-read-more:hover::after {
+    transform: translateX(2px);
+}
+
+.vd-post-author {
+    font-size: 11px;
+    color: #868e96;
+}
+
+.vd-post-author a {
+    color: inherit;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.vd-post-author a:hover {
+    color: #007cba;
+}
+
+/* ==========================================================================
+   Loading States
+   ========================================================================== */
+
+.vd-loading {
+    position: relative;
+    pointer-events: none;
+    opacity: 0.7;
+}
+
+.vd-loading::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.8);
+    z-index: 99;
+}
+
+.vd-loading::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 40px;
+    height: 40px;
+    border: 3px solid #f3f3f3;
+    border-top: 3px solid #007cba;
+    border-radius: 50%;
+    animation: vd-spin 1s linear infinite;
+    z-index: 100;
+}
+
+@keyframes vd-spin {
+    0% { transform: translate(-50%, -50%) rotate(0deg); }
+    100% { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+/* Skeleton loading */
+.vd-skeleton {
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: vd-skeleton-loading 1.5s infinite;
+    display: block;
+}
+
+.vd-skeleton-card {
+    background: #fff;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 15px rgba(0, 0, 0, 0.05);
+    height: 380px;
+}
+
+/* Posts Skeleton Loading */
+.vd-skeleton-post-card {
+    background: #fff;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+    height: 400px;
+    display: flex;
+    flex-direction: column;
+}
+
+.vd-skeleton-post-thumb {
+    width: 100%;
+    aspect-ratio: 16/9;
+    background: linear-gradient(90deg, #f0f0f0 25%, #e6e6e6 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: vd-skeleton-loading 1.8s infinite;
+}
+
+.vd-skeleton-post-body {
+    padding: 16px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.vd-skeleton-post-meta {
+    height: 12px;
+    width: 50%;
+    border-radius: 6px;
+}
+
+.vd-skeleton-post-title {
+    height: 18px;
+    margin: 8px 0;
+    border-radius: 4px;
+}
+
+.vd-skeleton-post-title:nth-child(2) { width: 90%; }
+.vd-skeleton-post-title:nth-child(3) { width: 70%; }
+
+.vd-skeleton-post-excerpt {
+    height: 14px;
+    margin: 4px 0;
+    border-radius: 4px;
+}
+
+.vd-skeleton-post-excerpt:nth-child(1) { width: 95%; }
+.vd-skeleton-post-excerpt:nth-child(2) { width: 75%; }
+
+.vd-skeleton-post-footer {
+    height: 24px;
+    width: 100px;
+    margin-top: auto;
+    border-radius: 12px;
+}
+
+.vd-skeleton-image {
+    width: 100%;
+    height: 250px;
+    background: linear-gradient(90deg, #f0f0f0 25%, #e6e6e6 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: vd-skeleton-loading 1.8s infinite;
+}
+
+.vd-skeleton-content {
+    padding: 20px;
+}
+
+.vd-skeleton-title {
+    height: 20px;
+    margin-bottom: 10px;
+    width: 80%;
+    border-radius: 4px;
+}
+
+.vd-skeleton-text {
+    height: 16px;
+    margin-bottom: 8px;
+    border-radius: 4px;
+}
+
+.vd-skeleton-text:nth-child(2) { width: 90%; }
+.vd-skeleton-text:nth-child(3) { width: 60%; }
+
+.vd-skeleton-button {
+    height: 40px;
+    margin-top: 15px;
+    border-radius: 6px;
+}
+
+@keyframes vd-skeleton-loading {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+/* Processing state */
+.vd-processing {
+    opacity: 0.6;
+    pointer-events: none;
+    position: relative;
+}
+
+.vd-processing::after {
+    content: '';
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 12px;
+    height: 12px;
+    border: 2px solid #ccc;
+    border-top: 2px solid #007cba;
+    border-radius: 50%;
+    animation: vd-spin 0.8s linear infinite;
+}
+
+/* ==========================================================================
+   Notices & Messages
+   ========================================================================== */
+
+.vd-no-results {
+    text-align: center;
+    padding: 60px 20px;
+    color: #666;
+    font-size: 16px;
+}
+
+.vd-notice {
+    background: #fff3cd;
+    border: 1px solid #ffeaa7;
+    color: #856404;
+    padding: 15px;
+    border-radius: 5px;
+    margin: 20px 0;
+    text-align: center;
+}
+
+.vd-notice.vd-error {
+    background: #f8d7da;
+    border-color: #f5c6cb;
+    color: #721c24;
+}
+
+/* ==========================================================================
+   Load More Button
+   ========================================================================== */
+
+.vd-load-more-wrapper {
+    text-align: center;
+    margin-top: 40px;
+    padding-top: 30px;
+    border-top: 1px solid #eee;
+}
+
+.vd-load-more-btn {
+    background: #007cba;
+    color: #fff;
+    border: none;
+    padding: 15px 40px;
+    border-radius: 30px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.vd-load-more-btn:hover {
+    background: #005a87;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0, 124, 186, 0.3);
+}
+
+.vd-load-more-btn:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+/* ==========================================================================
+   Responsive Design
+   ========================================================================== */
+
+/* Large screens */
+@media (min-width: 1400px) {
+    .vd-home-section-title {
+        font-size: 36px;
+    }
+}
+
+/* Medium-Large screens */
+@media (max-width: 1199px) {
+    .vd-container {
+        max-width: 100%;
+    }
+    
+    .vd-home-products ul.products.columns-4 > li {
+        width: 33.333%;
+    }
+}
+
+/* Tablet Layout (768px - 1023px) */
+@media (min-width: 768px) and (max-width: 1023px) {
+    /* Posts: Keep desktop layout but change to vertical stack */
+    .vd-home-posts .vd-row {
+        flex-direction: column;
+    }
+    
+    .vd-home-posts .vd-sidebar {
+        flex: 0 0 auto;
+        max-width: 100%;
+        margin-bottom: 24px;
+        position: static;
+    }
+    
+    .vd-home-posts .vd-main {
+        flex: 1 1 100%;
+        max-width: 100%;
+    }
+    
+    .vd-home-posts .vd-filter-toggle {
+        display: none; /* Keep sidebar visible on tablet */
+    }
+    
+    /* Posts Grid Responsive - Tablet (2 columns) */
+    .vd-posts-grid {
+        --vd-posts-cols: var(--vd-posts-cols-tablet, 2) !important;
+        grid-template-columns: repeat(var(--vd-posts-cols-tablet, 2), minmax(0, 1fr)) !important;
+    }
+    
+    /* Maximum specificity tablet override */
+    body .vd-home-posts .vd-posts-grid.vd-posts-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    }
+    
+    /* Products: Mobile behavior for tablet */
+    .vd-home-products .vd-row {
+        flex-direction: column;
+    }
+    
+    .vd-home-products .vd-sidebar {
+        display: none;
+    }
+    
+    .vd-home-products .vd-main {
+        flex: 1 1 100%;
+        max-width: 100%;
+    }
+    
+    .vd-home-products .vd-filter-toggle {
+        display: flex;
+    }
+    
+    .vd-home-products ul.products.columns-4 > li,
+    .vd-home-products ul.products.columns-3 > li {
+        width: 50%;
+    }
+}
+
+/* Mobile Layout (< 768px) */
+@media (max-width: 767px) {
+    .vd-row {
+        flex-direction: column;
+    }
+    
+    .vd-sidebar {
+        display: none;
+    }
+    
+    .vd-main {
+        flex: 1 1 100% !important;
+        max-width: 100% !important;
+        width: 100% !important;
+    }
+    
+    /* Override Posts-specific width on mobile */
+    .vd-home-posts .vd-main {
+        flex: 1 1 100% !important;
+        max-width: 100% !important;
+        width: 100% !important;
+    }
+    
+    /* Ensure products section main also has correct width on mobile */
+    .vd-home-products .vd-main {
+        flex: 1 1 100% !important;
+        max-width: 100% !important;
+        width: 100% !important;
+    }
+    
+    .vd-filter-toggle {
+        display: flex;
+    }
+    
+    /* Products grid on mobile - Enhanced 2 column layout */
+    .vd-home-products ul.products {
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        display: flex !important;
+        flex-wrap: wrap !important;
+        gap: 10px !important;
+    }
+    
+    /* Force 2 columns on mobile with higher specificity */
+    body .vd-home-products ul.products li,
+    body .vd-home-products ul.products li.product,
+    body .vd-home-products ul.products li.product-warp-item,
+    .vd-home-products ul.products.columns-1 > li,
+    .vd-home-products ul.products.columns-2 > li,
+    .vd-home-products ul.products.columns-3 > li,
+    .vd-home-products ul.products.columns-4 > li {
+        width: calc(50% - 5px) !important;
+        max-width: calc(50% - 5px) !important;
+        min-width: 0 !important;
+        flex: 0 0 calc(50% - 5px) !important;
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+    
+    /* Ensure product content takes full width */
+    .vd-home-products ul.products li .product {
+        width: 100% !important;
+        margin: 0 !important;
+    }
+    
+    /* Adjust product padding on mobile */
+    .vd-home-products ul.products li.product-warp-item {
+        padding: 0 !important;
+    }
+    
+    /* Prevent NASA theme from overriding */
+    body.mobile .vd-home-products ul.products li,
+    html body .vd-home-products ul.products li {
+        width: calc(50% - 5px) !important;
+        max-width: calc(50% - 5px) !important;
+    }
+    
+    /* Ensure product elements fit well in 2 columns */
+    .vd-home-products .product-inner {
+        padding: 10px !important;
+    }
+    
+    /* Ensure borders are visible on mobile */
+    .vd-home-products ul.products li.product-warp-item .product,
+    .vd-home-products ul.products li.product-warp-item .product-inner {
+        border: 1px solid #e0e0e0;
+        border-radius: 6px; /* Slightly smaller radius on mobile */
+    }
+    
+    .vd-home-products .product-img {
+        margin-bottom: 10px !important;
+    }
+    
+    .vd-home-products .info {
+        padding: 0 5px !important;
+    }
+    
+    .vd-home-products .info .name {
+        /* Remove all height constraints */
+        min-height: 0 !important;
+        height: auto !important;
+        max-height: none !important;
+        margin-bottom: 3px !important; /* Small gap to price */
+        padding: 0 !important;
+    }
+    
+    .vd-home-products .info .name a {
+        font-size: 13px !important;
+        line-height: 1.3 !important; /* 13px * 1.3 = 16.9px per line */
+        overflow: hidden !important;
+        display: -webkit-box !important;
+        -webkit-line-clamp: 2 !important;
+        -webkit-box-orient: vertical !important;
+        text-overflow: ellipsis !important;
+        /* Max 2 lines = 33.8px total height */
+        max-height: calc(2 * 1.3em) !important;
+    }
+    
+    .vd-home-products .price {
+        font-size: 14px !important;
+        margin: 5px 0 !important;
+    }
+    
+    /* Adjust buttons for mobile 2 column layout */
+    .vd-home-products .add_to_cart_button,
+    .vd-home-products .product-inner .btn-link {
+        padding: 8px 10px !important;
+        font-size: 12px !important;
+    }
+    
+    .vd-home-products .nasa-product-grid .btn-link i {
+        font-size: 14px !important;
+    }
+    
+    /* Wishlist and compare buttons */
+    .vd-home-products .btn-wishlist,
+    .vd-home-products .btn-compare {
+        width: 32px !important;
+        height: 32px !important;
+        font-size: 14px !important;
+    }
+    
+    /* Cart icon alignment handled by global CSS above */
+}
+
+/* Mobile adjustments for both sections */
+@media (max-width: 767px) {
+    .vd-home-section {
+        margin: 30px 0;
+        padding: 20px 0;
+    }
+    
+    .vd-home-section-title {
+        font-size: 28px;
+        margin-bottom: 25px;
+    }
+    
+    .vd-filter-panel {
+        max-width: 85%;
+    }
+    
+    /* Posts: Show filter toggle on mobile (<768px) */
+    .vd-home-posts .vd-filter-toggle {
+        display: flex !important;
+    }
+    
+    /* Hide sidebar on mobile for Posts */
+    .vd-home-posts .vd-sidebar {
+        display: none;
+    }
+    
+    /* Posts Grid Mobile (1 column) */
+    .vd-posts-grid {
+        --vd-posts-cols: var(--vd-posts-cols-mobile, 1) !important;
+        grid-template-columns: repeat(var(--vd-posts-cols-mobile, 1), minmax(0, 1fr)) !important;
+        gap: 20px !important;
+    }
+    
+    /* Maximum specificity mobile override */
+    body .vd-home-posts .vd-posts-grid.vd-posts-grid {
+        grid-template-columns: repeat(1, minmax(0, 1fr)) !important;
+        gap: 20px !important;
+    }
+    
+    .vd-post-card {
+        border-radius: 12px;
+    }
+    
+    .vd-post-body {
+        padding: 14px;
+    }
+}
+
+/* Mobile */
+@media (max-width: 575px) {
+    .vd-container {
+        padding: 0 12px;
+    }
+    
+    .vd-home-section-title {
+        font-size: 24px;
+        margin-bottom: 20px;
+    }
+    
+    .vd-filter-toggle {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .vd-filter-panel {
+        max-width: 100%;
+    }
+    
+    /* 2 columns on mobile - handled by main mobile CSS above */
+    
+    /* Posts Mobile - Ensure good readability */
+    .vd-posts-grid {
+        gap: 20px;
+    }
+    
+    .vd-post-card {
+        border-radius: 12px;
+        min-width: 280px; /* Ensure minimum width for readability */
+    }
+    
+    .vd-post-body {
+        padding: 16px;
+        gap: 8px;
+    }
+    
+    .vd-post-title {
+        font-size: 16px;
+        line-height: 1.3;
+        min-height: calc(2 * 1.3em);
+    }
+    
+    .vd-post-excerpt {
+        font-size: 14px;
+        line-height: 1.4;
+        min-height: calc(2 * 1.4em);
+    }
+    
+    .vd-read-more {
+        font-size: 14px;
+        padding: 10px 18px;
+    }
+}
+
+/* Extra small mobile */
+@media (max-width: 480px) {
+    /* Keep 2 columns even on very small screens */
+    /* Commented out to maintain 2 column layout
+    .vd-home-products ul.products li {
+        width: 100% !important;
+    }
+    */
+    
+    .vd-post-item {
+        width: 100%;
+    }
+}
+
+/* ==========================================================================
+   Utility Classes
+   ========================================================================== */
+
+.vd-hide {
+    display: none !important;
+}
+
+.vd-show {
+    display: block !important;
+}
+
+.vd-text-center {
+    text-align: center;
+}
+
+.vd-mt-20 {
+    margin-top: 20px;
+}
+
+.vd-mb-20 {
+    margin-bottom: 20px;
+}
+
+/* ==========================================================================
+   Product Card Borders - Added 2025-08-20 - Fixed Layout Issues
+   ========================================================================== */
+
+/* Add border to product cards */
+.vd-home-products ul.products li.product-warp-item .product-item,
+.vd-home-products ul.products li.product-warp-item .product,
+.vd-home-products ul.products li.product .product-inner,
+.vd-home-products ul.products li .type-product {
+    border: 1px solid #e0e0e0 !important;
+    border-radius: 8px !important;
+    background-color: #fff !important;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease !important;
+    overflow: hidden !important;
+    box-sizing: border-box !important;
+}
+
+/* Hover effect */
+.vd-home-products ul.products li.product-warp-item:hover .product-item,
+.vd-home-products ul.products li.product-warp-item:hover .product,
+.vd-home-products ul.products li.product:hover .product-inner,
+.vd-home-products ul.products li:hover .type-product {
+    border-color: #d0d0d0 !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08) !important;
+}
+
+/* Spacing adjustments - keep original flexbox layout */
+.vd-home-products ul.products {
+    margin: 0 -5px !important; /* Negative margin for spacing */
+}
+
+.vd-home-products ul.products li.product-warp-item,
+.vd-home-products ul.products li.product {
+    padding: 5px !important; /* Small padding for spacing between items */
+}
+
+/* Mobile adjustments */
+@media (max-width: 767px) {
+    /* Keep 2 columns on mobile as per original design */
+    .vd-home-products ul.products li.product-warp-item,
+    .vd-home-products ul.products li.product {
+        width: 50% !important;
+        padding: 5px !important;
+    }
+    
+    /* Smaller border radius on mobile */
+    .vd-home-products ul.products li.product-warp-item .product-item,
+    .vd-home-products ul.products li.product-warp-item .product,
+    .vd-home-products ul.products li.product .product-inner,
+    .vd-home-products ul.products li .type-product {
+        border-radius: 6px !important;
+    }
+    
+    /* Lighter shadow on mobile */
+    .vd-home-products ul.products li.product-warp-item:hover .product-item,
+    .vd-home-products ul.products li.product-warp-item:hover .product,
+    .vd-home-products ul.products li.product:hover .product-inner,
+    .vd-home-products ul.products li:hover .type-product {
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06) !important;
+    }
+}
+
+/* Desktop - ensure 4 columns */
+@media (min-width: 768px) {
+    .vd-home-products ul.products li.product-warp-item,
+    .vd-home-products ul.products li.product {
+        width: 25% !important; /* 4 columns */
+    }
+}
+
+/* Tablet - 3 columns */
+@media (min-width: 768px) and (max-width: 991px) {
+    .vd-home-products ul.products li.product-warp-item,
+    .vd-home-products ul.products li.product {
+        width: 33.333% !important; /* 3 columns */
+    }
+}
+
+/* ==========================================================================
+   Product Card Spacing Adjustments - Added 2025-08-20
+   ========================================================================== */
+
+/* Desktop: Add padding to product info wrapper for spacing from border */
+@media (min-width: 768px) {
+    .vd-home-products .product-info-wrap.info,
+    .vd-home-products ul.products li.product-warp-item .product-info-wrap.info,
+    .vd-home-products ul.products li.product-warp-item:first-child .product-info-wrap.info {
+        padding: 15px 15px 20px 15px !important; /* Balanced desktop padding */
+    }
+    
+    /* Product title spacing adjustments - REMOVED OLD STYLES */
+    
+    /* Specific for NASA theme one-line class */
+    .vd-home-products a.name.nasa-show-one-line {
+        line-height: 1.2 !important;
+        height: auto !important;
+        min-height: unset !important;
+        max-height: none !important;
+    }
+    
+    /* Ensure parent container doesn't force full width */
+    .vd-home-products .product-info-wrap.info .name-wrap {
+        text-align: left !important;
+    }
+    
+    
+    /* Price positioning - REMOVED OLD STYLES - Using new optimization above */
+    
+    /* If there are buttons or other elements after price, add spacing */
+    .vd-home-products .product-info-wrap.info > *:last-child {
+        margin-bottom: 0 !important; /* Reset last element margin */
+    }
+}
+
+/* Tablet specific adjustments */
+@media (min-width: 768px) and (max-width: 991px) {
+    .vd-home-products .product-info-wrap.info {
+        padding: 12px 12px 16px 12px !important;
+    }
+}
+
+/* ==========================================================================
+   Product Title Background Fix - Added 2025-08-20
+   ========================================================================== */
+
+/* Additional specificity for background fix - properties already defined in desktop section above */
+.vd-home-products a.name.woocommerce-loop-product__title {
+    width: auto !important;
+    position: relative !important;
+}
+
+/* If title has background styling from theme */
+.vd-home-products a.name.woocommerce-loop-product__title[style*="background"],
+.vd-home-products a.name.woocommerce-loop-product__title.has-background {
+    padding: 2px 6px !important; /* Small padding for background */
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+}
+
+/* Ensure title container allows inline-block behavior */
+.vd-home-products .product-info-wrap h3,
+.vd-home-products .product-info-wrap .name-wrap,
+.vd-home-products .product-title {
+    text-align: left !important;
+    display: block !important;
+}
+
+
+/* Mobile adjustments */
+@media (max-width: 767px) {
+    .vd-home-products a.name.woocommerce-loop-product__title {
+        display: inline-block !important;
+        width: auto !important;
+        line-height: 1.2 !important;
+        height: auto !important;
+        font-size: 14px !important; /* Slightly smaller on mobile */
+    }
+    
+    .vd-home-products a.name.nasa-show-one-line {
+        line-height: 1.2 !important;
+        height: auto !important;
+    }
+}
+
+/* Sticky sidebar on desktop */
+@supports (position: sticky) {
+    .vd-sidebar.vd-sticky {
+        position: sticky;
+        top: 20px;
+    }
+}
+
+/* ==========================================================================
+   Product Card Styling Updates - August 21, 2025
+   ========================================================================== */
+
+/* Bold product titles */
+.vd-home-products a.name.woocommerce-loop-product__title,
+.vd-home-products .product-title a,
+.vd-home-products h3.name a,
+.vd-home-products h2.woocommerce-loop-product__title {
+    font-weight: 700 !important; /* Bold font */
+}
+
+/* ==========================================================================
+   Product Title and Price Spacing Optimization - Fixed 2025-08-22
+   ========================================================================== */
+
+/* Reset all margins/paddings on product title */
+.vd-home-products a.name.woocommerce-loop-product__title,
+.vd-home-products a.name.nasa-show-one-line,
+.vd-home-products .info .name a {
+    margin-bottom: 0 !important;
+    padding-bottom: 0 !important;
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+}
+
+/* Optimal spacing between title and price */
+.vd-home-products .info .name-wrap,
+.vd-home-products .info > .name {
+    margin-bottom: 5px !important; /* Consistent 5px gap */
+    padding-bottom: 0 !important;
+    display: block !important;
+}
+
+/* Price wrapper optimization */
+.vd-home-products .info .price-wrap {
+    margin-top: 0 !important;
+    margin-bottom: 10px !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+    min-height: auto !important; /* Remove fixed height */
+}
+
+/* Highlight product prices */
+.vd-home-products .price,
+.vd-home-products .price-wrap .price,
+.vd-home-products span.price {
+    margin-top: 0 !important; /* No extra top margin */
+    margin-bottom: 0 !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+    display: block !important; /* Block để giá hiển thị trên 1 dòng */
+    white-space: nowrap !important; /* Không xuống dòng */
+}
+
+/* Regular price (no sale) */
+.vd-home-products .price > .woocommerce-Price-amount:only-child,
+.vd-home-products .price:not(:has(del)):not(:has(ins)) .woocommerce-Price-amount {
+    color: #ff0000 !important; /* Màu đỏ cho giá thường */
+    font-size: 16px !important; /* Giảm 2px từ 18px */
+    font-weight: 600 !important;
+}
+
+/* Original price (crossed out) - Giá niêm yết */
+.vd-home-products .price del {
+    color: #666 !important; /* Màu xám đậm hơn */
+    font-size: 13px !important; /* Nhỏ hơn */
+    font-weight: normal !important;
+    text-decoration: line-through !important;
+    margin-right: 8px !important;
+    opacity: 0.7 !important; /* Làm mờ một chút */
+}
+
+.vd-home-products .price del .woocommerce-Price-amount {
+    color: inherit !important;
+    font-size: inherit !important;
+    font-weight: inherit !important;
+}
+
+/* Sale price - Giá ưu đãi */
+.vd-home-products .price ins {
+    text-decoration: none !important;
+    background-color: #ffeeee !important; /* Nền hồng nhạt */
+    padding: 2px 5px !important;
+    border-radius: 3px !important;
+}
+
+.vd-home-products .price ins .woocommerce-Price-amount {
+    color: #ff0000 !important; /* Màu đỏ cho giá sale */
+    font-size: 16px !important; /* Giảm 2px từ 18px */
+    font-weight: 700 !important; /* Đậm hơn */
+}
+
+/* Optional: Add "SALE" text before sale price */
+.vd-home-products .price ins::before {
+    content: "SALE: " !important;
+    font-size: 11px !important;
+    font-weight: 600 !important;
+    color: #ff0000 !important;
+    text-transform: uppercase !important;
+}
+
+/* Hide star ratings in product cards */
+.vd-home-products .star-rating,
+.vd-home-products .rating-wrap,
+.vd-home-products .nasa-product-review,
+.vd-home-products .woocommerce-product-rating,
+.vd-home-products .product-rating,
+.vd-home-products [class*="star-rating"],
+.vd-home-products [class*="rating"] {
+    display: none !important;
+    visibility: hidden !important;
+    height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+/* Mobile adjustments */
+@media (max-width: 767px) {
+    /* Smaller prices on mobile */
+    .vd-home-products .price > .woocommerce-Price-amount:only-child,
+    .vd-home-products .price:not(:has(del)):not(:has(ins)) .woocommerce-Price-amount,
+    .vd-home-products .price ins .woocommerce-Price-amount {
+        font-size: 14px !important; /* Giảm 2px từ 16px */
+    }
+    
+    .vd-home-products .price del {
+        font-size: 12px !important;
+    }
+    
+    .vd-home-products .price del .woocommerce-Price-amount {
+        font-size: inherit !important;
+    }
+    
+    /* Smaller SALE text on mobile */
+    .vd-home-products .price ins::before {
+        font-size: 10px !important;
+    }
+}
+
+/* ==========================================================================
+   Pagination Styles
+   ========================================================================== */
+
+.vd-pagination-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 40px;
+    padding-top: 30px;
+    border-top: 1px solid #eee;
+    position: relative;
+}
+
+.vd-pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    flex-wrap: wrap;
+}
+
+
+/* Loading indicator */
+.vd-pagination-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 16px;
+    padding: 12px;
+    background: rgba(0, 124, 186, 0.1);
+    border-radius: 8px;
+    color: #007cba;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.vd-spinner {
+    width: 16px;
+    height: 16px;
+    border: 2px solid transparent;
+    border-top: 2px solid #007cba;
+    border-radius: 50%;
+    animation: vd-spin 1s linear infinite;
+}
+
+
+/* ==========================================================================
+   Elessi Theme Compatible Pagination Styles
+   ========================================================================== */
+
+/* Override old pagination styles with Elessi theme styles */
+.vd-pagination-wrapper.page-numbers-wrap {
+    display: block !important;
+    text-align: center;
+    margin-top: 30px;
+    padding-top: 30px;
+    border-top: none;
+}
+
+.vd-pagination-wrapper .page-numbers {
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    gap: 0 !important;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    flex-wrap: wrap;
+}
+
+.vd-pagination-wrapper .page-numbers li {
+    margin: 0 5px !important;
+    padding: 0 !important;
+    display: inline-block !important;
+}
+
+/* Regular page numbers - NO BORDER */
+.vd-pagination-wrapper .page-numbers .page-numbers {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    min-width: 30px !important;
+    height: 30px !important;
+    line-height: 1 !important; /* Reset line-height for flexbox centering */
+    padding: 0 5px !important;
+    margin: 0 !important;
+    text-align: center;
+    text-decoration: none !important;
+    color: #333 !important; /* Black color instead of gray */
+    background: transparent !important;
+    border: none !important; /* No border for regular numbers */
+    border-radius: 50% !important; /* Circle shape */
+    font-size: 14px !important;
+    font-weight: normal !important;
+    transition: all 0.3s ease !important;
+    cursor: pointer;
+    position: relative;
+}
+
+/* Hover state - still no border, just color change */
+.vd-pagination-wrapper .page-numbers .page-numbers:hover {
+    color: #000 !important; /* Darker black on hover */
+    background: transparent !important;
+    border: none !important;
+    transform: none !important;
+    box-shadow: none !important;
+}
+
+/* Current page - SOFT RED BACKGROUND AND BORDER */
+.vd-pagination-wrapper .page-numbers .current {
+    color: #fff !important; /* White text for contrast */
+    background: #ff6b6b !important; /* Soft red background */
+    border: 2px solid #ff6b6b !important; /* Matching soft red border */
+    cursor: default !important;
+    pointer-events: none;
+    font-weight: 600 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    line-height: 1 !important;
+}
+
+/* Previous/Next arrows */
+.vd-pagination-wrapper .page-numbers .prev.page-numbers,
+.vd-pagination-wrapper .page-numbers .next.page-numbers {
+    width: 30px !important;
+    height: 30px !important;
+    padding: 0 !important;
+    font-size: 18px !important;
+    color: #333 !important; /* Black arrows to match numbers */
+    border: none !important;
+    background: transparent !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    line-height: 1 !important;
+}
+
+.vd-pagination-wrapper .page-numbers .prev.page-numbers:hover,
+.vd-pagination-wrapper .page-numbers .next.page-numbers:hover {
+    color: #ff6b6b !important; /* Soft red on hover */
+}
+
+.vd-pagination-wrapper .page-numbers .prev.page-numbers .pe7-icon,
+.vd-pagination-wrapper .page-numbers .next.page-numbers .pe7-icon {
+    display: inline-block;
+    vertical-align: middle;
+    line-height: 30px;
+}
+
+/* Dots */
+.vd-pagination-wrapper .page-numbers .dots {
+    border: none !important;
+    background: transparent !important;
+    cursor: default !important;
+    color: #999 !important;
+    padding: 0 5px !important;
+}
+
+
+/* Mobile responsive */
+@media (max-width: 767px) {
+    .vd-pagination-wrapper .page-numbers .page-numbers {
+        min-width: 30px !important;
+        height: 30px !important;
+        line-height: 30px !important;
+        font-size: 12px !important;
+    }
+    
+    .vd-pagination-wrapper .page-numbers li {
+        margin: 0 1px !important;
+    }
+}
+
+/* ==========================================================================
+   Buy Now Button Styles
+   ========================================================================== */
+
+.vd-buy-now-button {
+    display: inline-block;
+    margin: 8px auto 0;
+    width: auto;
+    min-width: 100px;
+    max-width: 100%;
+    text-align: center;
+    background-color: #ff6600;
+    color: #ffffff !important;
+    padding: 7px 30px;
+    border-radius: 4px;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 14px; /* Default desktop size */
+    letter-spacing: 0.5px;
+    transition: all 0.3s ease;
+    border: none;
+    cursor: pointer;
+    text-decoration: none !important;
+    line-height: 1.2;
+    white-space: nowrap;
+}
+
+/* Simple products always have orange color */
+.vd-buy-now-button.vd-buy-now-simple {
+    background-color: #ff6600 !important;
+}
+
+/* Modern button design for cleaner look */
+.vd-buy-now-button {
+    position: relative;
+    z-index: 1;
+}
+
+/* Add subtle gradient for depth */
+.vd-buy-now-button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(180deg, rgba(255,255,255,0.1) 0%, rgba(0,0,0,0.1) 100%);
+    border-radius: inherit;
+    z-index: -1;
+    opacity: 0.5;
+}
+
+.vd-buy-now-button:hover {
+    background-color: #e55a00;
+    color: #ffffff !important;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(255, 102, 0, 0.3);
+}
+
+.vd-buy-now-button.vd-processing {
+    opacity: 0.7;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+.vd-buy-now-button.vd-processing:after {
+    content: '...';
+    animation: vd-loading 1s infinite;
+}
+
+@keyframes vd-loading {
+    0% { content: '.'; }
+    33% { content: '..'; }
+    66% { content: '...'; }
+}
+
+/* Variable product button style when not all variations selected */
+.vd-buy-now-button.vd-buy-now-variable[data-action="select-options"] {
+    background-color: #0084ff;
+}
+
+.vd-buy-now-button.vd-buy-now-variable[data-action="select-options"]:hover {
+    background-color: #0073e5;
+    box-shadow: 0 5px 15px rgba(0, 132, 255, 0.3);
+}
+
+/* Variable product button style when all variations selected (Buy Now mode) */
+.vd-buy-now-button.vd-buy-now-variable[data-action="buy-now"] {
+    background-color: #ff6600;
+}
+
+.vd-buy-now-button.vd-buy-now-variable[data-action="buy-now"]:hover {
+    background-color: #e55a00;
+    box-shadow: 0 5px 15px rgba(255, 102, 0, 0.3);
+}
+
+/* Adjust spacing when both Add to Cart and Buy Now buttons exist */
+.vd-home-section .product .button.product_type_simple + .vd-buy-now-button,
+.vd-home-section .product .button.add_to_cart_button + .vd-buy-now-button {
+    margin-top: 5px;
+}
+
+/* Center align button container */
+.vd-home-section .product .product-interactions,
+.vd-home-products .product-interactions {
+    text-align: center;
+}
+
+/* Ensure button stays centered */
+.vd-home-section .product .vd-buy-now-button,
+.vd-home-products .vd-buy-now-button {
+    display: inline-block;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* Position Buy Now button at bottom of product card */
+.vd-home-products .product,
+.vd-home-products .product-inner {
+    position: relative;
+    padding-bottom: 45px !important; /* Space for button */
+}
+
+.vd-home-products .vd-buy-now-button {
+    position: absolute;
+    bottom: 5px;
+    left: 50%;
+    transform: translateX(-50%);
+    margin: 0;
+}
+
+/* Remove any red borders/outlines from all states */
+.vd-buy-now-button,
+.vd-buy-now-button:hover,
+.vd-buy-now-button:focus,
+.vd-buy-now-button:active,
+.vd-buy-now-button:visited,
+.vd-home-section .vd-buy-now-button,
+.vd-home-section .button.vd-buy-now-button,
+.vd-home-products .vd-buy-now-button {
+    border: none !important;
+    outline: none !important;
+    box-shadow: none !important;
+    text-decoration: none !important;
+}
+
+/* Keep hover shadow effect but ensure it's not red */
+.vd-buy-now-button:hover {
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Responsive adjustments with synchronized font sizes */
+/* Desktop - 1200px and above */
+@media (min-width: 1200px) {
+    .vd-buy-now-button {
+        font-size: 14px;
+        padding: 7px 30px;
+    }
+}
+
+/* Tablet - 768px to 1199px */
+@media (min-width: 768px) and (max-width: 1199px) {
+    .vd-buy-now-button {
+        font-size: 13px;
+        padding: 7px 30px;
+    }
+}
+
+/* Mobile Landscape - 481px to 767px */
+@media (min-width: 481px) and (max-width: 767px) {
+    .vd-buy-now-button {
+        font-size: 12px;
+        padding: 7px 30px;
+        margin-top: 6px;
+    }
+}
+
+/* Mobile Portrait - 480px and below */
+@media (max-width: 480px) {
+    .vd-buy-now-button {
+        font-size: 12px !important; /* Minimum font size for mobile */
+        padding: 7px 30px;
+        letter-spacing: 0.3px;
+        margin-top: 5px;
+        border-radius: 3px;
+        min-width: 90px;
+    }
+}
+
+/* Small mobile devices (≤375px) - optimize for very small screens */
+@media (max-width: 375px) {
+    .vd-buy-now-button {
+        font-size: 12px !important;
+        padding: 7px 30px;
+        letter-spacing: 0.2px;
+        min-width: 85px;
+    }
+}
+
+/* Mobile button optimizations */
+@media (max-width: 767px) {
+    /* Make buttons more compact and clean on mobile */
+    .vd-buy-now-button {
+        font-weight: 500; /* Slightly lighter weight for cleaner look */
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1); /* Subtle shadow for depth */
+    }
+    
+    /* Adjust hover state for mobile */
+    .vd-buy-now-button:hover,
+    .vd-buy-now-button:active {
+        transform: none; /* Remove transform on mobile */
+        box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+    }
+    
+    /* Keep button centered on mobile */
+    .vd-home-products .vd-buy-now-button {
+        transform: translateX(-50%) !important;
+    }
+    
+    /* Variable product button - more subtle blue on mobile */
+    .vd-buy-now-button.vd-buy-now-variable[data-action="select-options"] {
+        background-color: #0073e5;
+    }
+    
+    /* Ensure consistent spacing between buttons */
+    .vd-home-section .product .button.product_type_simple + .vd-buy-now-button,
+    .vd-home-section .product .button.add_to_cart_button + .vd-buy-now-button {
+        margin-top: 5px;
+    }
+    
+    /* Adjust padding bottom for mobile */
+    .vd-home-products .product,
+    .vd-home-products .product-inner {
+        padding-bottom: 40px !important; /* Slightly less space on mobile */
+    }
+}
+
+/* ==========================================================================
+   Enhanced Mobile Filter Toggle
+   ========================================================================== */
+
+@media (max-width: 768px) {
+    .vd-filter-toggle {
+        display: inline-flex !important;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 4px;
+        background: transparent;
+        border: none;
+        border-radius: 0;
+        font-size: 13px;
+        font-weight: 500;
+        color: #333;
+        margin: 0 auto 15px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        width: auto;
+        max-width: 90%;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        position: relative;
+    }
+    
+    .vd-filter-toggle:hover,
+    .vd-filter-toggle:focus {
+        background: transparent;
+        color: #000;
+        outline: none;
+    }
+    
+    .vd-filter-toggle:hover .vd-filter-icon,
+    .vd-filter-toggle:hover .vd-filter-arrow {
+        color: #000;
+    }
+    
+    /* Subtle underline on hover */
+    .vd-filter-toggle::after {
+        content: '';
+        position: absolute;
+        bottom: 2px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 0;
+        height: 1px;
+        background: #666;
+        transition: width 0.2s ease;
+    }
+    
+    .vd-filter-toggle:hover::after {
+        width: 80%;
+    }
+    
+    /* Hide old icon span */
+    .vd-filter-toggle .icon {
+        display: none;
+    }
+    
+    /* Filter icon */
+    .vd-filter-icon {
+        width: 16px;
+        height: 16px;
+        flex-shrink: 0;
+        color: #666;
+    }
+    
+    /* Filter text container */
+    .vd-filter-toggle-text {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        flex: 1;
+        overflow: hidden;
+    }
+    
+    /* Category label */
+    .vd-filter-label {
+        color: #666;
+        font-weight: 400;
+        font-size: 13px;
+    }
+    
+    @media (max-width: 400px) {
+        .vd-filter-label {
+            display: none;
+        }
+    }
+    
+    /* Current category name */
+    .vd-filter-current {
+        font-weight: 500;
+        color: #222;
+        text-overflow: ellipsis;
+        overflow: hidden;
+        white-space: nowrap;
+        max-width: 150px;
+        font-size: 13px;
+    }
+    
+    /* Arrow indicator */
+    .vd-filter-arrow {
+        font-size: 12px;
+        color: #666;
+        margin-left: 4px;
+        transition: transform 0.2s ease;
+        font-weight: 400;
+    }
+    
+    .vd-filter-toggle[aria-expanded="true"] .vd-filter-arrow {
+        transform: rotate(180deg);
+    }
+    
+    /* Center the button */
+    .vd-main {
+        text-align: center;
+    }
+    
+    .vd-main .vd-products-grid,
+    .vd-main .vd-posts-grid {
+        text-align: left;
+    }
+}
+
+/* ==========================================================================
+   High Priority Overrides for Product Title/Price Spacing
+   ========================================================================== */
+
+/* Ensure consistent spacing across ALL devices and themes */
+body .vd-home-products .product-info-wrap.info a.name,
+body .vd-home-products .product-info-wrap.info a.name.woocommerce-loop-product__title,
+body .vd-home-products .product-info-wrap.info a.name.nasa-show-one-line,
+body .vd-home-products .info .name a,
+body .vd-home-products h3.name a,
+body .vd-home-products h2.name a {
+    margin: 0 0 5px 0 !important; /* Only 5px bottom margin */
+    padding: 0 !important;
+    display: block !important;
+    line-height: 1.3 !important;
+}
+
+/* Container optimization to prevent excessive height */
+body .vd-home-products .info .name,
+body .vd-home-products .product-info-wrap.info .name {
+    min-height: 0 !important;
+    height: auto !important;
+    padding: 0 !important;
+    margin: 0 0 5px 0 !important;
+}
+
+/* Price must be close to title */
+body .vd-home-products .product-info-wrap.info .price-wrap,
+body .vd-home-products .product-info-wrap.info .price,
+body .vd-home-products .product-info-wrap.info span.price {
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+}
+
+/* Mobile specific overrides */
+@media (max-width: 767px) {
+    body .vd-home-products .product-info-wrap.info a.name,
+    body .vd-home-products .product-info-wrap.info a.name.woocommerce-loop-product__title,
+    body .vd-home-products .product-info-wrap.info a.name.nasa-show-one-line {
+        margin-bottom: 3px !important; /* Even tighter on mobile */
+        font-size: 13px !important;
+        line-height: 1.2 !important;
+    }
+}
+
+/* ==========================================================================
+   Galaxy S20 Ultra & High DPI Mobile Optimization
+   ========================================================================== */
+
+/* Target high resolution mobile devices like Galaxy S20 Ultra */
+@media only screen and (max-width: 767px) and (-webkit-min-device-pixel-ratio: 2),
+       only screen and (max-width: 767px) and (min-resolution: 192dpi) {
+    
+    /* Optimize product title container */
+    body .vd-home-products .info .name,
+    body .vd-home-products .product-info-wrap.info .name {
+        display: block !important;
+        width: 100% !important;
+        min-height: 0 !important;
+        height: auto !important;
+        max-height: none !important;
+        padding: 0 !important;
+        margin: 0 0 3px 0 !important;
+        /* Remove any background that might add visual height */
+        background: transparent !important;
+    }
+    
+    /* Ensure link takes only needed height */
+    body .vd-home-products .info .name a,
+    body .vd-home-products a.name.woocommerce-loop-product__title,
+    body .vd-home-products a.name.nasa-show-one-line {
+        display: block !important;
+        font-size: 13px !important;
+        line-height: 1.3 !important; /* 16.9px per line */
+        padding: 0 !important;
+        margin: 0 !important;
+        /* Limit to 2 lines with proper calculation */
+        max-height: 2.6em !important; /* 2 lines * 1.3 line-height */
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+        /* Use -webkit-box for line clamping */
+        display: -webkit-box !important;
+        -webkit-line-clamp: 2 !important;
+        -webkit-box-orient: vertical !important;
+    }
+    
+    /* Ensure price is close to title */
+    body .vd-home-products .info .price-wrap,
+    body .vd-home-products .info .price {
+        margin-top: 0 !important;
+        padding-top: 0 !important;
+    }
+    
+    /* Remove any wrapper padding that adds space */
+    body .vd-home-products .product-info-wrap.info {
+        padding: 8px 8px 15px 8px !important; /* Mobile-optimized padding */
+    }
+}
+
+/* ==========================================================================
+   Buy Now Button Positioning - Updated 2025-08-25
+   ========================================================================== */
+
+/* Ensure buy now button is consistently 5px from bottom border */
+.vd-home-products .vd-buy-now-button,
+.vd-home-products .nasa-buy-now,
+.vd-home-products .product-interactions .vd-buy-now-button {
+    position: absolute !important;
+    bottom: 5px !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    margin: 0 !important;
+}
+
+/* Ensure product container has proper positioning context */
+.vd-home-products .product,
+.vd-home-products .product-inner {
+    position: relative !important;
+}
+
+/* Add padding to product info wrap to accommodate button */
+.vd-home-products .product-info-wrap.info {
+    padding-bottom: 20px !important; /* Balanced bottom space */
+}
+
+/* ==========================================================================
+   Product Info Box Height Optimization - Added 2025-08-25
+   ========================================================================== */
+
+/* Optimize content box height to fit content only */
+.vd-home-products .product-info-wrap.info {
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    overflow: visible !important;
+    display: block !important; /* Ensure block display for tight fit */
+}
+
+/* Balanced content wrapping with highest specificity */
+body .vd-home-section.vd-home-products .product-info-wrap.info {
+    padding: 10px 10px 20px 10px !important; /* Proportional padding */
+    height: auto !important;
+    min-height: 0 !important;
+}
+
+/* Balanced padding around content */
+.vd-home-products .product-info-wrap.info {
+    padding: 10px 10px 20px 10px !important; /* Proportional padding all around */
+}
+
+/* Desktop: Appropriate padding for larger screens */
+@media (min-width: 768px) {
+    .vd-home-products .product-info-wrap.info {
+        padding: 15px 15px 20px 15px !important; /* Better desktop proportions */
+    }
+}
+
+/* Ensure product name and price are properly spaced */
+.vd-home-products .product-info-wrap.info > a.name {
+    margin-bottom: 3px !important; /* Minimal gap to price */
+}
+
+.vd-home-products .product-info-wrap.info > span.price {
+    margin-top: 0 !important;
+    margin-bottom: 5px !important; /* Small gap to buttons */
+}
+
+/* Mobile-specific spacing optimizations */
+@media (max-width: 767px) {
+    .vd-home-products .product-info-wrap.info > a.name {
+        margin-bottom: 2px !important; /* Even tighter on mobile */
+        font-size: 12px !important; /* Slightly smaller font */
+        line-height: 1.2 !important;
+    }
+    
+    .vd-home-products .product-info-wrap.info > span.price {
+        margin-bottom: 3px !important;
+        font-size: 13px !important; /* Appropriate price size */
+    }
+}
+
+/* Remove any extra spacing from wrapper elements */
+.vd-home-products .product-info-wrap.info .name-wrap,
+.vd-home-products .product-info-wrap.info .price-wrap {
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+/* ==========================================================================
+   Print Styles
+   ========================================================================== */
+
+@media print {
+    .vd-filter-toggle,
+    .vd-filter-panel,
+    .vd-filter-overlay,
+    .vd-load-more-wrapper,
+    .vd-pagination-wrapper,
+    .vd-buy-now-button {
+        display: none !important;
+    }
+}
+
+/* ==========================================================================
+   Simple Category Tree Styles - Added 2025-08-24
+   ========================================================================== */
+
+/* Override old styles for simple tree */
+.vd-menu-section {
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    padding: 15px;
+    margin-bottom: 20px;
+    background: #fff;
+}
+
+.vd-menu-title {
+    font-size: 16px;
+    font-weight: 600;
+    margin: 0 0 12px 0;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #e0e0e0;
+    color: #333;
+}
+
+/* Simple sidebar menu styles */
+.vd-sidebar-menu {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    background: transparent;
+    border-radius: 0;
+    overflow: visible;
+    box-shadow: none;
+}
+
+.vd-sidebar-menu li {
+    margin: 0;
+    border-bottom: none;
+    position: relative;
+    transition: all 0.2s ease;
+}
+
+/* Tree structure lines */
+.vd-menu-item {
+    position: relative;
+}
+
+/* Vertical line for all items except last */
+.vd-submenu > .vd-menu-item:not(:last-child)::before {
+    content: '';
+    position: absolute;
+    left: 20px;
+    top: 0;
+    bottom: -100%;
+    width: 1px;
+    background: #ddd;
+    z-index: 0;
+}
+
+/* Horizontal line to connect to parent */
+.vd-submenu > .vd-menu-item::after {
+    content: '';
+    position: absolute;
+    left: 20px;
+    top: 16px;
+    width: 15px;
+    height: 1px;
+    background: #ddd;
+    z-index: 0;
+}
+
+/* Adjust line positions for different levels */
+.vd-menu-item.vd-level-2 > .vd-submenu > .vd-menu-item:not(:last-child)::before,
+.vd-menu-item.vd-level-2 > .vd-submenu > .vd-menu-item::after {
+    left: 40px;
+}
+
+.vd-menu-item.vd-level-2 > .vd-submenu > .vd-menu-item::after {
+    left: 40px;
+}
+
+/* Level 1 - Root categories */
+.vd-sidebar-menu > li > a {
+    display: block;
+    padding: 10px 12px 10px 30px;
+    text-decoration: none;
+    color: #1a1a1a;
+    font-weight: 500;
+    font-size: 15px;
+    transition: all 0.2s ease;
+    position: relative;
+    z-index: 1;
+    border-left: 3px solid transparent;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Remove old arrow */
+.vd-sidebar-menu a::after {
+    display: none;
+}
+
+/* Hover effects for all levels */
+.vd-sidebar-menu a:hover {
+    background-color: #f8f8f8;
+    color: #0073aa;
+}
+
+/* Active state - Level 1 */
+.vd-sidebar-menu > li > a.active {
+    background-color: #f0f8ff;
+    color: #0054a6;
+    font-weight: 700;
+    border-left-color: #0073aa;
+    border-left-width: 4px;
+}
+
+/* Active state - Level 2 */
+.vd-menu-item.vd-level-2 > a.active {
+    background-color: #f5fbff;
+    color: #0073aa;
+    font-weight: 600;
+    border-left-color: #4da6ff;
+    font-style: normal;
+}
+
+/* Active state - Level 3 */
+.vd-menu-item.vd-level-3 > a.active {
+    background-color: #fafcff;
+    color: #0073aa;
+    font-weight: 500;
+    font-style: normal;
+    border-left-color: #80bfff;
+}
+
+/* Hover on active items */
+.vd-sidebar-menu a.active:hover {
+    background-color: #e6f3ff;
+}
+
+/* Expand/Collapse Toggle [+]/[-] inline */
+.vd-expand-toggle,
+.vd-leaf-indicator {
+    display: inline-block;
+    margin-right: 5px;
+    cursor: pointer;
+    font-weight: normal;
+    color: #666;
+    user-select: none;
+    font-size: 13px;
+    font-family: monospace;
+    vertical-align: middle;
+}
+
+.vd-expand-toggle:hover {
+    color: #0073aa;
+}
+
+/* Leaf indicator is not clickable */
+.vd-leaf-indicator {
+    cursor: default;
+}
+
+
+/* Simple Submenu Styles */
+.vd-submenu {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    background: transparent;
+    position: relative;
+    display: none; /* Initially hidden */
+}
+
+/* Show submenu when expanded */
+.vd-menu-item.vd-expanded > .vd-submenu {
+    display: block;
+}
+
+/* Level 2 - Sub categories */
+.vd-menu-item.vd-level-2 > a {
+    padding: 8px 12px 8px 45px;
+    font-size: 14px;
+    font-weight: 400;
+    color: #444;
+    text-transform: none;
+    letter-spacing: normal;
+    border-left: 3px solid transparent;
+}
+
+/* Level 3 - Sub-sub categories */
+.vd-menu-item.vd-level-3 > a {
+    padding: 6px 12px 6px 60px;
+    font-size: 13px;
+    font-weight: 300;
+    color: #666;
+    font-style: italic;
+    text-transform: none;
+    letter-spacing: normal;
+    border-left: 3px solid transparent;
+}
+
+/* Expanded state - handled by JavaScript */
+
+/* Add smooth animation */
+.vd-submenu {
+    transition: all 0.2s ease;
+    overflow: hidden;
+}
+
+/* Remove old styles */
+.vd-menu-arrow {
+    display: none !important;
+}
+
+/* Highlight parent categories of active item */
+.vd-menu-item.vd-has-active-child > a {
+    color: #0073aa;
+    font-weight: 500;
+}
+
+/* Different opacity for inactive items when something is selected */
+.vd-sidebar-menu.has-active-item a:not(.active):not(:hover) {
+    opacity: 0.7;
+}
+
+/* But keep parent items fully visible */
+.vd-menu-item.vd-has-active-child > a {
+    opacity: 1 !important;
+}
+
+
+/* Remove active icons - we use italic instead */
+
+/* Mobile responsive adjustments */
+@media (max-width: 768px) {
+    .vd-sidebar {
+        margin-bottom: 30px;
+    }
+    
+    .vd-menu-section {
+        padding: 10px;
+    }
+    
+    .vd-menu-title {
+        font-size: 16px;
+    }
+    
+    .vd-sidebar-menu a {
+        padding: 10px 12px 10px 30px;
+        font-size: 14px;
+    }
+    
+    .vd-menu-item.vd-level-2 > a {
+        padding-left: 50px;
+    }
+    
+    .vd-menu-item.vd-level-3 > a {
+        padding-left: 70px;
+    }
+}

@@ -1,0 +1,186 @@
+/* Tree Menu Styles for Vidieu Categories */
+
+/* Menu container */
+.vd-menu-section {
+    padding: 15px;
+    margin-bottom: 20px;
+    background: #fff;
+    border-radius: 4px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+/* Menu title - Hidden */
+.vd-menu-title {
+    display: none !important;
+}
+
+/* Base menu styles */
+.vd-sidebar-menu {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.vd-sidebar-menu li {
+    margin: 0;
+    position: relative;
+}
+
+/* Menu links */
+.vd-sidebar-menu a {
+    display: block;
+    padding: 8px 12px 8px 25px;
+    text-decoration: none !important;
+    color: #333 !important;
+    font-size: 14px;
+    transition: all 0.2s ease;
+    position: relative;
+    z-index: 2;
+    font-weight: 400 !important;
+    font-style: normal !important;
+}
+
+/* Cursor for expandable items */
+.vd-has-children > a {
+    cursor: pointer;
+}
+
+/* Level specific padding */
+.vd-menu-item.vd-level-2 > a {
+    padding-left: 45px;
+}
+
+.vd-menu-item.vd-level-3 > a {
+    padding-left: 65px;
+}
+
+.vd-menu-item.vd-level-4 > a {
+    padding-left: 85px;
+}
+
+.vd-menu-item.vd-level-5 > a {
+    padding-left: 105px;
+}
+
+/* Hover effect */
+.vd-sidebar-menu a:hover {
+    background-color: #f5f5f5;
+    color: #333 !important;
+}
+
+/* Active state - bold only */
+.vd-sidebar-menu a.active {
+    font-weight: 700 !important;
+    color: #333 !important;
+    background-color: transparent !important;
+}
+
+/* Submenu container */
+.vd-submenu {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: none;
+    transition: all 0.2s ease;
+    overflow: hidden;
+}
+
+.vd-menu-item.vd-expanded > .vd-submenu {
+    display: block;
+}
+
+/* Faster transitions when transitioning */
+.vd-transitioning .vd-submenu {
+    transition: all 0.15s ease;
+}
+
+.vd-transitioning .vd-menu-item {
+    transition: opacity 0.15s ease;
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+    .vd-menu-section {
+        padding: 10px;
+    }
+    
+    
+    .vd-sidebar-menu a {
+        padding: 8px 10px 8px 20px;
+    }
+    
+    .vd-menu-item.vd-level-2 > a {
+        padding-left: 40px;
+    }
+    
+    .vd-menu-item.vd-level-3 > a {
+        padding-left: 60px;
+    }
+    
+    .vd-menu-item.vd-level-4 > a {
+        padding-left: 80px;
+    }
+    
+    .vd-menu-item.vd-level-5 > a {
+        padding-left: 100px;
+    }
+}
+
+/* Smart tree display - hide non-relevant items */
+.vd-menu-item.vd-hidden {
+    display: none !important;
+}
+
+/* Ensure smooth transitions */
+.vd-menu-item {
+    transition: opacity 0.2s ease;
+}
+
+/* Force normal style for all links */
+.vd-sidebar-menu a,
+.vd-sidebar-menu a:link,
+.vd-sidebar-menu a:visited,
+.vd-sidebar-menu a:focus,
+.vd-sidebar-menu a:active {
+    font-style: normal !important;
+    color: #333 !important;
+    opacity: 1 !important;
+    text-decoration: none !important;
+}
+
+/* Override any theme colors */
+.vd-sidebar .vd-sidebar-menu a,
+.vd-sidebar .vd-sidebar-menu a:visited {
+    color: #333 !important;
+}
+
+/* Ensure parent items are not styled differently */
+.vd-has-active-child > a {
+    font-weight: 400 !important;
+    font-style: normal !important;
+    color: #333 !important;
+}
+
+/* Force remove any tree lines from other CSS */
+.vd-sidebar-menu *::before,
+.vd-sidebar-menu *::after {
+    content: none !important;
+    display: none !important;
+    background: none !important;
+    border: none !important;
+}
+
+/* Ensure clean display */
+.vd-menu-item,
+.vd-submenu {
+    border: none !important;
+    background: none !important;
+}
+
+.vd-menu-item::before,
+.vd-menu-item::after,
+.vd-submenu::before,
+.vd-submenu::after {
+    content: none !important;
+    display: none !important;
+}

@@ -1,0 +1,61 @@
+/**
+ * Hide NASA/Elessi Breadcrumb - Static Blocks Dashboard
+ * 
+ * This CSS provides immediate hiding before JavaScript removal
+ */
+
+/* Hide breadcrumb with specific class combination */
+span.nasa-flex.jc {
+    display: none !important;
+    visibility: hidden !important;
+    height: 0 !important;
+    overflow: hidden !important;
+}
+
+/* Fallback for browsers without :has() support */
+span.nasa-flex.jc i.pe-7s-news-paper,
+span.nasa-flex.jc i.pe7-icon.pe-7s-news-paper,
+span.nasa-flex.jc i.fa-angle-right {
+    display: none !important;
+}
+
+/* Modern browsers with :has() support */
+@supports selector(:has(*)) {
+    /* More specific targeting if needed */
+    span.nasa-flex.jc:has(i.pe-7s-news-paper),
+    span.nasa-flex.jc:has(i.pe7-icon.pe-7s-news-paper) {
+        display: none !important;
+    }
+
+    /* Target breadcrumb containing specific text */
+    span.nasa-flex.jc:has(i.fa-angle-right) {
+        display: none !important;
+    }
+
+    /* Hide parent container if it only contains the breadcrumb */
+    .nasa-breadcrumb-wrap:has(> span.nasa-flex.jc:only-child),
+    .breadcrumb-wrap:has(> span.nasa-flex.jc:only-child) {
+        display: none !important;
+    }
+}
+
+/* Admin specific hiding */
+body.wp-admin span.nasa-flex.jc,
+body.admin-bar span.nasa-flex.jc {
+    display: none !important;
+}
+
+/* Frontend specific hiding */
+body:not(.wp-admin) span.nasa-flex.jc {
+    display: none !important;
+}
+
+/* Hide with animation to prevent flash */
+@keyframes hideBreadcrumb {
+    from { opacity: 1; }
+    to { opacity: 0; }
+}
+
+span.nasa-flex.jc {
+    animation: hideBreadcrumb 0.1s forwards;
+}

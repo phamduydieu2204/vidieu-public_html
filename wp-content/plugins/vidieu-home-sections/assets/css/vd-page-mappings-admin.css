@@ -1,0 +1,54 @@
+/**
+ * Page Mappings Admin Styles
+ */
+
+.vd-mappings-container {
+    margin-top: 20px;
+}
+
+.vd-add-mapping-section {
+    background: #fff;
+    border: 1px solid #ccd0d4;
+    box-shadow: 0 1px 1px rgba(0,0,0,.04);
+    padding: 20px;
+    margin-bottom: 30px;
+}
+
+.vd-add-mapping-section h2 {
+    margin-top: 0;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #eee;
+}
+
+.vd-mappings-list-section {
+    background: #fff;
+    border: 1px solid #ccd0d4;
+    box-shadow: 0 1px 1px rgba(0,0,0,.04);
+    padding: 20px;
+}
+
+.vd-mappings-list-section h2 {
+    margin-top: 0;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #eee;
+}
+
+.vd-mappings-list-section table {
+    margin-top: 20px;
+}
+
+.vd-delete-mapping {
+    color: #a00;
+}
+
+.vd-delete-mapping:hover {
+    color: #dc3232;
+}
+
+#vd-taxonomy-row {
+    transition: opacity 0.3s ease;
+}
+
+.form-table select {
+    min-width: 250px;
+}
