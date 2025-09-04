@@ -36,6 +36,15 @@ function elessi_child_enqueue_styles() {
         array('elessi-parent-style'),
         wp_get_theme()->get('Version')
     );
+    
+    // Enqueue Vietnamese fonts fix CSS with high priority
+    wp_enqueue_style(
+        'elessi-vietnamese-fonts',
+        get_stylesheet_directory_uri() . '/vietnamese-fonts.css',
+        array('elessi-parent-style', 'elessi-child-style'),
+        '1.0.0',
+        'all'
+    );
 }
 
 /**
@@ -49,6 +58,88 @@ require_once get_stylesheet_directory() . '/functions-ajax-performance.php';
  * Add your custom functions below this line
  * ----------------------------------------
  */
+
+/**
+ * Fix Vietnamese Font Display
+ * Forces Google Fonts to load Vietnamese character subset
+ */
+add_filter('nasa_google_fonts_url', 'elessi_child_fix_vietnamese_fonts', 999);
+function elessi_child_fix_vietnamese_fonts($url) {
+    // If URL is empty, return
+    if (empty($url)) {
+        return $url;
+    }
+    
+    // Check if URL already has subset parameter
+    if (strpos($url, 'subset=') !== false) {
+        // If vietnamese is not in subset, add it
+        if (strpos($url, 'vietnamese') === false) {
+            $url = str_replace('subset=latin', 'subset=latin,vietnamese', $url);
+            $url = str_replace('subset=latin-ext', 'subset=latin-ext,vietnamese', $url);
+        }
+    } else {
+        // Add subset parameter with vietnamese
+        $separator = (strpos($url, '?') !== false) ? '&' : '?';
+        $url .= $separator . 'subset=latin,latin-ext,vietnamese';
+    }
+    
+    // Also ensure display=swap is set for better performance
+    if (strpos($url, 'display=') === false) {
+        $separator = (strpos($url, '?') !== false) ? '&' : '?';
+        $url .= $separator . 'display=swap';
+    }
+    
+    return $url;
+}
+
+/**
+ * Add inline CSS to ensure proper Vietnamese font display
+ * This provides fallback fonts with Vietnamese support
+ */
+add_action('wp_head', 'elessi_child_vietnamese_font_css', 5);
+function elessi_child_vietnamese_font_css() {
+    ?>
+    <style>
+        /* Ensure Vietnamese characters display properly with fallback fonts */
+        body, 
+        p, 
+        h1, h2, h3, h4, h5, h6,
+        .product-name,
+        .price,
+        .button,
+        .vd-buy-now-button {
+            font-family: "Open Sans", "Noto Sans", "Roboto", -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+        }
+        
+        /* Force font-display swap for better loading performance */
+        @font-face {
+            font-display: swap;
+        }
+    </style>
+    <?php
+}
+
+/**
+ * Force Vietnamese character subset in theme options
+ * This ensures the theme loads Vietnamese fonts even if not selected in admin
+ */
+add_filter('nasa_character_subsets', 'elessi_child_force_vietnamese_subset');
+function elessi_child_force_vietnamese_subset($subsets) {
+    if (!is_array($subsets)) {
+        $subsets = array();
+    }
+    
+    // Always include these subsets
+    $required_subsets = array('latin', 'latin-ext', 'vietnamese');
+    
+    foreach ($required_subsets as $subset) {
+        if (!in_array($subset, $subsets)) {
+            $subsets[] = $subset;
+        }
+    }
+    
+    return $subsets;
+}
 
 /**
  * Hide NASA/Elessi Breadcrumb Elements
