@@ -1,12 +1,12 @@
-name: Deploy changed files only (FTP/FTPS)
+name: Deploy child theme (FTP/FTPS)
 
 on:
   push:
-    branches: [ "main" ]
-  workflow_dispatch: {}
+    branches: [ "main" ]   # Tự động deploy khi push lên nhánh main
+  workflow_dispatch: {}    # Có thể chạy thủ công từ tab Actions
 
 concurrency:
-  group: deploy-changed-only
+  group: deploy-child-theme
   cancel-in-progress: true
 
 jobs:
@@ -22,43 +22,41 @@ jobs:
       FTP_PORT:     ${{ secrets.FTP_PORT }}
 
     steps:
-      # 1) Lấy full history để diff chắc chắn
-      - name: Checkout (full history)
+      # 1) Checkout đủ history để diff chính xác
+      - name: Checkout source
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      # 2) Bắt diff đúng 2 SHA của sự kiện push
+      # 2) Lấy danh sách file thay đổi trong child theme
       - name: Get changed files (child theme only)
         id: changes
         uses: tj-actions/changed-files@v45
         with:
-          base_sha: ${{ github.event.before }}
-          sha:      ${{ github.sha }}
           files: |
             wp-content/themes/elessi-theme-child/**
           separator: "\n"
+          fetch_depth: 0
           diff_relative: false
           use_posix_path_separator: true
-          fetch_depth: 0
           json: false
 
-      # 3) In SHA & danh sách file để tự đối chiếu
-      - name: Show summary + fallback diff
+      # 3) Debug: in ra SHA và danh sách file
+      - name: Show commit range and changed files
         run: |
-          echo "BASE: ${{ steps.changes.outputs.base_sha }}"
-          echo "HEAD: ${{ steps.changes.outputs.sha }}"
+          echo "BASE SHA: ${{ steps.changes.outputs.base_sha }}"
+          echo "HEAD SHA: ${{ steps.changes.outputs.sha }}"
           echo
-          echo "Added/Modified (from action):"
+          echo "Added/Modified:"
           printf '%s\n' "${{ steps.changes.outputs.added_modified_files }}"
           echo
-          echo "Deleted (from action):"
+          echo "Deleted:"
           printf '%s\n' "${{ steps.changes.outputs.deleted_files }}"
           echo
-          echo "Fallback git diff (for debug):"
-          git diff --name-status "${{ steps.changes.outputs.base_sha }}" "${{ steps.changes.outputs.sha }}" -- wp-content/themes/elessi-theme-child/
+          echo "Last 2 commits:"
+          git log -2 --oneline
 
-      # 4) Upload CHỈ file đã thêm/sửa
+      # 4) Upload các file đã thêm/sửa
       - name: Upload added/modified via (F)TPS
         if: ${{ steps.changes.outputs.added_modified_files != '' }}
         run: |
@@ -67,14 +65,14 @@ jobs:
             [ -z "$FILE" ] && continue
             echo "→ Upload $FILE"
             curl --fail --show-error --silent \
-                 --ftp-method nocwd --ftp-pasv --ftp-create-dirs \
+                 --ftp-method nocwd --ftp-pasv --ftp-create-dirs --ssl-reqd \
                  --user "${FTP_USERNAME}:${FTP_PASSWORD}" \
                  -T "$FILE" \
                  "ftp://${FTP_SERVER}:${FTP_PORT}${REMOTE_ROOT}/${FILE}"
           done
 
-      # 5) XÓA trên host các file đã bị xóa trong repo
-      - name: Delete removed on server
+      # 5) Xóa file đã bị xóa trong repo
+      - name: Delete removed files on server
         if: ${{ steps.changes.outputs.deleted_files != '' }}
         run: |
           set -euo pipefail
@@ -82,7 +80,7 @@ jobs:
             [ -z "$FILE" ] && continue
             echo "→ Delete $FILE"
             curl --fail --show-error --silent \
-                 --ftp-method nocwd --ftp-pasv \
+                 --ftp-method nocwd --ftp-pasv --ssl-reqd \
                  --user "${FTP_USERNAME}:${FTP_PASSWORD}" \
                  "ftp://${FTP_SERVER}:${FTP_PORT}/" \
                  -Q "DELE ${REMOTE_ROOT}/${FILE}" || true
