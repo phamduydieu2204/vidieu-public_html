@@ -1,0 +1,42 @@
+name: Deploy public_html to hosting (FTP/FTPS)
+
+on:
+  push:
+    branches: [ "main" ]     # Mỗi lần push code lên main thì deploy
+  workflow_dispatch: {}       # Có thể bấm "Run workflow" thủ công
+
+concurrency:
+  group: deploy
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Deploy via FTP
+        uses: SamKirkland/FTP-Deploy-Action@v4
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          protocol: ftps
+          port: ${{ secrets.FTP_PORT }}
+          local-dir: ./                 # Repo root chính là public_html
+          server-dir: /domains/vidieu.vn/public_html/
+          log-level: verbose
+          state-name: .ftp-deploy-sync-state.json
+          exclude: |
+            **/.git*
+            **/.github/**
+            **/node_modules/**
+            **/*.log
+            .DS_Store
+            wp-content/uploads/**
+            wp-content/cache/**
+            wp-content/upgrade/**
+            wp-content/wflogs/**
+            wp-admin/**
+            wp-config.php
+            .htaccess
