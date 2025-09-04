@@ -9,7 +9,12 @@ document.addEventListener('DOMContentLoaded', function() {
         
         searchInputs.forEach(function(input) {
             if (input.getAttribute('data-suggestions')) {
-                input.setAttribute('data-suggestions', 'Áo thun, Áo khoác, Quần jean...');
+                // Use localized string if available, otherwise fallback
+                const suggestions = (typeof elessi_vietnamese !== 'undefined' && elessi_vietnamese.search_suggestions) 
+                    ? elessi_vietnamese.search_suggestions 
+                    : 'Áo thun, Áo khoác, Quần jean...';
+                    
+                input.setAttribute('data-suggestions', suggestions);
             }
         });
     }
