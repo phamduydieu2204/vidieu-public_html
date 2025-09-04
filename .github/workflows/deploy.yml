@@ -2,8 +2,8 @@ name: Deploy public_html to hosting (FTP/FTPS)
 
 on:
   push:
-    branches: [ "main" ]     # Mỗi lần push code lên main thì deploy
-  workflow_dispatch: {}       # Có thể bấm "Run workflow" thủ công
+    branches: [ "main" ]     # Mỗi lần push code lên nhánh main sẽ tự deploy
+  workflow_dispatch: {}       # Có thể chạy thủ công từ tab Actions
 
 concurrency:
   group: deploy
@@ -13,32 +13,36 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout source
+        uses: actions/checkout@v4
 
       - name: Deploy via FTP/FTPS
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.4  # <-- CHUẨN
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
         with:
           server: ${{ secrets.FTP_SERVER }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
-          protocol: ftps
-          port: ${{ secrets.FTP_PORT }}
-          local-dir: ./                 # Repo root chính là public_html
+          port: ${{ secrets.FTP_PORT }}          # Shared hosting DirectAdmin gần như luôn là 21
+          protocol: ftps                         # Nếu host không hỗ trợ FTPS thì đổi thành: ftp
           server-dir: /domains/vidieu.vn/public_html/
-          log-level: verbose
+          local-dir: ./                          # Repo root chính là public_html
           state-name: .ftp-deploy-sync-state.json
+          log-level: verbose
+
           exclude: |
             **/.git*
             **/.github/**
             **/node_modules/**
             **/*.log
             .DS_Store
+            # Thư mục nặng/biến đổi liên tục
             wp-content/uploads/**
             wp-content/cache/**
             wp-content/upgrade/**
             wp-content/wflogs/**
+            # Khu vực nhạy cảm
             wp-admin/**
             wp-config.php
             .htaccess
-
-
+            # Bỏ qua workflow trong vendor/plugins bên thứ ba
+            wp-content/plugins/**/.github/**

@@ -1,0 +1,38 @@
+name: Deploy plugin vidieu-home-sections only
+
+on:
+  push:
+    paths:
+      - 'wp-content/plugins/vidieu-home-sections/**'   # chỉ khi plugin này thay đổi mới chạy
+  workflow_dispatch: {}                                 # cho phép chạy thủ công
+
+concurrency:
+  group: deploy-plugin
+  cancel-in-progress: true
+
+jobs:
+  deploy-plugin:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Deploy plugin via FTP/FTPS
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          port: ${{ secrets.FTP_PORT }}
+          protocol: ftps                   # nếu fail TLS thì đổi thành ftp
+          server-dir: /domains/vidieu.vn/public_html/wp-content/plugins/vidieu-home-sections/
+          local-dir: ./wp-content/plugins/vidieu-home-sections/
+          state-name: .ftp-deploy-plugin-sync.json
+          log-level: verbose
+
+          exclude: |
+            **/.git*
+            **/.github/**
+            **/node_modules/**
+            **/*.log
+            .DS_Store
