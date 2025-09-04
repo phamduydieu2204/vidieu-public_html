@@ -1,0 +1,81 @@
+name: Deploy changed files only (FTP/FTPS)
+
+on:
+  push:
+    branches: [ "main" ]         # chạy khi push lên main
+  workflow_dispatch: {}           # có thể bấm chạy tay
+
+concurrency:
+  group: deploy-changed-only
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Liệt kê đúng các file thay đổi trong repo
+      - name: Get changed files
+        id: changes
+        uses: tj-actions/changed-files@v45
+        with:
+          files: |
+            **                # theo dõi toàn repo; muốn chỉ plugin thì sửa thành: wp-content/plugins/vidieu-home-sections/**
+          separator: "\n"
+
+      - name: Show summary
+        run: |
+          echo "Added/Modified:"
+          echo "${{ steps.changes.outputs.added_modified_files }}"
+          echo "Deleted:"
+          echo "${{ steps.changes.outputs.deleted_files }}"
+
+      # Upload CHỈ các file thêm/sửa
+      - name: Upload added/modified files via (F)TPS
+        if: ${{ steps.changes.outputs.added_modified_files != '' }}
+        env:
+          FTP_SERVER:   ${{ secrets.FTP_SERVER }}
+          FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
+          FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+          FTP_PORT:     ${{ secrets.FTP_PORT }}    # thường 21
+          # Đường dẫn gốc trên host (DirectAdmin)
+          REMOTE_ROOT:  /domains/vidieu.vn/public_html
+        run: |
+          set -euo pipefail
+          while IFS= read -r FILE; do
+            [ -z "$FILE" ] && continue
+            echo "→ Upload $FILE"
+            # --ftp-create-dirs: tạo thư mục nếu chưa có
+            # --ssl-reqd: FTPS; nếu host chỉ hỗ trợ FTP thường, bỏ tham số này đi
+            curl --fail --show-error --silent \
+                 --ftp-method nocwd --ftp-pasv --ftp-create-dirs --ssl-reqd \
+                 --user "${FTP_USERNAME}:${FTP_PASSWORD}" \
+                 -T "$FILE" \
+                 "ftp://${FTP_SERVER}:${FTP_PORT}${REMOTE_ROOT}/${FILE}"
+          done <<< "${{ steps.changes.outputs.added_modified_files }}"
+
+      # XÓA trên host những file đã bị xoá trong repo (nếu có)
+      - name: Delete removed files on server
+        if: ${{ steps.changes.outputs.deleted_files != '' }}
+        env:
+          FTP_SERVER:   ${{ secrets.FTP_SERVER }}
+          FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
+          FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+          FTP_PORT:     ${{ secrets.FTP_PORT }}
+          REMOTE_ROOT:  /domains/vidieu.vn/public_html
+        run: |
+          set -euo pipefail
+          while IFS= read -r FILE; do
+            [ -z "$FILE" ] && continue
+            echo "→ Delete $FILE"
+            # Gửi lệnh DELE qua FTP; dùng FTPS (--ssl-reqd). Nếu chỉ FTP, bỏ --ssl-reqd.
+            curl --fail --show-error --silent \
+                 --ftp-method nocwd --ftp-pasv --ssl-reqd \
+                 --user "${FTP_USERNAME}:${FTP_PASSWORD}" \
+                 "ftp://${FTP_SERVER}:${FTP_PORT}/" \
+                 -Q "DELE ${REMOTE_ROOT}/${FILE}" || true
+          done <<< "${{ steps.changes.outputs.deleted_files }}"
