@@ -2159,7 +2159,7 @@ html body .vd-home-posts .vd-posts-grid.vd-posts-grid.vd-posts-grid {
 
 /* Simple products always have orange color */
 .vd-buy-now-button.vd-buy-now-simple {
-    background-color: #ff6600 !important;
+    background-color: #F76B6A !important;
 }
 
 /* Modern button design for cleaner look */
@@ -2183,10 +2183,10 @@ html body .vd-home-posts .vd-posts-grid.vd-posts-grid.vd-posts-grid {
 }
 
 .vd-buy-now-button:hover {
-    background-color: #e55a00;
+    background-color: #e55a5a;
     color: #ffffff !important;
     transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(255, 102, 0, 0.3);
+    box-shadow: 0 5px 15px rgba(247, 107, 106, 0.3);
 }
 
 .vd-buy-now-button.vd-processing {
@@ -2218,12 +2218,12 @@ html body .vd-home-posts .vd-posts-grid.vd-posts-grid.vd-posts-grid {
 
 /* Variable product button style when all variations selected (Buy Now mode) */
 .vd-buy-now-button.vd-buy-now-variable[data-action="buy-now"] {
-    background-color: #ff6600;
+    background-color: #F76B6A;
 }
 
 .vd-buy-now-button.vd-buy-now-variable[data-action="buy-now"]:hover {
-    background-color: #e55a00;
-    box-shadow: 0 5px 15px rgba(255, 102, 0, 0.3);
+    background-color: #e55a5a;
+    box-shadow: 0 5px 15px rgba(247, 107, 106, 0.3);
 }
 
 /* Adjust spacing when both Add to Cart and Buy Now buttons exist */
