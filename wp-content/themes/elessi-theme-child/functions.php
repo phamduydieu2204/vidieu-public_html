@@ -51,6 +51,40 @@ require_once get_stylesheet_directory() . '/functions-ajax-performance.php';
  */
 
 /**
+ * Change search placeholder text to Vietnamese
+ * @since 2025-09-04
+ */
+add_filter('gettext', 'elessi_child_change_search_placeholder', 20, 3);
+function elessi_child_change_search_placeholder($translated_text, $text, $domain) {
+    if ($domain === 'elessi-theme') {
+        switch ($text) {
+            case "I'm shopping for ...":
+                $translated_text = "Tìm sản phẩm/bài viết…";
+                break;
+            case "Start typing ...":
+                $translated_text = "Tìm kiếm…";
+                break;
+        }
+    }
+    return $translated_text;
+}
+
+/**
+ * Enqueue Vietnamese search customization script
+ * @since 2025-09-04
+ */
+add_action('wp_enqueue_scripts', 'elessi_child_search_vietnamese_script', 100);
+function elessi_child_search_vietnamese_script() {
+    wp_enqueue_script(
+        'elessi-search-vietnamese',
+        get_stylesheet_directory_uri() . '/assets/js/search-vietnamese.js',
+        array('jquery'),
+        '1.0.0',
+        true
+    );
+}
+
+/**
  * Hide NASA/Elessi Breadcrumb Elements
  * Removes "Dashboard > Static Blocks > Topbar" breadcrumb
  */
