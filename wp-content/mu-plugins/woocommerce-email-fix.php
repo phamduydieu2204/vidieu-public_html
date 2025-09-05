@@ -19,6 +19,25 @@ add_filter('wp_mail_from_name', function($from_name) {
     return 'Vidieu.vn';
 }, 999999);
 
+// Override WooCommerce email from settings
+add_filter('woocommerce_email_from_address', function($from_email) {
+    return 'admin@vidieu.vn';
+}, 999999);
+
+add_filter('woocommerce_email_from_name', function($from_name) {
+    return 'Vidieu.vn';
+}, 999999);
+
+// Force update PHPMailer before sending
+add_action('phpmailer_init', function($phpmailer) {
+    $phpmailer->From = 'admin@vidieu.vn';
+    $phpmailer->FromName = 'Vidieu.vn';
+    
+    // Clear and reset Reply-To
+    $phpmailer->clearReplyTos();
+    $phpmailer->addReplyTo('admin@vidieu.vn', 'Vidieu.vn');
+}, 999999);
+
 // 2. Force enable WooCommerce transactional emails
 add_filter('woocommerce_email_enabled_new_order', '__return_true', 999999);
 add_filter('woocommerce_email_enabled_customer_processing_order', '__return_true', 999999);
