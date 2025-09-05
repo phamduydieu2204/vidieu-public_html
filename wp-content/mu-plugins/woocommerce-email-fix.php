@@ -1,8 +1,9 @@
 <?php
 /**
  * Plugin Name: WooCommerce Email Fix
- * Description: Ensure WooCommerce emails work properly
- * Version: 1.0
+ * Description: Ensure WooCommerce emails work properly with admin@vidieu.vn
+ * Version: 2.0
+ * Author: Vidieu.vn
  */
 
 // Prevent direct access
@@ -67,7 +68,7 @@ add_action('woocommerce_checkout_order_processed', function($order_id) {
         }
         
     } catch (Exception $e) {
-        error_log('WooCommerce Email Error: ' . $e->getMessage());
+        // Silent fail - email sẽ được retry ở hook khác
     }
 }, 999999);
 
@@ -90,16 +91,11 @@ add_action('woocommerce_thankyou', function($order_id) {
         update_post_meta($order_id, '_new_order_email_sent', 'yes');
         
     } catch (Exception $e) {
-        error_log('WooCommerce Email Error (thankyou): ' . $e->getMessage());
+        // Silent fail
     }
 }, 50);
 
-// 6. Debug log for troubleshooting (safe version)
-add_action('woocommerce_email', function($email_class) {
-    error_log('WooCommerce Email Triggered: ' . get_class($email_class));
-});
-
-// 7. Ensure WP Mail SMTP doesn't block emails
+// 6. Ensure WP Mail SMTP doesn't block emails
 add_filter('wp_mail_smtp_options_get', function($value, $group, $key) {
     if ($group === 'general' && $key === 'do_not_send') {
         return false;
