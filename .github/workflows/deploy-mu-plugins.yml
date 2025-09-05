@@ -43,10 +43,10 @@ jobs:
         server: ${{ secrets.FTP_SERVER }}
         username: ${{ secrets.FTP_USERNAME }}
         password: ${{ secrets.FTP_PASSWORD }}
-        local-dir: ./
-        server-dir: /
+        local-dir: ./wp-content/mu-plugins/
+        server-dir: /wp-content/mu-plugins/
         include: |
-          ${{ steps.changed-files.outputs.files }}
+          **
         exclude: |
           **/.git*
           **/.git*/**
