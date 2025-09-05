@@ -89,6 +89,12 @@ define( 'WP_DEBUG', false );
 
 /* Add any custom values between this line and the "stop editing" line. */
 
+// Force WP Mail SMTP to use admin@vidieu.vn for all emails
+define( 'WPMS_MAIL_FROM', 'admin@vidieu.vn' );
+define( 'WPMS_MAIL_FROM_FORCE', true );
+define( 'WPMS_MAIL_FROM_NAME', 'Vidieu.vn' );
+define( 'WPMS_MAIL_FROM_NAME_FORCE', true );
+
 
 
 /* That's all, stop editing! Happy publishing. */
