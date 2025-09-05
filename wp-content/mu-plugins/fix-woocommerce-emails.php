@@ -2,7 +2,8 @@
 /**
  * Plugin Name: Fix WooCommerce Emails
  * Description: Ensure WooCommerce emails are properly triggered and sent
- * Version: 1.0
+ * Version: 1.0.1
+ * Last Updated: 2025-01-05
  */
 
 // Prevent direct access
