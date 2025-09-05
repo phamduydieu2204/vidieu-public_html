@@ -200,6 +200,51 @@ function elessi_child_vietnamese_translations($translated_text, $text, $domain) 
         }
     }
     
+    // Contact Form 7 translations
+    if ($domain === 'contact-form-7') {
+        switch ($text) {
+            // Form labels
+            case "Your Name":
+                return "Họ và tên";
+                
+            case "Your Email":
+                return "Email của bạn";
+                
+            case "Subject":
+                return "Chủ đề";
+                
+            case "Your Message":
+                return "Nội dung tin nhắn";
+                
+            case "Send":
+                return "Gửi";
+                
+            // Messages
+            case "Thank you for your message. It has been sent.":
+                return "Cảm ơn bạn! Tin nhắn của bạn đã được gửi thành công.";
+                
+            case "There was an error trying to send your message. Please try again later.":
+                return "Có lỗi xảy ra khi gửi tin nhắn. Vui lòng thử lại sau.";
+                
+            case "One or more fields have an error. Please check and try again.":
+                return "Một hoặc nhiều trường có lỗi. Vui lòng kiểm tra và thử lại.";
+                
+            case "Please fill in the required field.":
+                return "Vui lòng điền vào trường bắt buộc.";
+                
+            case "The e-mail address entered is invalid.":
+                return "Địa chỉ email không hợp lệ.";
+                
+            case "The telephone number is invalid.":
+                return "Số điện thoại không hợp lệ.";
+                
+            case "You must accept the terms and conditions before sending your message.":
+                return "Bạn phải chấp nhận điều khoản trước khi gửi.";
+                
+            // Add more Contact Form 7 translations here...
+        }
+    }
+    
     return $translated_text;
 }
 

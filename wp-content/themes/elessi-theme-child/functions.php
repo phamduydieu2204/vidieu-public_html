@@ -58,6 +58,23 @@ require_once get_stylesheet_directory() . '/functions-ajax-performance.php';
 require_once get_stylesheet_directory() . '/translations-vietnamese.php';
 
 /**
+ * Enqueue Contact Form 7 Vietnamese Styles
+ * @since 2025-09-04
+ */
+add_action('wp_enqueue_scripts', 'elessi_child_contact_form_styles', 20);
+function elessi_child_contact_form_styles() {
+    // Only load on pages with Contact Form 7
+    if (function_exists('wpcf7_enqueue_styles')) {
+        wp_enqueue_style(
+            'vidieu-contact-form',
+            get_stylesheet_directory_uri() . '/contact-form-styles.css',
+            array(),
+            '1.0.0'
+        );
+    }
+}
+
+/**
  * Hide NASA/Elessi Breadcrumb Elements
  * Removes "Dashboard > Static Blocks > Topbar" breadcrumb
  */
