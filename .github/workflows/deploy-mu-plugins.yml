@@ -1,0 +1,59 @@
+name: Deploy MU-Plugins
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'wp-content/mu-plugins/**'
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 2
+
+    - name: Get changed files
+      id: changed-files
+      run: |
+        if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+          echo "Manual trigger - deploying all mu-plugins files"
+          echo "files=$(find wp-content/mu-plugins -type f | tr '\n' ' ')" >> $GITHUB_OUTPUT
+          echo "manual=true" >> $GITHUB_OUTPUT
+        else
+          echo "Push trigger - detecting changed files"
+          CHANGED_FILES=$(git diff --name-only HEAD^ HEAD | grep '^wp-content/mu-plugins/' || true)
+          echo "files=$CHANGED_FILES" >> $GITHUB_OUTPUT
+          echo "manual=false" >> $GITHUB_OUTPUT
+        fi
+
+    - name: Display deployment info
+      run: |
+        echo "Deployment type: ${{ steps.changed-files.outputs.manual == 'true' && 'Manual (all mu-plugins)' || 'Automatic (changed files only)' }}"
+        echo "Files to deploy: ${{ steps.changed-files.outputs.files }}"
+
+    - name: Deploy to FTP
+      if: steps.changed-files.outputs.files != ''
+      uses: SamKirkland/FTP-Deploy-Action@4.3.0
+      with:
+        server: ${{ secrets.FTP_SERVER }}
+        username: ${{ secrets.FTP_USERNAME }}
+        password: ${{ secrets.FTP_PASSWORD }}
+        local-dir: ./
+        server-dir: /
+        include: |
+          ${{ steps.changed-files.outputs.files }}
+        exclude: |
+          **/.git*
+          **/.git*/**
+          **/node_modules/**
+          **/.github/**
+          **/README.md
+
+    - name: No files to deploy
+      if: steps.changed-files.outputs.files == ''
+      run: echo "No mu-plugins files changed. Skipping deployment."
