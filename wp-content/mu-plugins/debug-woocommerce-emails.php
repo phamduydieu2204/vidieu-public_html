@@ -110,6 +110,7 @@ add_action('init', function() {
 // Add admin notice about debug mode
 add_action('admin_notices', function() {
     if (current_user_can('manage_options')) {
-        echo '<div class="notice notice-info"><p><strong>WooCommerce Email Debug Mode Active!</strong> Logs are being saved to: ' . WP_CONTENT_DIR . '/wc-email-debug/</p></div>';
+        echo '<div class="notice notice-info"><p><strong>WooCommerce Email Debug Mode Active!</strong> Logs are being saved to: ' . WP_CONTENT_DIR . '/wc-email-debug/</p>';
+        echo '<p style="margin: 5px 0;">Last updated: ' . date('Y-m-d H:i:s') . '</p></div>';
     }
 });
