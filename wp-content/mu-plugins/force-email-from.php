@@ -2,8 +2,9 @@
 /**
  * Plugin Name: Force Email From Address
  * Description: Forces all WordPress emails to use admin@vidieu.vn as the sender
- * Version: 1.0
+ * Version: 1.0.1
  * Author: Vidieu.vn
+ * Updated: 2025-01-05
  */
 
 // Prevent direct access
