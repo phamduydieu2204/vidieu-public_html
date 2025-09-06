@@ -428,3 +428,51 @@ add_action('wp_head', array($this, 'inline_critical_css'), 5);
 - **What could break**: CSS loading if critical CSS is incomplete
 - **Mitigation**: Main stylesheets still load normally, just without preload
 - **Monitoring**: Watch for FOUC or missing styles
+
+---
+
+## EMERGENCY HOTFIX H2.2-fix2 - Critical CSS Disabled
+**Date**: 2025-09-06  
+**Status**: Applied  
+**Impact**: Restores HOME page layout stability
+
+### Issue Discovered:
+After H2.2-fix2 deployment:
+- HOME page layout completely broken
+- Logo appearing 6 times (actually 12 logo images: 4 locations × 3 variants each)
+- Critical CSS missing proper visibility controls for mobile/desktop elements
+
+### Analysis from HAR/PSI:
+- Found 4 logo locations in HTML: main header, login form, mobile menu, mobile header
+- Each location has 3 logo variants: default, sticky, mobile
+- Critical CSS failed to hide inappropriate variants
+- Performance score: 56/100 (slight improvement despite broken layout)
+- No 404 errors or missing resources
+
+### Emergency Action Taken:
+```php
+// File: /wp-content/plugins/vidieu-home-sections/performance-flags.php
+define('VIDIEU_PERF_HOME_CRITICAL_CSS', false);  // Was true
+```
+
+### Result:
+- Critical CSS no longer injected on HOME
+- Layout returns to normal (relying on full theme CSS)
+- KEPT: `VIDIEU_PERF_HOME_DISABLE_CSS_PRELOADS = true` (safe, doesn't break layout)
+
+### Root Cause Hypothesis:
+1. Critical CSS included incomplete visibility rules
+2. Missing media queries for mobile/desktop separation
+3. Logo visibility states not properly defined
+4. CSS specificity conflicts with theme styles
+
+### Next Steps:
+- TRIAGE to identify exact CSS rules causing issue
+- Create minimal, safe critical CSS v3
+- Test thoroughly before re-enabling
+
+### Rollback Complete:
+- ✅ HOME layout restored to normal
+- ✅ Only 1 logo visible (proper variant)
+- ✅ No visual breakage
+- ✅ Other optimizations (H1.2, H2.0) still active
