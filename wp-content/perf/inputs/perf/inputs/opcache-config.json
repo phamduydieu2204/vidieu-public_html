@@ -1,0 +1,43 @@
+{
+    "directives": {
+        "opcache.enable": true,
+        "opcache.enable_cli": true,
+        "opcache.use_cwd": true,
+        "opcache.validate_timestamps": true,
+        "opcache.validate_permission": true,
+        "opcache.validate_root": false,
+        "opcache.dups_fix": false,
+        "opcache.revalidate_path": true,
+        "opcache.log_verbosity_level": 1,
+        "opcache.memory_consumption": 134217728,
+        "opcache.interned_strings_buffer": 8,
+        "opcache.max_accelerated_files": 4000,
+        "opcache.max_wasted_percentage": 0.05,
+        "opcache.consistency_checks": 0,
+        "opcache.force_restart_timeout": 180,
+        "opcache.revalidate_freq": 0,
+        "opcache.preferred_memory_model": "",
+        "opcache.blacklist_filename": "",
+        "opcache.max_file_size": 0,
+        "opcache.error_log": "",
+        "opcache.protect_memory": false,
+        "opcache.save_comments": true,
+        "opcache.enable_file_override": true,
+        "opcache.optimization_level": 2147401727,
+        "opcache.lockfile_path": "/tmp",
+        "opcache.file_cache": "",
+        "opcache.file_cache_only": false,
+        "opcache.file_cache_consistency_checks": true,
+        "opcache.file_update_protection": 2,
+        "opcache.opt_debug_level": 0,
+        "opcache.restrict_api": "",
+        "opcache.huge_code_pages": false,
+        "opcache.preload": "",
+        "opcache.preload_user": ""
+    },
+    "version": {
+        "version": "7.4.27",
+        "opcache_product_name": "Zend OPcache"
+    },
+    "blacklist": []
+}

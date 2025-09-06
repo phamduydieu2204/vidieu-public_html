@@ -121,11 +121,9 @@ add_filter('style_loader_tag', function($html, $handle, $href, $media) {
  * 5. PRELOAD CRITICAL RESOURCES
  */
 add_action('wp_head', function() {
-    // Preload fonts
-    echo '<link rel="preload" href="' . get_template_directory_uri() . '/assets/fonts/main-font.woff2" as="font" type="font/woff2" crossorigin>';
-    
-    // Preload critical CSS
-    echo '<link rel="preload" href="' . get_template_directory_uri() . '/style.min.css" as="style">';
+    // Commented out - these files don't exist and cause 404 errors
+    // echo '<link rel="preload" href="' . get_template_directory_uri() . '/assets/fonts/main-font.woff2" as="font" type="font/woff2" crossorigin>';
+    // echo '<link rel="preload" href="' . get_template_directory_uri() . '/style.min.css" as="style">';
     
     // Preconnect to external domains
     echo '<link rel="preconnect" href="https://fonts.googleapis.com">';

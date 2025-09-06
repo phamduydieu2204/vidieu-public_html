@@ -1,0 +1,28 @@
+{
+    "siteurl": "https://vidieu.vn",
+    "home": "https://vidieu.vn",
+    "theme": "Elessi Child Theme",
+    "template": "elessi-theme",
+    "stylesheet": "elessi-theme-child",
+    "active_plugins": [
+        "advanced-google-recaptcha/advanced-google-recaptcha.php",
+        "akismet/akismet.php",
+        "contact-form-7/wp-contact-form-7.php",
+        "elementor/elementor.php",
+        "header-footer-elementor/header-footer-elementor.php",
+        "hello.php",
+        "instagram-feed/instagram-feed.php",
+        "js_composer/js_composer.php",
+        "license-manager-for-woocommerce/license-manager-for-woocommerce.php",
+        "nasa-core/nasa-core.php",
+        "redis-cache/redis-cache.php",
+        "revslider/revslider.php",
+        "vcb-mh/vcb-mh.php",
+        "vidieu-home-sections/vidieu-home-sections.php",
+        "woocommerce/woocommerce.php",
+        "wp-mail-smtp/wp_mail_smtp.php",
+        "yith-woocommerce-compare/init.php"
+    ],
+    "php_version": "7.4.27",
+    "server_software": "LiteSpeed"
+}
