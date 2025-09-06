@@ -69,7 +69,7 @@ class Vidieu_Dup_Requests_Guard_V2_Aggressive {
      * Constructor
      */
     private function __construct() {
-        if (defined(self::DISABLE_OPTIMIZATION) && constant(self::DISABLE_OPTIMIZATION)) {
+        if (defined('VIDIEU_DISABLE_DUP_OPTIMIZATION') && VIDIEU_DISABLE_DUP_OPTIMIZATION) {
             return;
         }
         
@@ -790,11 +790,11 @@ class Vidieu_Dup_Requests_Guard_V2_Aggressive {
         
         echo "DETAILED LOG:\n";
         foreach ($this->fixes_log as $i => $log) {
-            echo ($i + 1) . ". " . esc_html($log) . "\n";
+            echo ($i + 1) . ". " . $log . "\n";
         }
         
         echo "\nTO VIEW DOMAIN STATS: Open console and type: window.vidieuPerfDomains\n";
-        echo "Kill Switch: " . (defined(self::DISABLE_OPTIMIZATION) && constant(self::DISABLE_OPTIMIZATION) ? 'ACTIVE' : 'inactive') . "\n";
+        echo "Kill Switch: " . (defined('VIDIEU_DISABLE_DUP_OPTIMIZATION') && VIDIEU_DISABLE_DUP_OPTIMIZATION ? 'ACTIVE' : 'inactive') . "\n";
         echo "===== End Report ===== -->\n";
     }
 }
