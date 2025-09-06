@@ -17,6 +17,9 @@ The following feature flags have been implemented to control performance optimiz
 | `VIDIEU_PERF_DEFER_JS` | Controls JavaScript deferral for non-critical scripts | `false` |
 | `VIDIEU_PERF_FONTS` | Controls font optimization and preloading strategies | `false` |
 | `VIDIEU_PERF_WC` | Controls WooCommerce-specific performance optimizations | `false` |
+| `VIDIEU_PERF_LOG_QUERIES` | Enables query logging for performance analysis (Phase 1) | `false` |
+| `VIDIEU_PERF_LOG_BOOTSTRAP` | Enables bootstrap hooks logging (Phase 1) | `false` |
+| `VIDIEU_PERF_ROUTE_CONDITIONALS` | Enables route-based conditional loading (Phase 1) | `false` |
 
 ### Usage
 To enable any optimization, define the constant in `wp-config.php` before the MU-plugin loads:
@@ -63,10 +66,46 @@ To disable any optimization causing issues:
 ### Monitoring
 When `WP_DEBUG` is enabled, active performance flags will be displayed in the admin area for administrators.
 
+## Phase 1: TTFB & Server-side Optimization (Implemented)
+
+### Overview
+Phase 1 focuses on reducing Time To First Byte (TTFB) through query optimization and route-based conditional loading.
+
+### Components
+1. **Performance Logging** (`inc/perf/class-vidieu-perf-logger.php`)
+   - Tracks MySQL queries by route
+   - Monitors bootstrap hooks and timing
+   - Generates detailed performance logs
+
+2. **Route Optimizer** (`inc/perf/class-vidieu-route-optimizer.php`)
+   - Conditionally loads features based on current route
+   - Removes unnecessary WooCommerce features from non-commerce pages
+   - Implements query caching and optimization
+
+3. **Analysis Tools**
+   - `perf/server/run-profiling.php` - Automated profiling script
+   - `perf/server/analyze-logs.php` - Log analysis and report generation
+
+### Usage
+```php
+// Enable route optimizations (production)
+define('VIDIEU_PERF_ROUTE_CONDITIONALS', true);
+
+// Enable logging (development/testing only)
+define('VIDIEU_PERF_LOG_QUERIES', true);
+define('VIDIEU_PERF_LOG_BOOTSTRAP', true);
+```
+
+### Reports
+- `perf/server/slow-queries.md` - Query analysis results
+- `perf/server/analysis-phase1.md` - Performance bottleneck analysis
+- `perf/DELTA_REPORT.md` - Before/after metrics
+- `perf/CHANGELOG_perf.md` - Detailed change log
+
 ## Future Phases
-- Phase 1: Critical CSS implementation
-- Phase 2: JavaScript optimization
-- Phase 3: Font optimization
-- Phase 4: WooCommerce optimization
+- Phase 2: Critical CSS implementation
+- Phase 3: JavaScript optimization
+- Phase 4: Font optimization
+- Phase 5: Advanced WooCommerce optimization
 
 Each phase will be implemented behind its corresponding feature flag.

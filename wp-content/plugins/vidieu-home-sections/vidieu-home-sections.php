@@ -82,6 +82,17 @@ class Vidieu_Home_Sections {
         require_once VD_HOME_PLUGIN_DIR . 'includes/class-vd-buy-now.php';
         require_once VD_HOME_PLUGIN_DIR . 'includes/class-vd-translations.php';
         require_once VD_HOME_PLUGIN_DIR . 'includes/class-vd-page-sidebar-mappings.php';
+        
+        // Performance logging (only when flags are enabled)
+        if ((defined('VIDIEU_PERF_LOG_QUERIES') && VIDIEU_PERF_LOG_QUERIES) || 
+            (defined('VIDIEU_PERF_LOG_BOOTSTRAP') && VIDIEU_PERF_LOG_BOOTSTRAP)) {
+            require_once VD_HOME_PLUGIN_DIR . 'inc/perf/class-vidieu-perf-logger.php';
+        }
+        
+        // Route-based optimizations (only when flag is enabled)
+        if (defined('VIDIEU_PERF_ROUTE_CONDITIONALS') && VIDIEU_PERF_ROUTE_CONDITIONALS) {
+            require_once VD_HOME_PLUGIN_DIR . 'inc/perf/class-vidieu-route-optimizer.php';
+        }
     }
     
     /**

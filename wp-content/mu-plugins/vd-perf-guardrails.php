@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Vidieu Performance Guardrails
  * Description: Feature flags for performance optimizations to enable safe rollback
- * Version: 1.0.0
+ * Version: 1.1.0
  * Author: Vidieu.vn
  * 
  * This MU-plugin provides centralized feature flags for performance optimizations.
@@ -51,6 +51,37 @@ if (!defined('VIDIEU_PERF_WC')) {
 }
 
 /**
+ * Phase 1: Server-side Performance Flags
+ */
+
+/**
+ * Feature flag for Query logging
+ * When enabled, logs MySQL queries for performance analysis
+ * @since 1.1.0
+ */
+if (!defined('VIDIEU_PERF_LOG_QUERIES')) {
+    define('VIDIEU_PERF_LOG_QUERIES', false);
+}
+
+/**
+ * Feature flag for Bootstrap logging
+ * When enabled, logs heavy hooks/actions during WordPress bootstrap
+ * @since 1.1.0
+ */
+if (!defined('VIDIEU_PERF_LOG_BOOTSTRAP')) {
+    define('VIDIEU_PERF_LOG_BOOTSTRAP', false);
+}
+
+/**
+ * Feature flag for Route-based conditionals
+ * When enabled, conditionally loads WooCommerce features based on current route
+ * @since 1.1.0
+ */
+if (!defined('VIDIEU_PERF_ROUTE_CONDITIONALS')) {
+    define('VIDIEU_PERF_ROUTE_CONDITIONALS', false);
+}
+
+/**
  * Hook to allow runtime flag status reporting (optional)
  */
 add_action('init', function() {
@@ -62,6 +93,9 @@ add_action('init', function() {
                     'VIDIEU_PERF_DEFER_JS' => VIDIEU_PERF_DEFER_JS,
                     'VIDIEU_PERF_FONTS' => VIDIEU_PERF_FONTS,
                     'VIDIEU_PERF_WC' => VIDIEU_PERF_WC,
+                    'VIDIEU_PERF_LOG_QUERIES' => VIDIEU_PERF_LOG_QUERIES,
+                    'VIDIEU_PERF_LOG_BOOTSTRAP' => VIDIEU_PERF_LOG_BOOTSTRAP,
+                    'VIDIEU_PERF_ROUTE_CONDITIONALS' => VIDIEU_PERF_ROUTE_CONDITIONALS,
                 ];
                 
                 // Only show if any flag is enabled
