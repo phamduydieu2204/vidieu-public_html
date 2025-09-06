@@ -325,3 +325,41 @@ add_action('wp_head', array($this, 'inline_critical_css'), 5);
 - **What could break**: Visual styling if critical CSS doesn't match main CSS
 - **Mitigation**: Main stylesheet still loads, critical CSS is supplementary
 - **Monitoring**: Watch for visual inconsistencies or FOUC
+
+---
+
+## VERIFY H2.2-fix - Critical CSS Implementation Verification
+**Date**: 2025-09-06  
+**Status**: ❌ **FAILED** - Critical implementation issues found  
+**Report**: [/wp-content/perf/HOME_COMPARE_H2.2fix.md](HOME_COMPARE_H2.2fix.md)
+
+### Verification Results Summary:
+
+**Failed Criteria (5/6):**
+- ❌ Critical CSS appears AFTER stylesheets (position 5723 vs 769)
+- ❌ Duplicate preload found (sbi-styles.min.css)
+- ❌ Font preloads using .woff instead of .woff2 (4/5 fonts)
+- ❌ FCP/LCP regression: Mobile FCP +14.1%, LCP +27.6%
+- ❌ FOUC risk due to incorrect CSS positioning
+
+**Passed Criteria (1/6):**
+- ✅ No preload for style.css (correctly not preloading enqueued stylesheets)
+
+### Key Findings:
+1. **Critical Issue**: Critical CSS injected too late (priority 5), appearing after external stylesheets
+2. **Performance Regression**: Mobile FCP and LCP significantly worse after implementation
+3. **Font Optimization Missed**: Most fonts still using older .woff format
+4. **Excessive Preloads**: 40 CSS preloads may be hurting performance
+
+### Required Patches:
+1. **URGENT**: Change wp_head priority from 5 to 1 for critical CSS injection
+2. Remove duplicate sbi-styles.min.css preload
+3. Update font preloads to .woff2 format
+4. Consider reducing CSS preloads from 40 to 5-10 critical files
+
+### Next Steps:
+- Apply proposed patches from verification report
+- Re-test after patches to confirm improvements
+- Consider rollback if patches don't resolve issues
+
+**See full analysis**: [HOME_COMPARE_H2.2fix.md](HOME_COMPARE_H2.2fix.md)
