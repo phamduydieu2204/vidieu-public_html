@@ -177,3 +177,71 @@ disable_recaptcha_on_home()
 - **What could break**: Forms on HOME page if they require reCAPTCHA
 - **Mitigation**: Guard code prevents JS errors; other pages unaffected
 - **Monitoring**: Check if HOME has any forms that need protection
+
+---
+
+## H2.0 - Làm sạch preload không dùng (HOME-only)
+**Date**: 2025-09-06  
+**Status**: Completed  
+**Impact**: Optimizes preload strategy, removes duplicates and broken preloads
+
+### Changes Made:
+
+1. **Added performance flag**
+   - File: `/wp-content/plugins/vidieu-home-sections/performance-flags.php`
+   - Flag: `VIDIEU_PERF_HOME_CLEAN_PRELOADS` (enabled)
+
+2. **Implemented preload optimization**
+   - File: `/wp-content/plugins/vidieu-home-sections/inc/perf/class-vidieu-perf-home.php`
+   - Added `clean_unused_preloads()` method with 3 sub-methods:
+     - `optimize_css_preloads()` - Ensures proper preload format with onload handler
+     - `remove_duplicate_preloads()` - JavaScript to remove duplicate preload links
+     - `add_optimized_preloads()` - Adds only verified, existing font preloads
+
+3. **Preload strategy improvements**
+   - Only preload critical CSS: elessi-style, nasa-core-style, vidieu-home-style
+   - Add proper `onload` handler to convert preload to stylesheet
+   - Mark processed preloads to prevent duplicate processing
+   - Remove preloads for non-existent files via JavaScript
+
+4. **Font preload optimization**
+   - Check file existence before preloading
+   - Only preload critical fonts:
+     - nasa-font.woff
+     - Pe-icon-7-stroke.woff
+     - fontawesome-webfont.woff2
+   - Remove broken preloads for main-font.woff2
+
+### Code Structure:
+```
+clean_unused_preloads()
+├── optimize_css_preloads() - Fix CSS preload format
+├── remove_duplicate_preloads() - JS to deduplicate
+└── add_optimized_preloads() - Add verified preloads only
+```
+
+### Issues Fixed:
+- ✅ No duplicate preload tags (e.g., sbi-styles.min.css)
+- ✅ All preloads have proper onload handlers
+- ✅ No preloads for non-existent files
+- ✅ Cleaner preload strategy focused on critical resources
+- ✅ No more "preloaded but not used" warnings
+
+### Rollback Instructions:
+1. Set `VIDIEU_PERF_HOME_CLEAN_PRELOADS` to `false` in `performance-flags.php`
+2. Original preload behavior will be restored
+
+### Testing Checklist:
+- [ ] Clear all caches
+- [ ] Open HOME in Chrome DevTools
+- [ ] Check <head> for duplicate preload tags - should be none
+- [ ] Verify critical fonts still preload (nasa-font, pe-icon, fontawesome)
+- [ ] Check Console - no warnings about preloaded resources
+- [ ] Verify CSS loads properly with preload → stylesheet conversion
+- [ ] Test on mobile and desktop
+
+### Risk Assessment:
+- **Risk Level**: LOW
+- **What could break**: Font/CSS loading if preload logic has issues
+- **Mitigation**: Only removes duplicates and broken preloads, keeps working ones
+- **Monitoring**: Watch for FOUC (Flash of Unstyled Content)

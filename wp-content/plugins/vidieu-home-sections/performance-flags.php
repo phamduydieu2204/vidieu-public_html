@@ -18,6 +18,7 @@ define('VIDIEU_PERF_HOME_ENABLE', true);
 // Individual feature flags
 define('VIDIEU_PERF_HOME_FIX_404', true);           // H1.2 - Fix missing resources
 define('VIDIEU_PERF_HOME_DISABLE_RECAPTCHA_ON_HOME', true); // H1.2b - Disable reCAPTCHA on HOME page
+define('VIDIEU_PERF_HOME_CLEAN_PRELOADS', true);    // H2.0 - Clean unused preloads
 define('VIDIEU_PERF_HOME_DEFER_JS', false);         // H2.1 - Defer non-critical JS (disabled until ready)
 define('VIDIEU_PERF_HOME_CRITICAL_CSS', false);     // H2.2 - Inline critical CSS (disabled until ready)
 define('VIDIEU_PERF_HOME_FONT_OPTIMIZE', false);    // H2.4 - Font optimization (disabled until ready)

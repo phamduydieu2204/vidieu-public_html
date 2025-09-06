@@ -49,6 +49,11 @@ class Vidieu_Perf_Home {
             $this->disable_recaptcha_on_home();
         }
         
+        // H2.0 - Clean unused preloads
+        if (defined('VIDIEU_PERF_HOME_CLEAN_PRELOADS') && VIDIEU_PERF_HOME_CLEAN_PRELOADS) {
+            $this->clean_unused_preloads();
+        }
+        
         // H2.1 - Defer JS (future implementation)
         if (defined('VIDIEU_PERF_HOME_DEFER_JS') && VIDIEU_PERF_HOME_DEFER_JS) {
             add_filter('script_loader_tag', array($this, 'defer_non_critical_scripts'), 10, 3);
@@ -313,6 +318,130 @@ class Vidieu_Perf_Home {
                 };
             }
         })();
+        </script>
+        <?php
+    }
+    
+    /**
+     * H2.0 - Clean unused preloads
+     */
+    private function clean_unused_preloads() {
+        // Filter stylesheet preloads to proper format
+        add_filter('style_loader_tag', array($this, 'optimize_css_preloads'), 999, 4);
+        
+        // Clean up duplicate preloads
+        add_action('wp_head', array($this, 'remove_duplicate_preloads'), 999);
+        
+        // Optimize preload strategy
+        add_action('wp_head', array($this, 'add_optimized_preloads'), 2);
+    }
+    
+    /**
+     * Optimize CSS preloads to prevent duplicates and ensure proper loading
+     */
+    public function optimize_css_preloads($html, $handle, $href, $media) {
+        // Skip if already processed or is inline style
+        if (strpos($html, 'data-preload-processed') !== false || strpos($href, 'http') === false) {
+            return $html;
+        }
+        
+        // List of CSS that should be preloaded (critical for HOME)
+        $critical_css = array(
+            'elessi-style',
+            'elessi-style-dynamic',
+            'nasa-core-style',
+            'vidieu-home-style'
+        );
+        
+        // If it's a critical CSS and contains preload, ensure proper format
+        if (in_array($handle, $critical_css) && strpos($html, 'rel="preload"') !== false) {
+            // Ensure onload handler is present
+            if (strpos($html, 'onload=') === false) {
+                $html = str_replace(
+                    'as="style"',
+                    'as="style" onload="this.onload=null;this.rel=\'stylesheet\'"',
+                    $html
+                );
+            }
+            // Add marker to prevent duplicate processing
+            $html = str_replace('<link', '<link data-preload-processed="1"', $html);
+        }
+        
+        return $html;
+    }
+    
+    /**
+     * Remove duplicate preloads via JavaScript
+     */
+    public function remove_duplicate_preloads() {
+        ?>
+        <script id="vidieu-clean-duplicate-preloads">
+        // H2.0 - Remove duplicate preloads on page load
+        (function() {
+            var seen = {};
+            var preloads = document.querySelectorAll('link[rel="preload"]');
+            preloads.forEach(function(link) {
+                var href = link.href;
+                if (seen[href]) {
+                    // Remove duplicate
+                    link.remove();
+                } else {
+                    seen[href] = true;
+                }
+            });
+        })();
+        </script>
+        <?php
+    }
+    
+    /**
+     * Add optimized preloads for HOME
+     */
+    public function add_optimized_preloads() {
+        // Only preconnect to actually used external domains
+        ?>
+        <!-- H2.0 Optimized preconnects for HOME -->
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <?php
+        
+        // Preload only existing critical fonts
+        $theme_url = get_template_directory_uri();
+        $critical_fonts = array(
+            array(
+                'path' => '/assets/font-nasa/nasa-font.woff',
+                'type' => 'font/woff'
+            ),
+            array(
+                'path' => '/assets/font-pe-icon-7-stroke/Pe-icon-7-stroke.woff', 
+                'type' => 'font/woff'
+            ),
+            array(
+                'path' => '/assets/font-awesome-4.7.0/fontawesome-webfont.woff2',
+                'type' => 'font/woff2'
+            )
+        );
+        
+        echo "<!-- H2.0 Optimized font preloads -->\n";
+        foreach ($critical_fonts as $font) {
+            $full_path = get_template_directory() . $font['path'];
+            if (file_exists($full_path)) {
+                printf(
+                    '<link rel="preload" as="font" type="%s" crossorigin href="%s">%s',
+                    esc_attr($font['type']),
+                    esc_url($theme_url . $font['path']),
+                    "\n"
+                );
+            }
+        }
+        
+        // Remove preload for non-existent style.min.css
+        ?>
+        <script>
+        // Remove any preload for non-existent files
+        document.querySelectorAll('link[rel="preload"][href*="style.min.css"], link[rel="preload"][href*="main-font.woff2"]').forEach(function(el) {
+            el.remove();
+        });
         </script>
         <?php
     }
