@@ -69,13 +69,7 @@ add_filter('woocommerce_gateway_description', function($description, $gateway_id
 // 4. Log các transaction để monitor
 add_action('woocommerce_checkout_order_processed', function($order_id, $posted_data, $order) {
     if ($order->get_payment_method() === 'vcb-gateway-mh') {
-        // Log order creation với VCB payment
-        error_log(sprintf(
-            'VCB Payment Order Created: #%d, Amount: %s, Customer: %s',
-            $order_id,
-            $order->get_total(),
-            $order->get_billing_email()
-        ));
+        // Order creation hook for VCB payment (logging removed)
     }
 }, 10, 3);
 
@@ -171,7 +165,6 @@ add_action('wp_footer', function() {
                     setTimeout(function() {
                         if ($('.vcb-gateway-result .success-animation').length === 0) {
                             // Payment not yet confirmed
-                            console.log('Checking payment status...');
                             // Could implement AJAX check here
                         }
                     }, 300000); // 5 minutes

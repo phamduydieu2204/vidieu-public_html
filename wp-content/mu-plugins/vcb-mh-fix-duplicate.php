@@ -87,7 +87,6 @@ add_action('wp_footer', function() {
         // Remove duplicate VCB gateway
         var vcbGateways = $('#vcb-gateway');
         if (vcbGateways.length > 1) {
-            console.log('VCB-MH Fix: Found', vcbGateways.length, 'instances, removing duplicates');
             // Keep only the first one
             vcbGateways.not(':first').remove();
         }
@@ -127,14 +126,12 @@ add_action('wp_footer', function() {
         var note = orderInfo.prefix + orderInfo.order_id + orderInfo.suffix;
         var qrUrl = 'https://api.vietqr.io/970436/' + orderInfo.phone + '/' + orderInfo.total + '/' + note + '/qr_only.jpg';
         
-        console.log('VCB-MH Fix: QR URL:', qrUrl);
         
         // Check if QR exists
         var $qrImages = $('#vcb-gateway .qrVietqr');
         
         if ($qrImages.length === 0) {
             // No QR found, add them
-            console.log('VCB-MH Fix: Adding missing QR images');
             
             // Add to left column
             $('#left-col .flex-center-box').after('<img class="qrVietqr" src="' + qrUrl + '" alt="QR Code chuyển khoản" />');
@@ -311,8 +308,7 @@ add_action('init', function() {
                         $vcb_count++;
                         // If more than one, could remove extras
                         if ($vcb_count > 1) {
-                            // Log for debugging
-                            error_log('VCB-MH Fix: Found duplicate hook at priority ' . $priority);
+                            // Duplicate hook found
                         }
                     }
                 }
