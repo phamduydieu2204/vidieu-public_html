@@ -70,10 +70,6 @@ class Vidieu_Home_Sections {
      * Include required files
      */
     private function includes() {
-        // Performance flags (loaded first)
-        require_once VD_HOME_PLUGIN_DIR . 'performance-flags.php';
-        
-        // Core includes
         require_once VD_HOME_PLUGIN_DIR . 'includes/class-vd-assets.php';
         require_once VD_HOME_PLUGIN_DIR . 'includes/class-vd-shortcodes.php';
         require_once VD_HOME_PLUGIN_DIR . 'includes/class-vd-ajax.php';
@@ -86,11 +82,6 @@ class Vidieu_Home_Sections {
         require_once VD_HOME_PLUGIN_DIR . 'includes/class-vd-buy-now.php';
         require_once VD_HOME_PLUGIN_DIR . 'includes/class-vd-translations.php';
         require_once VD_HOME_PLUGIN_DIR . 'includes/class-vd-page-sidebar-mappings.php';
-        
-        // Performance optimization (loaded last)
-        if (file_exists(VD_HOME_PLUGIN_DIR . 'inc/perf/class-vidieu-perf-home.php')) {
-            require_once VD_HOME_PLUGIN_DIR . 'inc/perf/class-vidieu-perf-home.php';
-        }
     }
     
     /**

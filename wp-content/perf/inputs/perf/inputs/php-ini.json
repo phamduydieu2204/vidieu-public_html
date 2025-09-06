@@ -1,6 +1,0 @@
-{
-    "memory_limit": "512M",
-    "max_execution_time": "6000",
-    "upload_max_filesize": "5120M",
-    "post_max_size": "3072M"
-}

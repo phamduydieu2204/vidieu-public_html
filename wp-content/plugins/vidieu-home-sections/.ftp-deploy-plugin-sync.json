@@ -1,0 +1,247 @@
+{
+    "description": "DO NOT DELETE THIS FILE. This file is used to keep track of which files have been synced in the most recent deployment. If you delete this file a resync will need to be done (which can take a while) - read more: https://github.com/SamKirkland/FTP-Deploy-Action",
+    "version": "1.0.0",
+    "generatedTime": 1757004824066,
+    "data": [
+        {
+            "type": "file",
+            "name": "12_changelog.md",
+            "size": 958,
+            "hash": "4ef881fc3d3aa59e661211fedb61c807c3fc9249a752f0c7968b01ab3a96bf24"
+        },
+        {
+            "type": "file",
+            "name": "CLEANUP_LOG.md",
+            "size": 1507,
+            "hash": "87e63b5f225c699473d82e8f971b4a62a0ce3b83c8a640019a63590c63ac2e92"
+        },
+        {
+            "type": "file",
+            "name": "CLEANUP_LOG_TREE_MENU.md",
+            "size": 2494,
+            "hash": "30c985cc263df7f110b11a5d4bbe70a14edf94af0e11ffea96fa330fa4ac8033"
+        },
+        {
+            "type": "file",
+            "name": "MOBILE_FILTER_PANEL_FIX.md",
+            "size": 2968,
+            "hash": "29bccdab184168cff785fffa2cb23ca170a1d3b7130208d7924db2d7905b2144"
+        },
+        {
+            "type": "folder",
+            "name": "assets"
+        },
+        {
+            "type": "folder",
+            "name": "docs"
+        },
+        {
+            "type": "folder",
+            "name": "includes"
+        },
+        {
+            "type": "file",
+            "name": "readme.txt",
+            "size": 41,
+            "hash": "de0ef346888a5aed2e35bef1fb0c90e11731f89fa54160d40f08d3afa5b2de4d"
+        },
+        {
+            "type": "folder",
+            "name": "templates"
+        },
+        {
+            "type": "folder",
+            "name": "tests"
+        },
+        {
+            "type": "file",
+            "name": "vidieu-home-sections.php",
+            "size": 3905,
+            "hash": "7cac48a2d5cccc04c4ddbac116002722a7d23ae6b879ec19221c71c81d400734"
+        },
+        {
+            "type": "folder",
+            "name": "assets/css"
+        },
+        {
+            "type": "folder",
+            "name": "assets/js"
+        },
+        {
+            "type": "file",
+            "name": "docs/cleanup-notes.md",
+            "size": 1621,
+            "hash": "21bec051011833053f70476f3cf54d41ace23c6b8b2b3a2a1ccca534bb045313"
+        },
+        {
+            "type": "file",
+            "name": "docs/page-sidebar-mappings.md",
+            "size": 3464,
+            "hash": "dc3ca996e0ecbe4c8537b1ce1f34014622505131f1437839cb9ceb1913bb2fd6"
+        },
+        {
+            "type": "folder",
+            "name": "docs/qa"
+        },
+        {
+            "type": "file",
+            "name": "includes/class-vd-admin.php",
+            "size": 16724,
+            "hash": "005d65238177d8baf489410f63fca567b79a3f3a50f6420cb87e2ad8b38e52d8"
+        },
+        {
+            "type": "file",
+            "name": "includes/class-vd-ajax-optimized.php",
+            "size": 13790,
+            "hash": "04d37ecce1502a96787fa767d88fc585470e8d710b781fe44e34598697fb7f89"
+        },
+        {
+            "type": "file",
+            "name": "includes/class-vd-ajax.php",
+            "size": 8347,
+            "hash": "85ad5a31590a1037ecbd4b0d415b6f549455106b363bd8a411acb306ff173df8"
+        },
+        {
+            "type": "file",
+            "name": "includes/class-vd-assets.php",
+            "size": 6962,
+            "hash": "8b7829bcdfc523658a6e4e68fac52b9aca2a4adad95286a94e58c60a0c7343f2"
+        },
+        {
+            "type": "file",
+            "name": "includes/class-vd-buy-now.php",
+            "size": 11964,
+            "hash": "c4eb5425ef3910cc238b0b04f137496365488252cdce636ffd6e6c28208e6e2e"
+        },
+        {
+            "type": "file",
+            "name": "includes/class-vd-menus.php",
+            "size": 3995,
+            "hash": "ca7e4e9e8ac76f41effc7b80e737bd58fe6eab7ef19b6333712dda071f3fb97f"
+        },
+        {
+            "type": "file",
+            "name": "includes/class-vd-page-sidebar-mappings.php",
+            "size": 21506,
+            "hash": "4254b9a440d83cd63e1e3100423e2123e4c0288462dc131efec0fafa9391cadc"
+        },
+        {
+            "type": "file",
+            "name": "includes/class-vd-page-sidebar-renderer.php",
+            "size": 6927,
+            "hash": "996553f0a63dbd07142fa845cf82855815c9c245f74352939ff337a49dec4908"
+        },
+        {
+            "type": "file",
+            "name": "includes/class-vd-pagination.php",
+            "size": 9235,
+            "hash": "34181d9024bfeb90f92195287eceb3e821d73a59a1a7cf3a912ecf7c69f2f4d9"
+        },
+        {
+            "type": "file",
+            "name": "includes/class-vd-shortcodes.php",
+            "size": 25940,
+            "hash": "246f91c08cb41d45704b862284974912edd2c5b91c3b4d1a5d1874ada1835d9a"
+        },
+        {
+            "type": "file",
+            "name": "includes/class-vd-templates.php",
+            "size": 11940,
+            "hash": "49b6e67727bf06c9e200bfbab447a4529f0ad3484d593a415e99d855a05596fb"
+        },
+        {
+            "type": "file",
+            "name": "includes/class-vd-translations.php",
+            "size": 7841,
+            "hash": "38a574ee2bfbe2d89cfbc1d97fbd7c5750485cfe6f160d46ec668357a807dad8"
+        },
+        {
+            "type": "file",
+            "name": "includes/class-vd-wpbakery.php",
+            "size": 11557,
+            "hash": "15ec3047bc823afa5ab9cf0b094fc3ca8beb8042fa4df104c7723b25848f1c2d"
+        },
+        {
+            "type": "file",
+            "name": "templates/page-with-sidebar.php",
+            "size": 2538,
+            "hash": "e951d5f6ab916e3b863f8a54a145a59df9ddda46b1413d158f8d23633287e44c"
+        },
+        {
+            "type": "file",
+            "name": "templates/posts-grid.php",
+            "size": 5023,
+            "hash": "1c0ffc3f1dc5157733c29001e2e65d979d6793d1317618f72c0ca0a1c035c601"
+        },
+        {
+            "type": "file",
+            "name": "templates/products-grid.php",
+            "size": 609,
+            "hash": "07b97e28f99219c0b7f6c78d258aa96eaea1b4292d70dbe46e446f59dc663be0"
+        },
+        {
+            "type": "file",
+            "name": "tests/benchmark.html",
+            "size": 18492,
+            "hash": "374571a2d6b980bba484d81a163006b5144c9f9b2aa518ba7e1c5bd868d2b8e1"
+        },
+        {
+            "type": "file",
+            "name": "assets/css/vd-page-mappings-admin.css",
+            "size": 881,
+            "hash": "9522f8046b1c8fb978d6e320c5fe3d244112e7c6476f1d1562326f6b0778ecbc"
+        },
+        {
+            "type": "file",
+            "name": "assets/css/vidieu-home.css",
+            "size": 79782,
+            "hash": "91a8c9cb51ea4d89a0e799943d10776d0c08323976934168462160d1004b6c9a"
+        },
+        {
+            "type": "file",
+            "name": "assets/css/vidieu-tree-menu.css",
+            "size": 3603,
+            "hash": "58657c307cafd357e230096f43a720bdd3a4c5f6dca4033bbdc57f9fe9d66868"
+        },
+        {
+            "type": "file",
+            "name": "assets/js/vd-page-mappings-admin.js",
+            "size": 6214,
+            "hash": "28b535d6161cef8fed3ee2a8a6dda7c147196af99c000bfe3d087c11339c8155"
+        },
+        {
+            "type": "file",
+            "name": "assets/js/vd-select-options-open-qv.js",
+            "size": 13179,
+            "hash": "b9e940206b0bcb8364c202fbae1f72bd7731bc13753dfdc1b24821939b40cd51"
+        },
+        {
+            "type": "file",
+            "name": "assets/js/vidieu-ajax-optimized.js",
+            "size": 15516,
+            "hash": "994a3b36875f4cfc5ac3c58686c6b6e8839ff98744c2fc95795022c8e0df77ea"
+        },
+        {
+            "type": "file",
+            "name": "assets/js/vidieu-custom-quickview.js",
+            "size": 20228,
+            "hash": "93634b6ad23ab5326c034adb9f9ca4bb6bced8534cd93e390e404b3b01ba739d"
+        },
+        {
+            "type": "file",
+            "name": "assets/js/vidieu-home.js",
+            "size": 78579,
+            "hash": "caefd5ca83a51d75d7ed710d433f1ea43c70ea0513ee448364d7588dd8c7b8a3"
+        },
+        {
+            "type": "folder",
+            "name": "docs/qa/sections-interactions"
+        },
+        {
+            "type": "file",
+            "name": "docs/qa/sections-interactions/select-options-opens-nasa-sidebar.md",
+            "size": 2824,
+            "hash": "6d33c616d190dd66e05c23f22f981dcca0496d061f7af185e4722cd59048f263"
+        }
+    ]
+}

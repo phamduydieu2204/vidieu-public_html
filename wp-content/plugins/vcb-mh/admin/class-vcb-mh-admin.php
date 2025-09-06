@@ -482,6 +482,10 @@ class Vcb_Mh_Admin {
 		));
 
 		$response = curl_exec($curl);
+		if (curl_errno($curl)) {
+    $error_msg = curl_error($curl);
+			print_r($error_msg);
+}
 		return $response;
 	}
 
