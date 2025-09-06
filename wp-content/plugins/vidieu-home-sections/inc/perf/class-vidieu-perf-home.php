@@ -177,7 +177,53 @@ class Vidieu_Perf_Home {
     }
     
     public function inline_critical_css() {
-        // H2.2 implementation will go here
+        // H2.2 - Inline critical CSS for HOME page
+        
+        // Path to critical CSS file
+        $crit_css_path = get_stylesheet_directory() . '/assets/css/crit-home.css';
+        
+        // Check if file exists
+        if (!file_exists($crit_css_path)) {
+            return;
+        }
+        
+        // Read the critical CSS content
+        $critical_css = file_get_contents($crit_css_path);
+        
+        // Minify the CSS (basic minification)
+        $critical_css = $this->minify_css($critical_css);
+        
+        // Output the critical CSS inline
+        if (!empty($critical_css)) {
+            echo "\n<!-- H2.2 Critical CSS for HOME -->\n";
+            echo '<style id="vd-crit-home">' . $critical_css . '</style>';
+            echo "\n<!-- End H2.2 Critical CSS -->\n";
+        }
+    }
+    
+    /**
+     * Simple CSS minification
+     * @param string $css CSS content to minify
+     * @return string Minified CSS
+     */
+    private function minify_css($css) {
+        // Remove comments
+        $css = preg_replace('!/\*[^*]*\*+([^/][^*]*\*+)*/!', '', $css);
+        
+        // Remove unnecessary whitespace
+        $css = str_replace(array("\r\n", "\r", "\n", "\t", '  ', '    ', '    '), ' ', $css);
+        
+        // Remove whitespace around selectors
+        $css = preg_replace('/\s*([{}|:;,])\s+/', '$1', $css);
+        $css = preg_replace('/\s+([{}|:;,])/', '$1', $css);
+        
+        // Remove trailing semicolon before closing brace
+        $css = str_replace(';}', '}', $css);
+        
+        // Remove empty rules
+        $css = preg_replace('/[^{}]+\{\s*\}/', '', $css);
+        
+        return trim($css);
     }
     
     public function optimize_font_loading() {

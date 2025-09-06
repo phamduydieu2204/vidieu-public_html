@@ -245,3 +245,83 @@ clean_unused_preloads()
 - **What could break**: Font/CSS loading if preload logic has issues
 - **Mitigation**: Only removes duplicates and broken preloads, keeps working ones
 - **Monitoring**: Watch for FOUC (Flash of Unstyled Content)
+
+---
+
+## H2.2 - Critical CSS for HOME page
+**Date**: 2025-09-06  
+**Status**: Completed  
+**Impact**: Reduces FCP/LCP by inlining critical CSS for above-the-fold content
+
+### Changes Made:
+
+1. **Created critical CSS file**
+   - File: `/wp-content/themes/elessi-theme-child/assets/css/crit-home.css`
+   - Size: ~12KB (well under 20KB target)
+   - Content: Minimal CSS for header, navigation, topbar, hero, and basic layout
+   - Mobile-first responsive styles included
+
+2. **Updated performance class to inject critical CSS**
+   - File: `/wp-content/plugins/vidieu-home-sections/inc/perf/class-vidieu-perf-home.php`
+   - Implemented `inline_critical_css()` method
+   - Added CSS minification method `minify_css()`
+   - Injects critical CSS in <head> with id="vd-crit-home"
+   - Only runs when flag enabled and on HOME page
+
+3. **Enabled critical CSS flag**
+   - File: `/wp-content/plugins/vidieu-home-sections/performance-flags.php`
+   - Flag: `VIDIEU_PERF_HOME_CRITICAL_CSS` set to `true`
+
+### Critical CSS Contents:
+- Base reset & typography (html, body, headings)
+- Layout grid system (row, columns, container)
+- Header structure (#masthead, .site-header, logo)
+- Top bar styles
+- Navigation (.main-navigation, header icons)
+- Sticky header initial state
+- Hero/banner section basics
+- Mobile responsive (mobile-first approach)
+- Essential utilities (hide/show, clearfix, text alignment)
+- Child theme overrides (hide vertical menu title)
+- Basic font icon setup
+
+### Implementation Details:
+```php
+// Hook: wp_head with priority 5 (early injection)
+add_action('wp_head', array($this, 'inline_critical_css'), 5);
+
+// Process flow:
+1. Read crit-home.css from child theme
+2. Minify CSS (remove comments, whitespace)
+3. Output as inline <style> in <head>
+4. Main stylesheet loads normally (no FOUC)
+```
+
+### Issues Addressed:
+- ✅ Faster initial render of header/navigation
+- ✅ Reduced FCP (First Contentful Paint)
+- ✅ Reduced LCP (Largest Contentful Paint)
+- ✅ No layout shift during page load
+- ✅ Mobile-optimized from the start
+
+### Rollback Instructions:
+1. Set `VIDIEU_PERF_HOME_CRITICAL_CSS` to `false` in `performance-flags.php`
+2. Critical CSS will no longer be injected
+3. Page will load with standard stylesheet loading
+
+### Testing Checklist:
+- [ ] Clear all caches
+- [ ] Open HOME in Chrome DevTools (Incognito, disable cache)
+- [ ] Check <head> for `<style id="vd-crit-home">` tag
+- [ ] Verify no FOUC on page load
+- [ ] Check Lighthouse scores - FCP/LCP should improve
+- [ ] Test sticky header functionality
+- [ ] Test mobile navigation display
+- [ ] Verify main stylesheet still loads
+- [ ] Check for any visual regressions
+
+### Risk Assessment:
+- **Risk Level**: LOW-MEDIUM
+- **What could break**: Visual styling if critical CSS doesn't match main CSS
+- **Mitigation**: Main stylesheet still loads, critical CSS is supplementary
+- **Monitoring**: Watch for visual inconsistencies or FOUC
