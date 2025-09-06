@@ -98,6 +98,11 @@ class Vidieu_Home_Sections {
         if (defined('VIDIEU_PERF_CRITICAL_CSS') && VIDIEU_PERF_CRITICAL_CSS) {
             require_once VD_HOME_PLUGIN_DIR . 'inc/perf/class-vidieu-critical-css.php';
         }
+        
+        // JavaScript optimization (only when flag is enabled)
+        if (defined('VIDIEU_PERF_DEFER_JS') && VIDIEU_PERF_DEFER_JS) {
+            require_once VD_HOME_PLUGIN_DIR . 'inc/perf/class-vidieu-defer-js.php';
+        }
     }
     
     /**

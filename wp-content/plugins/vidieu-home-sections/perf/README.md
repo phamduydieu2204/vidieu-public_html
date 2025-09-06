@@ -152,10 +152,59 @@ define('VIDIEU_PERF_CRITICAL_CSS', true);
 - Automatic fallback if route not detected
 - Complete rollback with flag toggle
 
+## Phase 3: JavaScript Optimization (Implemented)
+
+### Overview
+Phase 3 improves TBT and INP by deferring non-critical scripts and implementing route-based script loading.
+
+### Components
+1. **JavaScript Optimizer** (`inc/perf/class-vidieu-defer-js.php`)
+   - Categorizes scripts: critical, defer, async
+   - Implements safe deferral with dependency checking
+   - Route-based conditional loading
+   - Removes unnecessary scripts per route
+
+2. **Script Categories**
+   - **Critical** (never deferred):
+     - jQuery core and migrate
+     - Essential WooCommerce (on commerce pages)
+     - Payment gateways (on checkout)
+   - **Async** (independent scripts):
+     - Analytics (GA, GTM)
+     - Tracking pixels
+     - Social media scripts
+   - **Deferred** (non-critical):
+     - UI enhancements
+     - Sliders/carousels
+     - Non-essential features
+
+3. **Route Optimization**
+   - Home: Basic WooCommerce only
+   - Shop/Product: Full WooCommerce suite
+   - Cart/Checkout: All commerce features
+   - Contact: Minimal scripts (form only)
+   - Blog: No commerce scripts
+
+### Usage
+```php
+// Enable JavaScript optimization
+define('VIDIEU_PERF_DEFER_JS', true);
+```
+
+### Testing Tools
+- `perf/js/test-functionality.php` - Complete test checklist
+- `perf/js/analyze-scripts.php` - Script analysis tool
+
+### Safety Features
+- Dependency preservation
+- Execution order maintained
+- Helper script for deferred timing
+- Complete rollback with flag
+
 ## Future Phases
-- Phase 3: JavaScript optimization (defer/async non-critical scripts)
 - Phase 4: Font optimization (preload, font-display: swap)
 - Phase 5: Advanced WooCommerce optimization
 - Phase 6: Image optimization (lazy loading, WebP)
+- Phase 7: Service Worker for offline/caching
 
 Each phase will be implemented behind its corresponding feature flag.
