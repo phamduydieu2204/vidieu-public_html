@@ -116,3 +116,64 @@ add_filter('style_loader_tag', array($this, 'filter_broken_stylesheets'), 999, 4
 - **What could break**: Font display if Jost is critical
 - **Mitigation**: Font loads from reliable Google CDN instead of local
 - **Monitoring**: Check typography rendering remains consistent
+
+---
+
+## H1.2b - Vô hiệu hoá reCAPTCHA & guard code trên HOME (HOME-only)
+**Date**: 2025-09-06  
+**Status**: Completed  
+**Impact**: Eliminates 400 Bad Request error from reCAPTCHA and improves load time
+
+### Changes Made:
+
+1. **Added new performance flag**
+   - File: `/wp-content/plugins/vidieu-home-sections/performance-flags.php`
+   - Flag: `VIDIEU_PERF_HOME_DISABLE_RECAPTCHA_ON_HOME` (enabled)
+
+2. **Implemented reCAPTCHA removal for HOME**
+   - File: `/wp-content/plugins/vidieu-home-sections/inc/perf/class-vidieu-perf-home.php`
+   - Added `disable_recaptcha_on_home()` method
+   - Dequeues all known reCAPTCHA script handles:
+     - `wpcf7-recaptcha` (Contact Form 7)
+     - `wpcaptcha-recaptcha` (Advanced Google reCAPTCHA)
+     - `google-recaptcha`, `recaptcha`, `google-recaptcha-js`
+   - Filters script URLs containing `google.com/recaptcha`
+
+3. **Added JavaScript guard code**
+   - Creates dummy `grecaptcha` object to prevent errors
+   - Implements all common grecaptcha methods returning safe defaults
+   - Overrides `wpcaptcha_captcha` function if exists
+   - Prevents "Invalid site key" or undefined errors
+
+### Code Implementation:
+```php
+// Method chain:
+disable_recaptcha_on_home()
+├── dequeue_recaptcha_scripts() - Remove all reCAPTCHA handles
+├── filter_recaptcha_scripts() - Block URLs via script_loader_src
+└── add_recaptcha_guard_code() - Inject dummy grecaptcha object
+```
+
+### Issues Fixed:
+- ✅ No more 400 Bad Request to `google.com/recaptcha/api.js`
+- ✅ No JavaScript errors from missing grecaptcha
+- ✅ HOME page loads faster without reCAPTCHA overhead
+- ✅ Other pages with forms remain unaffected
+
+### Rollback Instructions:
+1. Set `VIDIEU_PERF_HOME_DISABLE_RECAPTCHA_ON_HOME` to `false` in `performance-flags.php`
+2. reCAPTCHA will load normally again on HOME
+
+### Testing Checklist:
+- [ ] Clear all caches (browser + WordPress)
+- [ ] Open HOME in Chrome DevTools (Incognito)
+- [ ] Network tab: No requests to `google.com/recaptcha/api.js`
+- [ ] Console: No errors about grecaptcha or "Invalid site key"
+- [ ] Check other pages (contact, checkout) - reCAPTCHA should still work there
+- [ ] Test any forms on HOME page still function (if any exist)
+
+### Risk Assessment:
+- **Risk Level**: LOW-MEDIUM
+- **What could break**: Forms on HOME page if they require reCAPTCHA
+- **Mitigation**: Guard code prevents JS errors; other pages unaffected
+- **Monitoring**: Check if HOME has any forms that need protection

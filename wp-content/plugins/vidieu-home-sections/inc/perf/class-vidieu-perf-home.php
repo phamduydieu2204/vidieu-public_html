@@ -44,6 +44,11 @@ class Vidieu_Perf_Home {
             $this->fix_missing_resources();
         }
         
+        // H1.2b - Disable reCAPTCHA on HOME
+        if (defined('VIDIEU_PERF_HOME_DISABLE_RECAPTCHA_ON_HOME') && VIDIEU_PERF_HOME_DISABLE_RECAPTCHA_ON_HOME) {
+            $this->disable_recaptcha_on_home();
+        }
+        
         // H2.1 - Defer JS (future implementation)
         if (defined('VIDIEU_PERF_HOME_DEFER_JS') && VIDIEU_PERF_HOME_DEFER_JS) {
             add_filter('script_loader_tag', array($this, 'defer_non_critical_scripts'), 10, 3);
@@ -220,6 +225,96 @@ class Vidieu_Perf_Home {
         }
         
         return $html;
+    }
+    
+    /**
+     * H1.2b - Disable reCAPTCHA on HOME page only
+     */
+    private function disable_recaptcha_on_home() {
+        // Remove reCAPTCHA scripts
+        add_action('wp_enqueue_scripts', array($this, 'dequeue_recaptcha_scripts'), 999);
+        
+        // Add guard code for inline scripts
+        add_action('wp_footer', array($this, 'add_recaptcha_guard_code'), 1);
+        
+        // Remove reCAPTCHA from script loader
+        add_filter('script_loader_src', array($this, 'filter_recaptcha_scripts'), 999, 2);
+    }
+    
+    /**
+     * Dequeue all reCAPTCHA scripts on HOME
+     */
+    public function dequeue_recaptcha_scripts() {
+        // Contact Form 7 reCAPTCHA
+        wp_dequeue_script('wpcf7-recaptcha');
+        wp_deregister_script('wpcf7-recaptcha');
+        wp_dequeue_script('google-recaptcha');
+        wp_deregister_script('google-recaptcha');
+        
+        // Advanced Google reCAPTCHA plugin
+        wp_dequeue_script('wpcaptcha-recaptcha');
+        wp_deregister_script('wpcaptcha-recaptcha');
+        
+        // Other possible handles
+        wp_dequeue_script('recaptcha');
+        wp_deregister_script('recaptcha');
+        wp_dequeue_script('google-recaptcha-js');
+        wp_deregister_script('google-recaptcha-js');
+    }
+    
+    /**
+     * Filter out reCAPTCHA scripts via URL
+     */
+    public function filter_recaptcha_scripts($src, $handle) {
+        // Block any script from google.com/recaptcha
+        if (strpos($src, 'google.com/recaptcha') !== false || 
+            strpos($src, 'recaptcha/api.js') !== false ||
+            strpos($src, 'grecaptcha') !== false) {
+            return '';
+        }
+        return $src;
+    }
+    
+    /**
+     * Add guard code to prevent grecaptcha errors
+     */
+    public function add_recaptcha_guard_code() {
+        ?>
+        <script id="vidieu-recaptcha-guard">
+        // H1.2b - Guard code for reCAPTCHA on HOME page
+        (function() {
+            // Create dummy grecaptcha object to prevent errors
+            if (typeof window.grecaptcha === 'undefined') {
+                window.grecaptcha = {
+                    ready: function(callback) {
+                        // Do nothing on HOME page
+                    },
+                    execute: function() {
+                        // Return dummy promise
+                        return Promise.resolve('home-page-no-recaptcha');
+                    },
+                    render: function() {
+                        // Do nothing
+                        return null;
+                    },
+                    reset: function() {
+                        // Do nothing
+                    },
+                    getResponse: function() {
+                        return '';
+                    }
+                };
+            }
+            
+            // Override any inline code that tries to load reCAPTCHA
+            if (typeof window.wpcaptcha_captcha === 'function') {
+                window.wpcaptcha_captcha = function() {
+                    // Do nothing on HOME
+                };
+            }
+        })();
+        </script>
+        <?php
     }
 }
 
