@@ -83,8 +83,10 @@ class Vidieu_Home_Sections {
         require_once VD_HOME_PLUGIN_DIR . 'includes/class-vd-translations.php';
         require_once VD_HOME_PLUGIN_DIR . 'includes/class-vd-page-sidebar-mappings.php';
         
-        // Performance optimizations
-        if (file_exists(VD_HOME_PLUGIN_DIR . 'inc/perf/class-vidieu-dup-requests-guard-v2.php')) {
+        // Performance optimizations - V2 Enhanced priority
+        if (file_exists(VD_HOME_PLUGIN_DIR . 'inc/perf/class-vidieu-dup-requests-guard-v2-enhanced.php')) {
+            require_once VD_HOME_PLUGIN_DIR . 'inc/perf/class-vidieu-dup-requests-guard-v2-enhanced.php';
+        } elseif (file_exists(VD_HOME_PLUGIN_DIR . 'inc/perf/class-vidieu-dup-requests-guard-v2.php')) {
             require_once VD_HOME_PLUGIN_DIR . 'inc/perf/class-vidieu-dup-requests-guard-v2.php';
         } elseif (file_exists(VD_HOME_PLUGIN_DIR . 'inc/perf/class-vidieu-dup-requests-guard.php')) {
             require_once VD_HOME_PLUGIN_DIR . 'inc/perf/class-vidieu-dup-requests-guard.php';
