@@ -1,0 +1,251 @@
+{
+  "analysis_date": "2025-09-06 15:25:59.422119",
+  "results": {
+    "home": {
+      "total_requests": 140,
+      "404_errors": {
+        "count": 3,
+        "files": [
+          "/wp-content/themes/elessi-theme/assets/fonts/main-font.woff2",
+          "/wp-content/themes/elessi-theme/style.min.css",
+          "/wp-content/uploads/elementor/google-fonts/css/jost.css"
+        ]
+      },
+      "recaptcha_loads": 16,
+      "css_files": 43,
+      "js_files": 59,
+      "duplicate_requests": {
+        "count": 2,
+        "details": {
+          "https://www.gstatic.com/recaptcha/releases/Lu6n5xwy2ghvnPNo3IxkhcCb/recaptcha__vi.js": 3,
+          "https://vidieu.vn/wp-admin/admin-ajax.php": 4
+        }
+      }
+    },
+    "products": {
+      "total_requests": 185,
+      "404_errors": {
+        "count": 3,
+        "files": [
+          "/wp-content/themes/elessi-theme/assets/fonts/main-font.woff2",
+          "/wp-content/themes/elessi-theme/style.min.css",
+          "/wp-content/uploads/elementor/google-fonts/css/jost.css"
+        ]
+      },
+      "recaptcha_loads": 16,
+      "css_files": 43,
+      "js_files": 108,
+      "duplicate_requests": {
+        "count": 4,
+        "details": {
+          "https://vidieu.vn/wp-includes/js/dist/hooks.min.js?ver=4d63a3d491d11ffd8ac6": 2,
+          "https://vidieu.vn/wp-includes/js/dist/i18n.min.js?ver=5e580eb46a90c2b997e6": 2,
+          "https://vidieu.vn/wp-includes/js/dist/vendor/wp-polyfill.min.js?ver=3.15.0": 2,
+          "https://www.gstatic.com/recaptcha/releases/Lu6n5xwy2ghvnPNo3IxkhcCb/recaptcha__vi.js": 3
+        }
+      }
+    },
+    "post": {
+      "total_requests": 166,
+      "404_errors": {
+        "count": 3,
+        "files": [
+          "/wp-content/themes/elessi-theme/assets/fonts/main-font.woff2",
+          "/wp-content/themes/elessi-theme/style.min.css",
+          "/wp-content/uploads/elementor/google-fonts/css/jost.css"
+        ]
+      },
+      "recaptcha_loads": 16,
+      "css_files": 41,
+      "js_files": 100,
+      "duplicate_requests": {
+        "count": 4,
+        "details": {
+          "https://vidieu.vn/wp-includes/js/dist/hooks.min.js?ver=4d63a3d491d11ffd8ac6": 2,
+          "https://vidieu.vn/wp-includes/js/dist/i18n.min.js?ver=5e580eb46a90c2b997e6": 2,
+          "https://vidieu.vn/wp-includes/js/dist/vendor/wp-polyfill.min.js?ver=3.15.0": 2,
+          "https://www.gstatic.com/recaptcha/releases/Lu6n5xwy2ghvnPNo3IxkhcCb/recaptcha__vi.js": 3
+        }
+      }
+    },
+    "contact": {
+      "total_requests": 166,
+      "404_errors": {
+        "count": 3,
+        "files": [
+          "/wp-content/themes/elessi-theme/assets/fonts/main-font.woff2",
+          "/wp-content/themes/elessi-theme/style.min.css",
+          "/wp-content/uploads/elementor/google-fonts/css/jost.css"
+        ]
+      },
+      "recaptcha_loads": 16,
+      "css_files": 41,
+      "js_files": 100,
+      "duplicate_requests": {
+        "count": 5,
+        "details": {
+          "https://vidieu.vn/contact/": 2,
+          "https://vidieu.vn/wp-includes/js/dist/hooks.min.js?ver=4d63a3d491d11ffd8ac6": 2,
+          "https://vidieu.vn/wp-includes/js/dist/i18n.min.js?ver=5e580eb46a90c2b997e6": 2,
+          "https://vidieu.vn/wp-includes/js/dist/vendor/wp-polyfill.min.js?ver=3.15.0": 2,
+          "https://www.gstatic.com/recaptcha/releases/Lu6n5xwy2ghvnPNo3IxkhcCb/recaptcha__vi.js": 3
+        }
+      }
+    },
+    "cart": {
+      "total_requests": 255,
+      "404_errors": {
+        "count": 3,
+        "files": [
+          "/wp-content/themes/elessi-theme/assets/fonts/main-font.woff2",
+          "/wp-content/themes/elessi-theme/style.min.css",
+          "/wp-content/uploads/elementor/google-fonts/css/jost.css"
+        ]
+      },
+      "recaptcha_loads": 16,
+      "css_files": 45,
+      "js_files": 172,
+      "duplicate_requests": {
+        "count": 43,
+        "details": {
+          "https://vidieu.vn/wp-includes/js/dist/hooks.min.js?ver=4d63a3d491d11ffd8ac6": 2,
+          "https://vidieu.vn/wp-includes/js/dist/i18n.min.js?ver=5e580eb46a90c2b997e6": 2,
+          "https://vidieu.vn/wp-includes/js/dist/vendor/wp-polyfill.min.js?ver=3.15.0": 2,
+          "https://vidieu.vn/wp-content/plugins/woocommerce/assets/client/blocks/wc-cart-checkout-base-frontend.js?ver=4929936dde15d33bd184": 2,
+          "https://vidieu.vn/wp-content/plugins/woocommerce/assets/client/blocks/wc-cart-checkout-vendors-frontend.js?ver=c939a893efb4febadc26": 2,
+          "https://vidieu.vn/wp-includes/js/dist/vendor/react.min.js?ver=18.3.1.1": 2,
+          "https://vidieu.vn/wp-includes/js/dist/vendor/react-jsx-runtime.min.js?ver=18.3.1": 2,
+          "https://vidieu.vn/wp-includes/js/dist/vendor/react-dom.min.js?ver=18.3.1.1": 2,
+          "https://vidieu.vn/wp-content/plugins/woocommerce/assets/client/blocks/wc-types.js?ver=35dee88875b85ff65531": 2,
+          "https://vidieu.vn/wp-content/plugins/woocommerce/assets/client/blocks/blocks-checkout-events.js?ver=2d0fd4590f6cc663947c": 2,
+          "https://vidieu.vn/wp-includes/js/dist/url.min.js?ver=c2964167dfe2477c14ea": 2,
+          "https://vidieu.vn/wp-includes/js/dist/api-fetch.min.js?ver=3623a576c78df404ff20": 2,
+          "https://vidieu.vn/wp-content/plugins/woocommerce/assets/client/blocks/wc-settings.js?ver=4f2e7067bd1c84cca43f": 2,
+          "https://vidieu.vn/wp-includes/js/dist/deprecated.min.js?ver=e1f84915c5e8ae38964c": 2,
+          "https://vidieu.vn/wp-includes/js/dist/dom.min.js?ver=80bd57c84b45cf04f4ce": 2,
+          "https://vidieu.vn/wp-includes/js/dist/escape-html.min.js?ver=6561a406d2d232a6fbd2": 2,
+          "https://vidieu.vn/wp-includes/js/dist/element.min.js?ver=a4eeeadd23c0d7ab1d2d": 2,
+          "https://vidieu.vn/wp-includes/js/dist/is-shallow-equal.min.js?ver=e0f9f1d78d83f5196979": 2,
+          "https://vidieu.vn/wp-includes/js/dist/keycodes.min.js?ver=034ff647a54b018581d3": 2,
+          "https://vidieu.vn/wp-includes/js/dist/priority-queue.min.js?ver=9c21c957c7e50ffdbf48": 2,
+          "https://vidieu.vn/wp-includes/js/dist/compose.min.js?ver=84bcf832a5c99203f3db": 2,
+          "https://vidieu.vn/wp-includes/js/dist/private-apis.min.js?ver=0f8478f1ba7e0eea562b": 2,
+          "https://vidieu.vn/wp-includes/js/dist/redux-routine.min.js?ver=8bb92d45458b29590f53": 2,
+          "https://vidieu.vn/wp-includes/js/dist/data.min.js?ver=fe6c4835cd00e12493c3": 2,
+          "https://vidieu.vn/wp-content/plugins/woocommerce/assets/client/blocks/wc-blocks-registry.js?ver=a16aa912ffa0a15063f1": 2,
+          "https://vidieu.vn/wp-includes/js/dist/data-controls.min.js?ver=49f5587e8b90f9e7cc7e": 2,
+          "https://vidieu.vn/wp-includes/js/dist/html-entities.min.js?ver=2cd3358363e0675638fb": 2,
+          "https://vidieu.vn/wp-includes/js/dist/notices.min.js?ver=673a68a7ac2f556ed50b": 2,
+          "https://vidieu.vn/wp-content/plugins/woocommerce/assets/client/blocks/wc-blocks-middleware.js?ver=d79dedade2f2e4dc9df4": 2,
+          "https://vidieu.vn/wp-content/plugins/woocommerce/assets/client/blocks/wc-blocks-data.js?ver=d0ad299087b6ae74378b": 2,
+          "https://vidieu.vn/wp-includes/js/dist/dom-ready.min.js?ver=f77871ff7694fffea381": 2,
+          "https://vidieu.vn/wp-includes/js/dist/a11y.min.js?ver=3156534cc54473497e14": 2,
+          "https://vidieu.vn/wp-includes/js/dist/primitives.min.js?ver=aef2543ab60c8c9bb609": 2,
+          "https://vidieu.vn/wp-content/plugins/woocommerce/assets/client/blocks/blocks-components.js?ver=14f739e1c451e591f9da": 2,
+          "https://vidieu.vn/wp-includes/js/dist/warning.min.js?ver=ed7c8b0940914f4fe44b": 2,
+          "https://vidieu.vn/wp-content/plugins/woocommerce/assets/client/blocks/blocks-checkout.js?ver=a1c2e7c31247ee1ae717": 2,
+          "https://vidieu.vn/wp-content/plugins/woocommerce/assets/client/blocks/wc-blocks-shared-context.js?ver=1d9ff4f03584490ad390": 2,
+          "https://vidieu.vn/wp-content/plugins/woocommerce/assets/client/blocks/wc-blocks-shared-hocs.js?ver=99a2a0de38bfa707fc7b": 2,
+          "https://vidieu.vn/wp-content/plugins/woocommerce/assets/client/blocks/price-format.js?ver=57e176e7cc02bdd27978": 2,
+          "https://vidieu.vn/wp-includes/js/dist/autop.min.js?ver=9fb50649848277dd318d": 2,
+          "https://vidieu.vn/wp-includes/js/dist/plugins.min.js?ver=20303a2de19246c83e5a": 2,
+          "https://vidieu.vn/wp-includes/js/dist/wordcount.min.js?ver=55d8c2bf3dc99e7ea5ec": 2,
+          "https://www.gstatic.com/recaptcha/releases/Lu6n5xwy2ghvnPNo3IxkhcCb/recaptcha__vi.js": 3
+        }
+      }
+    },
+    "checkout": {
+      "total_requests": 242,
+      "404_errors": {
+        "count": 3,
+        "files": [
+          "/wp-content/themes/elessi-theme/assets/fonts/main-font.woff2",
+          "/wp-content/themes/elessi-theme/style.min.css",
+          "/wp-content/uploads/elementor/google-fonts/css/jost.css"
+        ]
+      },
+      "recaptcha_loads": 28,
+      "css_files": 47,
+      "js_files": 157,
+      "duplicate_requests": {
+        "count": 54,
+        "details": {
+          "https://vidieu.vn/checkout/": 2,
+          "https://vidieu.vn/wp-includes/js/dist/hooks.min.js?ver=4d63a3d491d11ffd8ac6": 2,
+          "https://vidieu.vn/wp-includes/js/dist/i18n.min.js?ver=5e580eb46a90c2b997e6": 2,
+          "https://vidieu.vn/wp-content/plugins/woocommerce/assets/images/placeholder.webp": 2,
+          "https://vidieu.vn/wp-includes/js/dist/vendor/wp-polyfill.min.js?ver=3.15.0": 2,
+          "https://vidieu.vn/wp-content/plugins/woocommerce/assets/client/blocks/wc-cart-checkout-base-frontend.js?ver=4929936dde15d33bd184": 2,
+          "https://vidieu.vn/wp-content/plugins/woocommerce/assets/client/blocks/wc-cart-checkout-vendors-frontend.js?ver=c939a893efb4febadc26": 2,
+          "https://vidieu.vn/wp-includes/js/dist/vendor/react.min.js?ver=18.3.1.1": 2,
+          "https://vidieu.vn/wp-includes/js/dist/vendor/react-dom.min.js?ver=18.3.1.1": 2,
+          "https://vidieu.vn/wp-includes/js/dist/vendor/react-jsx-runtime.min.js?ver=18.3.1": 2,
+          "https://vidieu.vn/wp-content/plugins/woocommerce/assets/client/blocks/wc-types.js?ver=35dee88875b85ff65531": 2,
+          "https://vidieu.vn/wp-content/plugins/woocommerce/assets/client/blocks/blocks-checkout-events.js?ver=2d0fd4590f6cc663947c": 2,
+          "https://vidieu.vn/wp-includes/js/dist/url.min.js?ver=c2964167dfe2477c14ea": 2,
+          "https://vidieu.vn/wp-includes/js/dist/api-fetch.min.js?ver=3623a576c78df404ff20": 2,
+          "https://vidieu.vn/wp-content/plugins/woocommerce/assets/client/blocks/wc-settings.js?ver=4f2e7067bd1c84cca43f": 2,
+          "https://vidieu.vn/wp-includes/js/dist/deprecated.min.js?ver=e1f84915c5e8ae38964c": 2,
+          "https://vidieu.vn/wp-includes/js/dist/dom.min.js?ver=80bd57c84b45cf04f4ce": 2,
+          "https://vidieu.vn/wp-includes/js/dist/escape-html.min.js?ver=6561a406d2d232a6fbd2": 2,
+          "https://vidieu.vn/wp-includes/js/dist/element.min.js?ver=a4eeeadd23c0d7ab1d2d": 2,
+          "https://vidieu.vn/wp-includes/js/dist/is-shallow-equal.min.js?ver=e0f9f1d78d83f5196979": 2,
+          "https://vidieu.vn/wp-includes/js/dist/keycodes.min.js?ver=034ff647a54b018581d3": 2,
+          "https://vidieu.vn/wp-includes/js/dist/priority-queue.min.js?ver=9c21c957c7e50ffdbf48": 2,
+          "https://vidieu.vn/wp-includes/js/dist/compose.min.js?ver=84bcf832a5c99203f3db": 2,
+          "https://vidieu.vn/wp-includes/js/dist/private-apis.min.js?ver=0f8478f1ba7e0eea562b": 2,
+          "https://vidieu.vn/wp-includes/js/dist/redux-routine.min.js?ver=8bb92d45458b29590f53": 2,
+          "https://vidieu.vn/wp-includes/js/dist/data.min.js?ver=fe6c4835cd00e12493c3": 2,
+          "https://vidieu.vn/wp-content/plugins/woocommerce/assets/client/blocks/wc-blocks-registry.js?ver=a16aa912ffa0a15063f1": 2,
+          "https://vidieu.vn/wp-includes/js/dist/data-controls.min.js?ver=49f5587e8b90f9e7cc7e": 2,
+          "https://vidieu.vn/wp-includes/js/dist/html-entities.min.js?ver=2cd3358363e0675638fb": 2,
+          "https://vidieu.vn/wp-includes/js/dist/notices.min.js?ver=673a68a7ac2f556ed50b": 2,
+          "https://vidieu.vn/wp-content/plugins/woocommerce/assets/client/blocks/wc-blocks-middleware.js?ver=d79dedade2f2e4dc9df4": 2,
+          "https://vidieu.vn/wp-content/plugins/woocommerce/assets/client/blocks/wc-blocks-data.js?ver=d0ad299087b6ae74378b": 2,
+          "https://vidieu.vn/wp-includes/js/dist/dom-ready.min.js?ver=f77871ff7694fffea381": 2,
+          "https://vidieu.vn/wp-includes/js/dist/a11y.min.js?ver=3156534cc54473497e14": 2,
+          "https://vidieu.vn/wp-includes/js/dist/primitives.min.js?ver=aef2543ab60c8c9bb609": 2,
+          "https://vidieu.vn/wp-content/plugins/woocommerce/assets/client/blocks/blocks-components.js?ver=14f739e1c451e591f9da": 2,
+          "https://vidieu.vn/wp-includes/js/dist/warning.min.js?ver=ed7c8b0940914f4fe44b": 2,
+          "https://vidieu.vn/wp-content/plugins/woocommerce/assets/client/blocks/blocks-checkout.js?ver=a1c2e7c31247ee1ae717": 2,
+          "https://vidieu.vn/wp-content/plugins/woocommerce/assets/client/blocks/wc-blocks-shared-context.js?ver=1d9ff4f03584490ad390": 2,
+          "https://vidieu.vn/wp-content/plugins/woocommerce/assets/client/blocks/wc-blocks-shared-hocs.js?ver=99a2a0de38bfa707fc7b": 2,
+          "https://vidieu.vn/wp-content/plugins/woocommerce/assets/client/blocks/price-format.js?ver=57e176e7cc02bdd27978": 2,
+          "https://vidieu.vn/wp-includes/js/dist/autop.min.js?ver=9fb50649848277dd318d": 2,
+          "https://vidieu.vn/wp-includes/js/dist/plugins.min.js?ver=20303a2de19246c83e5a": 2,
+          "https://vidieu.vn/wp-includes/js/dist/wordcount.min.js?ver=55d8c2bf3dc99e7ea5ec": 2,
+          "https://www.gstatic.com/recaptcha/releases/Lu6n5xwy2ghvnPNo3IxkhcCb/recaptcha__vi.js": 5,
+          "https://www.gstatic.com/recaptcha/releases/Lu6n5xwy2ghvnPNo3IxkhcCb/styles__ltr.css": 2,
+          "https://www.google.com/recaptcha/api2/webworker.js?hl=vi&v=Lu6n5xwy2ghvnPNo3IxkhcCb": 2,
+          "https://www.gstatic.com/recaptcha/api2/logo_48.png": 2,
+          "https://fonts.gstatic.com/s/roboto/v18/KFOmCnqEu92Fr1Mu4mxK.woff2": 2,
+          "https://fonts.gstatic.com/s/roboto/v18/KFOlCnqEu92Fr1MmEU9fBBc4.woff2": 2,
+          "https://fonts.gstatic.com/s/roboto/v18/KFOmCnqEu92Fr1Mu7GxKOzY.woff2": 2,
+          "https://fonts.gstatic.com/s/roboto/v18/KFOmCnqEu92Fr1Mu7WxKOzY.woff2": 2,
+          "https://www.google.com/recaptcha/api2/reload?k=6Le797wrAAAAAJjq4x2B7SZfG0bDBTkz5myGslZQ": 2,
+          "https://www.google.com/recaptcha/api2/clr?k=6Le797wrAAAAAJjq4x2B7SZfG0bDBTkz5myGslZQ": 2
+        }
+      }
+    }
+  },
+  "comparison": {
+    "previous_v2": {
+      "404_errors": "2-4",
+      "recaptcha_loads": "14-27",
+      "cart_requests": 251,
+      "checkout_requests": 242
+    },
+    "targets": {
+      "404_errors": 0,
+      "recaptcha_loads": 1,
+      "cart_requests": "<150",
+      "checkout_requests": "<180"
+    },
+    "target_met": {
+      "404_errors": false,
+      "recaptcha_loads": false,
+      "cart_requests": false,
+      "checkout_requests": false
+    }
+  }
+}
