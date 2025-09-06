@@ -343,8 +343,9 @@ require_once get_stylesheet_directory() . '/woocommerce-admin-order-display.php'
 /**
  * Include VietQR integration for BACS payment
  * @since 2025-08-30
+ * DISABLED: Using VCB-MH plugin instead
  */
-require_once get_stylesheet_directory() . '/woocommerce-vietqr-integration.php';
+// require_once get_stylesheet_directory() . '/woocommerce-vietqr-integration.php';
 
 /**
  * Include Floating Contact Widget

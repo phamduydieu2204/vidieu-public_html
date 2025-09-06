@@ -85,8 +85,8 @@ function elessi_handle_simple_checkout() {
             'state' => 'VN',
             'postcode' => '700000',
         ),
-        'payment_method' => 'bacs',
-        'payment_method_title' => 'Direct Bank Transfer',
+        'payment_method' => 'vcb-gateway-mh',
+        'payment_method_title' => 'Vietcombank Gateway MH',
         'set_paid' => false,
     );
     
@@ -128,7 +128,7 @@ function elessi_handle_simple_checkout() {
     $order->calculate_totals();
     
     // Set payment method
-    $order->set_payment_method('bacs');
+    $order->set_payment_method('vcb-gateway-mh');
     
     // Set customer note if provided
     if (!empty($order_comments)) {

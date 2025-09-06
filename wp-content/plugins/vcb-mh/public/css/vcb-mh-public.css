@@ -1,0 +1,219 @@
+/**
+ * All of the CSS for your public-facing functionality should be
+ * included in this file.
+ /**
+ * All of the CSS for your public-facing functionality should be
+ * included in this file.
+ */
+
+#vcb-gateway {
+    max-width: 720px;
+    margin: 0 auto;
+}
+.vcb-gateway-info-payment {
+    padding: 10px;
+    border-radius: 6px;
+    background: #FDEFB2;
+    font-size: 16px;
+    margin-bottom: 15px;
+}
+ .vcb-gateway-guide {
+     text-align: center;
+     color:purple;
+     font-size: 20px;
+     font-weight: bold;
+ }
+ .vcb-gw-qr {
+    text-align: center;
+ }
+ .vcb-gw-qr > img {
+    margin: 0 auto;
+    max-width: 300px;
+ }
+ .text-center{
+    text-align: center;
+ }
+ .vcb-gw-btn-payment {
+    display: inline-block;
+    padding: 6px 20px;
+    border-radius: 20px;
+    min-width: 160px;
+    font-size: 20px;
+    background: #e8573f;
+    color:#fff;
+    text-decoration: none !important;
+ }
+ .vcb-gw-guide-2 {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+ }
+ .vcb-gw-guide-2 img{
+    margin-right: 10px;
+ }
+ .vcb-loading{
+    display: inline-block;
+    margin-top: 15px;
+ }
+
+ .success-animation { margin:20px auto;}
+ .vcb-gateway-result{
+    margin-bottom: 30px;
+ }
+#vcb-gateway .checkmark {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    display: block;
+    stroke-width: 2;
+    stroke: #4bb71b;
+    stroke-miterlimit: 10;
+    box-shadow: inset 0px 0px 0px #4bb71b;
+    animation: fill .4s ease-in-out .4s forwards, scale .3s ease-in-out .9s both;
+    position:relative;
+    top: 5px;
+    right: 5px;
+   margin: 0 auto;
+}
+#vcb-gateway .checkmark__circle {
+    stroke-dasharray: 166;
+    stroke-dashoffset: 166;
+    stroke-width: 2;
+    stroke-miterlimit: 10;
+    stroke: #4bb71b;
+    fill: #fff;
+    animation: stroke 0.6s cubic-bezier(0.65, 0, 0.45, 1) forwards;
+ 
+}
+
+#vcb-gateway .checkmark__check {
+    transform-origin: 50% 50%;
+    stroke-dasharray: 48;
+    stroke-dashoffset: 48;
+    animation: stroke 0.3s cubic-bezier(0.65, 0, 0.45, 1) 0.8s forwards;
+}
+
+@keyframes stroke {
+    100% {
+        stroke-dashoffset: 0;
+    }
+}
+
+@keyframes scale {
+    0%, 100% {
+        transform: none;
+    }
+
+    50% {
+        transform: scale3d(1.1, 1.1, 1);
+    }
+}
+
+@keyframes fill {
+    100% {
+        box-shadow: inset 0px 0px 0px 30px #4bb71b;
+    }
+}
+.payment_method_vcb-gateway-mh{
+    overflow: hidden;
+}
+.payment_method_vcb-gateway-mh img{
+    float: right;
+    width: 35px;
+    border-radius: 4px;
+    margin-bottom: 3px;
+}
+.payment_box.payment_method_vcb-gateway-mh{
+    clear: both;
+}
+
+.vcb-gateway-info-payment {
+    font-size: 22px !important;
+
+}
+.vcb-gateway-info-payment > div{
+    margin-bottom: 10px;
+    font-size: 18px !important;
+    
+}
+
+
+.d-flex{
+    display: flex;
+} 
+.justify-space-between{
+    justify-content: space-between;
+}
+.table-payment {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+.table-payment td, .table-payment th {
+  border: 1px solid #ddd;
+  padding: 8px !important;
+    font-size: 16px;
+}
+.table-payment th{
+    padding: 12px !important;
+}
+.table-payment tr:nth-child(even){background-color: #f2f2f2;}
+
+.table-payment tr:hover {background-color: #ddd;}
+
+.table-payment th {
+  padding-top: 12px;
+  padding-bottom: 12px;
+  text-align: left;
+
+  background-color: #f44336;
+  color: white;
+}
+
+.mt-none{
+  margin-top: 0 !important;
+}
+.wrap-mobile-momo{
+    width: 100%;
+    text-align: center;
+}
+@media all{
+#right-col{
+  text-align: center;
+}
+#left-col{
+    font-size: 14px;
+}
+#payment-info{color:#000;border-color:#e2e2e2;border-width:1px;border-style:solid;border-radius:12px;margin:0 auto 12px;display:inline-flex;background:#fff;}
+#right-col tbody{list-style:none!important;line-height:1em;text-align:left;}
+#right-col tbody  tr th{font-weight:500;padding: 10px 14px;border:0;}
+#left-col{display:flex;flex-direction:column;border-radius:10px 0px 0px 10px;padding:15px 15px;border-right:1px solid #e2e2e2;}
+#right-col{display:flex;justify-content:space-between;flex-direction:column;border-radius:10px 0px 0px 10px;padding:15px 15px;}
+#right-col > div > table{margin:auto;width:auto;border:0;}
+.qrVietqr{display:block;margin:auto;width:200px;padding:5px; margin-bottom: 0}
+.download-btn{margin:auto;max-width:200px!important; cursor: pointer; display: flex; align-items: center;}
+.download-btn img{
+  margin-right: 5px;
+  width: 26px;
+}
+.flex-center-box{display:flex;align-items:center;flex-wrap:wrap;}
+.flex-center-box > img{padding:0 5px;}
+#right-col tbody  button{background-color:transparent!important;padding:0!important;margin:-10px;margin-left:20px;border:none;outline:none;cursor:pointer;}
+#right-col tbody  > tr > :nth-child(2) >img{max-height:20px;}
+#right-col tbody  > tr > :nth-child(2){display:flex;align-items:center;font-weight:bold;}
+.noiDungCopy{color:red;font-weight:bold;border:1px solid red;padding:1px 10px;border-radius:3px;}
+.taiMaQrCode{display:flex;align-items:center;flex-direction:row;flex-wrap:nowrap;}
+.anPc{display:flex;align-items:start;flex-direction:column;}
+@media screen and (min-width: 700px){
+.anPc{display:none;}
+}
+@media screen and (max-width: 700px){
+  #payment-info{padding:10px 15px;}
+  #left-col{display:none;}
+  #right-col{padding:20px 10px;}
+  .anMoblie{display:none;border:1px dashed;}
+}
+}
+.copy-btn img{
+  width: 26px !important
+}

@@ -2,7 +2,6 @@ name: Deploy child theme (FTP/FTPS)
 
 on:
   push:
-    branches: [ "main" ]
     paths:
       - "wp-content/themes/elessi-theme-child/**"   # chỉ chạy khi child theme đổi
   workflow_dispatch: {}                              # có thể bấm chạy tay
@@ -14,8 +13,6 @@ concurrency:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
-
     steps:
       - name: Checkout source
         uses: actions/checkout@v4
@@ -28,18 +25,11 @@ jobs:
           password:   ${{ secrets.FTP_PASSWORD }}
           port:       ${{ secrets.FTP_PORT }}  # shared hosting thường là 21
           protocol:   ftps                     # nếu host không hỗ trợ FTPS thì đổi thành: ftp
-
-          # Chỉ sync thư mục child theme
-          local-dir:  ./wp-content/themes/elessi-theme-child/
           server-dir: /domains/vidieu.vn/public_html/wp-content/themes/elessi-theme-child/
-
-          # File state riêng cho child theme (giữ incremental cho lần sau)
+          local-dir:  ./wp-content/themes/elessi-theme-child/
           state-name: .ftp-deploy-child-theme-state.json
+          log-level: verbose
 
-          # Log gọn; đổi "verbose" nếu cần debug
-          log-level: minimal
-
-          # Chỉ loại bỏ những thứ chắc chắn không cần
           exclude: |
             **/.git*
             **/.github/**
