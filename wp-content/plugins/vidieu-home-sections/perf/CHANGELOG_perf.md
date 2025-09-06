@@ -1,5 +1,82 @@
 # Performance Optimization Changelog
 
+## Phase 2: Critical CSS Implementation (2025-09-06)
+
+### Added
+- **Critical CSS Loader** (`class-vidieu-critical-css.php`)
+  - Route-based CSS detection and loading
+  - Automatic minification
+  - Safe inline injection in `<head>`
+  
+- **Critical CSS Files** (8 templates)
+  - `home.css` - Homepage above-the-fold styles
+  - `archive-product.css` - Shop/category pages
+  - `single-product.css` - Product detail pages
+  - `single-post.css` - Blog post pages
+  - `page-contact.css` - Contact page
+  - `cart.css` - Shopping cart
+  - `checkout.css` - Checkout process
+  - `my-account.css` - Customer account pages
+
+- **Helper Tools**
+  - `extract-helper.php` - Guidelines for extracting critical CSS
+
+### Implementation Details
+1. **Non-invasive approach**
+   - No modifications to existing stylesheets
+   - No changes to stylesheet loading order
+   - No preload/async modifications
+   - Pure additive optimization
+
+2. **Smart routing**
+   - Automatic template detection
+   - Fallback to no critical CSS if route unknown
+   - Support for custom post types
+
+3. **Performance considerations**
+   - Basic minification included
+   - File size limit: 12KB per template
+   - Early injection (priority 2 in wp_head)
+
+### Configuration
+Enable with feature flag:
+
+```php
+// In wp-config.php
+define('VIDIEU_PERF_CRITICAL_CSS', true);
+```
+
+### Expected Impact
+- LCP improvement: 300-500ms
+- FCP improvement: 200-400ms
+- No CLS impact (stable layout)
+- Minimal overhead: 2-3KB inline
+
+### Files Modified
+- `wp-content/plugins/vidieu-home-sections/vidieu-home-sections.php`
+
+### Files Added
+- `inc/perf/class-vidieu-critical-css.php`
+- `perf/critical-css/home.css`
+- `perf/critical-css/archive-product.css`
+- `perf/critical-css/single-product.css`
+- `perf/critical-css/single-post.css`
+- `perf/critical-css/page-contact.css`
+- `perf/critical-css/cart.css`
+- `perf/critical-css/checkout.css`
+- `perf/critical-css/my-account.css`
+- `perf/critical-css/extract-helper.php`
+
+### Testing Checklist
+- [ ] Critical CSS loads on correct routes
+- [ ] No visual regressions
+- [ ] No console errors
+- [ ] Mobile view correct
+- [ ] No layout shift
+- [ ] Performance metrics improved
+
+---
+
 ## Phase 1: TTFB & Server-side Optimization (2025-09-06)
 
 ### Added

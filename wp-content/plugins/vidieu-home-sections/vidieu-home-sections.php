@@ -93,6 +93,11 @@ class Vidieu_Home_Sections {
         if (defined('VIDIEU_PERF_ROUTE_CONDITIONALS') && VIDIEU_PERF_ROUTE_CONDITIONALS) {
             require_once VD_HOME_PLUGIN_DIR . 'inc/perf/class-vidieu-route-optimizer.php';
         }
+        
+        // Critical CSS (only when flag is enabled)
+        if (defined('VIDIEU_PERF_CRITICAL_CSS') && VIDIEU_PERF_CRITICAL_CSS) {
+            require_once VD_HOME_PLUGIN_DIR . 'inc/perf/class-vidieu-critical-css.php';
+        }
     }
     
     /**

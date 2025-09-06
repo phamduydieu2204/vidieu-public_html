@@ -102,10 +102,60 @@ define('VIDIEU_PERF_LOG_BOOTSTRAP', true);
 - `perf/DELTA_REPORT.md` - Before/after metrics
 - `perf/CHANGELOG_perf.md` - Detailed change log
 
+## Phase 2: Critical CSS Implementation (Implemented)
+
+### Overview
+Phase 2 improves LCP/FCP by inlining critical CSS for above-the-fold content without modifying existing stylesheets.
+
+### Components
+1. **Critical CSS Loader** (`inc/perf/class-vidieu-critical-css.php`)
+   - Detects current route/template
+   - Loads appropriate critical CSS file
+   - Inlines CSS early in `<head>`
+   - Includes basic minification
+
+2. **Critical CSS Files** (`perf/critical-css/`)
+   - 8 template-specific files
+   - Focused on above-the-fold content only
+   - Size limit: 12KB per file
+   - No font-face rules (deferred to Phase 4)
+
+### Route Mapping
+
+| Route Type | Detection | CSS File |
+|------------|-----------|----------|
+| Homepage | `is_front_page()` | `home.css` |
+| Shop | `is_shop()`, `is_product_category()` | `archive-product.css` |
+| Product | `is_product()` | `single-product.css` |
+| Blog Post | `is_single()` && post type = 'post' | `single-post.css` |
+| Contact | `is_page()` && slug = 'contact' | `page-contact.css` |
+| Cart | `is_cart()` | `cart.css` |
+| Checkout | `is_checkout()` | `checkout.css` |
+| Account | `is_account_page()` | `my-account.css` |
+
+### Usage
+```php
+// Enable critical CSS (production)
+define('VIDIEU_PERF_CRITICAL_CSS', true);
+```
+
+### Updating Critical CSS
+1. Use `perf/critical-css/extract-helper.php` for guidelines
+2. Use Chrome DevTools Coverage tab
+3. Extract only above-the-fold styles
+4. Test thoroughly on all devices
+5. Keep files under 12KB
+
+### Safety Features
+- No modification to existing CSS files
+- No changes to load order
+- Automatic fallback if route not detected
+- Complete rollback with flag toggle
+
 ## Future Phases
-- Phase 2: Critical CSS implementation
-- Phase 3: JavaScript optimization
-- Phase 4: Font optimization
+- Phase 3: JavaScript optimization (defer/async non-critical scripts)
+- Phase 4: Font optimization (preload, font-display: swap)
 - Phase 5: Advanced WooCommerce optimization
+- Phase 6: Image optimization (lazy loading, WebP)
 
 Each phase will be implemented behind its corresponding feature flag.

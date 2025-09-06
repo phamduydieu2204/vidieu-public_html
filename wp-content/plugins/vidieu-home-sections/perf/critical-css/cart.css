@@ -1,0 +1,54 @@
+/* Critical CSS for Cart Page
+ * Only above-the-fold styles
+ * Keep under 12KB
+ */
+
+/* Base */
+*, *::before, *::after { box-sizing: border-box; }
+body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; font-size: 14px; line-height: 1.5; color: #212529; background-color: #fff; }
+
+/* Container */
+.container { width: 100%; padding-right: 15px; padding-left: 15px; margin-right: auto; margin-left: auto; }
+@media (min-width: 1200px) { .container { max-width: 1140px; } }
+
+/* Header */
+header { display: block; position: relative; }
+.header-wrapper { background-color: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.1); }
+
+/* Cart layout */
+.woocommerce-cart { margin: 40px 0; }
+
+/* Cart table */
+.shop_table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
+.shop_table th { background: #f8f9fa; padding: 15px; text-align: left; border-bottom: 2px solid #dee2e6; }
+.shop_table td { padding: 15px; border-bottom: 1px solid #dee2e6; }
+
+/* Product in cart */
+.product-thumbnail { width: 80px; }
+.product-thumbnail img { width: 100%; height: auto; }
+.product-name { font-weight: 500; }
+.product-price, .product-quantity, .product-subtotal { text-align: center; }
+
+/* Quantity input */
+.quantity input { width: 60px; padding: 5px; text-align: center; border: 1px solid #ddd; }
+
+/* Cart actions */
+.actions { padding: 20px 0; }
+.coupon { float: left; }
+.coupon input { padding: 8px; border: 1px solid #ddd; margin-right: 10px; }
+button[name="update_cart"] { float: right; }
+
+/* Cart totals */
+.cart-collaterals { float: right; width: 35%; }
+.cart_totals { background: #f8f9fa; padding: 20px; }
+.cart_totals h2 { font-size: 1.25rem; margin-bottom: 20px; }
+.cart_totals table { width: 100%; }
+.cart_totals th, .cart_totals td { padding: 10px 0; }
+.order-total { font-size: 1.25rem; font-weight: bold; }
+
+/* Buttons */
+.button { background: #333; color: #fff; padding: 10px 20px; border: none; cursor: pointer; text-decoration: none; display: inline-block; }
+.checkout-button { background: #28a745; font-size: 16px; padding: 12px 30px; width: 100%; text-align: center; }
+
+/* Clear */
+.woocommerce::after { content: ""; display: table; clear: both; }

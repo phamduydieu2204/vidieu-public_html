@@ -1,0 +1,52 @@
+/* Critical CSS for Homepage
+ * Only above-the-fold styles
+ * Keep under 12KB
+ */
+
+/* Reset and base */
+*, *::before, *::after { box-sizing: border-box; }
+html { font-family: sans-serif; line-height: 1.15; -webkit-text-size-adjust: 100%; }
+body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; font-size: 14px; font-weight: 400; line-height: 1.5; color: #212529; text-align: left; background-color: #fff; }
+
+/* Layout containers */
+.container { width: 100%; padding-right: 15px; padding-left: 15px; margin-right: auto; margin-left: auto; }
+@media (min-width: 576px) { .container { max-width: 540px; } }
+@media (min-width: 768px) { .container { max-width: 720px; } }
+@media (min-width: 992px) { .container { max-width: 960px; } }
+@media (min-width: 1200px) { .container { max-width: 1140px; } }
+
+/* Header structure */
+header { display: block; position: relative; }
+.header-wrapper { background-color: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.1); }
+.header-container { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; }
+
+/* Logo */
+.logo { display: inline-block; }
+.logo img { display: block; max-width: 100%; height: auto; }
+
+/* Navigation skeleton */
+nav { display: block; }
+.main-menu { display: flex; list-style: none; margin: 0; padding: 0; }
+.main-menu li { display: inline-block; margin: 0 15px; }
+.main-menu a { color: #333; text-decoration: none; }
+
+/* Hero/Banner skeleton */
+.hero-section { min-height: 400px; position: relative; background-color: #f8f9fa; }
+@media (max-width: 767px) { .hero-section { min-height: 250px; } }
+
+/* Product grid skeleton */
+.products-section { padding: 40px 0; }
+.products-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px; }
+@media (max-width: 767px) { .products-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; } }
+
+.product-item { background: #fff; border: 1px solid #e9ecef; }
+.product-image { aspect-ratio: 1; background: #f8f9fa; }
+.product-info { padding: 10px; }
+
+/* Utilities */
+.d-none { display: none !important; }
+.d-block { display: block !important; }
+.text-center { text-align: center !important; }
+
+/* Loading states */
+.loading { opacity: 0.6; pointer-events: none; }

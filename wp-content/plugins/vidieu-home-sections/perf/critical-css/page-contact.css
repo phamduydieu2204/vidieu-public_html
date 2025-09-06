@@ -1,0 +1,52 @@
+/* Critical CSS for Contact Page
+ * Only above-the-fold styles
+ * Keep under 12KB
+ */
+
+/* Base */
+*, *::before, *::after { box-sizing: border-box; }
+body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; font-size: 14px; line-height: 1.5; color: #212529; background-color: #fff; }
+
+/* Container */
+.container { width: 100%; padding-right: 15px; padding-left: 15px; margin-right: auto; margin-left: auto; }
+@media (min-width: 1200px) { .container { max-width: 1140px; } }
+
+/* Header */
+header { display: block; position: relative; }
+.header-wrapper { background-color: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.1); }
+
+/* Page layout */
+.page-content { max-width: 1000px; margin: 40px auto; padding: 0 15px; }
+
+/* Page header */
+.page-header { text-align: center; margin-bottom: 40px; }
+.page-title { font-size: 2rem; margin: 0 0 10px; }
+
+/* Contact info section */
+.contact-info { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 30px; margin-bottom: 40px; }
+.contact-item { text-align: center; padding: 20px; }
+.contact-item h3 { margin-bottom: 10px; }
+
+/* Contact form */
+.contact-form { max-width: 600px; margin: 0 auto; }
+.wpcf7-form { display: block; }
+.wpcf7-form p { margin-bottom: 20px; }
+.wpcf7-form label { display: block; margin-bottom: 5px; font-weight: 500; }
+.wpcf7-form input[type="text"],
+.wpcf7-form input[type="email"],
+.wpcf7-form input[type="tel"],
+.wpcf7-form textarea { 
+    width: 100%; 
+    padding: 10px; 
+    border: 1px solid #ddd; 
+    font-size: 14px; 
+}
+.wpcf7-form textarea { min-height: 120px; resize: vertical; }
+.wpcf7-submit { 
+    background: #333; 
+    color: #fff; 
+    padding: 12px 30px; 
+    border: none; 
+    cursor: pointer; 
+    font-size: 14px; 
+}

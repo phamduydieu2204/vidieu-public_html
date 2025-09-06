@@ -1,0 +1,59 @@
+/* Critical CSS for My Account Page
+ * Only above-the-fold styles
+ * Keep under 12KB
+ */
+
+/* Base */
+*, *::before, *::after { box-sizing: border-box; }
+body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; font-size: 14px; line-height: 1.5; color: #212529; background-color: #fff; }
+
+/* Container */
+.container { width: 100%; padding-right: 15px; padding-left: 15px; margin-right: auto; margin-left: auto; }
+@media (min-width: 1200px) { .container { max-width: 1140px; } }
+
+/* Header */
+header { display: block; position: relative; }
+.header-wrapper { background-color: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.1); }
+
+/* Account layout */
+.woocommerce-account { margin: 40px 0; }
+.woocommerce-MyAccount-navigation { float: left; width: 25%; }
+.woocommerce-MyAccount-content { float: right; width: 70%; }
+
+@media (max-width: 767px) {
+    .woocommerce-MyAccount-navigation,
+    .woocommerce-MyAccount-content { float: none; width: 100%; }
+    .woocommerce-MyAccount-navigation { margin-bottom: 30px; }
+}
+
+/* Navigation */
+.woocommerce-MyAccount-navigation ul { list-style: none; padding: 0; margin: 0; border: 1px solid #ddd; }
+.woocommerce-MyAccount-navigation li { border-bottom: 1px solid #ddd; }
+.woocommerce-MyAccount-navigation li:last-child { border-bottom: none; }
+.woocommerce-MyAccount-navigation a { display: block; padding: 15px 20px; text-decoration: none; color: #333; }
+.woocommerce-MyAccount-navigation li.is-active a { background: #f8f9fa; font-weight: bold; }
+
+/* Content area */
+.woocommerce-MyAccount-content h2 { font-size: 1.5rem; margin-bottom: 20px; }
+.woocommerce-MyAccount-content p { margin-bottom: 15px; }
+
+/* Forms */
+.woocommerce-form-row { margin-bottom: 15px; }
+.woocommerce-form-row label { display: block; margin-bottom: 5px; font-weight: 500; }
+.woocommerce-form-row input[type="text"],
+.woocommerce-form-row input[type="email"],
+.woocommerce-form-row input[type="password"] { width: 100%; padding: 10px; border: 1px solid #ddd; }
+
+/* Tables */
+.woocommerce-orders-table,
+.woocommerce-table--order-downloads { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+.woocommerce-orders-table th,
+.woocommerce-table--order-downloads th { background: #f8f9fa; padding: 10px; text-align: left; border-bottom: 2px solid #dee2e6; }
+.woocommerce-orders-table td,
+.woocommerce-table--order-downloads td { padding: 10px; border-bottom: 1px solid #dee2e6; }
+
+/* Buttons */
+.woocommerce-Button { background: #333; color: #fff; padding: 10px 20px; border: none; cursor: pointer; }
+
+/* Clear */
+.woocommerce::after { content: ""; display: table; clear: both; }
