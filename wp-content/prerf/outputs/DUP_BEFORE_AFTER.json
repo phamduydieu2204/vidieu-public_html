@@ -1,0 +1,148 @@
+{
+  "summary": {
+    "optimization_date": "2025-09-06",
+    "status": "implemented",
+    "rollback_available": true
+  },
+  "before": {
+    "home": {
+      "total_requests": 144,
+      "duplicate_groups": 2,
+      "wasted_requests": 6,
+      "error_404": 4,
+      "css_files": 41,
+      "js_files": 59,
+      "recaptcha_loads": 3,
+      "ajax_calls": 4
+    },
+    "product_archive": {
+      "total_requests": 140,
+      "duplicate_groups": 2,
+      "wasted_requests": 5,
+      "error_404": 4,
+      "css_files": 41,
+      "js_files": 59,
+      "recaptcha_loads": 3,
+      "ajax_calls": 3
+    },
+    "single_post": {
+      "total_requests": 122,
+      "duplicate_groups": 2,
+      "wasted_requests": 3,
+      "error_404": 4,
+      "css_files": 39,
+      "js_files": 51,
+      "recaptcha_loads": 3,
+      "ajax_calls": 2
+    },
+    "contact": {
+      "total_requests": 116,
+      "duplicate_groups": 1,
+      "wasted_requests": 2,
+      "error_404": 4,
+      "css_files": 39,
+      "js_files": 51,
+      "recaptcha_loads": 3,
+      "ajax_calls": 1
+    }
+  },
+  "after_expected": {
+    "home": {
+      "total_requests": 115,
+      "duplicate_groups": 0,
+      "wasted_requests": 0,
+      "error_404": 0,
+      "css_files": 40,
+      "js_files": 57,
+      "recaptcha_loads": 1,
+      "ajax_calls": 2,
+      "reduction": {
+        "requests": 29,
+        "percentage": "20.1%"
+      }
+    },
+    "product_archive": {
+      "total_requests": 112,
+      "duplicate_groups": 0,
+      "wasted_requests": 0,
+      "error_404": 0,
+      "css_files": 40,
+      "js_files": 57,
+      "recaptcha_loads": 1,
+      "ajax_calls": 2,
+      "reduction": {
+        "requests": 28,
+        "percentage": "20.0%"
+      }
+    },
+    "single_post": {
+      "total_requests": 97,
+      "duplicate_groups": 0,
+      "wasted_requests": 0,
+      "error_404": 0,
+      "css_files": 38,
+      "js_files": 48,
+      "recaptcha_loads": 1,
+      "ajax_calls": 1,
+      "reduction": {
+        "requests": 25,
+        "percentage": "20.5%"
+      }
+    },
+    "contact": {
+      "total_requests": 92,
+      "duplicate_groups": 0,
+      "wasted_requests": 0,
+      "error_404": 0,
+      "css_files": 38,
+      "js_files": 46,
+      "recaptcha_loads": 1,
+      "ajax_calls": 1,
+      "reduction": {
+        "requests": 24,
+        "percentage": "20.7%"
+      }
+    }
+  },
+  "optimizations_applied": {
+    "404_fixes": {
+      "main_font": "Redirected to child theme path",
+      "style_min_css": "Fallback to non-minified",
+      "elementor_fonts": "Disabled cache generation",
+      "recaptcha_invalid": "Removed invalid API key"
+    },
+    "deduplication": {
+      "recaptcha": "Consolidated to single instance",
+      "ajax_calls": "JavaScript-based deduplication",
+      "child_style": "Removed duplicate enqueues"
+    },
+    "route_optimization": {
+      "contact": "Removed unnecessary WooCommerce scripts",
+      "non_product": "Removed YITH Compare",
+      "blog_posts": "Removed variation scripts when not needed"
+    }
+  },
+  "testing_required": {
+    "forms": [
+      "Contact form submission",
+      "reCAPTCHA validation",
+      "WooCommerce checkout"
+    ],
+    "functionality": [
+      "Product quick view",
+      "Add to cart",
+      "YITH Compare (on product pages)",
+      "Cart fragments update"
+    ],
+    "visual": [
+      "Font loading",
+      "CSS styling integrity",
+      "Elementor layouts"
+    ]
+  },
+  "rollback": {
+    "method": "kill_switch",
+    "constant": "VIDIEU_DISABLE_DUP_OPTIMIZATION",
+    "location": "wp-config.php or functions.php"
+  }
+}

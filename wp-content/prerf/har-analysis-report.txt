@@ -1,0 +1,194 @@
+
+=== HAR Analysis Report: trang-chu ===
+
+SUMMARY:
+- Total Requests: 144
+- Duplicate Requests: 2
+- Error Responses (4xx/5xx): 4
+- Total Wasted Bytes: -10 bytes (-10 B)
+
+RESOURCES BY TYPE:
+- CSS: 41 requests, -82 B
+- FONT: 9 requests, -18 B
+- HTML: 5 requests, -10 B
+- IMAGE: 7 requests, -14 B
+- JS: 59 requests, -118 B
+- JSON: 9 requests, -18 B
+- OTHER: 14 requests, -28 B
+
+DUPLICATE REQUESTS:
+- .../www.gstatic.com/recaptcha/releases/Lu6n5xwy2ghvnPNo3IxkhcCb/recaptcha__vi.js
+  Type: js, Loaded: 3 times, Wasted: -4 B
+- https://vidieu.vn/wp-admin/admin-ajax.php
+  Type: json, Loaded: 4 times, Wasted: -6 B
+
+QUERY STRING DUPLICATES (same file, different parameters):
+- Base URL: ...79F-FC90D2BEE127/6FCE8151-3782-4338-9AEB-85C319F11314/to/wsm.sessionActivated
+  * tm=2025-09-06T11%3A03%3A48.413Z (-2 B)
+  * tm=2025-09-06T11%3A03%3A52.574Z (-2 B)
+  * tm=2025-09-06T11%3A03%3A54.691Z (-2 B)
+- Base URL: ...F-FC90D2BEE127/6FCE8151-3782-4338-9AEB-85C319F11314/to/wsm.sessionDeactivated
+  * tm=2025-09-06T11%3A03%3A49.327Z (-2 B)
+  * tm=2025-09-06T11%3A03%3A54.168Z (-2 B)
+- Base URL: https://vidieu.vn/
+  * [no query string] (-2 B)
+  * wc-ajax=yith-woocompare-reload-compare (-2 B)
+  * wc-ajax=get_refreshed_fragments (-2 B)
+- Base URL: ...gc.kis.v2.scr.kaspersky-labs.com/FD126C42-EBFA-4E12-B309-BB3FDD723AC1/main.js
+  * attr=iM8baY9ysPfr1fI6hcnFgRwuEhb6OnKjlm1uxKkIcrObs4OoL056aSPQqIMbCInW (-2 B)
+  * attr=xf19iPncO4Z9JPj6ObkoCtCQZ-M-d-jESM_gR1fPbeHQbjE2jmyJakcxgg2Dp9o26zikgS7XaOgJWQTTHUlBDasYshmB3gRCwJFLaR1s84X-oisKz1E1NPK1_3AQQSJcTzcQNNTi15rv4i0CDSdb2bZbvqWjhGMZ7GSSQtQRo_59tP_UFAxR9VP1c6DbvzeoKZJNIITGxossN4nmDC7_S4qBy0mlkQX143XPZrcxItBxosMOQqHZkSJy4Ypyy_YCyQqgPs2ngb3qeiZbRBpqQz7BMA8q3lTP8Mw0JZuxGvOjFPqnPdyQv85ZCcz90z-k (-2 B)
+- Base URL: ...s.v2.scr.kaspersky-labs.com/E3E8934C-235A-4B0E-825A-35A08381A191/abn/main.css
+  * attr=aHR0cHM6Ly92aWRpZXUudm4v (-2 B)
+  * attr=aHR0cHM6Ly93d3cuZ29vZ2xlLmNvbS9yZWNhcHRjaGEvYXBpMi9hbmNob3I_YXI9MSZrPTZMZTc5N3dyQUFBQUFKanE0eDJCN1NaZkcwYkRCVGt6NW15R3NsWlEmY289YUhSMGNITTZMeTkyYVdScFpYVXVkbTQ2TkRReiZobD12aSZ2PUx1Nm41eHd5Mmdodm5QTm8zSXhraGNDYiZzaXplPWludmlzaWJsZSZhbmNob3ItbXM9MjAwMDAmZXhlY3V0ZS1tcz0xNTAwMCZjYj1hMTZjenE2NmUyeWI (-2 B)
+- Base URL: https://vidieu.vn/wp-content/themes/elessi-theme-child/style.css
+  * ver=1.0.0 (-2 B)
+  * ver=6.8.2 (-2 B)
+- Base URL: https://www.google.com/recaptcha/api.js
+  * onload=wpcaptcha_captcha&render=6Le797wrAAAAAJjq4x2B7SZfG0bDBTkz5myGslZQ&ver=1.31 (-2 B)
+  * render=6LdAg_UqAAAAANiCMOwwgJ_I3We6DGQ3T5LohPX0&ver=3.0 (-2 B)
+- Base URL: https://vidieu.vn/wp-admin/admin-ajax.php
+  * action=vidieu_filter_products_json&page=1 (-2 B)
+  * [no query string] (-2 B)
+  * [no query string] (-2 B)
+  * [no query string] (-2 B)
+  * [no query string] (-2 B)
+
+ERROR RESPONSES:
+- 404 : https://vidieu.vn/wp-content/themes/elessi-theme/assets/fonts/main-font.woff2 (Type: html)
+- 404 : https://vidieu.vn/wp-content/themes/elessi-theme/style.min.css (Type: html)
+- 404 : ...dieu.vn/wp-content/uploads/elementor/google-fonts/css/jost.css?ver=1754294088 (Type: html)
+- 400 : ....com/recaptcha/api.js?render=6LdAg_UqAAAAANiCMOwwgJ_I3We6DGQ3T5LohPX0&ver=3.0 (Type: js)
+
+
+=== HAR Analysis Report: trang-san-pham ===
+
+SUMMARY:
+- Total Requests: 140
+- Duplicate Requests: 2
+- Error Responses (4xx/5xx): 4
+- Total Wasted Bytes: -8 bytes (-8 B)
+
+RESOURCES BY TYPE:
+- CSS: 41 requests, -82 B
+- FONT: 8 requests, -16 B
+- HTML: 5 requests, -10 B
+- IMAGE: 12 requests, -24 B
+- JS: 59 requests, -118 B
+- JSON: 7 requests, -14 B
+- OTHER: 8 requests, -16 B
+
+DUPLICATE REQUESTS:
+- .../www.gstatic.com/recaptcha/releases/Lu6n5xwy2ghvnPNo3IxkhcCb/recaptcha__vi.js
+  Type: js, Loaded: 3 times, Wasted: -4 B
+- https://vidieu.vn/wp-admin/admin-ajax.php
+  Type: json, Loaded: 3 times, Wasted: -4 B
+
+QUERY STRING DUPLICATES (same file, different parameters):
+- Base URL: ...gc.kis.v2.scr.kaspersky-labs.com/FD126C42-EBFA-4E12-B309-BB3FDD723AC1/main.js
+  * attr=bS9jHiOEUFrkPwQB4XegACG4IpL_4iIcf-rWlIhtAYlp6b5bF9nS1bISV6sGZE7K (-2 B)
+  * attr=gKw4gDSBvL1eAnEsIqWcHK1HEG3JlWYNCxzTJz90Jg-8PFMmApQ_oc8tDzU9Peq25HafabuEe3qk4PR9oOtq1AR4fAlQOGa0oIt6JRkGifseM_DMQA80iO3lbYXb4OPN_72auxHDNimDB3lIcYRUFWVroyb_Jp6uOXBhuKJs77JhzgLLHn2_dlb2KbLzjId7nGTpLh70Lr2oDNYnq7bWWQuTmuRUGbWuZczCDH-Bs292j1O8QkLJjTib2U9RnemT-G_9zYCLHHlTM5BoAKxrdDMSZ8G-DlsX2FNU4xrmqdOGcIktt1qEM4TpQsm7AELq (-2 B)
+- Base URL: ...s.v2.scr.kaspersky-labs.com/E3E8934C-235A-4B0E-825A-35A08381A191/abn/main.css
+  * attr=aHR0cHM6Ly92aWRpZXUudm4vc2FuLXBoYW0v (-2 B)
+  * attr=aHR0cHM6Ly93d3cuZ29vZ2xlLmNvbS9yZWNhcHRjaGEvYXBpMi9hbmNob3I_YXI9MSZrPTZMZTc5N3dyQUFBQUFKanE0eDJCN1NaZkcwYkRCVGt6NW15R3NsWlEmY289YUhSMGNITTZMeTkyYVdScFpYVXVkbTQ2TkRReiZobD12aSZ2PUx1Nm41eHd5Mmdodm5QTm8zSXhraGNDYiZzaXplPWludmlzaWJsZSZhbmNob3ItbXM9MjAwMDAmZXhlY3V0ZS1tcz0xNTAwMCZjYj1uamF0dXNqeXNpOQ (-2 B)
+- Base URL: https://vidieu.vn/wp-content/themes/elessi-theme-child/style.css
+  * ver=1.0.0 (-2 B)
+  * ver=6.8.2 (-2 B)
+- Base URL: https://www.google.com/recaptcha/api.js
+  * onload=wpcaptcha_captcha&render=6Le797wrAAAAAJjq4x2B7SZfG0bDBTkz5myGslZQ&ver=1.31 (-2 B)
+  * render=6LdAg_UqAAAAANiCMOwwgJ_I3We6DGQ3T5LohPX0&ver=3.0 (-2 B)
+- Base URL: https://vidieu.vn/
+  * wc-ajax=yith-woocompare-reload-compare (-2 B)
+  * wc-ajax=get_refreshed_fragments (-2 B)
+
+ERROR RESPONSES:
+- 404 : https://vidieu.vn/wp-content/themes/elessi-theme/assets/fonts/main-font.woff2 (Type: html)
+- 404 : https://vidieu.vn/wp-content/themes/elessi-theme/style.min.css (Type: html)
+- 404 : ...dieu.vn/wp-content/uploads/elementor/google-fonts/css/jost.css?ver=1754294088 (Type: html)
+- 400 : ....com/recaptcha/api.js?render=6LdAg_UqAAAAANiCMOwwgJ_I3We6DGQ3T5LohPX0&ver=3.0 (Type: js)
+
+
+=== HAR Analysis Report: trang-bai-viet ===
+
+SUMMARY:
+- Total Requests: 122
+- Duplicate Requests: 2
+- Error Responses (4xx/5xx): 4
+- Total Wasted Bytes: -6 bytes (-6 B)
+
+RESOURCES BY TYPE:
+- CSS: 39 requests, -78 B
+- FONT: 8 requests, -16 B
+- HTML: 5 requests, -10 B
+- IMAGE: 3 requests, -6 B
+- JS: 51 requests, -102 B
+- JSON: 5 requests, -10 B
+- OTHER: 11 requests, -22 B
+
+DUPLICATE REQUESTS:
+- https://vidieu.vn/wp-admin/admin-ajax.php
+  Type: json, Loaded: 2 times, Wasted: -2 B
+- .../www.gstatic.com/recaptcha/releases/Lu6n5xwy2ghvnPNo3IxkhcCb/recaptcha__vi.js
+  Type: js, Loaded: 3 times, Wasted: -4 B
+
+QUERY STRING DUPLICATES (same file, different parameters):
+- Base URL: ...gc.kis.v2.scr.kaspersky-labs.com/FD126C42-EBFA-4E12-B309-BB3FDD723AC1/main.js
+  * attr=T1rM5fMn-GAIrBYIxh0fa6Xb8V_5xBjP-t5a8a_cYvP5_qJiGPqoJGXh7oaw0L7P (-2 B)
+  * attr=TVmJs6ErcFm-tbHCHoOlSfU4QM_NT7Li14PJ-EdYKgeU_fy9bbMeug6h60rZ1Isoz2mrBHLOLGdO4TZ_F2KveYVBKMw6P41mfD1r7E6uWzndPHdFG_AG6CzC8qJbk534Fd8Swno2JBZCWwhQpZZH8WFpa96-6ZA9LFi6RCV6CweEbmYIDDnOMyi8gdzwGisdKdDMCwdmVicgCBk08wQHcOEoKRh7P8VaU5T_XzMy5ttdsd9G8wtEdtaHrrmffALzExrrLFe0BjnzOgyYOwystNCujgCskTsPhWOzNwBqRD_7SXZtGfF6LThX921GAZC3 (-2 B)
+- Base URL: ...s.v2.scr.kaspersky-labs.com/E3E8934C-235A-4B0E-825A-35A08381A191/abn/main.css
+  * attr=aHR0cHM6Ly92aWRpZXUudm4vYmFpLXZpZXQv (-2 B)
+  * attr=aHR0cHM6Ly93d3cuZ29vZ2xlLmNvbS9yZWNhcHRjaGEvYXBpMi9hbmNob3I_YXI9MSZrPTZMZTc5N3dyQUFBQUFKanE0eDJCN1NaZkcwYkRCVGt6NW15R3NsWlEmY289YUhSMGNITTZMeTkyYVdScFpYVXVkbTQ2TkRReiZobD12aSZ2PUx1Nm41eHd5Mmdodm5QTm8zSXhraGNDYiZzaXplPWludmlzaWJsZSZhbmNob3ItbXM9MjAwMDAmZXhlY3V0ZS1tcz0xNTAwMCZjYj1wc3MzajBmdXBpcnc (-2 B)
+- Base URL: https://vidieu.vn/wp-content/themes/elessi-theme-child/style.css
+  * ver=1.0.0 (-2 B)
+  * ver=6.8.2 (-2 B)
+- Base URL: https://www.google.com/recaptcha/api.js
+  * onload=wpcaptcha_captcha&render=6Le797wrAAAAAJjq4x2B7SZfG0bDBTkz5myGslZQ&ver=1.31 (-2 B)
+  * render=6LdAg_UqAAAAANiCMOwwgJ_I3We6DGQ3T5LohPX0&ver=3.0 (-2 B)
+
+ERROR RESPONSES:
+- 404 : https://vidieu.vn/wp-content/themes/elessi-theme/assets/fonts/main-font.woff2 (Type: html)
+- 404 : https://vidieu.vn/wp-content/themes/elessi-theme/style.min.css (Type: html)
+- 404 : ...dieu.vn/wp-content/uploads/elementor/google-fonts/css/jost.css?ver=1754294088 (Type: html)
+- 400 : ....com/recaptcha/api.js?render=6LdAg_UqAAAAANiCMOwwgJ_I3We6DGQ3T5LohPX0&ver=3.0 (Type: js)
+
+
+=== HAR Analysis Report: trang-contact ===
+
+SUMMARY:
+- Total Requests: 116
+- Duplicate Requests: 1
+- Error Responses (4xx/5xx): 4
+- Total Wasted Bytes: -4 bytes (-4 B)
+
+RESOURCES BY TYPE:
+- CSS: 39 requests, -78 B
+- FONT: 8 requests, -16 B
+- HTML: 5 requests, -10 B
+- IMAGE: 3 requests, -6 B
+- JS: 51 requests, -102 B
+- JSON: 2 requests, -4 B
+- OTHER: 8 requests, -16 B
+
+DUPLICATE REQUESTS:
+- .../www.gstatic.com/recaptcha/releases/Lu6n5xwy2ghvnPNo3IxkhcCb/recaptcha__vi.js
+  Type: js, Loaded: 3 times, Wasted: -4 B
+
+QUERY STRING DUPLICATES (same file, different parameters):
+- Base URL: ...gc.kis.v2.scr.kaspersky-labs.com/FD126C42-EBFA-4E12-B309-BB3FDD723AC1/main.js
+  * attr=NZyik8uGeYRuqnmiCvDwMIXMJZguHeRq_RI5qhnkKmVQElOKYJ8J7Myws6QZFdAT (-2 B)
+  * attr=cLpka0VSgohhFd7LDLEbsFN4_ug4zbac-OjSssQOnX0ef8I6Vcf1zNkeKq8J_rL-eRi_ozk-tlglXWJ82NDpWkuJfNLbzTHXu4twvVNMgwUmE7gHsYQL9kTdKP18laazChvU-t8EyCHBqGvWGMcPtQ_NuFWnhrtC8BPgA_UX_ppLGP4FRMDtvsaWyOPLw7yFhOse8WDxcKq16KLbxc7jdX7WFvncl67ZWBThjg39Vte4FxXjtfZQIn2Dl5oqX2YotptbCwobPmxA27pltwbpAmmBIDKBh3Y03m1E3pomf0gpDYijvYKTFvK1VA6K271u (-2 B)
+- Base URL: ...s.v2.scr.kaspersky-labs.com/E3E8934C-235A-4B0E-825A-35A08381A191/abn/main.css
+  * attr=aHR0cHM6Ly92aWRpZXUudm4vY29udGFjdC8 (-2 B)
+  * attr=aHR0cHM6Ly93d3cuZ29vZ2xlLmNvbS9yZWNhcHRjaGEvYXBpMi9hbmNob3I_YXI9MSZrPTZMZTc5N3dyQUFBQUFKanE0eDJCN1NaZkcwYkRCVGt6NW15R3NsWlEmY289YUhSMGNITTZMeTkyYVdScFpYVXVkbTQ2TkRReiZobD12aSZ2PUx1Nm41eHd5Mmdodm5QTm8zSXhraGNDYiZzaXplPWludmlzaWJsZSZhbmNob3ItbXM9MjAwMDAmZXhlY3V0ZS1tcz0xNTAwMCZjYj1tNm5kcGlmajJ3aDA (-2 B)
+- Base URL: https://vidieu.vn/wp-content/themes/elessi-theme-child/style.css
+  * ver=1.0.0 (-2 B)
+  * ver=6.8.2 (-2 B)
+- Base URL: https://www.google.com/recaptcha/api.js
+  * onload=wpcaptcha_captcha&render=6Le797wrAAAAAJjq4x2B7SZfG0bDBTkz5myGslZQ&ver=1.31 (-2 B)
+  * render=6LdAg_UqAAAAANiCMOwwgJ_I3We6DGQ3T5LohPX0&ver=3.0 (-2 B)
+
+ERROR RESPONSES:
+- 404 : https://vidieu.vn/wp-content/themes/elessi-theme/assets/fonts/main-font.woff2 (Type: html)
+- 404 : https://vidieu.vn/wp-content/themes/elessi-theme/style.min.css (Type: html)
+- 404 : ...dieu.vn/wp-content/uploads/elementor/google-fonts/css/jost.css?ver=1754294088 (Type: html)
+- 400 : ....com/recaptcha/api.js?render=6LdAg_UqAAAAANiCMOwwgJ_I3We6DGQ3T5LohPX0&ver=3.0 (Type: js)
+

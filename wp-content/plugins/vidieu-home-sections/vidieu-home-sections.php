@@ -83,25 +83,9 @@ class Vidieu_Home_Sections {
         require_once VD_HOME_PLUGIN_DIR . 'includes/class-vd-translations.php';
         require_once VD_HOME_PLUGIN_DIR . 'includes/class-vd-page-sidebar-mappings.php';
         
-        // Performance logging (only when flags are enabled)
-        if ((defined('VIDIEU_PERF_LOG_QUERIES') && VIDIEU_PERF_LOG_QUERIES) || 
-            (defined('VIDIEU_PERF_LOG_BOOTSTRAP') && VIDIEU_PERF_LOG_BOOTSTRAP)) {
-            require_once VD_HOME_PLUGIN_DIR . 'inc/perf/class-vidieu-perf-logger.php';
-        }
-        
-        // Route-based optimizations (only when flag is enabled)
-        if (defined('VIDIEU_PERF_ROUTE_CONDITIONALS') && VIDIEU_PERF_ROUTE_CONDITIONALS) {
-            require_once VD_HOME_PLUGIN_DIR . 'inc/perf/class-vidieu-route-optimizer.php';
-        }
-        
-        // Critical CSS (only when flag is enabled)
-        if (defined('VIDIEU_PERF_CRITICAL_CSS') && VIDIEU_PERF_CRITICAL_CSS) {
-            require_once VD_HOME_PLUGIN_DIR . 'inc/perf/class-vidieu-critical-css.php';
-        }
-        
-        // JavaScript optimization (only when flag is enabled)
-        if (defined('VIDIEU_PERF_DEFER_JS') && VIDIEU_PERF_DEFER_JS) {
-            require_once VD_HOME_PLUGIN_DIR . 'inc/perf/class-vidieu-defer-js.php';
+        // Performance optimizations
+        if (file_exists(VD_HOME_PLUGIN_DIR . 'inc/perf/class-vidieu-dup-requests-guard.php')) {
+            require_once VD_HOME_PLUGIN_DIR . 'inc/perf/class-vidieu-dup-requests-guard.php';
         }
     }
     
