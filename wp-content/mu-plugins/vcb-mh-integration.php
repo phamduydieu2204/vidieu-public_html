@@ -169,3 +169,6 @@ add_action('init', function() {
         wp_mail($admin_email, $subject, $message);
     });
 });
+
+// 9. Fix missing QR code - DISABLED to prevent duplicate
+// Moved to vcb-mh-fix-duplicate.php
