@@ -21,6 +21,7 @@ define('VIDIEU_PERF_HOME_DISABLE_RECAPTCHA_ON_HOME', true); // H1.2b - Disable r
 define('VIDIEU_PERF_HOME_CLEAN_PRELOADS', true);    // H2.0 - Clean unused preloads
 define('VIDIEU_PERF_HOME_DEFER_JS', false);         // H2.1 - Defer non-critical JS (disabled until ready)
 define('VIDIEU_PERF_HOME_CRITICAL_CSS', true);      // H2.2 - Inline critical CSS (enabled)
+define('VIDIEU_PERF_HOME_DISABLE_CSS_PRELOADS', true); // H2.2-fix2 - Disable CSS preloads on HOME (enabled)
 define('VIDIEU_PERF_HOME_FONT_OPTIMIZE', false);    // H2.4 - Font optimization (disabled until ready)
 define('VIDIEU_PERF_HOME_LAZY_IMAGES', false);      // H3.1 - Lazy load images (disabled until ready)
 

@@ -61,7 +61,13 @@ class Vidieu_Perf_Home {
         
         // H2.2 - Critical CSS (future implementation)
         if (defined('VIDIEU_PERF_HOME_CRITICAL_CSS') && VIDIEU_PERF_HOME_CRITICAL_CSS) {
-            add_action('wp_head', array($this, 'inline_critical_css'), 5);
+            add_action('wp_head', array($this, 'inline_critical_css'), 1);
+        }
+        
+        // H2.2-fix2 - Disable CSS preloads when critical CSS is active
+        if (defined('VIDIEU_PERF_HOME_DISABLE_CSS_PRELOADS') && VIDIEU_PERF_HOME_DISABLE_CSS_PRELOADS) {
+            add_filter('style_loader_tag', array($this, 'remove_css_preloads'), 999, 4);
+            add_action('wp_head', array($this, 'remove_css_preload_tags'), 999);
         }
         
         // H2.4 - Font optimization (future implementation)
@@ -179,6 +185,13 @@ class Vidieu_Perf_Home {
     public function inline_critical_css() {
         // H2.2 - Inline critical CSS for HOME page
         
+        // Ensure this only runs once
+        static $done = false;
+        if ($done) {
+            return;
+        }
+        $done = true;
+        
         // Path to critical CSS file
         $crit_css_path = get_stylesheet_directory() . '/assets/css/crit-home.css';
         
@@ -195,7 +208,7 @@ class Vidieu_Perf_Home {
         
         // Output the critical CSS inline
         if (!empty($critical_css)) {
-            echo "\n<!-- H2.2 Critical CSS for HOME -->\n";
+            echo "\n<!-- H2.2 Critical CSS for HOME (priority 1) -->\n";
             echo '<style id="vd-crit-home">' . $critical_css . '</style>';
             echo "\n<!-- End H2.2 Critical CSS -->\n";
         }
@@ -451,35 +464,31 @@ class Vidieu_Perf_Home {
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
         <?php
         
-        // Preload only existing critical fonts
+        // H2.2-fix2: Only preload fonts that have .woff2 format and are critical
         $theme_url = get_template_directory_uri();
+        
+        // Only preload FontAwesome as it has .woff2 and is used above-the-fold
         $critical_fonts = array(
             array(
-                'path' => '/assets/font-nasa/nasa-font.woff',
-                'type' => 'font/woff'
-            ),
-            array(
-                'path' => '/assets/font-pe-icon-7-stroke/Pe-icon-7-stroke.woff', 
-                'type' => 'font/woff'
-            ),
-            array(
-                'path' => '/assets/font-awesome-4.7.0/fontawesome-webfont.woff2',
+                'path' => '/assets/font-awesome-4.7.0/fonts/fontawesome-webfont.woff2',
                 'type' => 'font/woff2'
             )
         );
         
-        echo "<!-- H2.0 Optimized font preloads -->\n";
+        echo "<!-- H2.2-fix2 Optimized font preloads (woff2 only) -->\n";
         foreach ($critical_fonts as $font) {
             $full_path = get_template_directory() . $font['path'];
             if (file_exists($full_path)) {
                 printf(
-                    '<link rel="preload" as="font" type="%s" crossorigin href="%s">%s',
+                    '<link rel="preload" as="font" type="%s" crossorigin="anonymous" href="%s">%s',
                     esc_attr($font['type']),
                     esc_url($theme_url . $font['path']),
                     "\n"
                 );
             }
         }
+        
+        echo "<!-- Note: nasa-font and pe-icon fonts removed from preload (no woff2 available) -->\n";
         
         // Remove preload for non-existent style.min.css
         ?>
@@ -488,6 +497,44 @@ class Vidieu_Perf_Home {
         document.querySelectorAll('link[rel="preload"][href*="style.min.css"], link[rel="preload"][href*="main-font.woff2"]').forEach(function(el) {
             el.remove();
         });
+        </script>
+        <?php
+    }
+    
+    /**
+     * H2.2-fix2 - Remove CSS preload tags
+     */
+    public function remove_css_preloads($html, $handle, $href, $media) {
+        // Remove preload links for CSS files
+        if (strpos($html, 'rel="preload"') !== false && strpos($html, 'as="style"') !== false) {
+            // Special handling for duplicate sbi-styles preload
+            if (strpos($href, 'sbi-styles.min.css') !== false) {
+                return '<!-- Removed duplicate preload for sbi-styles.min.css -->';
+            }
+            
+            // Remove all CSS preloads on HOME when flag is enabled
+            return '<!-- CSS preload removed by H2.2-fix2 -->';
+        }
+        
+        return $html;
+    }
+    
+    /**
+     * H2.2-fix2 - Remove preload tags via JavaScript
+     */
+    public function remove_css_preload_tags() {
+        ?>
+        <script id="vidieu-remove-css-preloads">
+        // H2.2-fix2 - Remove CSS preload tags on HOME
+        (function() {
+            document.addEventListener('DOMContentLoaded', function() {
+                // Remove all CSS preload links
+                var cssPreloads = document.querySelectorAll('link[rel="preload"][as="style"]');
+                cssPreloads.forEach(function(link) {
+                    link.remove();
+                });
+            });
+        })();
         </script>
         <?php
     }

@@ -363,3 +363,68 @@ add_action('wp_head', array($this, 'inline_critical_css'), 5);
 - Consider rollback if patches don't resolve issues
 
 **See full analysis**: [HOME_COMPARE_H2.2fix.md](HOME_COMPARE_H2.2fix.md)
+
+---
+
+## H2.2-fix2 (PATCH) - Fix Critical CSS Position & Clean Preloads
+**Date**: 2025-09-06  
+**Status**: Implemented  
+**Impact**: Fixes critical issues found in H2.2-fix verification
+
+### Changes Made:
+
+1. **Fixed Critical CSS injection priority**
+   - File: `/wp-content/plugins/vidieu-home-sections/inc/perf/class-vidieu-perf-home.php`
+   - Changed `wp_head` hook priority from 5 to 1 (line 64)
+   - Added `static $done` check to ensure CSS only injects once
+   - Critical CSS now loads BEFORE external stylesheets
+
+2. **Added CSS preload filtering**
+   - Added new flag: `VIDIEU_PERF_HOME_DISABLE_CSS_PRELOADS = true`
+   - File: `/wp-content/plugins/vidieu-home-sections/performance-flags.php` (line 24)
+   - Implemented `remove_css_preloads()` method to filter out all CSS preloads
+   - Added JavaScript fallback to remove any remaining CSS preload tags
+   - Special handling for duplicate sbi-styles.min.css preload
+
+3. **Optimized font preloads**
+   - File: `/wp-content/plugins/vidieu-home-sections/inc/perf/class-vidieu-perf-home.php`
+   - Removed preloads for nasa-font.woff and Pe-icon-7-stroke.woff (no .woff2 available)
+   - Kept only fontawesome-webfont.woff2 preload with proper crossorigin="anonymous"
+   - Fixed font path to include /fonts/ directory
+
+4. **Implementation details**
+   ```php
+   // Critical CSS priority change
+   add_action('wp_head', array($this, 'inline_critical_css'), 1); // Was 5
+   
+   // CSS preload filtering
+   if (VIDIEU_PERF_HOME_DISABLE_CSS_PRELOADS) {
+       add_filter('style_loader_tag', array($this, 'remove_css_preloads'), 999, 4);
+       add_action('wp_head', array($this, 'remove_css_preload_tags'), 999);
+   }
+   ```
+
+### Key Improvements:
+- ✅ Critical CSS now loads with priority 1 (before stylesheets)
+- ✅ All CSS preloads disabled on HOME (0 preloads when flag enabled)
+- ✅ Only .woff2 fonts with crossorigin are preloaded
+- ✅ Duplicate preload issue resolved
+
+### Rollback Instructions:
+1. Set `VIDIEU_PERF_HOME_DISABLE_CSS_PRELOADS` to `false` to re-enable CSS preloads
+2. Change priority back to 5 in line 64 if needed
+3. Or disable entirely: `VIDIEU_PERF_HOME_CRITICAL_CSS = false`
+
+### Testing Checklist:
+- [ ] Clear all caches
+- [ ] Check <style id="vd-crit-home"> appears before first <link rel="stylesheet">
+- [ ] Verify no CSS preload tags remain in HTML
+- [ ] Check only fontawesome-webfont.woff2 is preloaded
+- [ ] No console errors about preloaded resources
+- [ ] FCP/LCP should improve compared to H2.2-fix
+
+### Risk Assessment:
+- **Risk Level**: LOW
+- **What could break**: CSS loading if critical CSS is incomplete
+- **Mitigation**: Main stylesheets still load normally, just without preload
+- **Monitoring**: Watch for FOUC or missing styles
