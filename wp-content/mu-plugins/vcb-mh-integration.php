@@ -121,6 +121,40 @@ add_action('woocommerce_thankyou_vcb-gateway-mh', function($order_id) {
     update_post_meta($order_id, '_vcb_qr_viewed_time', current_time('mysql'));
 });
 
+// 6.1 Inject inline CSS right before VCB-MH renders
+add_action('woocommerce_before_thankyou', function($order_id) {
+    $order = wc_get_order($order_id);
+    if (!$order || $order->get_payment_method() !== 'vcb-gateway-mh') {
+        return;
+    }
+    ?>
+    <style>
+    /* Immediate hide left-col - inline CSS loads faster than external */
+    #vcb-gateway #left-col {
+        display: none !important;
+        visibility: hidden !important;
+        opacity: 0 !important;
+        width: 0 !important;
+        height: 0 !important;
+        overflow: hidden !important;
+        position: absolute !important;
+        left: -9999px !important;
+    }
+    
+    #vcb-gateway #payment-info {
+        display: flex !important;
+        justify-content: center !important;
+    }
+    
+    #vcb-gateway #right-col {
+        width: 100% !important;
+        max-width: 600px !important;
+        margin: 0 auto !important;
+    }
+    </style>
+    <?php
+});
+
 // 7. Auto check payment status via AJAX (optional enhancement)
 add_action('wp_footer', function() {
     if (is_order_received_page()) {

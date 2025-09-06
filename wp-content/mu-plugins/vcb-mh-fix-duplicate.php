@@ -16,6 +16,50 @@ global $vcb_mh_displayed;
 $vcb_mh_displayed = false;
 
 /**
+ * Add critical CSS to hide left-col BEFORE it renders
+ */
+add_action('wp_head', function() {
+    if (!is_order_received_page()) {
+        return;
+    }
+    
+    // Check if this is a VCB-MH order
+    $order_id = get_query_var('order-received');
+    if (!$order_id) {
+        return;
+    }
+    
+    $order = wc_get_order($order_id);
+    if (!$order || $order->get_payment_method() !== 'vcb-gateway-mh') {
+        return;
+    }
+    ?>
+    <style id="vcb-mh-critical-css">
+    /* Critical CSS - Hide left-col immediately to prevent flash */
+    #vcb-gateway #left-col {
+        display: none !important;
+        visibility: hidden !important;
+        opacity: 0 !important;
+        position: absolute !important;
+        left: -9999px !important;
+    }
+    
+    /* Ensure right-col is ready */
+    #vcb-gateway #right-col {
+        width: 100% !important;
+        max-width: 600px !important;
+        margin: 0 auto !important;
+    }
+    
+    /* Hide duplicate gateways */
+    #vcb-gateway ~ #vcb-gateway {
+        display: none !important;
+    }
+    </style>
+    <?php
+}, 1); // Very early priority
+
+/**
  * Prevent duplicate VCB-MH display
  */
 add_action('woocommerce_thankyou', function($order_id) {
