@@ -495,6 +495,9 @@
         if ($existingSpinner.length && $spinnerSlot.length && !$existingSpinner.attr('data-spinner-mounted')) {
             $existingSpinner.attr('data-spinner-mounted', '1');
             $spinnerSlot.append($existingSpinner);
+            
+            // Normalize spinner attributes
+            normalizeSpinnerElement($existingSpinner);
         }
         
         // Show spinner slot on mobile if no QR yet
@@ -503,6 +506,43 @@
             if (!hasQR) {
                 $spinnerSlot.show();
             }
+        }
+    }
+    
+    // Normalize spinner element - remove attributes that affect size
+    function normalizeSpinnerElement($spinner) {
+        if (!$spinner || !$spinner.length) return;
+        
+        $spinner.each(function() {
+            const sp = this;
+            if (sp.tagName === 'IMG') {
+                sp.classList.add('vcb-qr-spinner--img');
+                sp.removeAttribute('width');
+                sp.removeAttribute('height');
+                sp.style.width = '';
+                sp.style.height = '';
+            }
+        });
+    }
+    
+    // Ensure spinner is centered (fallback to absolute positioning if needed)
+    function ensureSpinnerCentered() {
+        const $slot = $('#vcb-qr-spinner-slot');
+        if (!$slot.length) return;
+        
+        const $spinner = $slot.find('img.momo-loading').first();
+        if (!$spinner.length) return;
+        
+        // Check if spinner is properly centered
+        const slotRect = $slot[0].getBoundingClientRect();
+        const spinnerRect = $spinner[0].getBoundingClientRect();
+        
+        const centerDiffX = Math.abs((slotRect.left + slotRect.width/2) - (spinnerRect.left + spinnerRect.width/2));
+        const centerDiffY = Math.abs((slotRect.top + slotRect.height/2) - (spinnerRect.top + spinnerRect.height/2));
+        
+        // If offset is significant, use absolute positioning fallback
+        if (centerDiffX > 5 || centerDiffY > 5) {
+            $slot.addClass('is-abs');
         }
     }
     
@@ -531,10 +571,43 @@
         addImageFallback();
         manageSpinner();
         
+        // Monitor for dynamically inserted spinners
+        observeSpinnerChanges();
+        
         // Initial visibility check - removed duplicate calls
         ensureQRVisibility();
         
     });
+    
+    // Monitor for spinner changes/re-insertions
+    function observeSpinnerChanges() {
+        const targetNode = document.body;
+        if (!targetNode) return;
+        
+        let spinnerObserverTimeout;
+        const spinnerObserver = new MutationObserver(function(mutations) {
+            mutations.forEach(function(mutation) {
+                if (mutation.type === 'childList') {
+                    $(mutation.addedNodes).each(function() {
+                        const $addedSpinner = $(this).find('img.momo-loading').addBack('img.momo-loading');
+                        if ($addedSpinner.length) {
+                            clearTimeout(spinnerObserverTimeout);
+                            spinnerObserverTimeout = setTimeout(function() {
+                                // Re-normalize any newly added spinners
+                                normalizeSpinnerElement($addedSpinner);
+                                manageSpinner();
+                            }, 100);
+                        }
+                    });
+                }
+            });
+        });
+        
+        spinnerObserver.observe(targetNode, {
+            childList: true,
+            subtree: true
+        });
+    }
     
     // Also check on window load with debounce
     let loadTimeout;
@@ -542,6 +615,7 @@
         clearTimeout(loadTimeout);
         loadTimeout = setTimeout(function() {
             ensureQRVisibility();
+            ensureSpinnerCentered();
         }, 500);
     });
 

@@ -292,6 +292,14 @@ The compatibility layer implements several cleanup mechanisms:
 
 ## Version History
 
+- **1.0.6** (2025-09-07) - Fixed spinner size issue
+  - Fixed spinner being enlarged to 554×554px on desktop
+  - Forced spinner dimensions: desktop 36×36px, mobile 28×28px  
+  - Added max-width: none !important to override global img rules
+  - Implemented normalizeSpinnerElement() to remove HTML size attributes
+  - Added MutationObserver for dynamically re-inserted spinners
+  - Enhanced ensureSpinnerCentered() with absolute positioning fallback
+
 - **1.0.5** (2025-09-07) - Production cleanup and optimization
   - Centered spinner properly in slot using flexbox
   - Removed all debug console.log statements from production code

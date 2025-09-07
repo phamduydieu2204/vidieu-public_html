@@ -5,6 +5,24 @@ All notable changes to this plugin will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.6] - 2025-09-07
+
+### Fixed
+- Spinner being enlarged to 554×554px on desktop due to global img rules
+- Force spinner dimensions: desktop 36×36px, mobile 28×28px
+- Added max-width: none !important to override global img{max-width:100%} rules
+
+### Added
+- `normalizeSpinnerElement()` function to remove width/height attributes from spinner images
+- `ensureSpinnerCentered()` function with absolute positioning fallback
+- MutationObserver to handle dynamically re-inserted spinners
+- Strong CSS selectors to ensure spinner size rules take precedence
+
+### Changed
+- Spinner CSS now uses !important on all size properties to prevent overrides
+- Added object-fit: contain to maintain spinner aspect ratio
+- Enhanced mobile spinner size to 28×28px (was 32×32px)
+
 ## [1.2.5] - 2025-09-07
 
 ### Added

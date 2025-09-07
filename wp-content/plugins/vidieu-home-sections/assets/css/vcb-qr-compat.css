@@ -277,10 +277,16 @@
     line-height: normal;
 }
 
-.vcb-qr-spinner-slot .momo-loading {
+/* Force spinner size - use strong selectors to override global img rules */
+#vcb-qr-spinner-slot img.momo-loading,
+.vcb-qr-spinner-slot > img.momo-loading,
+.acb-gw-is-mb img.momo-loading {
+    width: 36px !important;          /* desktop default */
+    height: 36px !important;
+    max-width: none !important;      /* override global max-width: 100% */
+    max-height: none !important;
+    object-fit: contain;
     display: block;
-    width: 32px;
-    height: 32px;
     margin: 0;
     flex: 0 0 auto;
     position: static !important;
@@ -293,6 +299,14 @@
         min-height: 40px;
         margin: 10px 0;
     }
+    
+    /* Smaller spinner on mobile */
+    #vcb-qr-spinner-slot img.momo-loading,
+    .vcb-qr-spinner-slot > img.momo-loading,
+    .acb-gw-is-mb img.momo-loading {
+        width: 28px !important;
+        height: 28px !important;
+    }
 }
 
 /* Absolute positioning fallback for centering issues */
@@ -300,7 +314,7 @@
     position: relative;
 }
 
-.vcb-qr-spinner-slot.is-abs .momo-loading {
+.vcb-qr-spinner-slot.is-abs img.momo-loading {
     position: absolute !important;
     inset: 0;
     margin: auto;
