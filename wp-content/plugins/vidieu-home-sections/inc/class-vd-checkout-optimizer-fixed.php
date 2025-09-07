@@ -180,25 +180,26 @@ class VD_Checkout_Optimizer {
     private function parse_custom_form_data($post_data) {
         $data = array();
         
-        // Map custom fields to standard WooCommerce fields
-        $field_mapping = array(
-            'email' => 'billing_email',
-            'firstName' => 'billing_first_name', 
-            'lastName' => 'billing_last_name',
-            'phone' => 'billing_phone',
-            'address' => 'billing_address_1',
-            'city' => 'billing_city',
-            'postcode' => 'billing_postcode',
-            'country' => 'billing_country',
-            'state' => 'billing_state',
-            'orderComments' => 'order_comments',
-            'paymentMethod' => 'payment_method'
+        // The AJAX request sends billing_* fields directly, not custom field names
+        // So we need to map them directly
+        $direct_fields = array(
+            'billing_email',
+            'billing_first_name', 
+            'billing_last_name',
+            'billing_phone',
+            'billing_address_1',
+            'billing_city',
+            'billing_postcode',
+            'billing_country',
+            'billing_state',
+            'order_comments',
+            'payment_method'
         );
         
-        // Extract data
-        foreach ($field_mapping as $custom => $standard) {
-            if (isset($post_data[$custom])) {
-                $data[$standard] = sanitize_text_field($post_data[$custom]);
+        // Extract data directly from POST
+        foreach ($direct_fields as $field) {
+            if (isset($post_data[$field])) {
+                $data[$field] = sanitize_text_field($post_data[$field]);
             }
         }
         
