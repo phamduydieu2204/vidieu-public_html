@@ -81,6 +81,15 @@ class VD_Assets {
                 VD_HOME_VERSION,
                 true
             );
+            
+            // Enqueue quickview inline fix script
+            wp_enqueue_script(
+                'vd-quickview-inline-fix',
+                VD_HOME_PLUGIN_URL . 'assets/js/quickview-inline-fix.js',
+                array('jquery', 'vd-custom-quickview'),
+                VD_HOME_VERSION,
+                true
+            );
         }
         
         // Enqueue select options open quickview script
