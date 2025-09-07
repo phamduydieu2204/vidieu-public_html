@@ -192,7 +192,7 @@
         $desktopQR.attr('data-qr-cloned', '1');
         
         // Hide loading spinner if exists
-        $('.acb-gw-is-mb .momo-loading').hide();
+        hideSpinner();
         
         log('QR cloned to mobile section');
         return true;
@@ -230,7 +230,7 @@
                 $mobileQRSlot.empty().append($fallbackQR);
                 
                 // Hide spinner
-                $('.acb-gw-is-mb .momo-loading').hide();
+                hideSpinner();
                 
                 log('Fallback QR generated and inserted');
             }
@@ -267,7 +267,7 @@
                 
                 // Add load handler to hide spinner
                 $img.on('load', function() {
-                    $('.acb-gw-is-mb .momo-loading').hide();
+                    hideSpinner();
                 });
                 
                 // Force image reload if needed
@@ -338,6 +338,7 @@
             // Try with fallback after 3 seconds
             setTimeout(function() {
                 if (window.innerWidth <= 768 && !$('#vcb-qr-mobile img').length) {
+                    manageSpinner(); // Ensure spinner is visible
                     ensureQRVisibility(true); // Enable fallback
                 }
             }, 3000);
@@ -482,9 +483,53 @@
         }
     }
 
+    // Manage spinner placement and visibility
+    function manageSpinner() {
+        // Create spinner slot if it doesn't exist
+        let $spinnerSlot = $('#vcb-qr-spinner-slot');
+        if (!$spinnerSlot.length) {
+            // Find container with "Bước 1" text
+            const $instructionContainer = $('.taiMaQrCode').length ? $('.taiMaQrCode') : 
+                                        $('span:contains("Bước 1:")').closest('div');
+            
+            if ($instructionContainer.length) {
+                $spinnerSlot = $('<div id="vcb-qr-spinner-slot" class="vcb-qr-spinner-slot" aria-hidden="true"></div>');
+                $instructionContainer.before($spinnerSlot);
+                log('Created spinner slot');
+            }
+        }
+        
+        // Move existing spinner to slot if needed
+        const $existingSpinner = $('.acb-gw-is-mb .momo-loading');
+        if ($existingSpinner.length && $spinnerSlot.length && !$existingSpinner.attr('data-spinner-mounted')) {
+            $existingSpinner.attr('data-spinner-mounted', '1');
+            $spinnerSlot.append($existingSpinner);
+            log('Moved spinner to slot');
+        }
+        
+        // Show spinner slot on mobile if no QR yet
+        if (window.innerWidth <= 768 && $spinnerSlot.length) {
+            const hasQR = $('#vcb-qr-mobile img').length || $('.qrVietqr:visible').length;
+            if (!hasQR) {
+                $spinnerSlot.show();
+            }
+        }
+    }
+    
+    // Hide spinner when QR is ready
+    function hideSpinner() {
+        $('#vcb-qr-spinner-slot').hide();
+        $('.momo-loading').hide();
+        log('Spinner hidden');
+    }
+    
     // Initialize when DOM is ready
     $(document).ready(function() {
         log('Initializing VCB QR compatibility');
+        
+        // Remove our extra script tag from DOM
+        $('#vidieu-vcb-qr-compat-js-extra').remove();
+        log('Removed extra script tag');
         
         // Only run on relevant pages
         if (!config.isOrderReceived && !config.isCheckout) {
@@ -498,6 +543,7 @@
         handleResponsive();
         monitorWooCommerceEvents();
         addImageFallback();
+        manageSpinner();
         
         // Initial visibility check - removed duplicate calls
         ensureQRVisibility();

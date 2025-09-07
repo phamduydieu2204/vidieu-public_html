@@ -5,6 +5,24 @@ All notable changes to this plugin will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.5] - 2025-09-07
+
+### Added
+- Spinner slot management system to prevent text overlap on desktop
+- Mobile spinner visibility - now displays loading spinner on mobile
+- `manageSpinner()` function to handle spinner placement and visibility
+- `hideSpinner()` centralized function for consistent spinner hiding
+
+### Fixed
+- Removed extra script tag (`vidieu-vcb-qr-compat-js-extra`) from DOM after loading
+- Desktop spinner no longer overlaps "Bước 1" instruction text
+- Mobile devices now properly show loading spinner while QR loads
+
+### Changed
+- Spinner is moved to dedicated slot above instruction text
+- Improved CSS layout with proper margins and flexbox alignment
+- Spinner management is now idempotent with `data-spinner-mounted` flag
+
 ## [1.2.4] - 2025-09-07
 
 ### Fixed

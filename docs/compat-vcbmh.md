@@ -254,7 +254,31 @@ VCB-MH plugin renders QR codes in both left and right columns. The compatibility
 
 This ensures QR detection works regardless of which column is visible on mobile.
 
+## Spinner Management
+
+The compatibility layer includes a spinner management system to properly display loading states:
+
+1. **Spinner Slot**: Creates a dedicated container (`#vcb-qr-spinner-slot`) above instruction text
+2. **Desktop Fix**: Prevents spinner from overlapping "Bước 1" text
+3. **Mobile Support**: Ensures spinner is visible on mobile devices while QR loads
+4. **Automatic Hiding**: Spinner disappears when QR image loads successfully
+
+### DOM Cleanup
+
+The compatibility script automatically removes its extra script tag from the DOM:
+```javascript
+$('#vidieu-vcb-qr-compat-js-extra').remove();
+```
+
+This keeps the page source clean while maintaining functionality.
+
 ## Version History
+
+- **1.0.4** (2025-09-07) - Spinner management and DOM cleanup
+  - Added spinner slot system to fix desktop text overlap
+  - Implemented mobile spinner visibility
+  - Automatically removes extra script tag from DOM
+  - Centralized spinner hiding with `hideSpinner()` function
 
 - **1.0.3** (2025-09-07) - Path fixes and optimization
   - Fixed 404 errors for CSS/JS files with correct `plugins_url()` usage

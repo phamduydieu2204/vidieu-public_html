@@ -262,6 +262,50 @@
 }
 
 /* ==========================================================================
+   Spinner Slot Management
+   ========================================================================== */
+
+/* Spinner slot container */
+.vcb-qr-spinner-slot {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 12px 0;
+    min-height: 32px;
+}
+
+.vcb-qr-spinner-slot img.momo-loading {
+    display: block;
+    width: 32px;
+    height: 32px;
+}
+
+/* Desktop - prevent text overlap */
+@media screen and (min-width: 769px) {
+    .vcb-qr-spinner-slot {
+        margin-bottom: 16px;
+    }
+    
+    /* Push instruction text down slightly */
+    .taiMaQrCode {
+        margin-top: 8px;
+    }
+}
+
+/* Mobile - always show spinner when loading */
+@media screen and (max-width: 768px) {
+    .vcb-qr-spinner-slot {
+        display: flex !important;
+    }
+    
+    .vcb-qr-spinner-slot .momo-loading {
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+    }
+}
+
+/* ==========================================================================
    Loading States and Transitions
    ========================================================================== */
 
