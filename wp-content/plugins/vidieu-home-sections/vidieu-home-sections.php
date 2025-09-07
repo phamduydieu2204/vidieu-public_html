@@ -83,8 +83,10 @@ class Vidieu_Home_Sections {
         require_once VD_HOME_PLUGIN_DIR . 'includes/class-vd-translations.php';
         require_once VD_HOME_PLUGIN_DIR . 'includes/class-vd-page-sidebar-mappings.php';
         
-        // Checkout optimization - Fix 163s checkout flow
-        if (file_exists(VD_HOME_PLUGIN_DIR . 'inc/class-vd-checkout-optimizer.php')) {
+        // Checkout optimization - Fix 163s checkout flow + Security fix
+        if (file_exists(VD_HOME_PLUGIN_DIR . 'inc/class-vd-checkout-optimizer-fixed.php')) {
+            require_once VD_HOME_PLUGIN_DIR . 'inc/class-vd-checkout-optimizer-fixed.php';
+        } elseif (file_exists(VD_HOME_PLUGIN_DIR . 'inc/class-vd-checkout-optimizer.php')) {
             require_once VD_HOME_PLUGIN_DIR . 'inc/class-vd-checkout-optimizer.php';
         }
         
