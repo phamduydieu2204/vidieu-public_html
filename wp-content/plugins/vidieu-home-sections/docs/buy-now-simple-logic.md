@@ -3,7 +3,7 @@
 **Version:** 1.1.0  
 **Last Updated:** 2025-09-07  
 **Context:** WooCommerce Buy Now functionality for simple products in Vidieu Home Sections  
-**Security:** Single global nonce via wp_localize_script (Removed data-nonce from DOM to avoid inconsistency)
+**Security:** Single global nonce via wp_localize_script shared across all plugin AJAX actions (Removed data-nonce from DOM to avoid inconsistency)
 
 ## 1. DOM & Data Attributes
 
@@ -46,7 +46,7 @@ User clicks "Buy Now" button
     └─ action_type: 'buy-now'
     ↓
 [SERVER] handle_buy_now_ajax()
-    ├─ Verify nonce (vd_buy_now)
+    ├─ Verify nonce (vd_home_nonce)
     ├─ Validate product exists & purchasable
     ├─ Check stock status
     ├─ WC()->cart->add_to_cart()
@@ -131,7 +131,7 @@ add_action('wp_ajax_nopriv_vidieu_buy_now', array($this, 'handle_buy_now_ajax'))
 ```php
 function handle_buy_now_ajax() {
     // 1. Security check
-    check_ajax_referer('vd_buy_now', 'nonce', false);
+    check_ajax_referer('vd_home_nonce', 'nonce', false);
     
     // 2. Sanitize inputs
     $product_id = absint($_POST['product_id']);
@@ -215,10 +215,11 @@ if (status === 'timeout') {
 ## 7. Security Measures
 
 ### Nonce Implementation
-1. **Generation**: Single global nonce via `wp_localize_script()` - `wp_create_nonce('vd_buy_now')`
-2. **Global Nonce**: Uses `vd_home_ajax.nonce` for all AJAX requests
-3. **Verification**: `check_ajax_referer('vd_buy_now', 'nonce', false)`
+1. **Generation**: Single global nonce via `wp_localize_script()` - `wp_create_nonce('vd_home_nonce')`
+2. **Global Nonce**: Uses `vd_home_ajax.nonce` for all AJAX requests (shared across all plugin actions)
+3. **Verification**: `check_ajax_referer('vd_home_nonce', 'nonce', false)`
 4. **DOM Security**: Removed data-nonce from DOM to avoid inconsistency and exposure
+5. **Shared Usage**: Same nonce used for buy_now, filter_products, and all other plugin AJAX actions
 
 ### Input Sanitization
 ```php

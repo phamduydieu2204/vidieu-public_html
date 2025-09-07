@@ -113,7 +113,7 @@ class VD_Assets {
         // Localize script
         wp_localize_script('vd-home-script', 'vd_home_ajax', array(
             'ajax_url' => admin_url('admin-ajax.php'),
-            'nonce' => wp_create_nonce('vd_buy_now'),
+            'nonce' => wp_create_nonce('vd_home_nonce'),
             'loading_text' => __('Loading...', VD_HOME_TEXT_DOMAIN),
             'error_text' => __('Error loading content. Please try again.', VD_HOME_TEXT_DOMAIN),
             'no_results_text' => __('No items found.', VD_HOME_TEXT_DOMAIN),

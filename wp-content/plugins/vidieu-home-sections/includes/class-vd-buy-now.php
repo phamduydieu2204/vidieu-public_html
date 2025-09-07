@@ -110,7 +110,7 @@ class VD_Buy_Now {
      */
     public function handle_buy_now_ajax() {
         // Security check
-        if (!check_ajax_referer('vd_buy_now', 'nonce', false)) {
+        if (!check_ajax_referer('vd_home_nonce', 'nonce', false)) {
             $this->send_json_error(
                 'SECURITY_FAILED',
                 __('Security check failed. Please refresh the page and try again.', VD_HOME_TEXT_DOMAIN)
