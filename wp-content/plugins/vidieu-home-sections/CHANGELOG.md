@@ -5,6 +5,18 @@ All notable changes to this plugin will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.2] - 2025-09-07
+
+### Changed
+- Removed all console.log debug statements from production code
+- Simplified performance guard loading to use only v2-ultimate version
+- Converted vcb-qr-compat.js log() function to no-op for production
+- Cleaned up redundant code and improved code organization
+
+### Security
+- All debug/test code removed from production
+- Debug functionality now strictly controlled by VIDIEU_VCBQR_DEBUG constant
+
 ## [1.4.1] - 2025-09-07
 
 ### Fixed

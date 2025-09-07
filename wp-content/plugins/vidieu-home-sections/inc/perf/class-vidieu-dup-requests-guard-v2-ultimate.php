@@ -922,7 +922,6 @@ class Vidieu_Dup_Requests_Guard_V2_Ultimate {
             Element.prototype.appendChild = function(element) {
                 if (isRecaptchaScript(element)) {
                     if (recaptchaLoaded) {
-                        console.log('[Vidieu] Blocked duplicate reCAPTCHA:', element.src);
                         return element;
                     }
                     recaptchaLoaded = true;
@@ -933,7 +932,6 @@ class Vidieu_Dup_Requests_Guard_V2_Ultimate {
             Element.prototype.insertBefore = function(element, reference) {
                 if (isRecaptchaScript(element)) {
                     if (recaptchaLoaded) {
-                        console.log('[Vidieu] Blocked duplicate reCAPTCHA:', element.src);
                         return element;
                     }
                     recaptchaLoaded = true;
@@ -1172,8 +1170,7 @@ class Vidieu_Dup_Requests_Guard_V2_Ultimate {
                         });
                         
                         window.vidieuPerfDomains = domains;
-                        console.log('[Vidieu Admin] Total resources:', resources.length);
-                        console.log('[Vidieu Admin] Domain breakdown:', domains);
+                        // Production: Resource stats removed
                         
                         // Check for blocked domains still loading
                         var blocked = ['elementor', 'yith', 'revslider', 'instagram', 'facebook'];
