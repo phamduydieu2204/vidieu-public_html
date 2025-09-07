@@ -12,6 +12,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Mobile spinner visibility - now displays loading spinner on mobile
 - `manageSpinner()` function to handle spinner placement and visibility
 - `hideSpinner()` centralized function for consistent spinner hiding
+- Flexbox centering for perfect spinner alignment in slot
+- VIDIEU_VCBQR_DEBUG flag support for controlled debug logging
 
 ### Fixed
 - Removed extra script tag (`vidieu-vcb-qr-compat-js-extra`) from DOM after loading
@@ -20,8 +22,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - Spinner is moved to dedicated slot above instruction text
-- Improved CSS layout with proper margins and flexbox alignment
+- Improved CSS layout with proper margins and flexbox alignment (display: flex, align-items: center, justify-content: center)
 - Spinner management is now idempotent with `data-spinner-mounted` flag
+- Removed all production debug console.log statements
+- Debug logging now only active when VIDIEU_VCBQR_DEBUG flag is explicitly enabled
+
+### Security
+- Cleaned up all test/debug code from production
+- Debug output now requires explicit flag activation
 
 ## [1.2.4] - 2025-09-07
 

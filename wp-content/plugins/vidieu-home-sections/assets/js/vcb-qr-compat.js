@@ -89,7 +89,6 @@
             if (contentMatch) data.content = contentMatch[1];
         }
         
-        log('Extracted payment data:', data);
         return data;
     }
     
@@ -98,7 +97,6 @@
         const data = extractPaymentData();
         
         if (!data.account || !data.amount || !data.content) {
-            log('Insufficient data for fallback QR');
             return null;
         }
         
@@ -114,7 +112,6 @@
         
         // Add error handling
         $qrImg.on('error', function() {
-            log('Fallback QR failed to load');
             // Replace with link
             const $link = $('<div class="qr-error">')
                 .append('<p>Không thể tải mã QR</p>')
@@ -150,7 +147,6 @@
         }
         
         if (!$desktopQR.length) {
-            log('No QR found in desktop section, will try fallback');
             return false;
         }
         
@@ -170,7 +166,6 @@
             // Create mobile section if it doesn't exist
             $mobileSection = $('<div class="anMoblie"></div>');
             $('#right-col').prepend($mobileSection);
-            log('Created mobile section');
         }
         
         // Check if mobile QR slot exists
@@ -194,7 +189,6 @@
         // Hide loading spinner if exists
         hideSpinner();
         
-        log('QR cloned to mobile section');
         return true;
     }
     
@@ -205,7 +199,6 @@
         
         // If clone failed and we're on mobile, try fallback
         if (!cloneSuccess && window.innerWidth <= 768 && (useFallback || !$('#vcb-qr-mobile img').length)) {
-            log('Attempting fallback QR generation');
             
             const $fallbackQR = generateFallbackQR();
             if ($fallbackQR) {
@@ -232,7 +225,6 @@
                 // Hide spinner
                 hideSpinner();
                 
-                log('Fallback QR generated and inserted');
             }
         }
         
@@ -321,7 +313,6 @@
                     // Debounce multiple mutations
                     clearTimeout(observerTimeout);
                     observerTimeout = setTimeout(function() {
-                        log('QR detected via mutation observer');
                         ensureQRVisibility();
                     }, 100);
                 }
@@ -476,9 +467,10 @@
         });
     }
 
-    // Debug logging
+    // Debug logging - only active when VIDIEU_VCBQR_DEBUG is enabled
     function log(message, data) {
-        if ((config.debug === 1 || config.debug === '1') && console && console.log) {
+        // Only log when debug flag is explicitly enabled
+        if ((config.debug === 1 || config.debug === '1' || window.VIDIEU_VCBQR_DEBUG) && console && console.log) {
             console.info('[VCB QR Compat] ' + message, data || '');
         }
     }
@@ -495,7 +487,6 @@
             if ($instructionContainer.length) {
                 $spinnerSlot = $('<div id="vcb-qr-spinner-slot" class="vcb-qr-spinner-slot" aria-hidden="true"></div>');
                 $instructionContainer.before($spinnerSlot);
-                log('Created spinner slot');
             }
         }
         
@@ -504,7 +495,6 @@
         if ($existingSpinner.length && $spinnerSlot.length && !$existingSpinner.attr('data-spinner-mounted')) {
             $existingSpinner.attr('data-spinner-mounted', '1');
             $spinnerSlot.append($existingSpinner);
-            log('Moved spinner to slot');
         }
         
         // Show spinner slot on mobile if no QR yet
@@ -520,20 +510,16 @@
     function hideSpinner() {
         $('#vcb-qr-spinner-slot').hide();
         $('.momo-loading').hide();
-        log('Spinner hidden');
     }
     
     // Initialize when DOM is ready
     $(document).ready(function() {
-        log('Initializing VCB QR compatibility');
         
         // Remove our extra script tag from DOM
         $('#vidieu-vcb-qr-compat-js-extra').remove();
-        log('Removed extra script tag');
         
         // Only run on relevant pages
         if (!config.isOrderReceived && !config.isCheckout) {
-            log('Not on checkout or order-received page, skipping');
             return;
         }
         
@@ -548,7 +534,6 @@
         // Initial visibility check - removed duplicate calls
         ensureQRVisibility();
         
-        log('VCB QR compatibility initialized');
     });
     
     // Also check on window load with debounce

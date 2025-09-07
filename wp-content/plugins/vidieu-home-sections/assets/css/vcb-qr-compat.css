@@ -265,44 +265,45 @@
    Spinner Slot Management
    ========================================================================== */
 
-/* Spinner slot container */
+/* Spinner slot container - centered layout */
 .vcb-qr-spinner-slot {
     display: flex;
-    justify-content: center;
     align-items: center;
+    justify-content: center;
+    width: 100%;
+    min-height: 48px;
+    position: relative;
     margin: 12px 0;
-    min-height: 32px;
+    line-height: normal;
 }
 
-.vcb-qr-spinner-slot img.momo-loading {
+.vcb-qr-spinner-slot .momo-loading {
     display: block;
     width: 32px;
     height: 32px;
+    margin: 0;
+    flex: 0 0 auto;
+    position: static !important;
+    transform: none !important;
 }
 
-/* Desktop - prevent text overlap */
-@media screen and (min-width: 769px) {
+/* Mobile adjustments */
+@media screen and (max-width: 540px) {
     .vcb-qr-spinner-slot {
-        margin-bottom: 16px;
-    }
-    
-    /* Push instruction text down slightly */
-    .taiMaQrCode {
-        margin-top: 8px;
+        min-height: 40px;
+        margin: 10px 0;
     }
 }
 
-/* Mobile - always show spinner when loading */
-@media screen and (max-width: 768px) {
-    .vcb-qr-spinner-slot {
-        display: flex !important;
-    }
-    
-    .vcb-qr-spinner-slot .momo-loading {
-        display: block !important;
-        visibility: visible !important;
-        opacity: 1 !important;
-    }
+/* Absolute positioning fallback for centering issues */
+.vcb-qr-spinner-slot.is-abs {
+    position: relative;
+}
+
+.vcb-qr-spinner-slot.is-abs .momo-loading {
+    position: absolute !important;
+    inset: 0;
+    margin: auto;
 }
 
 /* ==========================================================================
