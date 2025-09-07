@@ -14,7 +14,6 @@
         ajaxUrl: '/wp-admin/admin-ajax.php',
         isOrderReceived: false,
         isCheckout: false,
-        debug: false
     };
 
     // QR selectors

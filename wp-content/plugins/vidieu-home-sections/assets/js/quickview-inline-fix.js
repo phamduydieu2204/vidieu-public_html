@@ -146,7 +146,5 @@
         QuickViewInlineFix.init();
     });
     
-    // Expose for debugging
-    window.QuickViewInlineFix = QuickViewInlineFix;
     
 })(jQuery);
