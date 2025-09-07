@@ -5,6 +5,24 @@ All notable changes to this plugin will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.6.2] - 2025-09-07
+
+### Added
+- Inline CSS/JS fallback for QuickView fix when assets fail to load
+- Debug mode with cache-busting timestamps (VIDIEU_QV_DEBUG)
+- Admin notice showing asset URLs in debug mode
+- Comprehensive cache fix documentation
+
+### Fixed
+- Added emergency inline fix that works even if external assets 404
+- Cache-busting mechanism for debug mode only
+- Better handling of browser and CDN cache issues
+
+### Improved
+- Dual-mode fix: external assets + inline fallback for reliability
+- Debug tools for troubleshooting cache problems
+- More robust scroll prevention implementation
+
 ## [1.6.1] - 2025-09-07
 
 ### Fixed

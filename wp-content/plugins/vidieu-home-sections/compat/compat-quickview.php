@@ -44,6 +44,11 @@ class Vidieu_QuickView_Compat {
         
         // Initialize on appropriate hooks
         add_action('init', array($this, 'init_compat'), 5);
+        
+        // Add admin notice for debugging if needed
+        if ($this->debug && is_admin()) {
+            add_action('admin_notices', array($this, 'show_debug_paths'));
+        }
     }
     
     /**
@@ -136,6 +141,13 @@ class Vidieu_QuickView_Compat {
         $css_version = file_exists($css_file) ? filemtime($css_file) : VD_HOME_VERSION;
         $js_version = file_exists($js_file) ? filemtime($js_file) : VD_HOME_VERSION;
         
+        // Add timestamp to force cache bypass in debug mode
+        if ($this->debug) {
+            $cache_buster = time();
+            $css_version .= '.' . $cache_buster;
+            $js_version .= '.' . $cache_buster;
+        }
+        
         // Register and enqueue JavaScript
         wp_register_script(
             'vidieu-quickview-compat',
@@ -198,6 +210,25 @@ class Vidieu_QuickView_Compat {
             
             return $html;
         });
+    }
+    
+    /**
+     * Show debug paths in admin
+     */
+    public function show_debug_paths() {
+        $plugin_url = plugin_dir_url(dirname(__FILE__));
+        $css_url = $plugin_url . 'assets/css/quickview-compat.css';
+        $js_url = $plugin_url . 'assets/js/quickview-compat.js';
+        ?>
+        <div class="notice notice-info">
+            <p><strong>QuickView Compat Debug Info:</strong></p>
+            <ul>
+                <li>Plugin URL: <?php echo esc_html($plugin_url); ?></li>
+                <li>CSS URL: <?php echo esc_html($css_url); ?></li>
+                <li>JS URL: <?php echo esc_html($js_url); ?></li>
+            </ul>
+        </div>
+        <?php
     }
 }
 
