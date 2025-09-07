@@ -137,14 +137,15 @@ class VD_Checkout_Optimizer {
                 return;
             }
             
-            // Process payment method
+            // Process payment method - IMPORTANT for vcb-gateway-mh
             $this->process_payment_method($order, $form_data);
             
             // Clear cart
             WC()->cart->empty_cart();
             
-            // Queue background tasks
-            $this->queue_background_tasks($order);
+            // Important: Do NOT queue background tasks - they cause delays
+            // Background tasks were causing 10+ second delays
+            // $this->queue_background_tasks($order);
             
             // Return success response matching theme format
             $response = array(
@@ -209,7 +210,7 @@ class VD_Checkout_Optimizer {
         }
         
         if (empty($data['payment_method'])) {
-            $data['payment_method'] = 'bacs'; // Bank transfer default
+            $data['payment_method'] = 'vcb-gateway-mh'; // VCB Gateway MH default
         }
         
         return $data;
@@ -324,7 +325,7 @@ class VD_Checkout_Optimizer {
      * Process payment method
      */
     private function process_payment_method($order, $data) {
-        $payment_method = isset($data['payment_method']) ? $data['payment_method'] : 'bacs';
+        $payment_method = isset($data['payment_method']) ? $data['payment_method'] : 'vcb-gateway-mh';
         
         // Set payment method
         $order->set_payment_method($payment_method);
@@ -340,9 +341,10 @@ class VD_Checkout_Optimizer {
             
             // Process payment if gateway supports it
             if ($payment_gateway->supports('products')) {
+                // Call process_payment for vcb-gateway-mh to generate payment info
                 $result = $payment_gateway->process_payment($order->get_id());
                 
-                if ($result['result'] !== 'success') {
+                if (isset($result['result']) && $result['result'] !== 'success') {
                     throw new Exception(__('Payment processing failed', 'woocommerce'));
                 }
             }
@@ -407,8 +409,9 @@ class VD_Checkout_Optimizer {
         WC_Cache_Helper::get_transient_version('orders', true);
         
         // 4. Trigger actions for other plugins
-        do_action('woocommerce_new_order', $order_id);
-        do_action('woocommerce_checkout_order_processed', $order_id, array(), $order);
+        // These were already called in handle_custom_checkout - avoid duplicates
+        // do_action('woocommerce_new_order', $order_id);
+        // do_action('woocommerce_checkout_order_processed', $order_id, array(), $order);
         
         // 5. Log completion
         $order->add_order_note(__('Background processing completed', 'woocommerce'));
