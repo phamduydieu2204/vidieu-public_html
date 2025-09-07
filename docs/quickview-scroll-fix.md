@@ -1,7 +1,7 @@
 # QuickView Scroll Fix Documentation
 
 **Date**: 2025-09-07
-**Version**: 1.6.0
+**Version**: 1.6.1
 **Issue**: Page scrolls to top when selecting product variations in QuickView popup
 
 ## Problem Description
@@ -127,6 +127,13 @@ Works alongside:
    - [ ] Open/close QuickView multiple times
    - [ ] No duplicate event handlers
    - [ ] Performance remains smooth
+
+## Fixed Issues (v1.6.1)
+
+1. **Asset 404 Errors**: Corrected plugin URL calculation using `plugin_dir_url(dirname(__FILE__))`
+2. **Preload Warnings**: Added output buffer to remove unnecessary preloads
+3. **JavaScript Initialization**: Made truly idempotent with `window.__vidieuQVInitialized` guard
+4. **Event Handling**: Enhanced with multiple listeners for better compatibility
 
 ## Rollback
 
