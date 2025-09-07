@@ -1,8 +1,9 @@
 # Buy Now Button Logic for Simple Products
 
-**Version:** 1.0.0  
+**Version:** 1.1.0  
 **Last Updated:** 2025-09-07  
-**Context:** WooCommerce Buy Now functionality for simple products in Vidieu Home Sections
+**Context:** WooCommerce Buy Now functionality for simple products in Vidieu Home Sections  
+**Security:** Single global nonce via wp_localize_script (Removed data-nonce from DOM to avoid inconsistency)
 
 ## 1. DOM & Data Attributes
 
@@ -13,8 +14,7 @@
    data-product-type="simple"
    data-action="buy-now"
    data-buy-now-label="Mua Ngay"
-   data-select-label="Tùy chọn"
-   data-nonce="6b68548003">Mua Ngay</a>
+   data-select-label="Tùy chọn">Mua Ngay</a>
 ```
 
 ### Data Attributes Reference
@@ -26,7 +26,6 @@
 | `data-action` | String | Button action type | `buy-now` for simple, `select-options` for variable |
 | `data-buy-now-label` | String | Label for buy now action | `Mua Ngay` |
 | `data-select-label` | String | Label for select options (variable products) | `Tùy chọn` |
-| `data-nonce` | String | Security nonce for product | `6b68548003` |
 
 ## 2. Flow Diagram - Simple Product Click
 
@@ -47,7 +46,7 @@ User clicks "Buy Now" button
     └─ action_type: 'buy-now'
     ↓
 [SERVER] handle_buy_now_ajax()
-    ├─ Verify nonce (vd_home_nonce)
+    ├─ Verify nonce (vd_buy_now)
     ├─ Validate product exists & purchasable
     ├─ Check stock status
     ├─ WC()->cart->add_to_cart()
@@ -82,8 +81,8 @@ function handleBuyNowClick($button) {
     const data = {
         productId: $button.data('product-id'),
         productType: $button.data('product-type'), 
-        action: $button.data('action'),
-        nonce: $button.data('nonce')
+        action: $button.data('action')
+        // Note: nonce removed from data attributes, using global nonce
     };
     
     // 3. Trigger compatibility event
@@ -96,7 +95,7 @@ function handleBuyNowClick($button) {
             type: 'POST',
             data: {
                 action: 'vidieu_buy_now',
-                nonce: vd_home_ajax.nonce, // Global nonce, not button nonce
+                nonce: vd_home_ajax.nonce, // Global nonce from wp_localize_script
                 product_id: data.productId,
                 quantity: 1,
                 action_type: data.action
@@ -132,7 +131,7 @@ add_action('wp_ajax_nopriv_vidieu_buy_now', array($this, 'handle_buy_now_ajax'))
 ```php
 function handle_buy_now_ajax() {
     // 1. Security check
-    check_ajax_referer('vd_home_nonce', 'nonce', false);
+    check_ajax_referer('vd_buy_now', 'nonce', false);
     
     // 2. Sanitize inputs
     $product_id = absint($_POST['product_id']);
@@ -216,9 +215,10 @@ if (status === 'timeout') {
 ## 7. Security Measures
 
 ### Nonce Implementation
-1. **Generation**: `wp_create_nonce('vd_buy_now_' . $product_id)` in button HTML
-2. **Global Nonce**: Uses `vd_home_ajax.nonce` for AJAX (not button nonce)
-3. **Verification**: `check_ajax_referer('vd_home_nonce', 'nonce', false)`
+1. **Generation**: Single global nonce via `wp_localize_script()` - `wp_create_nonce('vd_buy_now')`
+2. **Global Nonce**: Uses `vd_home_ajax.nonce` for all AJAX requests
+3. **Verification**: `check_ajax_referer('vd_buy_now', 'nonce', false)`
+4. **DOM Security**: Removed data-nonce from DOM to avoid inconsistency and exposure
 
 ### Input Sanitization
 ```php
@@ -233,9 +233,8 @@ $action = sanitize_text_field($_POST['action_type']);
 - Expires after 24 hours by default
 
 ### Potential Risks
-- Button nonce (`data-nonce`) not used in current implementation
-- Could implement double nonce check for extra security
 - No rate limiting on Buy Now actions
+- Consider implementing request throttling for abuse prevention
 
 ## 8. Edge Cases
 
@@ -304,8 +303,7 @@ if (!$product->is_in_stock())     // Stock status
    class="button vd-buy-now-button vd-buy-now-simple"
    data-product-id="{product_id}"
    data-product-type="simple"
-   data-action="buy-now"
-   data-nonce="{wp_create_nonce('vd_buy_now_' . $product_id)}">
+   data-action="buy-now">
    Buy Now
 </a>
 ```
@@ -371,7 +369,7 @@ function initBuyNowSimple() {
         // Collect data
         const data = {
             action: 'vidieu_buy_now',
-            nonce: vd_home_ajax.nonce,
+            nonce: vd_home_ajax.nonce, // Global nonce from wp_localize_script
             product_id: $btn.data('product-id'),
             quantity: 1,
             action_type: 'buy-now'

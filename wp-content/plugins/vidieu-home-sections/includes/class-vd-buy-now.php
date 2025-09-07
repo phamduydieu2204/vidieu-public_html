@@ -99,8 +99,7 @@ class VD_Buy_Now {
            data-product-type="<?php echo esc_attr($product_type); ?>"
            data-action="<?php echo esc_attr($button_action); ?>"
            data-buy-now-label="<?php echo esc_attr($simple_label); ?>"
-           data-select-label="<?php echo esc_attr($variable_label); ?>"
-           data-nonce="<?php echo wp_create_nonce('vd_buy_now_' . $product_id); ?>">
+           data-select-label="<?php echo esc_attr($variable_label); ?>">
             <?php echo esc_html($button_label); ?>
         </a>
         <?php
@@ -111,7 +110,7 @@ class VD_Buy_Now {
      */
     public function handle_buy_now_ajax() {
         // Security check
-        if (!check_ajax_referer('vd_home_nonce', 'nonce', false)) {
+        if (!check_ajax_referer('vd_buy_now', 'nonce', false)) {
             $this->send_json_error(
                 'SECURITY_FAILED',
                 __('Security check failed. Please refresh the page and try again.', VD_HOME_TEXT_DOMAIN)
