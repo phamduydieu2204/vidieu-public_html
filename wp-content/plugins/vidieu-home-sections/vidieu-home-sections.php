@@ -88,8 +88,10 @@ class Vidieu_Home_Sections {
             require_once VD_HOME_PLUGIN_DIR . 'inc/class-vd-checkout-optimizer-fixed.php';
         }
         
-        // VCB Payment fixes V2 - Enhanced performance & reliability
-        if (file_exists(VD_HOME_PLUGIN_DIR . 'inc/class-vd-vcb-payment-fix-v2.php')) {
+        // VCB Payment Root Cause Fix - Targets actual problem
+        if (file_exists(VD_HOME_PLUGIN_DIR . 'inc/class-vd-vcb-root-cause-fix.php')) {
+            require_once VD_HOME_PLUGIN_DIR . 'inc/class-vd-vcb-root-cause-fix.php';
+        } elseif (file_exists(VD_HOME_PLUGIN_DIR . 'inc/class-vd-vcb-payment-fix-v2.php')) {
             require_once VD_HOME_PLUGIN_DIR . 'inc/class-vd-vcb-payment-fix-v2.php';
         } elseif (file_exists(VD_HOME_PLUGIN_DIR . 'inc/class-vd-vcb-payment-fix.php')) {
             require_once VD_HOME_PLUGIN_DIR . 'inc/class-vd-vcb-payment-fix.php';
