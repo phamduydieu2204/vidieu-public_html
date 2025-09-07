@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Vidieu Home Sections
  * Description: Tạo các khối sản phẩm và bài viết tùy biến cho trang chủ Vidieu.vn
- * Version: 1.4.2
+ * Version: 1.5.0
  * Author: Vidieu Development Team
  * Text Domain: vidieu-home-sections
  * Domain Path: /languages
@@ -18,7 +18,7 @@ if (!defined('ABSPATH')) {
 }
 
 // Define plugin constants
-define('VD_HOME_VERSION', '1.4.2');
+define('VD_HOME_VERSION', '1.5.0');
 define('VD_HOME_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('VD_HOME_PLUGIN_URL', plugin_dir_url(__FILE__));
 define('VD_HOME_TEXT_DOMAIN', 'vidieu-home-sections');
@@ -86,6 +86,11 @@ class Vidieu_Home_Sections {
         // Performance optimization - Using V2 Ultimate (most optimized version)
         if (file_exists(VD_HOME_PLUGIN_DIR . 'inc/perf/class-vidieu-dup-requests-guard-v2-ultimate.php')) {
             require_once VD_HOME_PLUGIN_DIR . 'inc/perf/class-vidieu-dup-requests-guard-v2-ultimate.php';
+        }
+        
+        // Font cleanup - Fix 404s and unused preloads
+        if (file_exists(VD_HOME_PLUGIN_DIR . 'inc/perf/class-vidieu-font-cleanup.php')) {
+            require_once VD_HOME_PLUGIN_DIR . 'inc/perf/class-vidieu-font-cleanup.php';
         }
         
         // Compatibility layers

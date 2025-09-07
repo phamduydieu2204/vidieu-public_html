@@ -5,6 +5,24 @@ All notable changes to this plugin will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.5.0] - 2025-09-07
+
+### Added
+- Font cleanup module to fix 404 errors and remove unused preloads
+- System font fallback CSS for consistent UI display
+- Multiple layers of protection against Elementor jost.css 404
+- Output buffer cleanup for removing unused preload tags
+
+### Fixed
+- Elementor jost.css 404 error completely blocked
+- Removed unused preloads for main-font.woff2 and style.min.css
+- Preload warnings in browser console eliminated
+
+### Changed
+- Font display now uses safe system font stack
+- Child theme functions updated to remove problematic preloads
+- Performance improved by eliminating unnecessary font requests
+
 ## [1.4.2] - 2025-09-07
 
 ### Changed

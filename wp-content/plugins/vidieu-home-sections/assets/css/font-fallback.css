@@ -1,0 +1,33 @@
+/* Vidieu Font Fallback - Safe System Fonts */
+:root {
+    --vd-font-sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif;
+    --vd-font-mono: ui-monospace, "Cascadia Mono", "Segoe UI Mono", "Courier New", monospace;
+}
+
+/* Apply system font stack globally - preserve sizes/weights */
+body,
+button,
+input,
+select,
+textarea {
+    font-family: var(--vd-font-sans) !important;
+}
+
+/* Override Elementor font classes */
+:where(html, body, .elementor-kit, .e-font-jost) {
+    font-family: var(--vd-font-sans) !important;
+}
+
+/* Ensure readability for Vietnamese content */
+html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* Code/pre elements use monospace */
+code,
+kbd,
+pre,
+samp {
+    font-family: var(--vd-font-mono) !important;
+}

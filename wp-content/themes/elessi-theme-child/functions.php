@@ -440,3 +440,75 @@ function elessi_child_block_checkout_hide_scripts() {
     );
 }
 
+/**
+ * Font Cleanup - Remove problematic preloads
+ * @since 2025-09-07
+ */
+
+// Remove preload actions from parent theme functions
+add_action('init', 'elessi_child_remove_font_preloads', 1);
+function elessi_child_remove_font_preloads() {
+    // Remove preload actions from functions-performance.php
+    remove_action('wp_head', function() {
+        echo '<link rel="preload" href="' . get_template_directory_uri() . '/assets/fonts/main-font.woff2" as="font" type="font/woff2" crossorigin>';
+        echo '<link rel="preload" href="' . get_template_directory_uri() . '/style.min.css" as="style">';
+        echo '<link rel="preconnect" href="https://fonts.googleapis.com">';
+        echo '<link rel="dns-prefetch" href="https://www.google-analytics.com">';
+        echo '<link rel="dns-prefetch" href="https://connect.facebook.net">';
+    }, 1);
+    
+    // Try to remove by searching for the anonymous function
+    global $wp_filter;
+    if (isset($wp_filter['wp_head']) && isset($wp_filter['wp_head'][1])) {
+        foreach($wp_filter['wp_head'][1] as $key => $val) {
+            if (is_array($val['function']) && count($val['function']) == 2) {
+                // Check if it's a closure
+                if (is_object($val['function'][0]) && $val['function'][0] instanceof Closure) {
+                    unset($wp_filter['wp_head'][1][$key]);
+                }
+            }
+        }
+    }
+}
+
+// Remove Performance V3 preloads if it exists
+add_action('init', 'elessi_child_remove_v3_preloads', 2);
+function elessi_child_remove_v3_preloads() {
+    if (class_exists('VidieuPerformanceOptimizationV3')) {
+        remove_action('wp_head', [VidieuPerformanceOptimizationV3::get_instance(), 'add_resource_hints_v3'], 2);
+    }
+}
+
+// Final cleanup via output buffer (only if above methods don't work)
+add_action('template_redirect', 'elessi_child_ob_cleanup_preloads', 1);
+function elessi_child_ob_cleanup_preloads() {
+    if (is_admin()) {
+        return;
+    }
+    
+    ob_start(function($html) {
+        // Remove main-font.woff2 preload
+        $html = preg_replace(
+            '#<link[^>]+rel=["\']preload["\'][^>]+/assets/fonts/main-font\.woff2[^>]*>\s*#i',
+            '',
+            $html
+        );
+        
+        // Remove style.min.css preload (not actually used)
+        $html = preg_replace(
+            '#<link[^>]+rel=["\']preload["\'][^>]+/style\.min\.css[^>]*>\s*#i',
+            '',
+            $html
+        );
+        
+        // Also remove style.css preload if it exists
+        $html = preg_replace(
+            '#<link[^>]+rel=["\']preload["\'][^>]+as=["\']style["\'][^>]+/style\.css[^>]*>\s*#i',
+            '',
+            $html
+        );
+        
+        return $html;
+    });
+}
+
