@@ -180,6 +180,11 @@ class VD_Assets {
             return false;
         }
         
+        // Load on single product pages when buy now is enabled
+        if (is_singular('product') && VD_Admin::get_option('enable_buy_now', false)) {
+            return true;
+        }
+        
         // Check if this is front page or contains shortcodes anywhere
         $should_load = false;
         
