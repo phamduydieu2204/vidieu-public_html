@@ -5,6 +5,25 @@ All notable changes to this plugin will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.4] - 2025-09-07
+
+### Fixed
+- **Critical**: Fixed 404 errors for compat CSS/JS files
+  - Corrected plugin URL path calculation using `plugins_url()`
+  - Files were incorrectly loading from `/wp-content/plugins/assets/`
+  - Now correctly load from plugin's actual directory
+
+### Changed
+- Switched back to `wp_localize_script` for better compatibility
+- Added support for checking QR in both left and right columns
+- Implemented debouncing for MutationObserver to prevent duplicate logs
+- Removed redundant `ensureQRVisibility` calls
+
+### Improved
+- Made initialization idempotent with `window.vcbQRInitialized` flag
+- Enhanced QR detection to check left column, right column, and desktop section
+- Optimized observer callbacks with debounce timers
+
 ## [1.2.3] - 2025-09-07
 
 ### Fixed

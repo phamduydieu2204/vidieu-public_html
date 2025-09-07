@@ -105,41 +105,50 @@ class Vidieu_VCB_MH_Compat {
             return;
         }
         
-        $plugin_url = plugin_dir_url(dirname(__DIR__));
+        // Get correct plugin URL - compat is in /compat/ subdirectory
+        // __FILE__ is /wp-content/plugins/vidieu-home-sections/compat/compat-vcbmh.php
+        // We need to go up one directory to get to plugin root
+        $plugin_dir = dirname(dirname(__FILE__));
+        $plugin_url = plugins_url('', $plugin_dir . '/vidieu-home-sections.php');
+        
         $css_file = VD_HOME_PLUGIN_DIR . 'assets/css/vcb-qr-compat.css';
         $js_file = VD_HOME_PLUGIN_DIR . 'assets/js/vcb-qr-compat.js';
         
         // Use file modification time for cache busting
-        $css_version = file_exists($css_file) ? filemtime($css_file) : '1.0.2';
-        $js_version = file_exists($js_file) ? filemtime($js_file) : '1.0.2';
+        $css_version = file_exists($css_file) ? filemtime($css_file) : '1.0.3';
+        $js_version = file_exists($js_file) ? filemtime($js_file) : '1.0.3';
         
-        // Enqueue compatibility CSS
-        wp_enqueue_style(
-            'vidieu-vcb-qr-compat',
-            $plugin_url . 'assets/css/vcb-qr-compat.css',
-            array(),
-            $css_version
-        );
+        // Build correct URLs for assets
+        $css_url = $plugin_url . '/assets/css/vcb-qr-compat.css';
+        $js_url = $plugin_url . '/assets/js/vcb-qr-compat.js';
         
-        // Enqueue compatibility JS with proper dependencies
-        wp_enqueue_script(
+        // Register scripts first
+        wp_register_script(
             'vidieu-vcb-qr-compat',
-            $plugin_url . 'assets/js/vcb-qr-compat.js',
+            $js_url,
             array('jquery'),
             $js_version,
             true // In footer
         );
         
-        // Use wp_add_inline_script instead of wp_localize_script to avoid escaping issues
-        $localize_data = array(
+        // Use wp_localize_script for better compatibility
+        wp_localize_script('vidieu-vcb-qr-compat', 'vidieuVCBCompat', array(
             'ajaxUrl' => admin_url('admin-ajax.php'),
             'isOrderReceived' => (int) is_wc_endpoint_url('order-received'),
             'isCheckout' => (int) (is_checkout() && !is_wc_endpoint_url('order-received')),
             'debug' => (int) (defined('VIDIEU_VCBQR_DEBUG') && VIDIEU_VCBQR_DEBUG)
-        );
+        ));
         
-        $inline_script = 'window.vidieuVCBCompat = ' . json_encode($localize_data) . ';';
-        wp_add_inline_script('vidieu-vcb-qr-compat', $inline_script, 'before');
+        // Enqueue script
+        wp_enqueue_script('vidieu-vcb-qr-compat');
+        
+        // Enqueue compatibility CSS
+        wp_enqueue_style(
+            'vidieu-vcb-qr-compat',
+            $css_url,
+            array(),
+            $css_version
+        );
         
         // Add filter to modify script tag attributes
         add_filter('script_loader_tag', array($this, 'add_compat_script_attributes'), 15, 3);

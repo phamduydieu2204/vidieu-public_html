@@ -230,7 +230,38 @@ Scripts include `data-cfasync="false"` to prevent Rocket Loader from deferring e
 2. **Fallback Generation**: Creates QR from page data if none exists
 3. **Force Visibility**: CSS overrides ensure QR displays even if parent is hidden
 
+## Plugin Path Resolution
+
+The compatibility files must be loaded with correct paths. The compat file is located at:
+```
+/wp-content/plugins/vidieu-home-sections/compat/compat-vcbmh.php
+```
+
+To correctly calculate asset URLs from this location:
+```php
+$plugin_dir = dirname(dirname(__FILE__));
+$plugin_url = plugins_url('', $plugin_dir . '/vidieu-home-sections.php');
+$css_url = $plugin_url . '/assets/css/vcb-qr-compat.css';
+$js_url = $plugin_url . '/assets/js/vcb-qr-compat.js';
+```
+
+## Left/Right Column Layout
+
+VCB-MH plugin renders QR codes in both left and right columns. The compatibility layer now checks all possible locations:
+1. Desktop section (`.anPc`)
+2. Right column (`#right-col`)
+3. Left column (`#left-col`)
+
+This ensures QR detection works regardless of which column is visible on mobile.
+
 ## Version History
+
+- **1.0.3** (2025-09-07) - Path fixes and optimization
+  - Fixed 404 errors for CSS/JS files with correct `plugins_url()` usage
+  - Implemented debouncing for MutationObserver to prevent duplicate logs
+  - Added idempotent initialization with `window.vcbQRInitialized` flag
+  - Enhanced QR detection for left/right column layouts
+  - Switched back to `wp_localize_script` for better compatibility
 
 - **1.0.2** (2025-09-07) - Localization fix and fallback QR
   - Fixed localized script being displayed as text

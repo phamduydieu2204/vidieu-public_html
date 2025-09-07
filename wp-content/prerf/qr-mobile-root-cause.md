@@ -134,8 +134,21 @@ The QR code was located in the `.anPc` (desktop) section which is hidden on mobi
 - No additional network requests for clone
 - Single network request for fallback QR image
 
+### Additional Issues Fixed (v1.2.4)
+
+**404 Asset Loading Error**: Compatibility files were loading from incorrect path `/wp-content/plugins/assets/` due to improper URL calculation.
+- **Cause**: `plugin_dir_url(dirname(__DIR__))` was calculating wrong base path
+- **Fix**: Use proper `plugins_url()` with correct file reference
+
+**Duplicate Observer Logs**: "VCB-MH QR found" was logging multiple times due to unbounded observer callbacks.
+- **Cause**: MutationObserver firing multiple times for same changes
+- **Fix**: Added debouncing and idempotent initialization flag
+
+**Left/Right Column Support**: VCB-MH renders QR in both columns, but only right column was being checked.
+- **Fix**: Enhanced detection to check left column, right column, and desktop section
+
 ## Related Files
-- `/wp-content/plugins/vidieu-home-sections/compat/compat-vcbmh.php` (v1.0.1)
-- `/wp-content/plugins/vidieu-home-sections/assets/css/vcb-qr-compat.css` (v1.0.1)
-- `/wp-content/plugins/vidieu-home-sections/assets/js/vcb-qr-compat.js` (v1.0.1)
+- `/wp-content/plugins/vidieu-home-sections/compat/compat-vcbmh.php` (v1.0.3)
+- `/wp-content/plugins/vidieu-home-sections/assets/css/vcb-qr-compat.css` (v1.0.3)
+- `/wp-content/plugins/vidieu-home-sections/assets/js/vcb-qr-compat.js` (v1.0.3)
 - `/wp-content/plugins/vidieu-home-sections/inc/perf/class-vidieu-dup-requests-guard-v2-ultimate.php` (lines 381-387, 411-416)

@@ -136,8 +136,18 @@
             return false;
         }
         
-        // Find QR in desktop section
-        const $desktopQR = $(desktopSectionSelector + ' img.qrVietqr[src*="api.vietqr.io"]').first();
+        // Find QR in desktop section or right column (VCB-MH uses both left/right)
+        let $desktopQR = $(desktopSectionSelector + ' img.qrVietqr[src*="api.vietqr.io"]').first();
+        
+        // If not in desktop section, check right column
+        if (!$desktopQR.length) {
+            $desktopQR = $('#right-col img.qrVietqr[src*="api.vietqr.io"]').first();
+        }
+        
+        // Also check left column if needed
+        if (!$desktopQR.length) {
+            $desktopQR = $('#left-col img.qrVietqr[src*="api.vietqr.io"]').first();
+        }
         
         if (!$desktopQR.length) {
             log('No QR found in desktop section, will try fallback');
@@ -272,6 +282,12 @@
 
     // Handle VCB-MH specific initialization
     function initVCBQR() {
+        // Prevent duplicate initialization
+        if (window.vcbQRInitialized) {
+            return;
+        }
+        window.vcbQRInitialized = true;
+        
         // Wait for VCB-MH to load its QR
         if (typeof window.vcbQRLoaded === 'undefined') {
             window.vcbQRLoaded = false;
@@ -284,6 +300,8 @@
         if ($rightCol.length || $paymentInfo.length) {
             // Monitor for QR code insertion
             const targetNode = $rightCol.length ? $rightCol[0] : $paymentInfo[0];
+            // Debounce observer callbacks
+            let observerTimeout;
             const observer = new MutationObserver(function(mutations) {
                 let qrAdded = false;
                 
@@ -300,8 +318,12 @@
                 });
                 
                 if (qrAdded) {
-                    log('QR detected via mutation observer');
-                    setTimeout(ensureQRVisibility, 50);
+                    // Debounce multiple mutations
+                    clearTimeout(observerTimeout);
+                    observerTimeout = setTimeout(function() {
+                        log('QR detected via mutation observer');
+                        ensureQRVisibility();
+                    }, 100);
                 }
             });
             
@@ -477,19 +499,19 @@
         monitorWooCommerceEvents();
         addImageFallback();
         
-        // Initial visibility check
+        // Initial visibility check - removed duplicate calls
         ensureQRVisibility();
-        
-        // Delayed check for late-loading content
-        setTimeout(ensureQRVisibility, 1000);
-        setTimeout(ensureQRVisibility, 3000);
         
         log('VCB QR compatibility initialized');
     });
     
-    // Also check on window load
+    // Also check on window load with debounce
+    let loadTimeout;
     $(window).on('load', function() {
-        ensureQRVisibility();
+        clearTimeout(loadTimeout);
+        loadTimeout = setTimeout(function() {
+            ensureQRVisibility();
+        }, 500);
     });
 
 })(jQuery);
