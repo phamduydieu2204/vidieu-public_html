@@ -5,6 +5,27 @@ All notable changes to this plugin will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.3] - 2025-09-07
+
+### Fixed
+- Localized script being displayed as text instead of executing
+  - Changed from wp_localize_script to wp_add_inline_script to avoid escaping issues
+  - Added data-cfasync="false" to prevent Cloudflare Rocket Loader interference
+  - Added no-lazyload class for Autoptimize exclusion
+
+### Added
+- Fallback QR generation from page data when plugin doesn't provide QR
+  - Extracts BIN, account, amount, and content from DOM
+  - Generates VietQR URL dynamically
+  - Shows error message with link if QR fails to load
+- Script tag attributes to prevent optimization conflicts
+- QR error styles and retry mechanism
+
+### Changed
+- Enhanced mobile QR display with both clone and fallback strategies
+- Improved debug logging to accept both integer and string values
+- Use file modification time for cache busting
+
 ## [1.2.2] - 2025-09-07
 
 ### Added

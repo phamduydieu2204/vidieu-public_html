@@ -106,14 +106,19 @@ class Vidieu_VCB_MH_Compat {
         }
         
         $plugin_url = plugin_dir_url(dirname(__DIR__));
-        $version = '1.0.1';
+        $css_file = VD_HOME_PLUGIN_DIR . 'assets/css/vcb-qr-compat.css';
+        $js_file = VD_HOME_PLUGIN_DIR . 'assets/js/vcb-qr-compat.js';
+        
+        // Use file modification time for cache busting
+        $css_version = file_exists($css_file) ? filemtime($css_file) : '1.0.2';
+        $js_version = file_exists($js_file) ? filemtime($js_file) : '1.0.2';
         
         // Enqueue compatibility CSS
         wp_enqueue_style(
             'vidieu-vcb-qr-compat',
             $plugin_url . 'assets/css/vcb-qr-compat.css',
             array(),
-            $version
+            $css_version
         );
         
         // Enqueue compatibility JS with proper dependencies
@@ -121,20 +126,23 @@ class Vidieu_VCB_MH_Compat {
             'vidieu-vcb-qr-compat',
             $plugin_url . 'assets/js/vcb-qr-compat.js',
             array('jquery'),
-            $version,
+            $js_version,
             true // In footer
         );
         
-        // Ensure script loads in footer group 1
-        wp_script_add_data('vidieu-vcb-qr-compat', 'group', 1);
-        
-        // Localize script with necessary data
-        wp_localize_script('vidieu-vcb-qr-compat', 'vidieuVCBCompat', array(
+        // Use wp_add_inline_script instead of wp_localize_script to avoid escaping issues
+        $localize_data = array(
             'ajaxUrl' => admin_url('admin-ajax.php'),
-            'isOrderReceived' => is_wc_endpoint_url('order-received') ? '1' : '',
-            'isCheckout' => (is_checkout() && !is_wc_endpoint_url('order-received')) ? '1' : '',
-            'debug' => (defined('VIDIEU_VCBQR_DEBUG') && VIDIEU_VCBQR_DEBUG) ? '1' : ''
-        ));
+            'isOrderReceived' => (int) is_wc_endpoint_url('order-received'),
+            'isCheckout' => (int) (is_checkout() && !is_wc_endpoint_url('order-received')),
+            'debug' => (int) (defined('VIDIEU_VCBQR_DEBUG') && VIDIEU_VCBQR_DEBUG)
+        );
+        
+        $inline_script = 'window.vidieuVCBCompat = ' . json_encode($localize_data) . ';';
+        wp_add_inline_script('vidieu-vcb-qr-compat', $inline_script, 'before');
+        
+        // Add filter to modify script tag attributes
+        add_filter('script_loader_tag', array($this, 'add_compat_script_attributes'), 15, 3);
     }
     
     /**
@@ -253,6 +261,23 @@ class Vidieu_VCB_MH_Compat {
     }
     
     /**
+     * Add attributes to compatibility script to prevent optimization issues
+     */
+    public function add_compat_script_attributes($tag, $handle, $src) {
+        // Add to our compat script
+        if ($handle === 'vidieu-vcb-qr-compat') {
+            // Prevent Cloudflare Rocket Loader
+            $tag = str_replace(' src=', ' data-cfasync="false" src=', $tag);
+            // Add class for Autoptimize exclusion
+            $tag = str_replace('<script', '<script class="no-lazyload"', $tag);
+            // Remove any defer/async
+            $tag = str_replace(' defer', '', $tag);
+            $tag = str_replace(' async', '', $tag);
+        }
+        return $tag;
+    }
+    
+    /**
      * Ensure VCB scripts load with proper attributes
      */
     public function ensure_vcb_script_loading($tag, $handle, $src) {
@@ -265,8 +290,10 @@ class Vidieu_VCB_MH_Compat {
             $tag = str_replace(' async', '', $tag);
             $tag = str_replace(' defer', '', $tag);
             
-            // Add data attribute to identify VCB scripts
-            $tag = str_replace(' src=', ' data-vcb-compat="true" src=', $tag);
+            // Add data attributes to identify and protect VCB scripts
+            $tag = str_replace(' src=', ' data-vcb-compat="true" data-cfasync="false" src=', $tag);
+            // Add class for Autoptimize exclusion
+            $tag = str_replace('<script', '<script class="no-lazyload"', $tag);
         }
         
         return $tag;

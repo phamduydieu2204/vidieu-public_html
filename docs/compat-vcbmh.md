@@ -200,7 +200,44 @@ The compatibility layer implements a QR clone strategy to handle the specific DO
 ### Typo-Friendly Selectors
 Handles both `.anMoblie` (actual) and `.anMobile` (expected) class names to ensure compatibility regardless of typo fixes.
 
+## Optimization Exclusions
+
+### Autoptimize
+The compatibility scripts include `class="no-lazyload"` to prevent Autoptimize from processing them.
+
+### Cloudflare Rocket Loader
+Scripts include `data-cfasync="false"` to prevent Rocket Loader from deferring execution.
+
+### WordPress Script Optimization
+- Uses `wp_add_inline_script` instead of `wp_localize_script` to avoid escaping issues
+- Removes any `defer` or `async` attributes
+- Ensures scripts load in footer with proper ordering
+
+## Troubleshooting
+
+### Localized Script Displayed as Text
+**Issue**: The `vidieuVCBCompat` variable appears as visible text on the page.
+
+**Cause**: Script optimization or security plugins escaping the localized data.
+
+**Solution**: The compatibility layer now uses `wp_add_inline_script` with JSON encoding to ensure proper execution.
+
+### QR Not Appearing on Mobile
+**Issue**: QR code exists but isn't visible on mobile devices.
+
+**Solutions**:
+1. **Clone Strategy**: Automatically clones QR from `.anPc` to `.anMoblie` section
+2. **Fallback Generation**: Creates QR from page data if none exists
+3. **Force Visibility**: CSS overrides ensure QR displays even if parent is hidden
+
 ## Version History
+
+- **1.0.2** (2025-09-07) - Localization fix and fallback QR
+  - Fixed localized script being displayed as text
+  - Added fallback QR generation from page data
+  - Added Autoptimize/Cloudflare exclusions
+  - Enhanced error handling with retry links
+  - Use file modification time for cache busting
 
 - **1.0.1** (2025-09-07) - Mobile clone strategy
   - Implemented QR clone from desktop to mobile section

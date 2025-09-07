@@ -112,10 +112,17 @@ Created `compat-vcbmh.php` with:
 ### DOM-Specific Fix Implementation
 The QR code was located in the `.anPc` (desktop) section which is hidden on mobile viewports. The mobile section `.anMoblie` (note typo) did not contain any QR code. 
 
-**Solution Applied**: Clone strategy - QR is cloned from desktop section to a new mobile slot when viewport <= 768px.
+**Critical Issue Found**: Localized script (`window.vidieuVCBCompat`) was being displayed as text due to escaping issues with `wp_localize_script`.
+
+**Solutions Applied**: 
+1. **Localization Fix**: Changed from `wp_localize_script` to `wp_add_inline_script` to prevent escaping
+2. **Clone Strategy**: QR is cloned from desktop section to a new mobile slot when viewport <= 768px
+3. **Fallback Strategy**: If no QR exists, generate from page data (BIN, account, amount, content)
 
 ### Test Results
+- Localized script now executes properly (not displayed as text)
 - QR successfully displays in mobile section via clone strategy
+- Fallback QR generates when plugin doesn't provide one
 - Desktop QR remains intact (no break in layout)
 - Loading spinner auto-hides when QR is present
 - Typo-friendly selectors handle both `.anMoblie` and `.anMobile`
@@ -123,8 +130,9 @@ The QR code was located in the `.anPc` (desktop) section which is hidden on mobi
 
 ### Performance Metrics
 - Clone operation: ~5ms execution time
-- No additional network requests
-- Minimal DOM manipulation (single clone + append)
+- Fallback generation: ~10ms (DOM parsing + URL construction)
+- No additional network requests for clone
+- Single network request for fallback QR image
 
 ## Related Files
 - `/wp-content/plugins/vidieu-home-sections/compat/compat-vcbmh.php` (v1.0.1)
