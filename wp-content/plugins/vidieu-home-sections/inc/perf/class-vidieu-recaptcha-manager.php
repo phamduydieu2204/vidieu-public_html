@@ -303,7 +303,7 @@ class Vidieu_ReCAPTCHA_Manager {
                 // Block grecaptcha object creation
                 Object.defineProperty(window, 'grecaptcha', {
                     get: function() { return undefined; },
-                    set: function() { console.log('[Vidieu] Blocked grecaptcha assignment'); },
+                    set: function() { /* Blocked grecaptcha assignment */ },
                     configurable: false
                 });
             })();
