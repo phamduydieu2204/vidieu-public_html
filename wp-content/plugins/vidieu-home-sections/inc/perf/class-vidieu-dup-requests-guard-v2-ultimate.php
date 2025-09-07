@@ -25,9 +25,9 @@ class Vidieu_Dup_Requests_Guard_V2_Ultimate {
      */
     const ENABLE_BASIC_OPTIMIZATION = true;
     const ENABLE_NUCLEAR_RECAPTCHA = true;
-    const ENABLE_CART_CHECKOUT_WHITELIST = true;
+    const ENABLE_CART_CHECKOUT_WHITELIST = false; // HOTFIX: Temporarily disabled for cart functionality
     const ENABLE_OUTPUT_BUFFERING = true;
-    const ENABLE_ORDER_RECEIVED_OPT = true;
+    const ENABLE_ORDER_RECEIVED_OPT = false; // HOTFIX: Temporarily disabled for payment functionality
     
     /**
      * Emergency kill switch
@@ -913,7 +913,7 @@ class Vidieu_Dup_Requests_Guard_V2_Ultimate {
             Element.prototype.appendChild = function(element) {
                 if (isRecaptchaScript(element)) {
                     if (recaptchaLoaded) {
-                        console.log('[Vidieu] Blocked duplicate reCAPTCHA:', element.src);
+                        /* Blocked duplicate reCAPTCHA */
                         return element;
                     }
                     recaptchaLoaded = true;
@@ -924,7 +924,7 @@ class Vidieu_Dup_Requests_Guard_V2_Ultimate {
             Element.prototype.insertBefore = function(element, reference) {
                 if (isRecaptchaScript(element)) {
                     if (recaptchaLoaded) {
-                        console.log('[Vidieu] Blocked duplicate reCAPTCHA:', element.src);
+                        /* Blocked duplicate reCAPTCHA */
                         return element;
                     }
                     recaptchaLoaded = true;
@@ -1163,8 +1163,7 @@ class Vidieu_Dup_Requests_Guard_V2_Ultimate {
                         });
                         
                         window.vidieuPerfDomains = domains;
-                        console.log('[Vidieu Admin] Total resources:', resources.length);
-                        console.log('[Vidieu Admin] Domain breakdown:', domains);
+                        // Performance data collected in window.vidieuPerfDomains
                         
                         // Check for blocked domains still loading
                         var blocked = ['elementor', 'yith', 'revslider', 'instagram', 'facebook'];
@@ -1179,7 +1178,7 @@ class Vidieu_Dup_Requests_Guard_V2_Ultimate {
                         });
                         
                         if (stillLoading.length > 0) {
-                            console.warn('[Vidieu Admin] Blocked domains still loading:', stillLoading);
+                            // Blocked domains detected - check window.vidieuPerfDomains
                         }
                     }, 2000);
                 });
