@@ -819,6 +819,12 @@ class Vidieu_Dup_Requests_Guard_V2_Ultimate {
     public function nuclear_remove_recaptcha() {
         global $wp_scripts;
         
+        // If ReCAPTCHA Manager is active, let it handle everything
+        if (class_exists('Vidieu_ReCAPTCHA_Manager')) {
+            $this->log_fix('ReCAPTCHA Manager is active, deferring to centralized management');
+            return;
+        }
+        
         // Patterns to match reCAPTCHA
         $recaptcha_patterns = array(
             'google-recaptcha', 'grecaptcha', 'recaptcha',
