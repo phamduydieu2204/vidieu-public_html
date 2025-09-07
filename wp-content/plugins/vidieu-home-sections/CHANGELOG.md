@@ -5,56 +5,6 @@ All notable changes to this plugin will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.6.2] - 2025-09-07
-
-### Added
-- Inline CSS/JS fallback for QuickView fix when assets fail to load
-- Debug mode with cache-busting timestamps (VIDIEU_QV_DEBUG)
-- Admin notice showing asset URLs in debug mode
-- Comprehensive cache fix documentation
-
-### Fixed
-- Added emergency inline fix that works even if external assets 404
-- Cache-busting mechanism for debug mode only
-- Better handling of browser and CDN cache issues
-
-### Improved
-- Dual-mode fix: external assets + inline fallback for reliability
-- Debug tools for troubleshooting cache problems
-- More robust scroll prevention implementation
-
-## [1.6.1] - 2025-09-07
-
-### Fixed
-- QuickView compatibility assets returning 404 errors due to incorrect path calculation
-- Preload warnings for quickview-compat.css in browser console
-- JavaScript initialization running multiple times (now properly idempotent)
-- Asset URL calculation now uses plugin_dir_url() for correct paths
-
-### Improved
-- Enhanced scroll prevention with better event capturing
-- Added output buffer to remove unnecessary preloads
-- Better QuickView modal detection for NASA/Elessi theme
-
-## [1.6.0] - 2025-09-07
-
-### Added
-- QuickView compatibility module to fix scroll-to-top issue
-- JavaScript prevention for anchor link scrolling in QuickView
-- Body scroll lock when QuickView modal is open
-- Debug mode support with VIDIEU_QV_DEBUG constant
-
-### Fixed
-- Page no longer scrolls to top when selecting variations in QuickView
-- Reset variations link now works without causing scroll
-- Focus changes in QuickView no longer trigger page scroll
-- Hash changes blocked during QuickView interaction
-
-### Improved
-- Better mobile UX with proper scroll locking
-- Smooth position maintenance during variation changes
-- Event handling efficiency with delegation
-
 ## [1.5.0] - 2025-09-07
 
 ### Added

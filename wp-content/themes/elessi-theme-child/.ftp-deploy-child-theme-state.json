@@ -1,8 +1,14 @@
 {
     "description": "DO NOT DELETE THIS FILE. This file is used to keep track of which files have been synced in the most recent deployment. If you delete this file a resync will need to be done (which can take a while) - read more: https://github.com/SamKirkland/FTP-Deploy-Action",
     "version": "1.0.0",
-    "generatedTime": 1757125003333,
+    "generatedTime": 1757254607156,
     "data": [
+        {
+            "type": "file",
+            "name": ".ftp-deploy-child-theme-state.json",
+            "size": 8348,
+            "hash": "1544bf3ef5c58980f200bd07fd45e8d122dfb4518e9f4ad9972389280f941b92"
+        },
         {
             "type": "file",
             "name": "CHANGELOG_ORDER_RECEIVED_FIX.md",
@@ -105,15 +111,21 @@
         },
         {
             "type": "file",
+            "name": "functions-seo.php",
+            "size": 4763,
+            "hash": "c68e0ec209aa14a8f97ef23965efb70ee57da9266f8b49981804f96d4ac0215f"
+        },
+        {
+            "type": "file",
             "name": "functions-vcb-mh-clean.php",
-            "size": 7892,
-            "hash": "38d563e3e6b30bc3ae56985efe2e46987c608e3958a0aa182e2e812cb87beee2"
+            "size": 7243,
+            "hash": "e6ae12e253875997ae36c91ca33084ec06330cc3eba3c643c3c35ae1f1be4912"
         },
         {
             "type": "file",
             "name": "functions.php",
-            "size": 12933,
-            "hash": "73256c6f11f0225715029407a7e3fd026d7bc4e5d6dfa1d1710640667ce1ce95"
+            "size": 15813,
+            "hash": "ea6c61ae3d521830fab295b70b3a8e825172a2ba1f73d3646d5186db70b4fa5d"
         },
         {
             "type": "file",
