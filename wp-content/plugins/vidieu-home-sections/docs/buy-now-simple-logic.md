@@ -394,3 +394,131 @@ function initBuyNowSimple() {
     });
 }
 ```
+
+## 13. Buy Now - Single Product Page
+
+### Overview
+The Buy Now functionality on single product pages (e.g., `https://vidieu.vn/product/shulex-voc-thau-hieu-khach-hang-tiem-nang/`) extends the standard implementation with quantity support from the product form.
+
+### DOM Structure - Single Product Page
+```html
+<\!-- Buy Now Button -->
+<button class="single_add_to_cart_button nasa-buy-now">BUY NOW</button>
+
+<\!-- Quantity Input (nearby in form.cart) -->
+<input type="number" 
+       id="quantity_68bdb70b5eee6" 
+       class="input-text qty text" 
+       name="quantity" 
+       value="1" 
+       min="1" 
+       max="" 
+       step="1" 
+       inputmode="numeric">
+```
+
+### Key Differences from Product Box
+
+ < /dev/null |  Feature | Product Box (Home/Shop) | Single Product Page |
+|---------|------------------------|-------------------|
+| **Button Class** | `.vd-buy-now-button` | `.nasa-buy-now` |
+| **Quantity** | Fixed = 1 | Dynamic from `.qty` input |
+| **Product ID Source** | `data-product-id` | Form hidden fields |
+| **Variations** | Opens quickview | Handled in-page |
+| **Form Context** | No form | Within `form.cart` |
+
+### Client-Side Implementation (single-product-buy-now.js)
+
+```javascript
+// Bind to NASA Buy Now button
+$(document).on('click', '.single_add_to_cart_button.nasa-buy-now', function(e) {
+    e.preventDefault();
+    
+    var $button = $(this);
+    var $form = $button.closest('form.cart');
+    
+    // Get quantity from input
+    var quantity = getValidQuantity($form);
+    
+    // For variable products
+    if ($form.hasClass('variations_form')) {
+        var variationId = $form.find('.variation_id').val();
+        if (\!variationId) {
+            alert('Please select product options.');
+            return;
+        }
+    }
+    
+    // AJAX with dynamic quantity
+    $.ajax({
+        url: vd_home_ajax.ajax_url,
+        type: 'POST',
+        data: {
+            action: 'vidieu_buy_now',
+            nonce: vd_home_ajax.nonce,
+            product_id: productId,
+            quantity: quantity, // Dynamic quantity
+            action_type: 'buy-now'
+        }
+    });
+});
+```
+
+### Quantity Validation Logic
+
+```javascript
+function getValidQuantity($form) {
+    var $qtyInput = $form.find('.qty');
+    var quantity = 1;
+    
+    if ($qtyInput.length) {
+        quantity = parseInt($qtyInput.val(), 10);
+        
+        // Validate minimum
+        if (isNaN(quantity) || quantity < 1) {
+            quantity = 1;
+        }
+        
+        // Check min attribute
+        var min = parseInt($qtyInput.attr('min'), 10);
+        if (\!isNaN(min) && quantity < min) {
+            quantity = min;
+        }
+        
+        // Check max attribute (stock limit)
+        var max = parseInt($qtyInput.attr('max'), 10);
+        if (\!isNaN(max) && max > 0 && quantity > max) {
+            quantity = max;
+            $qtyInput.val(max);
+        }
+        
+        // Ensure integer
+        quantity = Math.floor(quantity);
+    }
+    
+    return quantity;
+}
+```
+
+### Server-Side Handling
+The server-side AJAX handler remains the same (`vidieu_buy_now`), but now properly handles the dynamic quantity value sent from the single product page.
+
+### Testing Checklist - Single Product Page
+
+- [ ] Simple product with quantity = 1 → Adds 1 to cart
+- [ ] Simple product with quantity = 5 → Adds 5 to cart
+- [ ] Quantity validation (min/max) → Respects limits
+- [ ] Variable product without selection → Shows error
+- [ ] Variable product with selection → Adds correct variation
+- [ ] Invalid quantity (negative, decimal) → Defaults to valid value
+- [ ] Stock limit enforcement → Cannot exceed available stock
+
+### Implementation Notes
+
+1. **Script Loading**: The `single-product-buy-now.js` script is only enqueued on single product pages via `is_singular('product')` check.
+
+2. **Form Context**: Unlike product boxes, the single product page has the button within a proper WooCommerce form, providing access to hidden fields and validation.
+
+3. **Quantity Source**: Always read from the nearest `.qty` input within the same form to support custom quantity selectors.
+
+4. **Variable Products**: The form class `variations_form` indicates a variable product, requiring variation selection before buy now.

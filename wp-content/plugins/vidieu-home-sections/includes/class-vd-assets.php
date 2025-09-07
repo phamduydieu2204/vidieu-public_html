@@ -128,6 +128,17 @@ class VD_Assets {
             'nonce' => wp_create_nonce('vidieu_ajax_nonce')
         ));
         
+        // Enqueue single product buy now script on product pages
+        if (is_singular('product')) {
+            wp_enqueue_script(
+                'vd-single-product-buy-now',
+                VD_HOME_PLUGIN_URL . 'assets/js/single-product-buy-now.js',
+                array('jquery', 'vd-home-script'),
+                VD_HOME_VERSION,
+                true
+            );
+        }
+        
     }
     
     /**
