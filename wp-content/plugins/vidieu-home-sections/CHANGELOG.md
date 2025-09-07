@@ -5,6 +5,25 @@ All notable changes to this plugin will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.6.0] - 2025-09-07
+
+### Added
+- QuickView compatibility module to fix scroll-to-top issue
+- JavaScript prevention for anchor link scrolling in QuickView
+- Body scroll lock when QuickView modal is open
+- Debug mode support with VIDIEU_QV_DEBUG constant
+
+### Fixed
+- Page no longer scrolls to top when selecting variations in QuickView
+- Reset variations link now works without causing scroll
+- Focus changes in QuickView no longer trigger page scroll
+- Hash changes blocked during QuickView interaction
+
+### Improved
+- Better mobile UX with proper scroll locking
+- Smooth position maintenance during variation changes
+- Event handling efficiency with delegation
+
 ## [1.5.0] - 2025-09-07
 
 ### Added

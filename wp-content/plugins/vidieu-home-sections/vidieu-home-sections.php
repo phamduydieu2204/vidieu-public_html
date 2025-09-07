@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Vidieu Home Sections
  * Description: Tạo các khối sản phẩm và bài viết tùy biến cho trang chủ Vidieu.vn
- * Version: 1.5.0
+ * Version: 1.6.0
  * Author: Vidieu Development Team
  * Text Domain: vidieu-home-sections
  * Domain Path: /languages
@@ -18,7 +18,7 @@ if (!defined('ABSPATH')) {
 }
 
 // Define plugin constants
-define('VD_HOME_VERSION', '1.5.0');
+define('VD_HOME_VERSION', '1.6.0');
 define('VD_HOME_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('VD_HOME_PLUGIN_URL', plugin_dir_url(__FILE__));
 define('VD_HOME_TEXT_DOMAIN', 'vidieu-home-sections');
@@ -96,6 +96,11 @@ class Vidieu_Home_Sections {
         // Compatibility layers
         if (file_exists(VD_HOME_PLUGIN_DIR . 'compat/compat-vcbmh.php')) {
             require_once VD_HOME_PLUGIN_DIR . 'compat/compat-vcbmh.php';
+        }
+        
+        // QuickView compatibility - Fix scroll to top issue
+        if (file_exists(VD_HOME_PLUGIN_DIR . 'compat/compat-quickview.php')) {
+            require_once VD_HOME_PLUGIN_DIR . 'compat/compat-quickview.php';
         }
         
         // SEO Bootstrap
