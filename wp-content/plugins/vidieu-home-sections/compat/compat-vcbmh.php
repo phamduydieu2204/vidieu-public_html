@@ -81,8 +81,8 @@ class Vidieu_VCB_MH_Compat {
             return;
         }
         
-        // Enqueue compatibility assets
-        add_action('wp_enqueue_scripts', array($this, 'enqueue_compat_assets'), 25);
+        // Enqueue compatibility assets - priority 20 to ensure proper order
+        add_action('wp_enqueue_scripts', array($this, 'enqueue_compat_assets'), 20);
         
         // Add inline critical CSS for immediate effect
         add_action('wp_head', array($this, 'add_critical_css'), 5);
@@ -95,13 +95,18 @@ class Vidieu_VCB_MH_Compat {
      * Enqueue compatibility assets
      */
     public function enqueue_compat_assets() {
+        // Guard: only run on frontend
+        if (is_admin()) {
+            return;
+        }
+        
         // Only on relevant pages
         if (!is_checkout() && !is_wc_endpoint_url('order-received')) {
             return;
         }
         
         $plugin_url = plugin_dir_url(dirname(__DIR__));
-        $version = '1.0.0';
+        $version = '1.0.1';
         
         // Enqueue compatibility CSS
         wp_enqueue_style(
@@ -111,21 +116,24 @@ class Vidieu_VCB_MH_Compat {
             $version
         );
         
-        // Enqueue compatibility JS
+        // Enqueue compatibility JS with proper dependencies
         wp_enqueue_script(
             'vidieu-vcb-qr-compat',
             $plugin_url . 'assets/js/vcb-qr-compat.js',
             array('jquery'),
             $version,
-            true
+            true // In footer
         );
+        
+        // Ensure script loads in footer group 1
+        wp_script_add_data('vidieu-vcb-qr-compat', 'group', 1);
         
         // Localize script with necessary data
         wp_localize_script('vidieu-vcb-qr-compat', 'vidieuVCBCompat', array(
             'ajaxUrl' => admin_url('admin-ajax.php'),
-            'isOrderReceived' => is_wc_endpoint_url('order-received'),
-            'isCheckout' => is_checkout() && !is_wc_endpoint_url('order-received'),
-            'debug' => defined('WP_DEBUG') && WP_DEBUG
+            'isOrderReceived' => is_wc_endpoint_url('order-received') ? '1' : '',
+            'isCheckout' => (is_checkout() && !is_wc_endpoint_url('order-received')) ? '1' : '',
+            'debug' => (defined('VIDIEU_VCBQR_DEBUG') && VIDIEU_VCBQR_DEBUG) ? '1' : ''
         ));
     }
     
@@ -135,15 +143,32 @@ class Vidieu_VCB_MH_Compat {
     public function add_critical_css() {
         ?>
         <style id="vidieu-vcb-qr-critical">
+            /* Mobile QR slot */
+            .vcb-qr-mobile-slot {
+                display: block !important;
+                visibility: visible !important;
+                text-align: center;
+            }
+            
             /* Ensure VCB-MH QR code is visible on mobile */
             @media screen and (max-width: 768px) {
+                /* Hide desktop section, show mobile section */
+                .anPc { display: none !important; }
+                .anMoblie, .anMobile {
+                    display: block !important;
+                    visibility: visible !important;
+                    border: none !important;
+                }
+                
                 /* QR container visibility */
                 .qrVietqr,
                 #qrVietqr,
                 .vcb-qr-code,
                 #vcb-qr-code,
                 [class*="vcb"][class*="qr"],
-                [id*="vcb"][id*="qr"] {
+                [id*="vcb"][id*="qr"],
+                .qr-cloned-mobile,
+                #vcb-qr-mobile {
                     display: block !important;
                     visibility: visible !important;
                     opacity: 1 !important;
@@ -152,14 +177,10 @@ class Vidieu_VCB_MH_Compat {
                 }
                 
                 /* QR image sizing */
-                .qrVietqr img,
-                #qrVietqr img,
-                .vcb-qr-code img,
-                #vcb-qr-code img,
-                [class*="vcb"][class*="qr"] img,
-                [id*="vcb"][id*="qr"] img {
+                .qrVietqr,
+                .qr-cloned-mobile,
+                img[src*="vietqr.io"] {
                     max-width: 100% !important;
-                    width: auto !important;
                     height: auto !important;
                     display: block !important;
                     margin: 0 auto !important;
@@ -179,12 +200,9 @@ class Vidieu_VCB_MH_Compat {
                     display: block !important;
                 }
                 
-                /* Ensure parent containers don't hide QR */
-                .woocommerce-order-details,
-                .woocommerce-thankyou-order-details,
-                .order_details,
-                .bacs_details {
-                    overflow: visible !important;
+                /* Hide spinner when QR exists */
+                .vcb-qr-mobile-slot:not(:empty) ~ .acb-gw-is-mb .momo-loading {
+                    display: none !important;
                 }
             }
             
@@ -192,6 +210,11 @@ class Vidieu_VCB_MH_Compat {
             .qrVietqr {
                 max-width: 300px !important;
                 margin: 15px auto !important;
+            }
+            
+            /* Fix inline style typo */
+            #right-col p {
+                line-height: 1.2em !important;
             }
             
             /* SweetAlert2 mobile adjustments */

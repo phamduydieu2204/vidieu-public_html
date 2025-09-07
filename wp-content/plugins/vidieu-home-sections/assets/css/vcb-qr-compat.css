@@ -10,13 +10,28 @@
    Mobile QR Visibility Fixes
    ========================================================================== */
 
+/* Mobile QR slot specific styles */
+.vcb-qr-mobile-slot {
+    max-width: 320px;
+    margin: 20px auto;
+    text-align: center;
+    padding: 15px;
+}
+
+#vcb-qr-mobile {
+    display: block;
+    visibility: visible;
+    opacity: 1;
+}
+
 /* Base QR visibility rules */
 .qrVietqr,
 #qrVietqr,
 .vcb-qr-code,
 #vcb-qr-code,
 [class*="vcb"][class*="qr"],
-[id*="vcb"][id*="qr"] {
+[id*="vcb"][id*="qr"],
+.qr-cloned-mobile {
     display: block;
     visibility: visible;
     opacity: 1;
@@ -27,14 +42,23 @@
 }
 
 /* QR Image Responsive Sizing */
-.qrVietqr {
+.qrVietqr,
+.qr-cloned-mobile {
     max-width: 300px;
     width: 100%;
     padding: 10px;
     background: #fff;
-    border: 1px solid #e0e0e0;
+    border: 2px solid #ddd;
     border-radius: 8px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    image-rendering: crisp-edges;
+    image-rendering: -webkit-optimize-contrast;
+}
+
+/* Mobile-specific QR styles */
+.vcb-qr-mobile-slot .qrVietqr,
+.vcb-qr-mobile-slot .qr-cloned-mobile {
+    margin: 0 auto 20px;
 }
 
 .qrVietqr img,
@@ -61,6 +85,18 @@
     flex-wrap: wrap;
 }
 
+/* Fix inline style syntax error */
+#right-col p {
+    line-height: 1.2em !important; /* Fix "1, 2em" typo */
+}
+
+/* Typo-friendly mobile section selectors */
+.anMoblie,
+.anMobile {
+    display: block !important;
+    visibility: visible !important;
+}
+
 /* ==========================================================================
    Mobile Specific Styles
    ========================================================================== */
@@ -76,17 +112,34 @@
         margin: 0 !important;
     }
     
+    /* Hide desktop section on mobile */
+    .anPc {
+        display: none !important;
+    }
+    
+    /* Show mobile section (typo-friendly) */
+    .anMoblie,
+    .anMobile {
+        display: block !important;
+        border: none !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+    }
+    
     /* QR Container Mobile Optimizations */
-    .qrVietqr {
+    .qrVietqr,
+    .qr-cloned-mobile {
         max-width: 280px !important;
         margin: 20px auto !important;
         padding: 15px !important;
     }
     
-    /* Ensure visibility in mobile viewport */
-    .anMoblie {
-        display: block !important;
-        border: none !important;
+    /* Mobile QR slot */
+    .vcb-qr-mobile-slot {
+        padding: 10px !important;
+        background: #f9f9f9;
+        border-radius: 8px;
+        margin: 15px 0;
     }
     
     /* Payment info mobile layout */
@@ -215,13 +268,14 @@
                 visibility 0.3s ease-in-out;
 }
 
-/* Loading state */
+/* Loading state and spinner */
 .qrVietqr.loading {
     opacity: 0.5;
     pointer-events: none;
 }
 
-.qrVietqr.loading::after {
+.qrVietqr.loading::after,
+.momo-loading {
     content: "";
     position: absolute;
     top: 50%;
@@ -235,9 +289,41 @@
     animation: qr-spin 1s linear infinite;
 }
 
+/* Hide spinner when QR is present */
+.vcb-qr-mobile-slot:has(img) ~ .acb-gw-is-mb .momo-loading {
+    display: none !important;
+}
+
 @keyframes qr-spin {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
+}
+
+/* Fallback message styles */
+.qr-fallback-msg {
+    text-align: center;
+    padding: 20px;
+    background: #f0f0f0;
+    border-radius: 8px;
+    margin: 20px 0;
+}
+
+.qr-fallback-msg p {
+    margin-bottom: 15px;
+    color: #666;
+}
+
+.retry-qr-load {
+    background: #0073aa;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.retry-qr-load:hover {
+    background: #005177;
 }
 
 /* ==========================================================================

@@ -28,6 +28,10 @@
         'img[src*="vietqr.io"]',
         'img[src*="qr_only.jpg"]'
     ];
+    
+    // Mobile section selectors (typo-friendly)
+    const mobileSectionSelectors = ['.anMoblie', '.anMobile'];
+    const desktopSectionSelector = '.anPc';
 
     // Utility: Check if element is visible
     function isElementVisible(el) {
@@ -43,24 +47,91 @@
                style.opacity !== '0';
     }
 
-    // Ensure QR code visibility
+    // Clone QR to mobile section when needed
+    function cloneQRToMobile() {
+        // Check if we're on mobile viewport
+        if (window.innerWidth > 768) {
+            return;
+        }
+        
+        // Find QR in desktop section
+        const $desktopQR = $(desktopSectionSelector + ' img.qrVietqr[src*="api.vietqr.io"]').first();
+        
+        if (!$desktopQR.length) {
+            log('No QR found in desktop section');
+            return;
+        }
+        
+        // Check if already cloned
+        if ($desktopQR.attr('data-qr-cloned') === '1') {
+            return;
+        }
+        
+        // Find mobile section
+        let $mobileSection = null;
+        for (let selector of mobileSectionSelectors) {
+            $mobileSection = $(selector).first();
+            if ($mobileSection.length) break;
+        }
+        
+        if (!$mobileSection.length) {
+            // Create mobile section if it doesn't exist
+            $mobileSection = $('<div class="anMoblie"></div>');
+            $('#right-col').prepend($mobileSection);
+            log('Created mobile section');
+        }
+        
+        // Check if mobile QR slot exists
+        let $mobileQRSlot = $('#vcb-qr-mobile');
+        if (!$mobileQRSlot.length) {
+            $mobileQRSlot = $('<div id="vcb-qr-mobile" class="vcb-qr-mobile-slot"></div>');
+            $mobileSection.append($mobileQRSlot);
+        }
+        
+        // Clone the QR
+        const $clonedQR = $desktopQR.clone();
+        $clonedQR.removeAttr('style'); // Remove inline styles
+        $clonedQR.addClass('qr-cloned-mobile');
+        
+        // Clear the slot and append cloned QR
+        $mobileQRSlot.empty().append($clonedQR);
+        
+        // Mark as cloned
+        $desktopQR.attr('data-qr-cloned', '1');
+        
+        // Hide loading spinner if exists
+        $('.acb-gw-is-mb .momo-loading').hide();
+        
+        log('QR cloned to mobile section');
+    }
+    
+    // Ensure QR code visibility (original function with modifications)
     function ensureQRVisibility() {
+        // First try to clone to mobile if needed
+        cloneQRToMobile();
+        
+        // Then ensure visibility of all QR elements
         const qrElements = $(qrSelectors.join(', '));
         
         qrElements.each(function() {
             const $qr = $(this);
             
-            // Force visibility
-            $qr.css({
-                'display': 'block',
-                'visibility': 'visible',
-                'opacity': '1',
-                'position': 'relative',
-                'z-index': '10'
-            });
+            // Skip if in desktop section on mobile
+            if (window.innerWidth <= 768 && $qr.closest(desktopSectionSelector).length) {
+                return;
+            }
             
-            // Handle images inside QR containers
-            const $img = $qr.find('img').add($qr.filter('img'));
+            // Force visibility for mobile QR
+            if ($qr.closest('.vcb-qr-mobile-slot').length || $qr.hasClass('qr-cloned-mobile')) {
+                $qr.css({
+                    'display': 'block',
+                    'visibility': 'visible',
+                    'opacity': '1'
+                });
+            }
+            
+            // Handle images
+            const $img = $qr.filter('img');
             if ($img.length) {
                 $img.css({
                     'max-width': '100%',
@@ -69,26 +140,12 @@
                 });
                 
                 // Force image reload if needed
-                $img.each(function() {
-                    if (this.complete && this.naturalHeight === 0) {
-                        const src = this.src;
-                        this.src = '';
-                        this.src = src;
-                    }
-                });
-            }
-            
-            // Make parent containers visible
-            $qr.parents().each(function() {
-                const $parent = $(this);
-                if ($parent.css('display') === 'none' || 
-                    $parent.css('visibility') === 'hidden') {
-                    $parent.css({
-                        'display': 'block',
-                        'visibility': 'visible'
-                    });
+                if ($img[0].complete && $img[0].naturalHeight === 0) {
+                    const src = $img[0].src;
+                    $img[0].src = '';
+                    $img[0].src = src;
                 }
-            });
+            }
         });
     }
 
@@ -99,34 +156,60 @@
             window.vcbQRLoaded = false;
         }
         
-        // Check for VCB-MH payment info container
+        // Check for payment containers
+        const $rightCol = $('#right-col');
         const $paymentInfo = $('#payment-info');
-        if ($paymentInfo.length) {
-            // Ensure columns are visible on mobile
-            if (window.innerWidth <= 768) {
-                $('#left-col, #right-col').css({
-                    'display': 'block',
-                    'width': '100%',
-                    'float': 'none'
-                });
-            }
-            
+        
+        if ($rightCol.length || $paymentInfo.length) {
             // Monitor for QR code insertion
+            const targetNode = $rightCol.length ? $rightCol[0] : $paymentInfo[0];
             const observer = new MutationObserver(function(mutations) {
+                let qrAdded = false;
+                
                 mutations.forEach(function(mutation) {
                     if (mutation.type === 'childList') {
-                        ensureQRVisibility();
+                        // Check if QR was added
+                        $(mutation.addedNodes).each(function() {
+                            if ($(this).find('img[src*="vietqr.io"]').length || 
+                                $(this).is('img[src*="vietqr.io"]')) {
+                                qrAdded = true;
+                            }
+                        });
                     }
                 });
+                
+                if (qrAdded) {
+                    log('QR detected via mutation observer');
+                    setTimeout(ensureQRVisibility, 50);
+                }
             });
             
-            observer.observe($paymentInfo[0], {
+            observer.observe(targetNode, {
                 childList: true,
                 subtree: true
             });
             
             // Initial visibility check
             setTimeout(ensureQRVisibility, 100);
+            
+            // Fallback check after delay
+            setTimeout(function() {
+                ensureQRVisibility();
+                
+                // Add fallback message if no QR after 8s
+                if (window.innerWidth <= 768 && !$('#vcb-qr-mobile img').length) {
+                    const $fallbackMsg = $('<div class="qr-fallback-msg">' +
+                        '<p>Đang tải mã QR...</p>' +
+                        '<button class="button retry-qr-load">Tải lại</button>' +
+                        '</div>');
+                    
+                    $('#vcb-qr-mobile').append($fallbackMsg);
+                    
+                    $('.retry-qr-load').on('click', function() {
+                        location.reload();
+                    });
+                }
+            }, 8000);
         }
     }
 
@@ -236,8 +319,8 @@
 
     // Debug logging
     function log(message, data) {
-        if (config.debug && console && console.log) {
-            console.log('[VCB QR Compat] ' + message, data || '');
+        if (config.debug === '1' && console && console.log) {
+            console.info('[VCB QR Compat] ' + message, data || '');
         }
     }
 

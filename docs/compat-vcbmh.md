@@ -183,8 +183,32 @@ Debug messages will appear in browser console with prefix `[VCB QR Compat]`.
 - Verify after theme updates affecting checkout
 - Check mobile browser updates for compatibility
 
+## DOM-Specific Implementation
+
+### Clone Strategy
+The compatibility layer implements a QR clone strategy to handle the specific DOM structure where:
+- QR exists in `.anPc` (desktop section) which is hidden on mobile
+- `.anMoblie` (mobile section with typo) lacks QR content
+
+**Process**:
+1. Detect mobile viewport (≤768px)
+2. Find QR in `.anPc img.qrVietqr[src*="api.vietqr.io"]`
+3. Clone QR to new `#vcb-qr-mobile` slot within `.anMoblie`
+4. Hide loading spinner when QR is present
+5. Provide fallback UI after 8s timeout
+
+### Typo-Friendly Selectors
+Handles both `.anMoblie` (actual) and `.anMobile` (expected) class names to ensure compatibility regardless of typo fixes.
+
 ## Version History
 
+- **1.0.1** (2025-09-07) - Mobile clone strategy
+  - Implemented QR clone from desktop to mobile section
+  - Added typo-friendly selectors
+  - Fixed enqueue order and localization
+  - Added fallback message after timeout
+  - Fixed inline CSS syntax errors
+  
 - **1.0.0** (2025-09-07) - Initial release
   - Mobile QR visibility fixes
   - Performance optimization compatibility

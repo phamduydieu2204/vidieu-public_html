@@ -5,6 +5,25 @@ All notable changes to this plugin will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.2] - 2025-09-07
+
+### Added
+- QR clone strategy for mobile devices - clones QR from desktop to mobile section
+- Typo-friendly selectors supporting both `.anMoblie` and `.anMobile`
+- Fallback UI with retry button after 8s timeout
+- Auto-hide loading spinner when QR is present
+
+### Changed  
+- Improved enqueue order (priority 20) for proper script loading
+- Updated localization to use string values ('1' instead of boolean)
+- Enhanced mobile detection and responsive handling
+
+### Fixed
+- QR display on mobile by cloning from `.anPc` to `.anMoblie` section
+- Inline CSS syntax error: "line-height: 1, 2em" → "1.2em"
+- Script loading order to ensure localized variables load first
+- Debug logging now controlled by VIDIEU_VCBQR_DEBUG constant
+
 ## [1.2.0] - 2025-09-07
 
 ### Added

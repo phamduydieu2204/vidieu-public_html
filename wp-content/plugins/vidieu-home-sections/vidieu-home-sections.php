@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Vidieu Home Sections
  * Description: Tạo các khối sản phẩm và bài viết tùy biến cho trang chủ Vidieu.vn
- * Version: 1.1.1
+ * Version: 1.2.2
  * Author: Vidieu Development Team
  * Text Domain: vidieu-home-sections
  * Domain Path: /languages
@@ -18,7 +18,7 @@ if (!defined('ABSPATH')) {
 }
 
 // Define plugin constants
-define('VD_HOME_VERSION', '1.1.1');
+define('VD_HOME_VERSION', '1.2.2');
 define('VD_HOME_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('VD_HOME_PLUGIN_URL', plugin_dir_url(__FILE__));
 define('VD_HOME_TEXT_DOMAIN', 'vidieu-home-sections');
