@@ -96,7 +96,6 @@ define( 'WPMS_MAIL_FROM_NAME', 'Vidieu.vn' );
 define( 'WPMS_MAIL_FROM_NAME_FORCE', true );
 
 
-
 /* That's all, stop editing! Happy publishing. */
 
 /** Absolute path to the WordPress directory. */

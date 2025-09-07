@@ -83,22 +83,6 @@ class Vidieu_Home_Sections {
         require_once VD_HOME_PLUGIN_DIR . 'includes/class-vd-translations.php';
         require_once VD_HOME_PLUGIN_DIR . 'includes/class-vd-page-sidebar-mappings.php';
         
-        // Checkout optimization - Fix 163s checkout flow + Security fix
-        if (file_exists(VD_HOME_PLUGIN_DIR . 'inc/class-vd-checkout-optimizer-fixed.php')) {
-            require_once VD_HOME_PLUGIN_DIR . 'inc/class-vd-checkout-optimizer-fixed.php';
-        }
-        
-        // VCB Payment Root Cause Fix - Targets actual problem
-        if (file_exists(VD_HOME_PLUGIN_DIR . 'inc/class-vd-vcb-root-cause-fix.php')) {
-            require_once VD_HOME_PLUGIN_DIR . 'inc/class-vd-vcb-root-cause-fix.php';
-        } elseif (file_exists(VD_HOME_PLUGIN_DIR . 'inc/class-vd-vcb-payment-fix-v2.php')) {
-            require_once VD_HOME_PLUGIN_DIR . 'inc/class-vd-vcb-payment-fix-v2.php';
-        } elseif (file_exists(VD_HOME_PLUGIN_DIR . 'inc/class-vd-vcb-payment-fix.php')) {
-            require_once VD_HOME_PLUGIN_DIR . 'inc/class-vd-vcb-payment-fix.php';
-        } elseif (file_exists(VD_HOME_PLUGIN_DIR . 'inc/class-vd-checkout-optimizer.php')) {
-            require_once VD_HOME_PLUGIN_DIR . 'inc/class-vd-checkout-optimizer.php';
-        }
-        
         // Performance optimizations - V2 Ultimate priority based on HAR analysis
         if (file_exists(VD_HOME_PLUGIN_DIR . 'inc/perf/class-vidieu-dup-requests-guard-v2-ultimate.php')) {
             require_once VD_HOME_PLUGIN_DIR . 'inc/perf/class-vidieu-dup-requests-guard-v2-ultimate.php';

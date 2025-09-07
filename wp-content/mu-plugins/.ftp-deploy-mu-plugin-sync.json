@@ -1,13 +1,31 @@
 {
     "description": "DO NOT DELETE THIS FILE. This file is used to keep track of which files have been synced in the most recent deployment. If you delete this file a resync will need to be done (which can take a while) - read more: https://github.com/SamKirkland/FTP-Deploy-Action",
     "version": "1.0.0",
-    "generatedTime": 1757138134805,
+    "generatedTime": 1757173153314,
     "data": [
+        {
+            "type": "file",
+            "name": ".ftp-deploy-mu-plugin-sync.json",
+            "size": 2050,
+            "hash": "9f454f5a762527370b383da05ae33903061eb14ba27430aced51f56622afeedd"
+        },
         {
             "type": "file",
             "name": "ensure-customer-emails.php",
             "size": 2472,
             "hash": "b37287b2f59ef7230928f988b325d41e070677c9bca2a39cd13c3ceadcb45799"
+        },
+        {
+            "type": "file",
+            "name": "fix-404-resources-safe.php",
+            "size": 4786,
+            "hash": "8b92da9c1151fb8357d88cc8bd9a1b3ffa96e7f43a71ddf80d8f2cffd5695080"
+        },
+        {
+            "type": "file",
+            "name": "fix-404-resources.php",
+            "size": 4535,
+            "hash": "534f5579ed6734f5f9f050433ffdccf20147346a9860f2d64e8b86067056bb9b"
         },
         {
             "type": "file",

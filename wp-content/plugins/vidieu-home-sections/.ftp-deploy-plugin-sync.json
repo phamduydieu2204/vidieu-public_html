@@ -1,8 +1,14 @@
 {
     "description": "DO NOT DELETE THIS FILE. This file is used to keep track of which files have been synced in the most recent deployment. If you delete this file a resync will need to be done (which can take a while) - read more: https://github.com/SamKirkland/FTP-Deploy-Action",
     "version": "1.0.0",
-    "generatedTime": 1757004824066,
+    "generatedTime": 1757217166685,
     "data": [
+        {
+            "type": "file",
+            "name": ".ftp-deploy-plugin-sync.json",
+            "size": 8460,
+            "hash": "a40102eab3f6cb262bece6a3ff5d6fee5ef97299f390caae032ff2f335709ee4"
+        },
         {
             "type": "file",
             "name": "12_changelog.md",
@@ -37,6 +43,10 @@
         },
         {
             "type": "folder",
+            "name": "inc"
+        },
+        {
+            "type": "folder",
             "name": "includes"
         },
         {
@@ -56,8 +66,8 @@
         {
             "type": "file",
             "name": "vidieu-home-sections.php",
-            "size": 3905,
-            "hash": "7cac48a2d5cccc04c4ddbac116002722a7d23ae6b879ec19221c71c81d400734"
+            "size": 5268,
+            "hash": "c733d7e68394d82e7bde5c6c3f1de11c9fc049b75ee76ad47766d01fec50b4f5"
         },
         {
             "type": "folder",
@@ -82,6 +92,10 @@
         {
             "type": "folder",
             "name": "docs/qa"
+        },
+        {
+            "type": "folder",
+            "name": "inc/perf"
         },
         {
             "type": "file",
@@ -236,6 +250,48 @@
         {
             "type": "folder",
             "name": "docs/qa/sections-interactions"
+        },
+        {
+            "type": "file",
+            "name": "inc/perf/class-vidieu-dup-requests-guard-v2-aggressive.php",
+            "size": 27062,
+            "hash": "4e068e71d095cb2a91755c8a5f4152ef934456087497d111dee7b139c191ffa8"
+        },
+        {
+            "type": "file",
+            "name": "inc/perf/class-vidieu-dup-requests-guard-v2-enhanced.php",
+            "size": 19900,
+            "hash": "c2ac1205555d477517958126955e9af6c080f64fa33d266ca26dd9f257a557d6"
+        },
+        {
+            "type": "file",
+            "name": "inc/perf/class-vidieu-dup-requests-guard-v2-safe.php",
+            "size": 6057,
+            "hash": "0568477a559040329ec1b4e49a77ef2c1097b5d72f4fbef12138135a65b6dd67"
+        },
+        {
+            "type": "file",
+            "name": "inc/perf/class-vidieu-dup-requests-guard-v2-stepped.php",
+            "size": 18969,
+            "hash": "fa2b2656165ade23ca6eace968c8308b106c73410e17c62c542fb2a34aa68cc5"
+        },
+        {
+            "type": "file",
+            "name": "inc/perf/class-vidieu-dup-requests-guard-v2-ultimate.php",
+            "size": 43703,
+            "hash": "73774c2205636b795d6c0f9595eed8bf0a3099ec0c864b16d21a2deb35ed12ae"
+        },
+        {
+            "type": "file",
+            "name": "inc/perf/class-vidieu-dup-requests-guard-v2.php",
+            "size": 13320,
+            "hash": "f136bc4b8d820b38eba3b45d491149ee015b4beee22986730de6c17dbbc1ac55"
+        },
+        {
+            "type": "file",
+            "name": "inc/perf/class-vidieu-dup-requests-guard.php",
+            "size": 12537,
+            "hash": "690b1a7c26f28772b8d9e5153d3c7683c4247fc5c53c9bd371fef27a3516affa"
         },
         {
             "type": "file",
