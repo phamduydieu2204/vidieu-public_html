@@ -5,6 +5,22 @@ All notable changes to this plugin will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.1] - 2025-09-07
+
+### Fixed
+- NASA theme specific javascript:void(0) links that were causing crawlability issues
+  - Fixed nasa-sidebar-return-shop buttons
+  - Fixed nasa-toggle-widget links
+  - Fixed nasa-nav-arrow and slick slider navigation
+- Missing meta description on /san-pham/ (shop archive) page
+- Canonical URL issues on post archive pages (/bai-viet/)
+- Added proper aria-labels for NASA theme UI elements
+
+### Improved
+- Extended JavaScript void link detection to catch all patterns
+- Better canonical URL generation with proper trailing slashes
+- Enhanced meta description fallbacks for shop pages
+
 ## [1.4.0] - 2025-09-07
 
 ### Added

@@ -191,6 +191,15 @@ class Vidieu_SEO_Enhanced {
                 'Kết quả tìm kiếm cho "%s" - Tìm thấy sản phẩm phù hợp tại Vidieu.vn',
                 get_search_query()
             );
+        } elseif (is_shop() || is_post_type_archive('product')) {
+            // Shop/Product archive page (CRITICAL FIX for /san-pham/)
+            $description = 'Khám phá hàng ngàn sản phẩm chất lượng tại Vidieu.vn - Giá tốt nhất, giao hàng nhanh, thanh toán an toàn. Mua sắm online dễ dàng với nhiều ưu đãi hấp dẫn.';
+        } elseif (is_archive()) {
+            // Generic archive fallback
+            $description = sprintf(
+                '%s - Xem tất cả sản phẩm và bài viết tại Vidieu.vn',
+                wp_title('', false)
+            );
         }
         
         // Clean and trim to proper length
@@ -238,8 +247,18 @@ class Vidieu_SEO_Enhanced {
             }
         } elseif (is_search()) {
             $canonical = get_search_link();
+        } elseif (is_shop() || is_post_type_archive('product')) {
+            // WooCommerce shop page
+            $canonical = get_permalink(wc_get_page_id('shop'));
         } elseif (is_post_type_archive()) {
             $canonical = get_post_type_archive_link(get_query_var('post_type'));
+        } elseif (get_option('page_for_posts') && is_home()) {
+            // Blog page
+            $canonical = get_permalink(get_option('page_for_posts'));
+        } else {
+            // Fallback for any other archive
+            global $wp;
+            $canonical = home_url($wp->request);
         }
         
         // Clean tracking parameters
@@ -248,6 +267,11 @@ class Vidieu_SEO_Enhanced {
                 'utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content',
                 'fbclid', 'gclid', 'msclkid', 'ref', 'source', 'mc_cid', 'mc_eid'
             ), $canonical);
+            
+            // Ensure trailing slash for consistency
+            if (!is_singular()) {
+                $canonical = trailingslashit($canonical);
+            }
         }
         
         return $canonical;
@@ -638,14 +662,41 @@ class Vidieu_SEO_Enhanced {
         ?>
         <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Fix javascript:void(0) links
-            var voidLinks = document.querySelectorAll('a[href="javascript:void(0)"], a[href="javascript:void(0);"], a[href="#0"]');
+            // Fix javascript:void(0) links - Extended patterns for NASA theme
+            var voidLinks = document.querySelectorAll('a[href="javascript:void(0)"], a[href="javascript:void(0);"], a[href="#0"], a[href*="javascript:"]');
             voidLinks.forEach(function(link) {
                 // Determine proper href based on context
                 var href = '#';
                 
+                // NASA theme specific patterns
+                if (link.classList.contains('nasa-sidebar-return-shop')) {
+                    // Return to shop button
+                    href = '<?php echo esc_url(wc_get_page_permalink('shop')); ?>';
+                }
+                else if (link.classList.contains('nasa-toggle-widget')) {
+                    // Widget toggle - use anchor to widget ID
+                    var widget = link.closest('.widget');
+                    if (widget && widget.id) {
+                        href = '#' + widget.id;
+                    } else {
+                        href = '#widgets';
+                    }
+                }
+                else if (link.classList.contains('nasa-nav-arrow') || 
+                        link.classList.contains('slick-arrow') ||
+                        link.classList.contains('slick-prev') ||
+                        link.classList.contains('slick-next')) {
+                    // Slider navigation - use proper anchors
+                    if (link.classList.contains('slick-prev')) {
+                        href = '#slide-prev';
+                    } else if (link.classList.contains('slick-next')) {
+                        href = '#slide-next';
+                    } else {
+                        href = '#slider';
+                    }
+                }
                 // Quick view links
-                if (link.classList.contains('quick-view') || 
+                else if (link.classList.contains('quick-view') || 
                     link.classList.contains('quickview') || 
                     link.getAttribute('data-product_id')) {
                     var productId = link.getAttribute('data-product_id') || 
@@ -676,15 +727,30 @@ class Vidieu_SEO_Enhanced {
                 link.setAttribute('href', href);
                 
                 // Add aria-label if missing
-                if (!link.getAttribute('aria-label') && !link.textContent.trim()) {
+                if (!link.getAttribute('aria-label')) {
                     var label = '';
-                    if (link.classList.contains('quick-view')) {
+                    
+                    // NASA theme specific labels
+                    if (link.classList.contains('nasa-sidebar-return-shop')) {
+                        label = 'Quay lại cửa hàng';
+                    } else if (link.classList.contains('nasa-toggle-widget')) {
+                        label = 'Mở/đóng widget';
+                    } else if (link.classList.contains('slick-prev')) {
+                        label = 'Slide trước';
+                    } else if (link.classList.contains('slick-next')) {
+                        label = 'Slide tiếp theo';
+                    } else if (link.classList.contains('nasa-nav-arrow')) {
+                        label = 'Điều hướng slider';
+                    }
+                    // Standard e-commerce labels
+                    else if (link.classList.contains('quick-view') || link.classList.contains('quickview')) {
                         label = 'Xem nhanh sản phẩm';
                     } else if (link.classList.contains('wishlist')) {
                         label = 'Thêm vào yêu thích';
                     } else if (link.classList.contains('compare')) {
                         label = 'So sánh sản phẩm';
                     }
+                    
                     if (label) {
                         link.setAttribute('aria-label', label);
                     }
