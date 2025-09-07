@@ -1,0 +1,275 @@
+/**
+ * VCB-MH QR Code Compatibility Styles
+ * Ensures proper display on mobile devices
+ * 
+ * @package Vidieu_Home_Sections
+ * @since 1.0.0
+ */
+
+/* ==========================================================================
+   Mobile QR Visibility Fixes
+   ========================================================================== */
+
+/* Base QR visibility rules */
+.qrVietqr,
+#qrVietqr,
+.vcb-qr-code,
+#vcb-qr-code,
+[class*="vcb"][class*="qr"],
+[id*="vcb"][id*="qr"] {
+    display: block;
+    visibility: visible;
+    opacity: 1;
+    position: relative;
+    z-index: 10;
+    margin: 15px auto;
+    text-align: center;
+}
+
+/* QR Image Responsive Sizing */
+.qrVietqr {
+    max-width: 300px;
+    width: 100%;
+    padding: 10px;
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.qrVietqr img,
+#qrVietqr img,
+.vcb-qr-code img,
+#vcb-qr-code img,
+[class*="vcb"][class*="qr"] img {
+    width: 100%;
+    height: auto;
+    display: block;
+    max-width: 100%;
+    margin: 0 auto;
+}
+
+/* Payment Info Container Fixes */
+#payment-info {
+    overflow: visible;
+    position: relative;
+    z-index: 1;
+}
+
+#payment-info .row {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+/* ==========================================================================
+   Mobile Specific Styles
+   ========================================================================== */
+
+@media screen and (max-width: 768px) {
+    /* Column Layout for Mobile */
+    #left-col,
+    #right-col {
+        width: 100% !important;
+        float: none !important;
+        display: block !important;
+        padding: 15px !important;
+        margin: 0 !important;
+    }
+    
+    /* QR Container Mobile Optimizations */
+    .qrVietqr {
+        max-width: 280px !important;
+        margin: 20px auto !important;
+        padding: 15px !important;
+    }
+    
+    /* Ensure visibility in mobile viewport */
+    .anMoblie {
+        display: block !important;
+        border: none !important;
+    }
+    
+    /* Payment info mobile layout */
+    #payment-info {
+        padding: 15px !important;
+        font-size: 14px !important;
+    }
+    
+    /* Bank details mobile optimization */
+    .bank-details,
+    .bacs_details {
+        font-size: 14px !important;
+        line-height: 1.6 !important;
+    }
+    
+    /* Order received page specific */
+    .woocommerce-order-received #payment-info {
+        margin-top: 20px !important;
+    }
+}
+
+/* Small Mobile Devices */
+@media screen and (max-width: 540px) {
+    /* Smaller QR for very small screens */
+    .qrVietqr {
+        max-width: 240px !important;
+        padding: 10px !important;
+    }
+    
+    /* Adjust font sizes */
+    #payment-info {
+        font-size: 13px !important;
+    }
+    
+    /* Compact bank info */
+    .bank-info-item {
+        margin-bottom: 10px !important;
+    }
+}
+
+/* iPhone SE and similar small screens */
+@media screen and (max-width: 375px) {
+    .qrVietqr {
+        max-width: 220px !important;
+        margin: 15px auto !important;
+    }
+}
+
+/* ==========================================================================
+   SweetAlert2 Mobile Compatibility
+   ========================================================================== */
+
+/* SweetAlert2 popup on mobile */
+@media screen and (max-width: 768px) {
+    .swal2-popup {
+        width: 90% !important;
+        max-width: 400px !important;
+        font-size: 14px !important;
+        padding: 20px !important;
+    }
+    
+    /* QR inside SweetAlert */
+    .swal2-popup .qrVietqr {
+        max-width: 250px !important;
+        margin: 15px auto !important;
+    }
+    
+    /* SweetAlert buttons */
+    .swal2-actions button {
+        font-size: 14px !important;
+        padding: 10px 20px !important;
+        margin: 5px !important;
+    }
+    
+    /* Timer text */
+    .swal2-timer-progress-bar-container {
+        height: 3px !important;
+    }
+}
+
+/* Small mobile SweetAlert adjustments */
+@media screen and (max-width: 540px) {
+    .swal2-popup {
+        width: 95% !important;
+        padding: 15px !important;
+        font-size: 13px !important;
+    }
+    
+    .swal2-popup .qrVietqr {
+        max-width: 200px !important;
+    }
+    
+    .swal2-html-container {
+        font-size: 13px !important;
+        line-height: 1.5 !important;
+    }
+}
+
+/* ==========================================================================
+   Parent Container Overflow Fixes
+   ========================================================================== */
+
+/* Ensure parent containers don't hide QR */
+.woocommerce-order-details,
+.woocommerce-thankyou-order-details,
+.order_details,
+.bacs_details,
+.woocommerce-order-overview,
+.thankyou-order-details {
+    overflow: visible !important;
+    position: relative !important;
+}
+
+/* Fix potential z-index issues */
+.woocommerce-notices-wrapper {
+    z-index: 100;
+}
+
+/* ==========================================================================
+   Loading States and Transitions
+   ========================================================================== */
+
+/* Smooth transitions for QR appearance */
+.qrVietqr {
+    transition: opacity 0.3s ease-in-out, 
+                visibility 0.3s ease-in-out;
+}
+
+/* Loading state */
+.qrVietqr.loading {
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+.qrVietqr.loading::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 30px;
+    height: 30px;
+    margin: -15px 0 0 -15px;
+    border: 3px solid #f3f3f3;
+    border-top: 3px solid #3498db;
+    border-radius: 50%;
+    animation: qr-spin 1s linear infinite;
+}
+
+@keyframes qr-spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* ==========================================================================
+   Print Styles
+   ========================================================================== */
+
+@media print {
+    .qrVietqr {
+        max-width: 200px !important;
+        page-break-inside: avoid;
+        border: 1px solid #000 !important;
+    }
+    
+    .qrVietqr img {
+        max-width: 100% !important;
+    }
+}
+
+/* ==========================================================================
+   Dark Mode Support
+   ========================================================================== */
+
+@media (prefers-color-scheme: dark) {
+    .qrVietqr {
+        background: #1a1a1a;
+        border-color: #333;
+    }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    .qrVietqr {
+        border: 2px solid currentColor;
+    }
+}

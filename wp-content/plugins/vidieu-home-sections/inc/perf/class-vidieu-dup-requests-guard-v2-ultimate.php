@@ -25,9 +25,9 @@ class Vidieu_Dup_Requests_Guard_V2_Ultimate {
      */
     const ENABLE_BASIC_OPTIMIZATION = true;
     const ENABLE_NUCLEAR_RECAPTCHA = true;
-    const ENABLE_CART_CHECKOUT_WHITELIST = false; // HOTFIX: Temporarily disabled for cart functionality
+    const ENABLE_CART_CHECKOUT_WHITELIST = true;
     const ENABLE_OUTPUT_BUFFERING = true;
-    const ENABLE_ORDER_RECEIVED_OPT = false; // HOTFIX: Temporarily disabled for payment functionality
+    const ENABLE_ORDER_RECEIVED_OPT = true;
     
     /**
      * Emergency kill switch
@@ -376,7 +376,15 @@ class Vidieu_Dup_Requests_Guard_V2_Ultimate {
             'wp-hooks',
             
             // Theme Core (1)
-            'elessi-theme-js'
+            'elessi-theme-js',
+            
+            // VCB-MH Payment Gateway (3)
+            'vcb-mh-public',
+            'sweetalert2',
+            'sweetalert2-all',
+            
+            // Vidieu Compat (1)
+            'vidieu-vcb-qr-compat'
         );
         
         // Remove ALL scripts not in whitelist
@@ -398,7 +406,14 @@ class Vidieu_Dup_Requests_Guard_V2_Ultimate {
             
             // Theme Core (2)
             'elessi-style',
-            'elessi-style-css'
+            'elessi-style-css',
+            
+            // VCB-MH Payment Gateway (2)
+            'vcb-mh-public',
+            'sweetalert2',
+            
+            // Vidieu Compat (1)
+            'vidieu-vcb-qr-compat'
         );
         
         // Remove ALL styles not in whitelist
@@ -819,12 +834,6 @@ class Vidieu_Dup_Requests_Guard_V2_Ultimate {
     public function nuclear_remove_recaptcha() {
         global $wp_scripts;
         
-        // If ReCAPTCHA Manager is active, let it handle everything
-        if (class_exists('Vidieu_ReCAPTCHA_Manager')) {
-            $this->log_fix('ReCAPTCHA Manager is active, deferring to centralized management');
-            return;
-        }
-        
         // Patterns to match reCAPTCHA
         $recaptcha_patterns = array(
             'google-recaptcha', 'grecaptcha', 'recaptcha',
@@ -913,7 +922,7 @@ class Vidieu_Dup_Requests_Guard_V2_Ultimate {
             Element.prototype.appendChild = function(element) {
                 if (isRecaptchaScript(element)) {
                     if (recaptchaLoaded) {
-                        /* Blocked duplicate reCAPTCHA */
+                        console.log('[Vidieu] Blocked duplicate reCAPTCHA:', element.src);
                         return element;
                     }
                     recaptchaLoaded = true;
@@ -924,7 +933,7 @@ class Vidieu_Dup_Requests_Guard_V2_Ultimate {
             Element.prototype.insertBefore = function(element, reference) {
                 if (isRecaptchaScript(element)) {
                     if (recaptchaLoaded) {
-                        /* Blocked duplicate reCAPTCHA */
+                        console.log('[Vidieu] Blocked duplicate reCAPTCHA:', element.src);
                         return element;
                     }
                     recaptchaLoaded = true;
@@ -1163,7 +1172,8 @@ class Vidieu_Dup_Requests_Guard_V2_Ultimate {
                         });
                         
                         window.vidieuPerfDomains = domains;
-                        // Performance data collected in window.vidieuPerfDomains
+                        console.log('[Vidieu Admin] Total resources:', resources.length);
+                        console.log('[Vidieu Admin] Domain breakdown:', domains);
                         
                         // Check for blocked domains still loading
                         var blocked = ['elementor', 'yith', 'revslider', 'instagram', 'facebook'];
@@ -1178,7 +1188,7 @@ class Vidieu_Dup_Requests_Guard_V2_Ultimate {
                         });
                         
                         if (stillLoading.length > 0) {
-                            // Blocked domains detected - check window.vidieuPerfDomains
+                            console.warn('[Vidieu Admin] Blocked domains still loading:', stillLoading);
                         }
                     }, 2000);
                 });

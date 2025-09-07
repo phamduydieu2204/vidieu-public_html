@@ -235,19 +235,4 @@ function elessi_child_vcb_simple_checkout($fields) {
 }
 */
 
-/**
- * Debug helper for payment methods (TEMPORARY - Remove in production)
- */
-if (current_user_can('manage_options')) {
-    add_action('woocommerce_before_thankyou', function($order_id) {
-        $order = wc_get_order($order_id);
-        if (!$order) return;
-        
-        echo '<div style="background:#f0f0f0; padding:10px; margin:10px 0;">';
-        echo '<strong>Debug (Admin only):</strong><br>';
-        echo 'Order ID: ' . $order_id . '<br>';
-        echo 'Payment Method: ' . $order->get_payment_method() . '<br>';
-        echo 'Expected: ' . ($order->get_payment_method() === 'vcb-gateway-mh' ? 'VCB-MH QR Display' : 'Other payment display');
-        echo '</div>';
-    });
-}
+// Debug output removed for production

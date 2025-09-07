@@ -442,12 +442,9 @@ class VD_Page_Sidebar_Mappings {
      * Enqueue frontend assets
      */
     public function enqueue_frontend_assets() {
-        // Check if already enqueued by VD_Assets to prevent duplicates
-        if (!wp_script_is('vd-home-script', 'enqueued')) {
-            // Reuse existing home page assets
-            wp_enqueue_style('vidieu-home', VD_HOME_PLUGIN_URL . 'assets/css/vidieu-home.css', array(), VD_HOME_VERSION);
-            wp_enqueue_script('vidieu-home', VD_HOME_PLUGIN_URL . 'assets/js/vidieu-home.js', array('jquery'), VD_HOME_VERSION, true);
-        }
+        // Reuse existing home page assets
+        wp_enqueue_style('vidieu-home', VD_HOME_PLUGIN_URL . 'assets/css/vidieu-home.css', array(), VD_HOME_VERSION);
+        wp_enqueue_script('vidieu-home', VD_HOME_PLUGIN_URL . 'assets/js/vidieu-home.js', array('jquery'), VD_HOME_VERSION, true);
         
         // Enqueue page mapping specific styles
         wp_add_inline_style('vidieu-home', $this->get_page_mapping_styles());

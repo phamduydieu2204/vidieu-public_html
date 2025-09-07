@@ -83,21 +83,6 @@ class Vidieu_Home_Sections {
         require_once VD_HOME_PLUGIN_DIR . 'includes/class-vd-translations.php';
         require_once VD_HOME_PLUGIN_DIR . 'includes/class-vd-page-sidebar-mappings.php';
         
-        // Performance configuration
-        if (file_exists(VD_HOME_PLUGIN_DIR . 'inc/perf/vidieu-perf-config.php')) {
-            require_once VD_HOME_PLUGIN_DIR . 'inc/perf/vidieu-perf-config.php';
-        }
-        
-        // ReCAPTCHA Manager - Load before duplicate guard
-        if (file_exists(VD_HOME_PLUGIN_DIR . 'inc/perf/class-vidieu-recaptcha-manager.php')) {
-            require_once VD_HOME_PLUGIN_DIR . 'inc/perf/class-vidieu-recaptcha-manager.php';
-        }
-        
-        // Policy Engine - New intelligent route-based management
-        if (file_exists(VD_HOME_PLUGIN_DIR . 'inc/perf/class-vidieu-policy-engine.php')) {
-            require_once VD_HOME_PLUGIN_DIR . 'inc/perf/class-vidieu-policy-engine.php';
-        }
-        
         // Performance optimizations - V2 Ultimate priority based on HAR analysis
         if (file_exists(VD_HOME_PLUGIN_DIR . 'inc/perf/class-vidieu-dup-requests-guard-v2-ultimate.php')) {
             require_once VD_HOME_PLUGIN_DIR . 'inc/perf/class-vidieu-dup-requests-guard-v2-ultimate.php';
@@ -111,6 +96,11 @@ class Vidieu_Home_Sections {
             require_once VD_HOME_PLUGIN_DIR . 'inc/perf/class-vidieu-dup-requests-guard-v2.php';
         } elseif (file_exists(VD_HOME_PLUGIN_DIR . 'inc/perf/class-vidieu-dup-requests-guard.php')) {
             require_once VD_HOME_PLUGIN_DIR . 'inc/perf/class-vidieu-dup-requests-guard.php';
+        }
+        
+        // Compatibility layers
+        if (file_exists(VD_HOME_PLUGIN_DIR . 'compat/compat-vcbmh.php')) {
+            require_once VD_HOME_PLUGIN_DIR . 'compat/compat-vcbmh.php';
         }
     }
     

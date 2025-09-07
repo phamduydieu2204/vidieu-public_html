@@ -1,65 +1,39 @@
-# Vidieu Home Sections - Changelog
+# Changelog - Vidieu Home Sections
 
-## [2.6.0] - 2025-09-07
+All notable changes to this plugin will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [1.2.0] - 2025-09-07
 
 ### Added
-- New Policy Engine for intelligent route-based script/style management
-- Learning mode to safely discover script dependencies
-- Route-specific policies (home, cart, checkout, order-received, etc.)
-- AJAX re-initialization for cart/checkout dynamic updates
-- Global protection for payment scripts (vcb-mh, sweetalert2)
-- Configuration file for performance settings
-
-### Fixed
-- Cart page images being canceled due to aggressive script blocking
-- Order-received page breaking due to payment script blocking
-- Gallery/lightbox functionality on cart page
-- Payment confirmation polling for VCB gateway
-- AJAX cart updates not re-initializing UI components
+- VCB-MH compatibility layer for mobile QR code display
+  - New compatibility module: `compat/compat-vcbmh.php`
+  - Responsive CSS fixes: `assets/css/vcb-qr-compat.css`
+  - JavaScript observer: `assets/js/vcb-qr-compat.js`
+  - Ensures QR codes display properly on mobile devices
 
 ### Changed
-- Replaced aggressive whitelist with intelligent policy system
-- Temporarily disabled cart/checkout whitelist (ENABLE_CART_CHECKOUT_WHITELIST = false)
-- Temporarily disabled order-received optimization (ENABLE_ORDER_RECEIVED_OPT = false)
-- Default mode set to 'learning' for safe deployment
-
-### Removed
-- Debug console.log statements from production code
-- Experimental code that was causing issues
-
-## [2.5.0] - 2025-09-07
-
-### Added
-- ReCAPTCHA Manager for centralized loading
-- Duplicate request guard V2 Ultimate
+- Updated duplicate request guard to whitelist VCB-MH scripts and styles
+  - Added vcb-mh-public, sweetalert2 to allowed resources on order-received page
+  - Prevents performance optimization from blocking payment gateway functionality
 
 ### Fixed
-- ReCAPTCHA triple loading issue (saved 1.6MB per page)
-- Various script duplications
+- QR code visibility on mobile devices (viewport <= 768px)
+- CSS media query conflicts hiding payment information
+- Parent container overflow issues preventing QR display
+- SweetAlert2 popup sizing on mobile devices
 
-## Configuration Options
+### Security
+- Removed debug output from production code
+- Cleaned up test files and directories
 
-### Policy Modes
-```php
-// In wp-config.php or vidieu-perf-config.php
-define('VIDIEU_PERF_POLICY_MODE', 'learning'); // Options: learning, allowlist, denylist, disabled
-```
+## [1.1.1] - Previous Release
 
-### Emergency Controls
-```php
-// Disable all optimizations
-define('VIDIEU_DISABLE_ALL_OPTIMIZATIONS', true);
+### Changed
+- Performance optimizations
+- AJAX handling improvements
 
-// Enable debug logging
-define('VIDIEU_PERF_DEBUG', true);
-```
-
-## Migration Guide
-
-If upgrading from v2.5.0:
-
-1. The aggressive whitelist is temporarily disabled
-2. Policy Engine is in learning mode by default
-3. Visit all major routes to generate learning data
-4. Review `/wp-content/uploads/vidieu-perf/` for collected data
-5. Switch to allowlist or denylist mode after review
+### Fixed
+- Various bug fixes and improvements
