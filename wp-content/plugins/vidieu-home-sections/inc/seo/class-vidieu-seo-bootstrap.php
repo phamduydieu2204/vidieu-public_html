@@ -709,5 +709,5 @@ class Vidieu_SEO_Bootstrap {
     }
 }
 
-// Initialize
-Vidieu_SEO_Bootstrap::get_instance();
+// Initialize - Disabled in favor of Enhanced SEO module
+// Vidieu_SEO_Bootstrap::get_instance();

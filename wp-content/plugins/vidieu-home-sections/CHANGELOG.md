@@ -5,6 +5,33 @@ All notable changes to this plugin will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.0] - 2025-09-07
+
+### Added
+- Enhanced SEO module targeting 95+ Lighthouse scores
+  - Comprehensive meta description generation for all page types
+  - Enhanced product meta descriptions with price and details
+  - Fixed all non-crawlable links (javascript:void(0))
+  - Replaced generic link text with contextual descriptions
+  - Mobile tap targets (48x48px minimum)
+  - Comprehensive structured data (WebSite, Organization, BreadcrumbList, Product, Article)
+  - Automatic aria-labels for icon-only links
+  - Image alt text fallbacks
+  - Enhanced robots.txt with multiple sitemaps
+
+### Fixed
+- P0: Non-crawlable links on all pages (crawlable-anchors audit)
+- P0: Missing meta descriptions on product pages
+- P0: Generic "Xem thêm" link text on home page
+- Tap target sizes on mobile devices
+- Missing ARIA labels for accessibility
+
+### Improved
+- SEO scores: Target 85→95+ for all page types
+- Structured data with complete properties
+- Link crawlability for search engines
+- Mobile accessibility
+
 ## [1.3.0] - 2025-09-07
 
 ### Added
