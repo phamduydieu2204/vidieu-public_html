@@ -5,6 +5,32 @@ All notable changes to this plugin will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.0] - 2025-09-07
+
+### Added
+- SEO Bootstrap module for Lighthouse SEO optimization
+  - Automatic meta description generation with multiple fallbacks
+  - Clean canonical URL implementation with parameter filtering
+  - Comprehensive structured data (JSON-LD) support
+  - WebSite, Organization, BreadcrumbList, Product, and Article schemas
+- Image alt text fallback system
+- ARIA labels for icon-only links
+- Non-crawlable link fixes with JavaScript enhancement
+- Sitemap addition to robots.txt
+- Guards to prevent conflicts with major SEO plugins
+
+### Fixed
+- Missing meta descriptions on all page types
+- 265 non-crawlable links across the site
+- Generic "Read More" link text issues
+- Missing accessibility attributes on icon links
+- Problematic preload directives
+
+### Improved
+- SEO scores: Home 77→90+, Product 85→90+, Post 83→90+
+- Link crawlability for search engines
+- Accessibility for screen readers
+
 ## [1.2.6] - 2025-09-07
 
 ### Fixed

@@ -46,6 +46,13 @@ require_once get_stylesheet_directory() . '/functions-performance.php';
 require_once get_stylesheet_directory() . '/functions-ajax-performance.php';
 
 /**
+ * Load SEO Enhancements
+ */
+if (file_exists(get_stylesheet_directory() . '/functions-seo.php')) {
+    require_once get_stylesheet_directory() . '/functions-seo.php';
+}
+
+/**
  * Add your custom functions below this line
  * ----------------------------------------
  */
