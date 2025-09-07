@@ -86,6 +86,11 @@ class Vidieu_Home_Sections {
         // Checkout optimization - Fix 163s checkout flow + Security fix
         if (file_exists(VD_HOME_PLUGIN_DIR . 'inc/class-vd-checkout-optimizer-fixed.php')) {
             require_once VD_HOME_PLUGIN_DIR . 'inc/class-vd-checkout-optimizer-fixed.php';
+        }
+        
+        // VCB Payment fixes - Fix polling loop & mobile QR display
+        if (file_exists(VD_HOME_PLUGIN_DIR . 'inc/class-vd-vcb-payment-fix.php')) {
+            require_once VD_HOME_PLUGIN_DIR . 'inc/class-vd-vcb-payment-fix.php';
         } elseif (file_exists(VD_HOME_PLUGIN_DIR . 'inc/class-vd-checkout-optimizer.php')) {
             require_once VD_HOME_PLUGIN_DIR . 'inc/class-vd-checkout-optimizer.php';
         }
