@@ -33,20 +33,6 @@
     const mobileSectionSelectors = ['.anMoblie', '.anMobile'];
     const desktopSectionSelector = '.anPc';
 
-    // Utility: Check if element is visible
-    function isElementVisible(el) {
-        if (!el) return false;
-        
-        const rect = el.getBoundingClientRect();
-        const style = window.getComputedStyle(el);
-        
-        return rect.width > 0 && 
-               rect.height > 0 &&
-               style.display !== 'none' &&
-               style.visibility !== 'hidden' &&
-               style.opacity !== '0';
-    }
-
     // Extract payment data from page
     function extractPaymentData() {
         const data = {
@@ -280,10 +266,6 @@
         }
         window.vcbQRInitialized = true;
         
-        // Wait for VCB-MH to load its QR
-        if (typeof window.vcbQRLoaded === 'undefined') {
-            window.vcbQRLoaded = false;
-        }
         
         // Check for payment containers
         const $rightCol = $('#right-col');

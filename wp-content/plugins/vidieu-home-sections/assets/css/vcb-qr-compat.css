@@ -351,10 +351,7 @@
     animation: qr-spin 1s linear infinite;
 }
 
-/* Hide spinner when QR is present */
-.vcb-qr-mobile-slot:has(img) ~ .acb-gw-is-mb .momo-loading {
-    display: none !important;
-}
+/* Hide spinner when QR is present - removed :has() for better browser support */
 
 @keyframes qr-spin {
     0% { transform: rotate(0deg); }
