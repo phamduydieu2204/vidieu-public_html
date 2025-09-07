@@ -5,6 +5,19 @@ All notable changes to this plugin will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.6.2] - 2025-09-07
+
+### Fixed
+- Improved Buy Now button handling on single product pages to prevent conflicts with NASA theme
+- Fixed inconsistent redirect behavior by intercepting NASA theme's form submission
+- Enhanced event handling with capture phase listeners and form submit interception
+- Added cleanup of NASA theme states to prevent interference
+
+### Changed
+- Removed timeout delay on redirect for immediate navigation
+- Added form submit handler to catch NASA theme's Buy Now mechanism
+- Improved debug logging for better troubleshooting
+
 ## [1.5.0] - 2025-09-07
 
 ### Added
