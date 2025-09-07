@@ -91,12 +91,9 @@ class Vidieu_SEO_Bootstrap {
             return true;
         }
         
-        // Check if already printed by theme or other plugin
-        ob_start();
-        do_action('wp_head');
-        $head_content = ob_get_clean();
-        
-        return strpos($head_content, 'name="description"') !== false;
+        // Simple check - assume no description if no SEO plugin
+        // We cannot check output buffer here as it would cause infinite loop
+        return false;
     }
     
     /**

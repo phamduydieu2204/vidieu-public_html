@@ -13,35 +13,37 @@ if (!defined('ABSPATH')) {
 /**
  * Clean up problematic preloads
  */
-add_action('wp_head', function() {
+add_action('init', function() {
     // Remove preloads for non-existent files
     remove_action('wp_head', 'elessi_preload_resources', 1);
+});
+
+/**
+ * Add filtered preloads
+ */
+add_action('wp_head', function() {
+    // Only preload files that actually exist
+    $template_dir = get_template_directory();
+    $template_uri = get_template_directory_uri();
     
-    // Add our filtered version
-    add_action('wp_head', function() {
-        // Only preload files that actually exist
-        $template_dir = get_template_directory();
-        $template_uri = get_template_directory_uri();
-        
-        // Check if style.min.css exists before preloading
-        if (!file_exists($template_dir . '/style.min.css')) {
-            // Don't preload if it doesn't exist
-            return;
+    // Check if style.min.css exists before preloading
+    if (!file_exists($template_dir . '/style.min.css')) {
+        // Don't preload if it doesn't exist
+        return;
+    }
+    
+    // Fonts preload (if they exist)
+    $font_files = array(
+        '/assets/fonts/main-font.woff2',
+        '/assets/fonts/icons.woff2'
+    );
+    
+    foreach ($font_files as $font) {
+        if (file_exists($template_dir . $font)) {
+            echo '<link rel="preload" href="' . esc_url($template_uri . $font) . '" as="font" type="font/woff2" crossorigin>' . "\n";
         }
-        
-        // Fonts preload (if they exist)
-        $font_files = array(
-            '/assets/fonts/main-font.woff2',
-            '/assets/fonts/icons.woff2'
-        );
-        
-        foreach ($font_files as $font) {
-            if (file_exists($template_dir . $font)) {
-                echo '<link rel="preload" href="' . esc_url($template_uri . $font) . '" as="font" type="font/woff2" crossorigin>' . "\n";
-            }
-        }
-    }, 1);
-}, 0);
+    }
+}, 1);
 
 /**
  * Fix incorrect 'as' attribute in preloads
