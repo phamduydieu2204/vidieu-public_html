@@ -24,11 +24,13 @@
             var self = this;
             
             // Handle Buy Now button click on single product page
-            $(document).on('click', '.single_add_to_cart_button.nasa-buy-now', function(e) {
+            $(document).on('click', 'button.nasa-buy-now, .single_add_to_cart_button.nasa-buy-now', function(e) {
                 e.preventDefault();
+                console.log('SingleProductBuyNow: Buy Now button clicked');
                 
                 var $button = $(this);
                 var $form = $button.closest('form.cart');
+                console.log('SingleProductBuyNow: Form found:', $form);
                 
                 // Prevent double clicks
                 if ($button.hasClass('loading') || $button.hasClass('vd-processing')) {
@@ -176,7 +178,16 @@
     $(document).ready(function() {
         // Only initialize on single product pages
         if ($('body').hasClass('single-product')) {
+            console.log('SingleProductBuyNow: Initializing on single product page');
             SingleProductBuyNow.init();
+            
+            // Debug: Check if button exists
+            var $buyNowBtn = $('button.nasa-buy-now');
+            if ($buyNowBtn.length) {
+                console.log('SingleProductBuyNow: Found NASA buy now button', $buyNowBtn);
+            } else {
+                console.log('SingleProductBuyNow: NASA buy now button not found');
+            }
         }
     });
     
