@@ -92,6 +92,10 @@ class VD_Checkout_Optimizer {
     public function handle_custom_checkout() {
         $start = microtime(true);
         
+        // Optimize execution time
+        @set_time_limit(30);
+        @ini_set('memory_limit', '256M');
+        
         // NO NONCE CHECK - Theme's custom checkout doesn't send nonce
         // Security maintained through:
         // 1. Session validation
