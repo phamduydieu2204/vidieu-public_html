@@ -9,142 +9,54 @@
 (function($, window, document) {
     'use strict';
 
-    // Configuration and state
+    // Prevent multiple initializations
+    if (window.__vidieuQVInitialized) {
+        return;
+    }
+    window.__vidieuQVInitialized = true;
+
+    // Configuration
     const config = window.vidieuQVCompat || {
-        debug: '0',
-        isHome: 0,
-        isShop: 0,
-        isMobile: 0
+        debug: '0'
     };
 
-    // State tracking
+    // State
     let isQuickViewOpen = false;
     let scrollPositionBeforeOpen = 0;
-    let initialized = false;
 
     // Debug logging (only when enabled)
     function log(message, data) {
-        if (config.debug === '1' && window.console && window.console.log) {
-            console.log('[QV Compat] ' + message, data || '');
+        if (config.debug === '1' && window.console) {
+            console.log('[Vidieu QV] ' + message, data || '');
         }
+    }
+
+    /**
+     * Check if element is inside QuickView modal
+     */
+    function isInQuickView(element) {
+        if (!element) return false;
+        return !!(element.closest('.nasa-quick-view, .quick-view, .quickview, .nasa-quickview-popup, #nasa-quickview-popup, .mfp-content, .mfp-wrap'));
     }
 
     /**
      * Get current scroll position
      */
-    function getCurrentScrollY() {
+    function getScrollY() {
         return window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
     }
 
     /**
-     * Prevent default anchor behavior
+     * Lock scroll position
      */
-    function preventAnchorScroll(e) {
-        const target = e.target;
-        const anchor = target.closest('a');
-        
-        if (!anchor) return;
-        
-        // Check if within QuickView modal
-        const inQuickView = anchor.closest('.nasa-quick-view, .quick-view, .quickview, .nasa-quickview-popup, #nasa-quickview-popup, .mfp-content');
-        if (!inQuickView) return;
-        
-        const href = anchor.getAttribute('href') || '';
-        
-        // Prevent scroll for hash links, empty hrefs, javascript:void, etc
-        if (href === '#' || 
-            href === '#!' || 
-            href === '' || 
-            href.indexOf('#') === 0 ||
-            href === 'javascript:void(0)' || 
-            href === 'javascript:;') {
-            
-            log('Preventing anchor scroll:', href);
-            e.preventDefault();
-            e.stopPropagation();
-            
-            // Remove focus to prevent any focus-related scrolling
-            anchor.blur();
-            
-            return false;
-        }
-    }
-
-    /**
-     * Handle reset variations link
-     */
-    function handleResetVariations(e) {
-        const resetLink = e.target.closest('.reset_variations');
-        if (!resetLink) return;
-        
-        // Check if within QuickView
-        const inQuickView = resetLink.closest('.nasa-quick-view, .quick-view, .quickview, .nasa-quickview-popup, #nasa-quickview-popup, .mfp-content');
-        if (!inQuickView) return;
-        
-        log('Preventing reset variations scroll');
-        e.preventDefault();
-        e.stopPropagation();
-        
-        // Let WooCommerce handle the actual reset via its own handler
-        // We just prevent the default anchor behavior
-    }
-
-    /**
-     * Maintain scroll position after variation change
-     */
-    function maintainScrollPosition() {
-        if (!isQuickViewOpen) return;
-        
-        const currentScroll = getCurrentScrollY();
-        
-        // Use requestAnimationFrame for smoother correction
-        requestAnimationFrame(function() {
-            const afterScroll = getCurrentScrollY();
-            
-            // If scroll position changed significantly, restore it
-            if (Math.abs(afterScroll - scrollPositionBeforeOpen) > 10) {
-                log('Restoring scroll position from', afterScroll, 'to', scrollPositionBeforeOpen);
-                window.scrollTo({
-                    top: scrollPositionBeforeOpen,
-                    left: 0,
-                    behavior: 'instant'
-                });
-            }
-        });
-    }
-
-    /**
-     * Handle variation form changes
-     */
-    function handleVariationChange(e) {
-        const target = e.target;
-        
-        // Check if change is within QuickView
-        const form = target.closest('.variations_form');
-        if (!form) return;
-        
-        const inQuickView = form.closest('.nasa-quick-view, .quick-view, .quickview, .nasa-quickview-popup, #nasa-quickview-popup, .mfp-content');
-        if (!inQuickView) return;
-        
-        log('Variation changed, maintaining position');
-        
-        // Maintain position after DOM updates
-        setTimeout(maintainScrollPosition, 0);
-        setTimeout(maintainScrollPosition, 50); // Double-check after animations
-    }
-
-    /**
-     * Lock body scroll when QuickView opens
-     */
-    function lockBodyScroll() {
-        scrollPositionBeforeOpen = getCurrentScrollY();
+    function lockScroll() {
+        scrollPositionBeforeOpen = getScrollY();
         isQuickViewOpen = true;
         
-        // Add class to HTML element
         document.documentElement.classList.add('qv-open');
         document.body.classList.add('qv-open');
         
-        // Set scroll restoration to manual
+        // Disable scroll restoration
         if ('scrollRestoration' in history) {
             history.scrollRestoration = 'manual';
         }
@@ -153,16 +65,15 @@
     }
 
     /**
-     * Unlock body scroll when QuickView closes
+     * Unlock scroll position
      */
-    function unlockBodyScroll() {
+    function unlockScroll() {
         isQuickViewOpen = false;
         
-        // Remove class from HTML element
         document.documentElement.classList.remove('qv-open');
         document.body.classList.remove('qv-open');
         
-        // Restore scroll restoration
+        // Re-enable scroll restoration
         if ('scrollRestoration' in history) {
             history.scrollRestoration = 'auto';
         }
@@ -171,155 +82,178 @@
     }
 
     /**
-     * Prevent hashchange scrolling during QuickView
+     * Maintain scroll position
      */
-    function preventHashScroll(e) {
+    function maintainScrollPosition() {
         if (!isQuickViewOpen) return;
         
-        log('Preventing hashchange scroll');
-        e.stopImmediatePropagation();
+        const currentScroll = getScrollY();
         
-        // Remove hash without scrolling
-        if (window.location.hash) {
-            history.replaceState(null, '', window.location.pathname + window.location.search);
-        }
-    }
-
-    /**
-     * Monitor QuickView open/close
-     */
-    function monitorQuickView() {
-        // NASA Theme QuickView events
-        $(document).on('nasa_quick_view_open nasa_before_quickview quickview_open', function() {
-            lockBodyScroll();
-        });
-        
-        $(document).on('nasa_quick_view_close nasa_after_quickview quickview_close', function() {
-            unlockBodyScroll();
-        });
-        
-        // MagnificPopup events (often used for QuickView)
-        $(document).on('mfpOpen', function(e, mfp) {
-            if (mfp && mfp.content && mfp.content.hasClass('quickview')) {
-                lockBodyScroll();
-            }
-        });
-        
-        $(document).on('mfpClose', function(e, mfp) {
-            if (isQuickViewOpen) {
-                unlockBodyScroll();
-            }
-        });
-        
-        // Mutation observer as fallback
-        const observer = new MutationObserver(function(mutations) {
-            mutations.forEach(function(mutation) {
-                // Check for QuickView modal appearance
-                const quickviewAdded = Array.from(mutation.addedNodes).some(node => {
-                    if (node.nodeType === 1) { // Element node
-                        return node.classList && (
-                            node.classList.contains('nasa-quick-view') ||
-                            node.classList.contains('quickview') ||
-                            node.id === 'nasa-quickview-popup'
-                        );
-                    }
-                    return false;
-                });
-                
-                if (quickviewAdded && !isQuickViewOpen) {
-                    lockBodyScroll();
-                }
-                
-                // Check for removal
-                const quickviewRemoved = Array.from(mutation.removedNodes).some(node => {
-                    if (node.nodeType === 1) {
-                        return node.classList && (
-                            node.classList.contains('nasa-quick-view') ||
-                            node.classList.contains('quickview') ||
-                            node.id === 'nasa-quickview-popup'
-                        );
-                    }
-                    return false;
-                });
-                
-                if (quickviewRemoved && isQuickViewOpen) {
-                    unlockBodyScroll();
-                }
+        if (Math.abs(currentScroll - scrollPositionBeforeOpen) > 10) {
+            log('Restoring scroll position from', currentScroll, 'to', scrollPositionBeforeOpen);
+            
+            window.scrollTo({
+                top: scrollPositionBeforeOpen,
+                left: 0,
+                behavior: 'instant'
             });
-        });
-        
-        // Start observing body for QuickView modals
-        observer.observe(document.body, {
-            childList: true,
-            subtree: true
-        });
+        }
     }
 
     /**
      * Initialize all event handlers
      */
     function init() {
-        if (initialized) return;
-        initialized = true;
-        
-        log('Initializing QuickView compatibility');
-        
-        // Prevent anchor scrolling (using capture phase)
-        document.addEventListener('click', preventAnchorScroll, true);
-        document.addEventListener('click', handleResetVariations, true);
-        
-        // Handle variation changes
-        document.addEventListener('change', handleVariationChange, true);
-        
-        // Handle select/swatch clicks
-        $(document).on('click', '.variations_form .swatch, .variations_form .select-option', function(e) {
-            if (isQuickViewOpen) {
-                log('Swatch/option clicked, maintaining position');
-                setTimeout(maintainScrollPosition, 0);
+        log('Initializing QuickView scroll fix');
+
+        // 1. Prevent anchor default behavior (using capture phase)
+        document.addEventListener('click', function(e) {
+            const anchor = e.target.closest('a');
+            if (!anchor || !isInQuickView(anchor)) return;
+            
+            const href = anchor.getAttribute('href') || '';
+            
+            // Prevent scroll for problematic hrefs
+            if (href === '#' || 
+                href === '#!' || 
+                href === '' || 
+                href.indexOf('#') === 0 || 
+                href === 'javascript:void(0)' || 
+                href === 'javascript:;') {
+                
+                log('Preventing anchor scroll:', href);
+                e.preventDefault();
+                e.stopPropagation();
+                anchor.blur();
             }
-        });
-        
-        // Prevent hashchange scrolling
-        window.addEventListener('hashchange', preventHashScroll, true);
-        
-        // Monitor QuickView state
-        monitorQuickView();
-        
-        // Handle focus changes that might cause scrolling
-        document.addEventListener('focusin', function(e) {
-            if (!isQuickViewOpen) return;
             
-            const target = e.target;
-            const inQuickView = target.closest('.nasa-quick-view, .quick-view, .quickview, .nasa-quickview-popup, #nasa-quickview-popup, .mfp-content');
-            
-            if (inQuickView) {
-                // Prevent focus from scrolling the main page
-                setTimeout(maintainScrollPosition, 0);
+            // Special handling for reset variations
+            if (anchor.classList.contains('reset_variations')) {
+                log('Preventing reset variations scroll');
+                e.preventDefault();
+                e.stopPropagation();
             }
         }, true);
-        
-        // Additional WooCommerce variation hooks
-        $(document).on('found_variation', '.variations_form', function() {
-            if (isQuickViewOpen) {
-                log('Variation found, maintaining position');
-                setTimeout(maintainScrollPosition, 0);
-            }
+
+        // 2. Monitor for QuickView open/close via DOM changes
+        const observer = new MutationObserver(function(mutations) {
+            mutations.forEach(function(mutation) {
+                // Check for QuickView being added
+                if (mutation.type === 'childList' && mutation.addedNodes.length) {
+                    for (let node of mutation.addedNodes) {
+                        if (node.nodeType === 1) { // Element node
+                            const isQV = node.classList && (
+                                node.classList.contains('nasa-quick-view') ||
+                                node.classList.contains('quick-view') ||
+                                node.classList.contains('mfp-wrap') ||
+                                node.id === 'nasa-quickview-popup'
+                            );
+                            
+                            const hasQV = node.querySelector && node.querySelector('.nasa-quick-view, .quick-view');
+                            
+                            if ((isQV || hasQV) && !isQuickViewOpen) {
+                                lockScroll();
+                            }
+                        }
+                    }
+                }
+                
+                // Check for QuickView being removed
+                if (mutation.type === 'childList' && mutation.removedNodes.length) {
+                    for (let node of mutation.removedNodes) {
+                        if (node.nodeType === 1) {
+                            const isQV = node.classList && (
+                                node.classList.contains('nasa-quick-view') ||
+                                node.classList.contains('quick-view') ||
+                                node.classList.contains('mfp-wrap')
+                            );
+                            
+                            if (isQV && isQuickViewOpen) {
+                                unlockScroll();
+                            }
+                        }
+                    }
+                }
+            });
         });
-        
-        $(document).on('reset_data', '.variations_form', function() {
+
+        observer.observe(document.body, {
+            childList: true,
+            subtree: true
+        });
+
+        // 3. Listen for theme-specific events
+        $(document)
+            .on('nasa_quick_view_open nasa_before_quickview quickview_open mfpOpen', function(e) {
+                if (!isQuickViewOpen) {
+                    lockScroll();
+                }
+            })
+            .on('nasa_quick_view_close nasa_after_quickview quickview_close mfpClose', function(e) {
+                if (isQuickViewOpen) {
+                    unlockScroll();
+                }
+            });
+
+        // 4. Handle variation changes
+        document.addEventListener('change', function(e) {
+            if (!isQuickViewOpen) return;
+            if (!isInQuickView(e.target)) return;
+            
+            const form = e.target.closest('.variations_form');
+            if (!form) return;
+            
+            log('Variation changed, maintaining scroll position');
+            
+            // Use both immediate and delayed checks
+            setTimeout(maintainScrollPosition, 0);
+            setTimeout(maintainScrollPosition, 50);
+        }, true);
+
+        // 5. WooCommerce variation events
+        $(document).on('found_variation reset_data update_variation_values', '.variations_form', function(e) {
+            if (!isQuickViewOpen) return;
+            if (!isInQuickView(e.target)) return;
+            
+            log('WooCommerce variation event:', e.type);
+            
+            setTimeout(maintainScrollPosition, 0);
+            setTimeout(maintainScrollPosition, 50);
+        });
+
+        // 6. Prevent hashchange scrolling
+        window.addEventListener('hashchange', function(e) {
+            if (!isQuickViewOpen) return;
+            
+            log('Preventing hashchange scroll');
+            e.stopImmediatePropagation();
+            
+            // Remove hash without scrolling
+            if (window.location.hash) {
+                history.replaceState(null, '', window.location.pathname + window.location.search);
+            }
+        }, true);
+
+        // 7. Focus management
+        document.addEventListener('focusin', function(e) {
+            if (!isQuickViewOpen) return;
+            if (!isInQuickView(e.target)) return;
+            
+            // Prevent scroll on focus
+            setTimeout(maintainScrollPosition, 0);
+        }, true);
+
+        // 8. Handle backdrop clicks (close QuickView)
+        $(document).on('click', '.mfp-bg, .mfp-close', function() {
             if (isQuickViewOpen) {
-                log('Variation reset, maintaining position');
-                setTimeout(maintainScrollPosition, 0);
+                unlockScroll();
             }
         });
     }
 
     // Initialize when DOM is ready
-    $(document).ready(init);
-    
-    // Also initialize on window load (for late-loaded content)
-    $(window).on('load', function() {
-        if (!initialized) init();
+    $(document).ready(function() {
+        init();
     });
 
 })(jQuery, window, document);

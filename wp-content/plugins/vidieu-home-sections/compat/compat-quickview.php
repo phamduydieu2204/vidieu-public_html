@@ -76,6 +76,9 @@ class Vidieu_QuickView_Compat {
         // Enqueue compatibility assets
         add_action('wp_enqueue_scripts', array($this, 'enqueue_compat_assets'), 25);
         
+        // Remove any preloads for quickview assets
+        add_action('template_redirect', array($this, 'remove_quickview_preloads'), 1);
+        
         // Add debug flag to localization if needed
         if ($this->debug) {
             add_filter('vidieu_quickview_localize', array($this, 'add_debug_flag'));
@@ -108,21 +111,35 @@ class Vidieu_QuickView_Compat {
      * Enqueue compatibility assets
      */
     public function enqueue_compat_assets() {
-        // Get plugin URL
-        $plugin_url = plugins_url('', dirname(__FILE__) . '/vidieu-home-sections.php');
+        // Guard against admin
+        if (is_admin()) {
+            return;
+        }
         
-        // File paths for version
-        $js_file = VD_HOME_PLUGIN_DIR . 'assets/js/quickview-compat.js';
-        $css_file = VD_HOME_PLUGIN_DIR . 'assets/css/quickview-compat.css';
+        // Get correct plugin URL - go up from compat directory
+        $plugin_url = plugin_dir_url(dirname(__FILE__));  // This gets the plugin root URL
+        $plugin_path = plugin_dir_path(dirname(__FILE__)); // This gets the plugin root path
+        
+        // Relative paths from plugin root
+        $css_rel = 'assets/css/quickview-compat.css';
+        $js_rel = 'assets/js/quickview-compat.js';
+        
+        // Build full URLs
+        $css_url = $plugin_url . $css_rel;
+        $js_url = $plugin_url . $js_rel;
+        
+        // File paths for version check
+        $css_file = $plugin_path . $css_rel;
+        $js_file = $plugin_path . $js_rel;
         
         // Use file modification time for cache busting
-        $js_version = file_exists($js_file) ? filemtime($js_file) : VD_HOME_VERSION;
         $css_version = file_exists($css_file) ? filemtime($css_file) : VD_HOME_VERSION;
+        $js_version = file_exists($js_file) ? filemtime($js_file) : VD_HOME_VERSION;
         
         // Register and enqueue JavaScript
         wp_register_script(
             'vidieu-quickview-compat',
-            $plugin_url . '/assets/js/quickview-compat.js',
+            $js_url,
             array('jquery'),
             $js_version,
             true // In footer
@@ -138,10 +155,10 @@ class Vidieu_QuickView_Compat {
         
         wp_enqueue_script('vidieu-quickview-compat');
         
-        // Enqueue CSS
+        // Enqueue CSS - NO PRELOAD
         wp_enqueue_style(
             'vidieu-quickview-compat',
-            $plugin_url . '/assets/css/quickview-compat.css',
+            $css_url,
             array(),
             $css_version
         );
@@ -153,6 +170,34 @@ class Vidieu_QuickView_Compat {
     public function add_debug_flag($data) {
         $data['debug'] = '1';
         return $data;
+    }
+    
+    /**
+     * Remove any preloads for quickview assets
+     */
+    public function remove_quickview_preloads() {
+        if (is_admin()) {
+            return;
+        }
+        
+        // Use output buffer to remove preloads
+        ob_start(function($html) {
+            // Remove any preload for quickview-compat CSS
+            $html = preg_replace(
+                '#<link[^>]+rel=["\']preload["\'][^>]+quickview-compat\.css[^>]*>\s*#i',
+                '',
+                $html
+            );
+            
+            // Remove any preload for quickview-compat JS
+            $html = preg_replace(
+                '#<link[^>]+rel=["\']preload["\'][^>]+quickview-compat\.js[^>]*>\s*#i',
+                '',
+                $html
+            );
+            
+            return $html;
+        });
     }
 }
 
