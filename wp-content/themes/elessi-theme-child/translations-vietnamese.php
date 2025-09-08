@@ -17,8 +17,90 @@ if (!defined('ABSPATH')) {
 /**
  * Main translation filter for Elessi theme texts
  */
-add_filter('gettext', 'elessi_child_vietnamese_translations', 20, 3);
+// Clear any translation cache on init
+add_action('init', function() {
+    if (isset($_GET['clear_translation_cache']) && current_user_can('administrator')) {
+        // Clear object cache if exists
+        if (function_exists('wp_cache_flush')) {
+            wp_cache_flush();
+        }
+        
+        // Clear language cache directory
+        $upload_dir = wp_upload_dir();
+        $cache_dir = $upload_dir['basedir'] . '/languages/';
+        if (is_dir($cache_dir)) {
+            array_map('unlink', glob($cache_dir . '*.json'));
+        }
+        
+        wp_die('Translation cache cleared! <a href="' . remove_query_arg('clear_translation_cache') . '">Go back</a>');
+    }
+});
+
+add_filter('gettext', 'elessi_child_vietnamese_translations', 999, 3);
 function elessi_child_vietnamese_translations($translated_text, $text, $domain) {
+    
+    // Loại bỏ khoảng trắng thừa để so sánh chính xác
+    $clean_text = trim($text);
+    
+    // Debug: Log texts that need translation on product pages
+    if (is_product() && current_user_can('administrator') && isset($_GET['debug_translations'])) {
+        $texts_to_check = array(
+            'Size Guide', 'Delivery & Return', 'people are viewing this right now',
+            'Share', 'Guaranteed Safe Checkout', 'Add to cart', 'Buy now',
+            'Request a Call Back', 'Hurry up! Sale end in:'
+        );
+        
+        if (stripos($clean_text, 'Size Guide') !== false || 
+            stripos($clean_text, 'Delivery') !== false || 
+            stripos($clean_text, 'people are viewing') !== false ||
+            stripos($clean_text, 'Share') !== false ||
+            stripos($clean_text, 'Guaranteed') !== false) {
+            error_log("Translation Debug - Original: '$text', Clean: '$clean_text', Domain: '$domain'");
+        }
+    }
+    
+    // Dịch cho mọi text domain, không chỉ elessi-theme
+    // Ưu tiên dịch các văn bản phổ biến trước
+    
+    // Common texts across all domains - Using clean text for comparison
+    switch ($clean_text) {
+        case "Size Guide":
+            return "Hướng dẫn kích thước";
+            
+        case "Delivery & Return":
+            return "Giao hàng & Đổi trả";
+            
+        case "people are viewing this right now":
+            return "người đang xem sản phẩm này ngay bây giờ";
+            
+        case "Share":
+            return "Chia sẻ";
+            
+        case "Guaranteed Safe Checkout":
+            return "Thanh toán an toàn được đảm bảo";
+    }
+    
+    // Kiểm tra cả với contains (cho trường hợp text có thêm HTML hoặc ký tự đặc biệt)
+    if (stripos($clean_text, 'Size Guide') !== false) {
+        return str_ireplace('Size Guide', 'Hướng dẫn kích thước', $text);
+    }
+    
+    if (stripos($clean_text, 'Delivery & Return') !== false) {
+        return str_ireplace('Delivery & Return', 'Giao hàng & Đổi trả', $text);
+    }
+    
+    if (stripos($clean_text, 'people are viewing this right now') !== false) {
+        return str_ireplace('people are viewing this right now', 'người đang xem sản phẩm này ngay bây giờ', $text);
+    }
+    
+    if (stripos($clean_text, 'Guaranteed Safe Checkout') !== false) {
+        return str_ireplace('Guaranteed Safe Checkout', 'Thanh toán an toàn được đảm bảo', $text);
+    }
+    
+    // Share có thể xuất hiện nhiều nơi nên cần cẩn thận
+    if ($clean_text === 'Share' || $clean_text === 'Share:') {
+        return "Chia sẻ";
+    }
     
     // Only translate texts from Elessi theme
     if ($domain === 'elessi-theme') {
@@ -530,6 +612,17 @@ function elessi_child_localize_vietnamese_scripts() {
         true
     );
     
+    // Enqueue product page translations script
+    if (is_product() || is_shop() || is_product_category()) {
+        wp_enqueue_script(
+            'elessi-product-translations',
+            get_stylesheet_directory_uri() . '/assets/js/product-translations.js',
+            array('jquery'),
+            '1.0.1',
+            true
+        );
+    }
+    
     // Localize Vietnamese translations for JavaScript
     $vietnamese_translations = array(
         'search_suggestions' => 'Áo thun, Áo khoác, Quần jean...',
@@ -539,6 +632,14 @@ function elessi_child_localize_vietnamese_scripts() {
         'close' => 'Đóng',
         'error' => 'Có lỗi xảy ra',
         'success' => 'Thành công',
+        // Product page translations
+        'size_guide' => 'Hướng dẫn kích thước',
+        'delivery_return' => 'Giao hàng & Đổi trả',
+        'people_viewing' => 'người đang xem sản phẩm này ngay bây giờ',
+        'share' => 'Chia sẻ',
+        'guaranteed_safe_checkout' => 'Thanh toán an toàn được đảm bảo',
+        'add_to_cart' => 'Thêm vào giỏ',
+        'buy_now' => 'Mua ngay',
         // Add more JS translations as needed
     );
     
