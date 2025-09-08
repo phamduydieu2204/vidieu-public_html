@@ -152,9 +152,6 @@ function elessi_child_vietnamese_translations($translated_text, $text, $domain) 
                 return "Tiến hành thanh toán";
                 
             // Account
-            case "My Account":
-                return "Tài khoản";
-
             case "My account":
                 return "Tài khoản của tôi";
 
@@ -310,8 +307,6 @@ function elessi_child_vietnamese_translations($translated_text, $text, $domain) 
             case "Apply Coupon":
                 return "Áp dụng mã giảm giá";
 
-            case "My account":
-                return "Tài khoản của tôi";
 
             case "Login / Register":
                 return "Đăng nhập/Đăng ký";
@@ -365,7 +360,7 @@ function elessi_child_vietnamese_translations($translated_text, $text, $domain) 
                 return "Đăng nhập tại đây";
 
             case "License keys":
-                return "Khóa bản quyền";
+                return "Khoá bản quyền";
 
                 case "Welcome":
                 return "Chào mừng";
@@ -540,6 +535,46 @@ function elessi_child_vietnamese_translations($translated_text, $text, $domain) 
             
             case "Related Products":
                 return "Sản phẩm liên quan";
+
+            case "Categories:":
+                return "Danh mục:";
+
+            case "Search":
+                return "Tìm kiếm";
+
+            case "Search here":
+                return "Tìm kiếm tại đây";
+
+            case "Close search":
+                return "Đóng tìm kiếm";
+
+            case "Recent":
+                return "Mới nhất";
+
+            case "Categories":
+                return "Danh mục";
+
+            case "Fashion":
+                return "Thời trang";
+
+            case "Food for thought":
+                return "Suy ngẫm";
+
+            case "Gaming":
+                return "Trò chơi";
+
+            case "Helium 10":
+                return "Helium 10";
+
+            case "Music":
+                return "Âm nhạc";
+
+            case "Archives":
+                return "Lưu trữ";
+
+            case "Meta":
+                return "Meta";
+
 
             // Add more translations as needed...
         }
