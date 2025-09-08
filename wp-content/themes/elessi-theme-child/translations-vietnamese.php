@@ -179,6 +179,67 @@ function elessi_child_vietnamese_translations($translated_text, $text, $domain) 
                 
             case "Loading...":
                 return "Đang tải...";
+
+            case "Manage Your Items List":
+                return "Quản lý danh sách sản phẩm của bạn";
+
+            case "CHECKOUT DETAILS":
+                return "Chi tiết thanh toán";
+
+            case "Checkout Your Items List":
+                return "Thanh toán danh sách sản phẩm của bạn";
+
+            case "ORDER CONPLETE":
+                return "Đơn hàng hoàn tất";
+
+            case "Review Your Order":
+                return "Xem lại đơn hàng của bạn";
+
+            case "Have a coupon":
+                return "Có mã giảm giá";
+
+            case "Click here to enter your code":
+                return "Nhấn vào đây để nhập mã";
+
+            case "If you have a coupon code, please apply it below.":
+                return "Nếu bạn có mã giảm giá, vui lòng nhập bên dưới.";
+
+            case "Coupn code":
+                return "Mã giảm giá";
+
+            case "Apply Coupon":
+                return "Áp dụng mã giảm giá";
+
+            case "My account":
+                return "Tài khoản của tôi";
+
+            case "Login/Register":
+                return "Đăng nhập/Đăng ký";
+
+            case "Great to have you back!":
+                return "Rất vui khi bạn quay lại!";
+
+            case "Username or email":
+                return "Tên đăng nhập hoặc email";
+
+            case "Remember":
+                return "Ghi nhớ";
+
+            case "Password":
+                return "Mật khẩu";
+
+            case "Lost?":
+                return "Quên mật khẩu?";
+
+            case "SING IN TO YOUR ACCOUNT":
+                return "Đăng nhập vào tài khoản của bạn";
+
+            case "Not a member?":
+                return "Chưa có tài khoản?";
+
+            case "Create an account":
+                return "Tạo tài khoản";
+
                 
             // Add more translations as needed...
         }
