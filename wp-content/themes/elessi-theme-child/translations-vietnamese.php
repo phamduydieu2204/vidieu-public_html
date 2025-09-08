@@ -285,6 +285,138 @@ function elessi_child_vietnamese_translations($translated_text, $text, $domain) 
             case "Guaranteed Safe Checkout":
                 return "Thanh toán an toàn được đảm bảo";
 
+            case "Hurry up! Sale end in:":
+                return "Nhanh lên! Khuyến mãi kết thúc trong:";
+
+            case "BUY NOW":
+                return "MUA NGAY";
+
+            case "Request a Call Back":
+                return "Yêu cầu gọi lại";
+
+            case "Country":
+                return "Quốc gia";
+
+            case "United States of America":
+                return "Hoa Kỳ";
+
+            case "United Kingdom":
+                return "Vương quốc Anh";
+
+            case "Japan":
+                return "Nhật Bản";
+
+            case "France":
+                return "Pháp";
+
+            case "India":
+                return "Ấn Độ";
+
+            case "Italy":
+                return "Ý";
+
+            case "United Arab Emirates":
+                return "Các Tiểu vương quốc Ả Rập Thống nhất";
+
+            case "Russian Federation":
+                return "Liên bang Nga";
+
+            case "Your Email (required)":
+                return "Email của bạn (bắt buộc)";
+
+            case "Phone Number (required)":
+                return "Số điện thoại (bắt buộc)";
+
+            case "Call":
+                return "Gọi điện";
+
+            case "SMS":
+                return "Tin nhắn SMS";
+
+            case "WhatsApp":
+                return "WhatsApp";
+
+            case "Send":
+                return "Gửi";
+
+            case "Size Guide":
+                return "Hướng dẫn kích thước";
+
+            case "DRESSES":
+                return "ĐẦM";
+
+            case "T-SHIRT":
+                return "ÁO THUN";
+
+            case "BOTTOMS":
+                return "QUẦN";
+
+            case "Size":
+                return "Kích cỡ";
+
+            case "Chest":
+                return "Vòng ngực";
+
+            case "Waist":
+                return "Vòng eo";
+
+            case "Hips":
+                return "Vòng hông";
+
+            case "All measurements are in INCHES":
+                return "Tất cả số đo tính bằng INCH";
+
+            case "and may vary a half inch in either direction.":
+                return "và có thể sai lệch nửa inch theo cả hai hướng.";
+
+            case "Delivery & Return":
+                return "Giao hàng & Đổi trả";
+
+            case "Delivery":
+                return "Giao hàng";
+
+            case "We ship to all 50 states, Washington DC.":
+                return "Chúng tôi giao hàng đến tất cả 50 tiểu bang và Washington DC.";
+
+            case "All orders are shipped with a UPS tracking number.":
+                return "Tất cả đơn hàng được giao kèm mã theo dõi UPS.";
+
+            case "Always free shipping for orders over US $200.":
+                return "Luôn miễn phí vận chuyển cho đơn hàng trên 200 USD.";
+
+            case "During sale periods and promotions the delivery time may be longer than normal.":
+                return "Trong thời gian khuyến mãi, thời gian giao hàng có thể lâu hơn bình thường.";
+
+            case "Return":
+                return "Đổi trả";
+
+            case "Help":
+                return "Hỗ trợ";
+
+            case "Give us a shout if you have any other questions and/or concerns.":
+                return "Hãy liên hệ với chúng tôi nếu bạn có bất kỳ câu hỏi hoặc thắc mắc nào.";
+
+            case "Share":
+                return "Chia sẻ";
+
+            case "Share on Twitter":
+                return "Chia sẻ trên Twitter";
+
+            case "Share on Facebook":
+                return "Chia sẻ trên Facebook";
+
+            case "Pin on Pinterest":
+                return "Lưu lên Pinterest";
+
+            case "Email to your friends":
+                return "Gửi email cho bạn bè";
+
+            case "Guaranteed Safe Checkout":
+                return "Thanh toán an toàn được đảm bảo";
+
+            case "{n} people are viewing this right now":
+                return "{n} người đang xem sản phẩm này ngay bây giờ";
+
                 
             // Add more translations as needed...
         }
