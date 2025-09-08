@@ -72,7 +72,25 @@ function elessi_child_vietnamese_translations($translated_text, $text, $domain) 
             // Account
             case "My Account":
                 return "Tài khoản";
-                
+
+            case "My account":
+                return "Tài khoản của tôi";
+
+            case "Thank you. Your order has been received.":
+                return "Cảm ơn bạn. Đơn hàng của bạn đã được nhận.";
+
+            case "Order Number":
+                return "Mã đơn hàng";
+
+            case "Date":
+                return "Ngày";
+
+            case "Total":
+                return "Tổng cộng";
+
+            case "Payment Method":
+                return "Phương thức thanh toán";
+
             case "Login":
                 return "Đăng nhập";
                 
@@ -195,8 +213,8 @@ function elessi_child_vietnamese_translations($translated_text, $text, $domain) 
             case "Review Your Order":
                 return "Xem lại đơn hàng của bạn";
 
-            case "Have a coupon":
-                return "Có mã giảm giá";
+            case "Have a coupon?":
+                return "Có mã giảm giá?";
 
             case "Click here to enter your code":
                 return "Nhấn vào đây để nhập mã";
@@ -204,7 +222,7 @@ function elessi_child_vietnamese_translations($translated_text, $text, $domain) 
             case "If you have a coupon code, please apply it below.":
                 return "Nếu bạn có mã giảm giá, vui lòng nhập bên dưới.";
 
-            case "Coupn code":
+            case "Coupon code":
                 return "Mã giảm giá";
 
             case "Apply Coupon":
@@ -222,13 +240,16 @@ function elessi_child_vietnamese_translations($translated_text, $text, $domain) 
             case "Username or email":
                 return "Tên đăng nhập hoặc email";
 
-            case "Remember":
-                return "Ghi nhớ";
+            case "Remember me":
+                return "Ghi nhớ tôi";
 
             case "Password":
                 return "Mật khẩu";
 
             case "Lost?":
+                return "Quên mật khẩu?";
+
+            case "Lost your password?":
                 return "Quên mật khẩu?";
 
             case "SIGN IN TO YOUR ACCOUNT":
@@ -240,6 +261,14 @@ function elessi_child_vietnamese_translations($translated_text, $text, $domain) 
             case "Create an account":
                 return "Tạo tài khoản";
 
+            case "License keys":
+                return "Khóa bản quyền";
+
+                case "Welcome":
+                return "Chào mừng";
+
+            case "Hello":
+                return "Xin chào";
                 
             // Add more translations as needed...
         }
