@@ -205,11 +205,79 @@
     text-decoration: none;
     font-size: 1rem;
     transition: color 0.3s ease;
+    display: block;
+    margin-bottom: 5px;
 }
 
 .vd-contact-details a:hover {
     color: #2980b9;
     text-decoration: underline;
+}
+
+.vd-contact-desc {
+    font-size: 0.875rem;
+    color: #666;
+    margin: 0;
+    font-style: italic;
+}
+
+/* Working hours section */
+.vd-contact-hours {
+    margin-top: 40px;
+    padding-top: 40px;
+    border-top: 1px solid #eee;
+}
+
+.vd-hours-title {
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-bottom: 20px;
+    color: #333;
+}
+
+.vd-hours-content {
+    background-color: #f8f9fa;
+    padding: 20px;
+    border-radius: 8px;
+    border: 1px solid #e9ecef;
+}
+
+.vd-hours-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 15px;
+    font-size: 1rem;
+    color: #555;
+}
+
+.vd-hours-item:last-of-type {
+    margin-bottom: 20px;
+}
+
+.vd-hours-item svg {
+    flex-shrink: 0;
+}
+
+.vd-hours-item strong {
+    color: #333;
+}
+
+.vd-hours-note {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 15px;
+    background-color: #d4edda;
+    border: 1px solid #c3e6cb;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    color: #155724;
+    margin-top: 15px;
+}
+
+.vd-hours-note svg {
+    flex-shrink: 0;
 }
 
 /* Map */
@@ -243,6 +311,15 @@
     .vd-contact-form-wrapper,
     .vd-contact-info-wrapper {
         padding: 30px;
+    }
+    
+    .vd-contact-hours {
+        margin-top: 30px;
+        padding-top: 30px;
+    }
+    
+    .vd-hours-title {
+        font-size: 1.1rem;
     }
 }
 
@@ -290,5 +367,18 @@
     .vd-form-group input,
     .vd-form-group textarea {
         font-size: 16px; /* Prevent zoom on iOS */
+    }
+    
+    .vd-hours-content {
+        padding: 15px;
+    }
+    
+    .vd-hours-item {
+        font-size: 0.9rem;
+    }
+    
+    .vd-hours-note {
+        font-size: 0.85rem;
+        padding: 10px 12px;
     }
 }

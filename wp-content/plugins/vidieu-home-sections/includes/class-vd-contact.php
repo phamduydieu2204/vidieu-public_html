@@ -123,6 +123,7 @@ class VD_Contact {
                                 <div class="vd-contact-details">
                                     <h4>Hotline</h4>
                                     <a href="tel:0988691196">0988 691 196</a>
+                                    <p class="vd-contact-desc">Hỗ trợ trực tiếp</p>
                                 </div>
                             </div>
                             
@@ -135,6 +136,7 @@ class VD_Contact {
                                 <div class="vd-contact-details">
                                     <h4>Email</h4>
                                     <a href="mailto:support@vidieu.vn">support@vidieu.vn</a>
+                                    <p class="vd-contact-desc">Phản hồi trong 24h</p>
                                 </div>
                             </div>
                             
@@ -156,6 +158,7 @@ class VD_Contact {
                                 <div class="vd-contact-details">
                                     <h4>Zalo</h4>
                                     <a href="https://zalo.me/g/hwcfvo585" target="_blank" rel="noopener">Nhóm Zalo</a>
+                                    <p class="vd-contact-desc">Voucher nội bộ</p>
                                 </div>
                             </div>
                             
@@ -175,6 +178,36 @@ class VD_Contact {
                                 <div class="vd-contact-details">
                                     <h4>Facebook</h4>
                                     <a href="https://m.me/vidieuvn.muatoolAmazon" target="_blank" rel="noopener">Messenger</a>
+                                    <p class="vd-contact-desc">Phản hồi nhanh nhất</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Working hours section -->
+                        <div class="vd-contact-hours">
+                            <h3 class="vd-hours-title">Thời gian làm việc</h3>
+                            <div class="vd-hours-content">
+                                <div class="vd-hours-item">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                                        <circle cx="12" cy="12" r="10" stroke="#3498db" stroke-width="2"/>
+                                        <path d="M12 6V12L16 14" stroke="#3498db" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                    </svg>
+                                    <span><strong>8:00 - 21:00</strong> (Thứ 2 - Thứ 7)</span>
+                                </div>
+                                <div class="vd-hours-item">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                                        <path d="M19 3H5C3.89543 3 3 3.89543 3 5V19C3 20.1046 3.89543 21 5 21H19C20.1046 21 21 20.1046 21 19V5C21 3.89543 20.1046 3 19 3Z" stroke="#e74c3c" stroke-width="2"/>
+                                        <path d="M3 9H21" stroke="#e74c3c" stroke-width="2"/>
+                                        <path d="M8 13H8.01M12 13H12.01M16 13H16.01M8 17H8.01M12 17H12.01M16 17H16.01" stroke="#e74c3c" stroke-width="3" stroke-linecap="round"/>
+                                    </svg>
+                                    <span><strong>Nghỉ Chủ Nhật</strong></span>
+                                </div>
+                                <div class="vd-hours-note">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                                        <circle cx="12" cy="12" r="10" fill="#27ae60"/>
+                                        <path d="M12 8V12M12 16H12.01" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                    </svg>
+                                    <span>Đơn hàng được xử lý tự động 24/7</span>
                                 </div>
                             </div>
                         </div>
