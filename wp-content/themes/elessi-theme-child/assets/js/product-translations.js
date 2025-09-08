@@ -43,7 +43,15 @@
             'Share on Twitter': 'Chia sẻ trên Twitter',
             'Share on Facebook': 'Chia sẻ trên Facebook',
             'Pin on Pinterest': 'Lưu lên Pinterest',
-            'Email to your friends': 'Gửi email cho bạn bè'
+            'Email to your friends': 'Gửi email cho bạn bè',
+            // Login/Register popup translations
+            'Remember': 'Ghi nhớ',
+            'Not a member?': 'Chưa có tài khoản?',
+            'Great to see you here!': 'Rất vui được gặp bạn!',
+            'Email address': 'Địa chỉ email',
+            'SETUP YOUR ACCOUNT': 'TẠO TÀI KHOẢN',
+            'Already got an account?': 'Đã có tài khoản?',
+            'Sign in here': 'Đăng nhập tại đây'
         };
         
         // Translate text nodes

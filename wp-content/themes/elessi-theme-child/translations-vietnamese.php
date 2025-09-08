@@ -339,9 +339,30 @@ function elessi_child_vietnamese_translations($translated_text, $text, $domain) 
 
             case "Not a member":
                 return "Chưa có tài khoản";
+                
+            case "Not a member?":
+                return "Chưa có tài khoản?";
 
             case "Create an account":
                 return "Tạo tài khoản";
+                
+            case "Remember":
+                return "Ghi nhớ";
+                
+            case "Great to see you here!":
+                return "Rất vui được gặp bạn!";
+                
+            case "Email address":
+                return "Địa chỉ email";
+                
+            case "SETUP YOUR ACCOUNT":
+                return "TẠO TÀI KHOẢN";
+                
+            case "Already got an account?":
+                return "Đã có tài khoản?";
+                
+            case "Sign in here":
+                return "Đăng nhập tại đây";
 
             case "License keys":
                 return "Khóa bản quyền";
@@ -618,15 +639,13 @@ function elessi_child_localize_vietnamese_scripts() {
     );
     
     // Enqueue product page translations script
-    if (is_product() || is_shop() || is_product_category()) {
-        wp_enqueue_script(
-            'elessi-product-translations',
-            get_stylesheet_directory_uri() . '/assets/js/product-translations.js',
-            array('jquery'),
-            '1.0.1',
-            true
-        );
-    }
+    wp_enqueue_script(
+        'elessi-product-translations',
+        get_stylesheet_directory_uri() . '/assets/js/product-translations.js',
+        array('jquery'),
+        '1.0.2',
+        true
+    );
     
     // Localize Vietnamese translations for JavaScript
     $vietnamese_translations = array(
