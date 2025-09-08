@@ -574,6 +574,67 @@ function elessi_child_vietnamese_translations($translated_text, $text, $domain) 
 
             case "Meta":
                 return "Meta";
+                
+            // Blog/Archive page translations
+            case "Read more":
+                return "Đọc thêm";
+                
+            case "Continue reading":
+                return "Tiếp tục đọc";
+                
+            case "Posted on":
+                return "Đăng vào";
+                
+            case "By":
+                return "Bởi";
+                
+            case "In":
+                return "Trong";
+                
+            case "Leave a comment":
+                return "Để lại bình luận";
+                
+            case "Comment":
+                return "Bình luận";
+                
+            case "Comments":
+                return "Bình luận";
+                
+            case "Previous":
+                return "Trước";
+                
+            case "Next":
+                return "Sau";
+                
+            case "Older posts":
+                return "Bài viết cũ hơn";
+                
+            case "Newer posts":
+                return "Bài viết mới hơn";
+                
+            case "Page":
+                return "Trang";
+                
+            case "of":
+                return "của";
+                
+            case "All":
+                return "Tất cả";
+                
+            case "Posted in":
+                return "Đăng trong";
+                
+            case "Tagged":
+                return "Gắn thẻ";
+                
+            case "No posts found":
+                return "Không tìm thấy bài viết";
+                
+            case "Nothing Found":
+                return "Không tìm thấy";
+                
+            case "It seems we can't find what you're looking for. Perhaps searching can help.":
+                return "Có vẻ như chúng tôi không thể tìm thấy những gì bạn đang tìm kiếm. Có thể tìm kiếm sẽ giúp ích.";
 
 
             // Add more translations as needed...

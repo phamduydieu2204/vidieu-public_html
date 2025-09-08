@@ -51,7 +51,27 @@
             'Email address': 'Địa chỉ email',
             'SETUP YOUR ACCOUNT': 'TẠO TÀI KHOẢN',
             'Already got an account?': 'Đã có tài khoản?',
-            'Sign in here': 'Đăng nhập tại đây'
+            'Sign in here': 'Đăng nhập tại đây',
+            // Blog/Archive translations
+            'Read more': 'Đọc thêm',
+            'Continue reading': 'Tiếp tục đọc',
+            'Posted on': 'Đăng vào',
+            'By': 'Bởi',
+            'In': 'Trong',
+            'Leave a comment': 'Để lại bình luận',
+            'Comment': 'Bình luận',
+            'Comments': 'Bình luận',
+            'Previous': 'Trước',
+            'Next': 'Sau',
+            'Older posts': 'Bài viết cũ hơn',
+            'Newer posts': 'Bài viết mới hơn',
+            'Page': 'Trang',
+            'of': 'của',
+            'All': 'Tất cả',
+            'Posted in': 'Đăng trong',
+            'Tagged': 'Gắn thẻ',
+            'No posts found': 'Không tìm thấy bài viết',
+            'Nothing Found': 'Không tìm thấy'
         };
         
         // Translate text nodes
