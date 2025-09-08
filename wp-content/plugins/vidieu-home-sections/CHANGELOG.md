@@ -5,6 +5,42 @@ All notable changes to this plugin will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.7.4] - 2025-09-08
+
+### Removed
+- ALL custom positioning code for Re:plain widget
+- CSS overrides for bottom position
+- JavaScript position fix file (`replain-position-fix.js`)
+- PHP functions for bottom offset configuration
+- Constants `VIDIEU_REPLAIN_DESKTOP_POSITION` and `VIDIEU_REPLAIN_BOTTOM_OFFSET`
+- Filters `vidieu_replain_desktop_position` and `vidieu_replain_bottom_offset`
+
+### Changed
+- Re:plain now uses its default positioning system
+- Simplified CSS to only handle mobile hiding behavior
+- Documentation updated to reflect removal of positioning features
+
+### Improved
+- Cleaner codebase without positioning overrides
+- Better compatibility with Re:plain updates
+- Reduced JavaScript execution overhead
+
+## [1.7.3] - 2025-09-08
+
+### Fixed
+- Re:plain chat panel now slides up from viewport bottom instead of floating
+- Chat app container forced to `bottom: 0` when opened
+
+### Added
+- New JavaScript file `replain-position-fix.js` to handle chat panel positioning
+- CSS overrides for `#app.app.-right.-bottom` to stick to viewport bottom
+- MutationObserver to detect and fix dynamically added chat panels
+
+### Improved
+- Better user experience with chat sliding from bottom edge
+- Consistent behavior across different screen sizes
+- No visual "jump" when opening chat
+
 ## [1.7.2] - 2025-09-08
 
 ### Changed

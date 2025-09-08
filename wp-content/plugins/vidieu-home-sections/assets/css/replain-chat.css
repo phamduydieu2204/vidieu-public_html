@@ -5,21 +5,9 @@
  * @version 1.7.0
  */
 
-/* Desktop: Position Re:plain widget at right-bottom */
+/* Desktop: Let Re:plain use default positioning */
 @media (min-width: 769px) {
-    /* Target Re:plain widget container */
-    #replain-widget,
-    .replain-widget,
-    [id*="replain"]:not(script):not(style),
-    [class*="replain-messenger"] {
-        right: 20px !important;
-        left: auto !important;
-        /* Bottom offset now controlled by PHP inline style */
-        z-index: 99998 !important;
-    }
-    
-    /* Contact icons now positioned by child theme (left-bottom) */
-    /* No override needed - using source code positioning */
+    /* No position overrides - Re:plain uses its default position */
 }
 
 /* Mobile: Hide Re:plain bubble by default */
@@ -104,19 +92,6 @@
     max-height: 600px !important;
 }
 
-/* Z-index management to prevent overlapping */
-#replain-widget,
-.replain-widget {
-    z-index: 99998 !important; /* Below mobile popup which is 99999 */
-}
+/* Let Re:plain handle its own z-index */
 
-/* Additional rules to ensure proper positioning */
-@media (min-width: 769px) {
-    /* Re:plain widget width - limit to right half */
-    body.replain-loaded #replain-widget,
-    body.replain-loaded .replain-widget,
-    body.replain-loaded [id*="replain"],
-    body.replain-loaded [class*="replain-messenger"] {
-        max-width: calc(50% - 40px) !important;
-    }
-}
+/* No additional positioning rules - Re:plain uses default behavior */

@@ -1,6 +1,6 @@
 # Re:plain Live Chat Integration
 
-**Version:** 1.7.2  
+**Version:** 1.7.4  
 **Last Updated:** 2025-09-08  
 **Context:** Re:plain live chat widget integration for Vidieu.vn
 
@@ -11,10 +11,8 @@ This module integrates Re:plain live chat widget into the website with customize
 ## Features
 
 ### Desktop
-- Widget positioned at **right-bottom** corner (20px horizontal margin)
-- **Fixed bottom offset**: 100px from viewport bottom (configurable)
-- Contact icons positioned at **left-bottom** corner (via child theme)
-- No overlap between Re:plain widget and reCAPTCHA
+- Widget uses **Re:plain default positioning**
+- No custom position overrides
 - Loads immediately on page load
 
 ### Mobile  
@@ -33,12 +31,6 @@ define('VIDIEU_REPLAIN_ENABLE', true); // Default: true
 
 // Hide widget bubble on mobile devices
 define('VIDIEU_REPLAIN_HIDE_ON_MOBILE', true); // Default: true
-
-// Desktop position (currently only left-bottom supported)
-define('VIDIEU_REPLAIN_DESKTOP_POSITION', 'left-bottom'); // Default: 'left-bottom'
-
-// Bottom offset in pixels - distance from viewport bottom
-define('VIDIEU_REPLAIN_BOTTOM_OFFSET', 100); // Default: 100
 ```
 
 ### Filters
@@ -49,16 +41,6 @@ add_filter('vidieu_replain_enable', '__return_false'); // To disable
 
 // Hide on mobile
 add_filter('vidieu_replain_hide_on_mobile', '__return_false'); // To show on mobile
-
-// Desktop position
-add_filter('vidieu_replain_desktop_position', function() {
-    return 'left-bottom'; // Only option currently
-});
-
-// Bottom offset
-add_filter('vidieu_replain_bottom_offset', function() {
-    return 150; // Change to 150px from bottom
-});
 ```
 
 ## JavaScript API
@@ -110,19 +92,18 @@ vidieu-home-sections/
 - Enqueues necessary CSS/JS files
 - Prevents loading in admin area
 
-### CSS Positioning
-- Desktop: 
-  - Re:plain: Fixed at right-bottom with configurable bottom offset (default: 100px)
-  - Horizontal margin: 20px from right edge
-  - Z-index: 99998 (below mobile popup)
-  - Bottom offset prevents overlap with reCAPTCHA
+### CSS Behavior
+- Desktop: Uses Re:plain default positioning
 - Mobile: Hides widget with `display: none` until explicitly opened
 - Body class `replain-loaded` added when Re:plain script loads
 
-### Position Changes (v1.7.2)
-- **Removed**: Dynamic repositioning code (no MutationObserver for position)
-- **Added**: Fixed bottom offset configuration via `VIDIEU_REPLAIN_BOTTOM_OFFSET`
-- **Benefit**: Clean, predictable positioning without JavaScript overhead
+### Position Changes (v1.7.4)
+- **Removed ALL custom positioning code**:
+  - No CSS position overrides
+  - No JavaScript repositioning
+  - No MutationObserver for position changes
+  - No bottom offset configuration
+- **Result**: Re:plain widget displays in its default position as configured by Re:plain system
 
 ### Mobile Integration
 - Dynamically injects Re:plain item into existing chat popup
@@ -159,19 +140,19 @@ The integration looks for multiple selectors to find the chat popup:
 ### Widget Visibility on Mobile
 When opened on mobile, the widget gets class `replain-opened` to force visibility.
 
+## Important Note
+
+**As of v1.7.4**: This plugin no longer modifies Re:plain widget positioning. All custom positioning code has been removed to ensure Re:plain works according to its default behavior.
+
 ## Testing Checklist
 
-- [ ] Desktop: Re:plain widget appears at right-bottom corner (20px margin)
-- [ ] Desktop: Contact icons appear at left-bottom corner (20px margin)
-- [ ] Desktop: No overlap between Re:plain and contact icons
-- [ ] Desktop: Both elements respect max-width constraint
+- [ ] Desktop: Re:plain widget appears in its default position
+- [ ] Desktop: No custom positioning applied by plugin
 - [ ] Mobile: Widget bubble is hidden by default
 - [ ] Mobile: "Chat trực tiếp (Re:plain)" appears in popup
-- [ ] Mobile: Clicking item opens Re:plain without page reload
-- [ ] Mobile: Popup closes when Re:plain opens
-- [ ] Admin: No Re:plain script in wp-admin
-- [ ] Performance: Lazy load works on mobile
-- [ ] CSS: Body gets `replain-loaded` class when script loads
+- [ ] Mobile: Chat opens when clicked from popup
+- [ ] Admin: Scripts don't load in wp-admin
+- [ ] Performance: No unnecessary JavaScript running
 
 ## Troubleshooting
 
