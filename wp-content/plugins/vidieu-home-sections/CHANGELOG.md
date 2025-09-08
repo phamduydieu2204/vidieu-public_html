@@ -5,6 +5,22 @@ All notable changes to this plugin will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.7.2] - 2025-09-08
+
+### Changed
+- Re:plain widget positioning now uses fixed bottom offset (default: 100px)
+- Removed dynamic bottom positioning to avoid reCAPTCHA conflicts
+- Bottom offset is configurable via `VIDIEU_REPLAIN_BOTTOM_OFFSET` constant
+
+### Added
+- New constant `VIDIEU_REPLAIN_BOTTOM_OFFSET` for configuring widget distance from bottom
+- Filter `vidieu_replain_bottom_offset` to dynamically adjust bottom position
+
+### Improved
+- Cleaner CSS without unnecessary positioning code
+- Better compatibility with reCAPTCHA and other bottom-fixed elements
+- Simplified positioning logic using PHP inline styles
+
 ## [1.7.1] - 2025-09-08
 
 ### Changed

@@ -1,6 +1,6 @@
 # Re:plain Live Chat Integration
 
-**Version:** 1.7.0  
+**Version:** 1.7.2  
 **Last Updated:** 2025-09-08  
 **Context:** Re:plain live chat widget integration for Vidieu.vn
 
@@ -11,10 +11,10 @@ This module integrates Re:plain live chat widget into the website with customize
 ## Features
 
 ### Desktop
-- Widget positioned at **right-bottom** corner (20px margin)
-- Contact icons moved to **left-bottom** corner (20px margin)  
-- No overlap between Re:plain widget and contact icons
-- Both elements have max-width of 50% to ensure proper spacing
+- Widget positioned at **right-bottom** corner (20px horizontal margin)
+- **Fixed bottom offset**: 100px from viewport bottom (configurable)
+- Contact icons positioned at **left-bottom** corner (via child theme)
+- No overlap between Re:plain widget and reCAPTCHA
 - Loads immediately on page load
 
 ### Mobile  
@@ -36,6 +36,9 @@ define('VIDIEU_REPLAIN_HIDE_ON_MOBILE', true); // Default: true
 
 // Desktop position (currently only left-bottom supported)
 define('VIDIEU_REPLAIN_DESKTOP_POSITION', 'left-bottom'); // Default: 'left-bottom'
+
+// Bottom offset in pixels - distance from viewport bottom
+define('VIDIEU_REPLAIN_BOTTOM_OFFSET', 100); // Default: 100
 ```
 
 ### Filters
@@ -50,6 +53,11 @@ add_filter('vidieu_replain_hide_on_mobile', '__return_false'); // To show on mob
 // Desktop position
 add_filter('vidieu_replain_desktop_position', function() {
     return 'left-bottom'; // Only option currently
+});
+
+// Bottom offset
+add_filter('vidieu_replain_bottom_offset', function() {
+    return 150; // Change to 150px from bottom
 });
 ```
 
@@ -104,13 +112,17 @@ vidieu-home-sections/
 
 ### CSS Positioning
 - Desktop: 
-  - Re:plain: Fixed at right-bottom (20px margin) with z-index: 99998
-  - Contact icons: Fixed at left-bottom (20px margin) with z-index: 99997
-  - Both elements limited to max-width: 50% to prevent overlap
-  - Uses `!important` only where necessary to override theme defaults
+  - Re:plain: Fixed at right-bottom with configurable bottom offset (default: 100px)
+  - Horizontal margin: 20px from right edge
+  - Z-index: 99998 (below mobile popup)
+  - Bottom offset prevents overlap with reCAPTCHA
 - Mobile: Hides widget with `display: none` until explicitly opened
-- Z-index management to prevent conflicts
 - Body class `replain-loaded` added when Re:plain script loads
+
+### Position Changes (v1.7.2)
+- **Removed**: Dynamic repositioning code (no MutationObserver for position)
+- **Added**: Fixed bottom offset configuration via `VIDIEU_REPLAIN_BOTTOM_OFFSET`
+- **Benefit**: Clean, predictable positioning without JavaScript overhead
 
 ### Mobile Integration
 - Dynamically injects Re:plain item into existing chat popup

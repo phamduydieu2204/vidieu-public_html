@@ -95,6 +95,19 @@ class VD_Replain_Chat {
     }
     
     /**
+     * Get bottom offset
+     */
+    private function get_bottom_offset() {
+        // Check constant first
+        if (defined('VIDIEU_REPLAIN_BOTTOM_OFFSET')) {
+            return VIDIEU_REPLAIN_BOTTOM_OFFSET;
+        }
+        
+        // Check filter
+        return apply_filters('vidieu_replain_bottom_offset', 100);
+    }
+    
+    /**
      * Render Re:plain script
      */
     public function render_replain_script() {
@@ -268,6 +281,22 @@ class VD_Replain_Chat {
             array(),
             VD_HOME_VERSION
         );
+        
+        // Add inline CSS for bottom offset
+        $bottom_offset = $this->get_bottom_offset();
+        $inline_css = sprintf(
+            '/* Re:plain Fixed Position */
+            @media (min-width: 769px) {
+                #replain-widget,
+                .replain-widget,
+                [id*="replain"]:not(script):not(style),
+                [class*="replain-messenger"] {
+                    bottom: %dpx !important;
+                }
+            }',
+            intval($bottom_offset)
+        );
+        wp_add_inline_style('vd-replain-chat', $inline_css);
         
         // Enqueue JS for mobile integration
         if (wp_is_mobile() && $this->should_hide_on_mobile()) {

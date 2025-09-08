@@ -5,16 +5,16 @@
  * @version 1.7.0
  */
 
-/* Desktop: Position Re:plain widget at right-bottom, contact icons at left-bottom */
+/* Desktop: Position Re:plain widget at right-bottom */
 @media (min-width: 769px) {
-    /* Target Re:plain widget container - RIGHT BOTTOM */
+    /* Target Re:plain widget container */
     #replain-widget,
     .replain-widget,
-    [id*="replain"],
+    [id*="replain"]:not(script):not(style),
     [class*="replain-messenger"] {
         right: 20px !important;
         left: auto !important;
-        bottom: 20px !important;
+        /* Bottom offset now controlled by PHP inline style */
         z-index: 99998 !important;
     }
     
