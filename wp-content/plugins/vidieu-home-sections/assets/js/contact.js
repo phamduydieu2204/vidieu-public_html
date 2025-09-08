@@ -5,6 +5,33 @@
     'use strict';
     
     $(document).ready(function() {
+        // Auto-fill form from localStorage if available and fields are empty
+        var savedInfo = localStorage.getItem('vd_contact_info');
+        if (savedInfo) {
+            try {
+                var info = JSON.parse(savedInfo);
+                // Check if info is not too old (7 days)
+                if (info.timestamp && (Date.now() - info.timestamp) < 7 * 24 * 60 * 60 * 1000) {
+                    // Only fill if fields are empty (no server-side values)
+                    if (!$('#vd_contact_name').val() && info.name) {
+                        $('#vd_contact_name').val(info.name);
+                    }
+                    if (!$('#vd_contact_email').val() && info.email) {
+                        $('#vd_contact_email').val(info.email);
+                    }
+                    if (!$('#vd_contact_phone').val() && info.phone) {
+                        $('#vd_contact_phone').val(info.phone);
+                    }
+                } else {
+                    // Remove old data
+                    localStorage.removeItem('vd_contact_info');
+                }
+            } catch(e) {
+                // Invalid JSON, remove it
+                localStorage.removeItem('vd_contact_info');
+            }
+        }
+        
         // Handle contact form submission
         $('#vd-contact-form').on('submit', function(e) {
             e.preventDefault();
@@ -32,6 +59,16 @@
                 phone: $form.find('#vd_contact_phone').val(),
                 message: $form.find('#vd_contact_message').val()
             };
+            
+            // Save user info to localStorage for next time (if not logged in)
+            if (formData.name || formData.email || formData.phone) {
+                localStorage.setItem('vd_contact_info', JSON.stringify({
+                    name: formData.name,
+                    email: formData.email,
+                    phone: formData.phone,
+                    timestamp: Date.now()
+                }));
+            }
             
             // Submit form via AJAX
             $.post(vd_ajax_object.ajax_url, formData, function(response) {

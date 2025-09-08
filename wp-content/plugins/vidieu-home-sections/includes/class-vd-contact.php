@@ -60,6 +60,43 @@ class VD_Contact {
             'lng' => '105.8542'
         ), $atts, 'vd_contact');
         
+        // Get current user info if logged in
+        $current_user = wp_get_current_user();
+        $user_name = '';
+        $user_email = '';
+        $user_phone = '';
+        
+        if ($current_user->ID > 0) {
+            // User is logged in
+            $user_name = $current_user->display_name;
+            $user_email = $current_user->user_email;
+            
+            // Get phone from user meta (billing phone from WooCommerce)
+            $user_phone = get_user_meta($current_user->ID, 'billing_phone', true);
+            
+            // If display name is empty or just username, try to get full name from billing
+            if (empty($user_name) || $user_name == $current_user->user_login) {
+                $first_name = get_user_meta($current_user->ID, 'billing_first_name', true);
+                $last_name = get_user_meta($current_user->ID, 'billing_last_name', true);
+                if ($first_name || $last_name) {
+                    $user_name = trim($first_name . ' ' . $last_name);
+                }
+            }
+        } else {
+            // Check if user has filled checkout form before (via cookies/session)
+            // WooCommerce stores this in session
+            if (class_exists('WC') && WC()->session) {
+                $customer = WC()->session->get('customer');
+                if ($customer) {
+                    $user_name = isset($customer['first_name']) && isset($customer['last_name']) 
+                        ? trim($customer['first_name'] . ' ' . $customer['last_name']) 
+                        : '';
+                    $user_email = isset($customer['email']) ? $customer['email'] : '';
+                    $user_phone = isset($customer['phone']) ? $customer['phone'] : '';
+                }
+            }
+        }
+        
         ob_start();
         ?>
         <div class="vd-contact-section">
@@ -74,17 +111,17 @@ class VD_Contact {
                         <form class="vd-contact-form" id="vd-contact-form">
                             <div class="vd-form-group">
                                 <label for="vd_contact_name">Họ và tên <span class="required">*</span></label>
-                                <input type="text" id="vd_contact_name" name="name" required>
+                                <input type="text" id="vd_contact_name" name="name" value="<?php echo esc_attr($user_name); ?>" required>
                             </div>
                             
                             <div class="vd-form-group">
                                 <label for="vd_contact_email">Email <span class="required">*</span></label>
-                                <input type="email" id="vd_contact_email" name="email" required>
+                                <input type="email" id="vd_contact_email" name="email" value="<?php echo esc_attr($user_email); ?>" required>
                             </div>
                             
                             <div class="vd-form-group">
                                 <label for="vd_contact_phone">Số điện thoại</label>
-                                <input type="tel" id="vd_contact_phone" name="phone">
+                                <input type="tel" id="vd_contact_phone" name="phone" value="<?php echo esc_attr($user_phone); ?>">
                             </div>
                             
                             <div class="vd-form-group">
