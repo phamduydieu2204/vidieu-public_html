@@ -5,6 +5,24 @@ All notable changes to this plugin will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.7.1] - 2025-09-08
+
+### Fixed
+- Mobile display issue where elements appear oversized after page reload
+- NASA theme mobile detection not working properly with Chrome DevTools
+- style-mobile.css not loading on first page load in mobile viewport
+- Missing nasa-in-mobile body class for viewport-based mobile detection
+
+### Added
+- New Mobile Fix module to handle viewport-based mobile detection
+- Force loading of NASA theme mobile CSS for mobile viewports
+- JavaScript-based mobile viewport detection as fallback
+- Enhanced mobile CSS rules to prevent element scaling issues
+
+### Changed
+- Updated plugin version to 1.7.1
+- Improved mobile detection to work with browser developer tools
+
 ## [1.7.0] - 2025-09-08
 
 ### Added

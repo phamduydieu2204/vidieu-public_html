@@ -18,7 +18,7 @@ if (!defined('ABSPATH')) {
 }
 
 // Define plugin constants
-define('VD_HOME_VERSION', '1.7.0');
+define('VD_HOME_VERSION', '1.7.1');
 define('VD_HOME_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('VD_HOME_PLUGIN_URL', plugin_dir_url(__FILE__));
 define('VD_HOME_TEXT_DOMAIN', 'vidieu-home-sections');
@@ -107,6 +107,11 @@ class Vidieu_Home_Sections {
         // Enhanced SEO Module (for 95+ score)
         if (file_exists(VD_HOME_PLUGIN_DIR . 'inc/seo/class-vidieu-seo-enhanced.php')) {
             require_once VD_HOME_PLUGIN_DIR . 'inc/seo/class-vidieu-seo-enhanced.php';
+        }
+        
+        // Mobile Fix Module
+        if (file_exists(VD_HOME_PLUGIN_DIR . 'inc/mobile-fix/class-vidieu-mobile-fix.php')) {
+            require_once VD_HOME_PLUGIN_DIR . 'inc/mobile-fix/class-vidieu-mobile-fix.php';
         }
     }
     
