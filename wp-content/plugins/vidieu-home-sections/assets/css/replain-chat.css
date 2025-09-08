@@ -1,0 +1,113 @@
+/**
+ * Re:plain Chat Widget Styles
+ * 
+ * @package VidieuHomeSections
+ * @version 1.7.0
+ */
+
+/* Desktop: Position Re:plain widget at left-bottom */
+@media (min-width: 769px) {
+    /* Target Re:plain widget container */
+    #replain-widget,
+    .replain-widget,
+    [id*="replain"],
+    [class*="replain-messenger"] {
+        left: 20px !important;
+        right: auto !important;
+        bottom: 20px !important;
+    }
+    
+    /* Ensure it doesn't conflict with right-side contact buttons */
+    .nasa-contact-floating {
+        right: 20px;
+        left: auto;
+    }
+}
+
+/* Mobile: Hide Re:plain bubble by default */
+@media (max-width: 768px) {
+    #replain-widget,
+    .replain-widget,
+    [id*="replain"]:not(.replain-opened),
+    [class*="replain-messenger"]:not(.replain-opened) {
+        display: none !important;
+        visibility: hidden !important;
+    }
+    
+    /* Show when explicitly opened via JS */
+    #replain-widget.replain-opened,
+    .replain-widget.replain-opened,
+    [id*="replain"].replain-opened,
+    [class*="replain-messenger"].replain-opened {
+        display: block !important;
+        visibility: visible !important;
+        position: fixed !important;
+        z-index: 999999 !important;
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        bottom: 0 !important;
+        width: 100% !important;
+        height: 100% !important;
+    }
+}
+
+/* Style for Re:plain item in mobile popup */
+.vd-replain-chat-item {
+    display: flex;
+    align-items: center;
+    padding: 12px 15px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.vd-replain-chat-item:hover {
+    background-color: rgba(0, 0, 0, 0.02);
+}
+
+.vd-replain-chat-item .icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 15px;
+    flex-shrink: 0;
+}
+
+.vd-replain-chat-item .icon svg {
+    width: 20px;
+    height: 20px;
+    fill: white;
+}
+
+.vd-replain-chat-item .content {
+    flex: 1;
+}
+
+.vd-replain-chat-item .title {
+    font-size: 14px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 2px;
+}
+
+.vd-replain-chat-item .description {
+    font-size: 12px;
+    color: #666;
+}
+
+/* Ensure Re:plain doesn't interfere with other elements */
+.replain-widget iframe {
+    max-width: 400px !important;
+    max-height: 600px !important;
+}
+
+/* Z-index management to prevent overlapping */
+#replain-widget,
+.replain-widget {
+    z-index: 99998 !important; /* Below mobile popup which is 99999 */
+}
