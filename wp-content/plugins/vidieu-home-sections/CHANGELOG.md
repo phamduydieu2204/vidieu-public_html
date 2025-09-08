@@ -5,12 +5,18 @@ All notable changes to this plugin will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.7.1] - 2025-09-08
+
+### Changed
+- Swapped positions: Re:plain widget now at right-bottom, contact icons at left-bottom
+- Updated CSS positioning rules to match new layout requirements
+
 ## [1.7.0] - 2025-09-08
 
 ### Added
 - Re:plain live chat integration with custom positioning and behavior
-- Desktop: Widget positioned at left-bottom corner (20px margin)
-- Desktop: Contact icons moved to right-bottom corner (20px margin)
+- Desktop: Widget positioned at right-bottom corner (20px margin)
+- Desktop: Contact icons moved to left-bottom corner (20px margin)
 - Mobile: Hidden bubble with "Chat trực tiếp (Re:plain)" item in popup
 - Lazy loading on mobile - script loads only when user initiates chat
 - Global JavaScript API: window.VidieuReplain.open() for programmatic access
@@ -19,7 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Body class 'replain-loaded' when script loads for CSS targeting
 
 ### Changed  
-- Contact icons position from default to fixed right-bottom on desktop
+- Contact icons position from default to fixed left-bottom on desktop
 - Max-width constraint (50%) for both Re:plain and contact icons to prevent overlap
 - Z-index management: Re:plain (99998), Contact icons (99997)
 

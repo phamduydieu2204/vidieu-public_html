@@ -5,25 +5,25 @@
  * @version 1.7.0
  */
 
-/* Desktop: Position Re:plain widget at left-bottom */
+/* Desktop: Position Re:plain widget at right-bottom, contact icons at left-bottom */
 @media (min-width: 769px) {
-    /* Target Re:plain widget container */
+    /* Target Re:plain widget container - RIGHT BOTTOM */
     #replain-widget,
     .replain-widget,
     [id*="replain"],
     [class*="replain-messenger"] {
-        left: 20px !important;
-        right: auto !important;
+        right: 20px !important;
+        left: auto !important;
         bottom: 20px !important;
         z-index: 99998 !important;
     }
     
-    /* Move contact icons to right-bottom */
+    /* Move contact icons to LEFT-BOTTOM */
     .nasa-contact-floating {
         position: fixed !important;
-        right: 20px !important;
+        left: 20px !important;
+        right: auto !important;
         bottom: 20px !important;
-        left: auto !important;
         z-index: 99997 !important;
     }
     
@@ -32,9 +32,9 @@
     body .nasa-fixed-contact,
     body [class*="contact-float"],
     body .contact-icons-wrapper {
-        right: 20px !important;
+        left: 20px !important;
         bottom: 20px !important;
-        left: auto !important;
+        right: auto !important;
     }
 }
 
@@ -130,17 +130,19 @@
 @media (min-width: 769px) {
     /* Ensure no overlap between Re:plain and contact icons */
     body.replain-loaded .nasa-contact-floating {
-        right: 20px !important;
-        left: auto !important;
+        left: 20px !important;
+        right: auto !important;
     }
     
-    /* If Re:plain widget has specific width */
+    /* If Re:plain widget has specific width - limit to right half */
     body.replain-loaded #replain-widget,
-    body.replain-loaded .replain-widget {
+    body.replain-loaded .replain-widget,
+    body.replain-loaded [id*="replain"],
+    body.replain-loaded [class*="replain-messenger"] {
         max-width: calc(50% - 40px) !important;
     }
     
-    /* Contact icons should also have max width to prevent overlap */
+    /* Contact icons should also have max width - limit to left half */
     body .nasa-contact-floating {
         max-width: calc(50% - 40px) !important;
     }

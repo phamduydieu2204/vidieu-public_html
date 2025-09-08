@@ -11,8 +11,8 @@ This module integrates Re:plain live chat widget into the website with customize
 ## Features
 
 ### Desktop
-- Widget positioned at **left-bottom** corner (20px margin)
-- Contact icons moved to **right-bottom** corner (20px margin)  
+- Widget positioned at **right-bottom** corner (20px margin)
+- Contact icons moved to **left-bottom** corner (20px margin)  
 - No overlap between Re:plain widget and contact icons
 - Both elements have max-width of 50% to ensure proper spacing
 - Loads immediately on page load
@@ -104,8 +104,8 @@ vidieu-home-sections/
 
 ### CSS Positioning
 - Desktop: 
-  - Re:plain: Fixed at left-bottom (20px margin) with z-index: 99998
-  - Contact icons: Fixed at right-bottom (20px margin) with z-index: 99997
+  - Re:plain: Fixed at right-bottom (20px margin) with z-index: 99998
+  - Contact icons: Fixed at left-bottom (20px margin) with z-index: 99997
   - Both elements limited to max-width: 50% to prevent overlap
   - Uses `!important` only where necessary to override theme defaults
 - Mobile: Hides widget with `display: none` until explicitly opened
@@ -149,8 +149,8 @@ When opened on mobile, the widget gets class `replain-opened` to force visibilit
 
 ## Testing Checklist
 
-- [ ] Desktop: Re:plain widget appears at left-bottom corner (20px margin)
-- [ ] Desktop: Contact icons appear at right-bottom corner (20px margin)
+- [ ] Desktop: Re:plain widget appears at right-bottom corner (20px margin)
+- [ ] Desktop: Contact icons appear at left-bottom corner (20px margin)
 - [ ] Desktop: No overlap between Re:plain and contact icons
 - [ ] Desktop: Both elements respect max-width constraint
 - [ ] Mobile: Widget bubble is hidden by default
