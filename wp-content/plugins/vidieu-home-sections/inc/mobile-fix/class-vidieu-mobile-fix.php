@@ -47,15 +47,19 @@ class Vidieu_Mobile_Fix {
      * Force load mobile CSS when needed
      */
     public function force_mobile_css() {
-        // Check if NASA theme is active
-        if (!defined('ELESSI_THEME_URI')) {
+        // Get theme URI
+        $theme_uri = defined('ELESSI_THEME_URI') ? ELESSI_THEME_URI : get_template_directory_uri();
+        
+        // Check if file exists
+        $mobile_css_path = get_template_directory() . '/assets/css/style-mobile.css';
+        if (!file_exists($mobile_css_path)) {
             return;
         }
         
         // Force enqueue mobile CSS
         wp_enqueue_style(
             'elessi-style-mobile-force',
-            ELESSI_THEME_URI . '/assets/css/style-mobile.css',
+            $theme_uri . '/assets/css/style-mobile.css',
             array(),
             null
         );
@@ -152,7 +156,7 @@ class Vidieu_Mobile_Fix {
                         link.id = 'elessi-style-mobile-force-css';
                         link.rel = 'stylesheet';
                         link.type = 'text/css';
-                        link.href = '<?php echo ELESSI_THEME_URI; ?>/assets/css/style-mobile.css';
+                        link.href = '<?php echo defined('ELESSI_THEME_URI') ? ELESSI_THEME_URI : get_template_directory_uri(); ?>/assets/css/style-mobile.css';
                         document.head.appendChild(link);
                     }
                 }
@@ -163,4 +167,4 @@ class Vidieu_Mobile_Fix {
 }
 
 // Initialize
-Videu_Mobile_Fix::get_instance();
+Vidieu_Mobile_Fix::get_instance();
