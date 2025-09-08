@@ -499,6 +499,11 @@ function elessi_child_vietnamese_translations($translated_text, $text, $domain) 
             case "people are viewing this right now":
                 return "người đang xem sản phẩm này ngay bây giờ";
 
+            case "are viewing this right now":
+                return "đang xem sản phẩm này ngay bây giờ";
+
+            case "people":
+                return "người";
                 
             // Add more translations as needed...
         }
