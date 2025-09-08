@@ -111,7 +111,7 @@ class VD_Contact {
                     <div class="vd-contact-info-wrapper">
                         <h3 class="vd-contact-subtitle">Thông tin liên hệ</h3>
                         <div class="vd-contact-info">
-                            <div class="vd-contact-item">
+                            <a href="tel:0988691196" class="vd-contact-item vd-contact-link">
                                 <div class="vd-contact-icon vd-contact-phone">
                                     <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true">
                                         <g transform="translate(0 -1028.4)">
@@ -121,26 +121,24 @@ class VD_Contact {
                                     </svg>
                                 </div>
                                 <div class="vd-contact-details">
-                                    <h4>Hotline</h4>
-                                    <a href="tel:0988691196">0988 691 196</a>
-                                    <p class="vd-contact-desc">Hỗ trợ trực tiếp</p>
+                                    <span class="vd-contact-primary">0988 691 196</span>
+                                    <span class="vd-contact-desc">Hỗ trợ gấp</span>
                                 </div>
-                            </div>
+                            </a>
                             
-                            <div class="vd-contact-item">
+                            <a href="mailto:admin@vidieu.vn" class="vd-contact-item vd-contact-link">
                                 <div class="vd-contact-icon vd-contact-email">
                                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
                                         <path d="M3 8L10.8906 13.2604C11.5624 13.7083 12.4376 13.7083 13.1094 13.2604L21 8M5 19H19C20.1046 19 21 18.1046 21 17V7C21 5.89543 20.1046 5 19 5H5C3.89543 5 3 5.89543 3 7V17C3 18.1046 3.89543 19 5 19Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                                     </svg>
                                 </div>
                                 <div class="vd-contact-details">
-                                    <h4>Email</h4>
-                                    <a href="mailto:support@vidieu.vn">support@vidieu.vn</a>
-                                    <p class="vd-contact-desc">Phản hồi trong 24h</p>
+                                    <span class="vd-contact-primary">admin@vidieu.vn</span>
+                                    <span class="vd-contact-desc">Phản hồi trong 24h</span>
                                 </div>
-                            </div>
+                            </a>
                             
-                            <div class="vd-contact-item">
+                            <a href="https://zalo.me/g/hwcfvo585" target="_blank" rel="noopener" class="vd-contact-item vd-contact-link">
                                 <div class="vd-contact-icon vd-contact-zalo">
                                     <svg viewBox="0 0 161.5 161.5" width="24" height="24" aria-hidden="true">
                                         <!-- viền/nền -->
@@ -156,13 +154,12 @@ class VD_Contact {
                                     </svg>
                                 </div>
                                 <div class="vd-contact-details">
-                                    <h4>Zalo</h4>
-                                    <a href="https://zalo.me/g/hwcfvo585" target="_blank" rel="noopener">Nhóm Zalo</a>
-                                    <p class="vd-contact-desc">Voucher nội bộ</p>
+                                    <span class="vd-contact-primary">Nhóm Zalo</span>
+                                    <span class="vd-contact-desc">Voucher nội bộ</span>
                                 </div>
-                            </div>
+                            </a>
                             
-                            <div class="vd-contact-item">
+                            <a href="https://m.me/vidieuvn.muatoolAmazon" target="_blank" rel="noopener" class="vd-contact-item vd-contact-link">
                                 <div class="vd-contact-icon vd-contact-messenger">
                                     <svg viewBox="0 0 800 800" width="24" height="24" aria-hidden="true">
                                         <radialGradient id="msgGrad" cx="101.9" cy="809" r="1.1" gradientTransform="matrix(800 0 0 -800 -81386 648000)" gradientUnits="userSpaceOnUse">
@@ -176,11 +173,10 @@ class VD_Contact {
                                     </svg>
                                 </div>
                                 <div class="vd-contact-details">
-                                    <h4>Facebook</h4>
-                                    <a href="https://m.me/vidieuvn.muatoolAmazon" target="_blank" rel="noopener">Messenger</a>
-                                    <p class="vd-contact-desc">Phản hồi nhanh nhất</p>
+                                    <span class="vd-contact-primary">Facebook Messenger</span>
+                                    <span class="vd-contact-desc">Phản hồi nhanh nhất</span>
                                 </div>
-                            </div>
+                            </a>
                         </div>
                         
                         <!-- Working hours section -->
@@ -256,8 +252,8 @@ class VD_Contact {
             wp_send_json_error(array('message' => 'Vui lòng nhập địa chỉ email hợp lệ'));
         }
         
-        // Prepare email
-        $to = get_option('admin_email');
+        // Prepare email - send to admin@vidieu.vn instead of default admin email
+        $to = 'admin@vidieu.vn';
         $subject = sprintf('Liên hệ mới từ %s', $name);
         
         $body = sprintf(

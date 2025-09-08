@@ -157,8 +157,20 @@
 
 .vd-contact-item {
     display: flex;
-    align-items: flex-start;
+    align-items: center;
     gap: 20px;
+    padding: 15px;
+    margin-bottom: 15px;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    color: inherit;
+}
+
+.vd-contact-link:hover {
+    background-color: #f8f9fa;
+    transform: translateX(5px);
+    text-decoration: none;
 }
 
 .vd-contact-icon {
@@ -193,32 +205,27 @@
     stroke: #fff;
 }
 
-.vd-contact-details h4 {
+.vd-contact-details {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.vd-contact-primary {
     font-size: 1.1rem;
     font-weight: 600;
-    margin-bottom: 5px;
     color: #333;
-}
-
-.vd-contact-details a {
-    color: #3498db;
-    text-decoration: none;
-    font-size: 1rem;
-    transition: color 0.3s ease;
     display: block;
-    margin-bottom: 5px;
 }
 
-.vd-contact-details a:hover {
-    color: #2980b9;
-    text-decoration: underline;
+.vd-contact-link:hover .vd-contact-primary {
+    color: #3498db;
 }
 
 .vd-contact-desc {
     font-size: 0.875rem;
     color: #666;
-    margin: 0;
-    font-style: italic;
+    display: block;
 }
 
 /* Working hours section */
@@ -344,6 +351,16 @@
     
     .vd-contact-item {
         gap: 15px;
+        padding: 12px;
+        margin-bottom: 12px;
+    }
+    
+    .vd-contact-primary {
+        font-size: 1rem;
+    }
+    
+    .vd-contact-desc {
+        font-size: 0.8rem;
     }
     
     .vd-contact-icon {
