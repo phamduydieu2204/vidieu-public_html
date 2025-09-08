@@ -5,6 +5,26 @@ All notable changes to this plugin will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.7.0] - 2025-09-08
+
+### Added
+- New Contact Page functionality with `[vd_contact]` shortcode
+  - Contact form with full name, email, phone, and message fields
+  - AJAX form submission with loading states and feedback messages
+  - Contact information display (hotline, email, Zalo, Facebook)
+  - Integrated Google Maps placeholder
+  - Fully responsive design for desktop and mobile
+  - Form validation and sanitization
+  - Email notifications to admin
+- New class `VD_Contact` for handling contact functionality
+- Contact-specific CSS and JavaScript assets with conditional loading
+- Vietnamese translations for all contact form elements
+
+### Changed
+- Updated plugin version to 1.7.0
+- Enhanced assets loading to support contact shortcode detection
+- Added contact module initialization to main plugin file
+
 ## [1.6.2] - 2025-09-07
 
 ### Fixed
