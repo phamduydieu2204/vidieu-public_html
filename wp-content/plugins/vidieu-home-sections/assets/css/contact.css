@@ -384,14 +384,6 @@
         height: 20px;
     }
     
-    .vd-contact-details h4 {
-        font-size: 1rem;
-    }
-    
-    .vd-contact-details a {
-        font-size: 0.9rem;
-    }
-    
     .vd-form-group input,
     .vd-form-group textarea {
         font-size: 16px; /* Prevent zoom on iOS */
