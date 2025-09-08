@@ -17,47 +17,12 @@ if (!defined('ABSPATH')) {
 /**
  * Main translation filter for Elessi theme texts
  */
-// Clear any translation cache on init
-add_action('init', function() {
-    if (isset($_GET['clear_translation_cache']) && current_user_can('administrator')) {
-        // Clear object cache if exists
-        if (function_exists('wp_cache_flush')) {
-            wp_cache_flush();
-        }
-        
-        // Clear language cache directory
-        $upload_dir = wp_upload_dir();
-        $cache_dir = $upload_dir['basedir'] . '/languages/';
-        if (is_dir($cache_dir)) {
-            array_map('unlink', glob($cache_dir . '*.json'));
-        }
-        
-        wp_die('Translation cache cleared! <a href="' . remove_query_arg('clear_translation_cache') . '">Go back</a>');
-    }
-});
 
 add_filter('gettext', 'elessi_child_vietnamese_translations', 999, 3);
 function elessi_child_vietnamese_translations($translated_text, $text, $domain) {
     
     // Loại bỏ khoảng trắng thừa để so sánh chính xác
     $clean_text = trim($text);
-    
-    // Debug: Log texts that need translation on product pages
-    if (is_product() && current_user_can('administrator') && isset($_GET['debug_translations'])) {
-        $texts_to_check = array(
-            'Size Guide', 'Delivery & Return', 'people are viewing this right now',
-            'Share', 'Guaranteed Safe Checkout', 'Add to cart', 'Buy now',
-            'Request a Call Back', 'Hurry up! Sale end in:'
-        );
-        
-        if (stripos($clean_text, 'Size Guide') !== false || 
-            stripos($clean_text, 'Delivery') !== false || 
-            stripos($clean_text, 'people are viewing') !== false ||
-            stripos($clean_text, 'Share') !== false ||
-            stripos($clean_text, 'Guaranteed') !== false) {
-            error_log("Translation Debug - Original: '$text', Clean: '$clean_text', Domain: '$domain'");
-        }
-    }
     
     // Dịch cho mọi text domain, không chỉ elessi-theme
     // Ưu tiên dịch các văn bản phổ biến trước
