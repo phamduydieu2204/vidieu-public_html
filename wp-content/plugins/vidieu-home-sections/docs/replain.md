@@ -1,6 +1,6 @@
 # Re:plain Live Chat Integration
 
-**Version:** 1.7.4  
+**Version:** 1.7.5  
 **Last Updated:** 2025-09-08  
 **Context:** Re:plain live chat widget integration for Vidieu.vn
 
@@ -10,15 +10,17 @@ This module integrates Re:plain live chat widget into the website with customize
 
 ## Features
 
-### Desktop
-- Widget uses **Re:plain default positioning**
-- No custom position overrides
+### Desktop (≥769px)
+- Widget positioned at **right-bottom corner** 
+- **Bottom offset: 60px** above bottom navigation
 - Loads immediately on page load
+- Z-index: 99997 (above most elements but below mobile popup)
 
-### Mobile  
-- Default widget bubble is **hidden**
+### Mobile (<768px)
+- Re:plain bubble is **hidden**
 - Added "Chat trực tiếp (Re:plain)" item to mobile chat popup
 - Lazy loading - script loads only when user clicks the chat item
+- Opens fullscreen when activated
 - No page reload required
 
 ## Configuration
@@ -93,17 +95,23 @@ vidieu-home-sections/
 - Prevents loading in admin area
 
 ### CSS Behavior
-- Desktop: Uses Re:plain default positioning
+- Desktop: Fixed at right-bottom (20px right, 60px bottom)
 - Mobile: Hides widget with `display: none` until explicitly opened
 - Body class `replain-loaded` added when Re:plain script loads
+- Z-index management to avoid conflicts with other elements
 
-### Position Changes (v1.7.4)
-- **Removed ALL custom positioning code**:
-  - No CSS position overrides
+### Position Changes (v1.7.5)
+- **Desktop positioning**:
+  - Fixed position at right-bottom (20px from right, 60px from bottom)
+  - Bottom offset ensures widget stays above bottom navigation
+  - Clean CSS without complex overrides
+- **Mobile behavior**:
+  - Bubble completely hidden on mobile devices
+  - Access only through popup chat menu
+- **Removed old code**:
   - No JavaScript repositioning
   - No MutationObserver for position changes
-  - No bottom offset configuration
-- **Result**: Re:plain widget displays in its default position as configured by Re:plain system
+  - No dynamic bottom calculations
 
 ### Mobile Integration
 - Dynamically injects Re:plain item into existing chat popup
@@ -142,17 +150,21 @@ When opened on mobile, the widget gets class `replain-opened` to force visibilit
 
 ## Important Note
 
-**As of v1.7.4**: This plugin no longer modifies Re:plain widget positioning. All custom positioning code has been removed to ensure Re:plain works according to its default behavior.
+**As of v1.7.5**: 
+- Desktop: Re:plain bubble positioned 60px above bottom to avoid bottom navigation
+- Mobile: Bubble completely hidden, access only through popup chat menu
+- Clean implementation without complex JavaScript positioning
 
 ## Testing Checklist
 
-- [ ] Desktop: Re:plain widget appears in its default position
-- [ ] Desktop: No custom positioning applied by plugin
-- [ ] Mobile: Widget bubble is hidden by default
+- [ ] Desktop: Re:plain widget appears at right-bottom (20px, 60px)
+- [ ] Desktop: Widget positioned above bottom navigation
+- [ ] Desktop: No overlap with bottom navigation bar
+- [ ] Mobile: Widget bubble is completely hidden
 - [ ] Mobile: "Chat trực tiếp (Re:plain)" appears in popup
-- [ ] Mobile: Chat opens when clicked from popup
+- [ ] Mobile: Chat opens fullscreen when clicked from popup
 - [ ] Admin: Scripts don't load in wp-admin
-- [ ] Performance: No unnecessary JavaScript running
+- [ ] Performance: Clean CSS without complex JavaScript
 
 ## Troubleshooting
 

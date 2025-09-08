@@ -5,9 +5,17 @@
  * @version 1.7.0
  */
 
-/* Desktop: Let Re:plain use default positioning */
+/* Desktop: Show Re:plain bubble above bottom navigation */
 @media (min-width: 769px) {
-    /* No position overrides - Re:plain uses its default position */
+    /* Position Re:plain widget above bottom navigation */
+    #replain-widget,
+    .replain-widget,
+    [id*="replain"]:not(script):not(style),
+    [class*="replain-messenger"] {
+        bottom: 60px !important; /* Above bottom navigation */
+        right: 20px !important;
+        z-index: 99997 !important; /* Below mobile popup but above most elements */
+    }
 }
 
 /* Mobile: Hide Re:plain bubble by default */
