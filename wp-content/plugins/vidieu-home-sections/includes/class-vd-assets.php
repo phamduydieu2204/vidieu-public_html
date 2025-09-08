@@ -158,7 +158,7 @@ class VD_Assets {
             
             wp_localize_script('vd-contact-script', 'vd_ajax_object', array(
                 'ajax_url' => admin_url('admin-ajax.php'),
-                'error_message' => __('An error occurred. Please try again.', VD_HOME_TEXT_DOMAIN)
+                'error_message' => 'Đã có lỗi xảy ra. Vui lòng thử lại.'
             ));
         }
     }

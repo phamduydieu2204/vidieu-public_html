@@ -51,7 +51,7 @@ class VD_Contact {
      */
     public function render_contact_section($atts) {
         $atts = shortcode_atts(array(
-            'title' => __('Contact Us', VD_HOME_TEXT_DOMAIN),
+            'title' => 'Liên hệ với chúng tôi',
             'show_map' => 'yes',
             'map_height' => '400',
             'company_name' => 'Vidieu.vn',
@@ -70,31 +70,31 @@ class VD_Contact {
                 
                 <div class="vd-contact-content">
                     <div class="vd-contact-form-wrapper">
-                        <h3 class="vd-contact-subtitle"><?php _e('Send us a message', VD_HOME_TEXT_DOMAIN); ?></h3>
+                        <h3 class="vd-contact-subtitle">Gửi tin nhắn cho chúng tôi</h3>
                         <form class="vd-contact-form" id="vd-contact-form">
                             <div class="vd-form-group">
-                                <label for="vd_contact_name"><?php _e('Full Name', VD_HOME_TEXT_DOMAIN); ?> <span class="required">*</span></label>
+                                <label for="vd_contact_name">Họ và tên <span class="required">*</span></label>
                                 <input type="text" id="vd_contact_name" name="name" required>
                             </div>
                             
                             <div class="vd-form-group">
-                                <label for="vd_contact_email"><?php _e('Email', VD_HOME_TEXT_DOMAIN); ?> <span class="required">*</span></label>
+                                <label for="vd_contact_email">Email <span class="required">*</span></label>
                                 <input type="email" id="vd_contact_email" name="email" required>
                             </div>
                             
                             <div class="vd-form-group">
-                                <label for="vd_contact_phone"><?php _e('Phone Number', VD_HOME_TEXT_DOMAIN); ?></label>
+                                <label for="vd_contact_phone">Số điện thoại</label>
                                 <input type="tel" id="vd_contact_phone" name="phone">
                             </div>
                             
                             <div class="vd-form-group">
-                                <label for="vd_contact_message"><?php _e('Message', VD_HOME_TEXT_DOMAIN); ?> <span class="required">*</span></label>
+                                <label for="vd_contact_message">Nội dung <span class="required">*</span></label>
                                 <textarea id="vd_contact_message" name="message" rows="5" required></textarea>
                             </div>
                             
                             <div class="vd-form-group">
                                 <button type="submit" class="vd-contact-submit">
-                                    <span class="vd-btn-text"><?php _e('Send Message', VD_HOME_TEXT_DOMAIN); ?></span>
+                                    <span class="vd-btn-text">Gửi tin nhắn</span>
                                     <span class="vd-btn-loading" style="display:none;">
                                         <svg class="vd-spinner" width="20" height="20" viewBox="0 0 20 20">
                                             <circle cx="10" cy="10" r="8" stroke="currentColor" stroke-width="2" fill="none" stroke-dasharray="50.265" stroke-dashoffset="37.699" />
@@ -109,7 +109,7 @@ class VD_Contact {
                     </div>
                     
                     <div class="vd-contact-info-wrapper">
-                        <h3 class="vd-contact-subtitle"><?php _e('Get in touch', VD_HOME_TEXT_DOMAIN); ?></h3>
+                        <h3 class="vd-contact-subtitle">Thông tin liên hệ</h3>
                         <div class="vd-contact-info">
                             <div class="vd-contact-item">
                                 <div class="vd-contact-icon">
@@ -118,7 +118,7 @@ class VD_Contact {
                                     </svg>
                                 </div>
                                 <div class="vd-contact-details">
-                                    <h4><?php _e('Hotline', VD_HOME_TEXT_DOMAIN); ?></h4>
+                                    <h4>Hotline</h4>
                                     <a href="tel:0988691196">0988 691 196</a>
                                 </div>
                             </div>
@@ -130,7 +130,7 @@ class VD_Contact {
                                     </svg>
                                 </div>
                                 <div class="vd-contact-details">
-                                    <h4><?php _e('Email', VD_HOME_TEXT_DOMAIN); ?></h4>
+                                    <h4>Email</h4>
                                     <a href="mailto:support@vidieu.vn">support@vidieu.vn</a>
                                 </div>
                             </div>
@@ -142,8 +142,8 @@ class VD_Contact {
                                     </svg>
                                 </div>
                                 <div class="vd-contact-details">
-                                    <h4><?php _e('Zalo', VD_HOME_TEXT_DOMAIN); ?></h4>
-                                    <a href="https://zalo.me/g/hwcfvo585" target="_blank" rel="noopener">Zalo Group</a>
+                                    <h4>Zalo</h4>
+                                    <a href="https://zalo.me/g/hwcfvo585" target="_blank" rel="noopener">Nhóm Zalo</a>
                                 </div>
                             </div>
                             
@@ -154,7 +154,7 @@ class VD_Contact {
                                     </svg>
                                 </div>
                                 <div class="vd-contact-details">
-                                    <h4><?php _e('Facebook', VD_HOME_TEXT_DOMAIN); ?></h4>
+                                    <h4>Facebook</h4>
                                     <a href="https://m.me/vidieuvn.muatoolAmazon" target="_blank" rel="noopener">Messenger</a>
                                 </div>
                             </div>
@@ -187,7 +187,7 @@ class VD_Contact {
     public function handle_form_submission() {
         // Verify nonce
         if (!isset($_POST['nonce']) || !wp_verify_nonce($_POST['nonce'], 'vd_contact_form')) {
-            wp_send_json_error(array('message' => __('Invalid security token', VD_HOME_TEXT_DOMAIN)));
+            wp_send_json_error(array('message' => 'Token bảo mật không hợp lệ'));
         }
         
         // Validate required fields
@@ -197,28 +197,28 @@ class VD_Contact {
         $message = isset($_POST['message']) ? sanitize_textarea_field($_POST['message']) : '';
         
         if (empty($name) || empty($email) || empty($message)) {
-            wp_send_json_error(array('message' => __('Please fill in all required fields', VD_HOME_TEXT_DOMAIN)));
+            wp_send_json_error(array('message' => 'Vui lòng điền đầy đủ các trường bắt buộc'));
         }
         
         if (!is_email($email)) {
-            wp_send_json_error(array('message' => __('Please enter a valid email address', VD_HOME_TEXT_DOMAIN)));
+            wp_send_json_error(array('message' => 'Vui lòng nhập địa chỉ email hợp lệ'));
         }
         
         // Prepare email
         $to = get_option('admin_email');
-        $subject = sprintf(__('New Contact Form Submission from %s', VD_HOME_TEXT_DOMAIN), $name);
+        $subject = sprintf('Liên hệ mới từ %s', $name);
         
         $body = sprintf(
-            __("You have received a new contact form submission:\n\n" .
-               "Name: %s\n" .
-               "Email: %s\n" .
-               "Phone: %s\n\n" .
-               "Message:\n%s\n\n" .
-               "---\n" .
-               "This message was sent from the contact form on %s", VD_HOME_TEXT_DOMAIN),
+            "Bạn vừa nhận được một liên hệ mới từ form liên hệ:\n\n" .
+            "Họ tên: %s\n" .
+            "Email: %s\n" .
+            "Số điện thoại: %s\n\n" .
+            "Nội dung:\n%s\n\n" .
+            "---\n" .
+            "Tin nhắn này được gửi từ form liên hệ trên %s",
             $name,
             $email,
-            $phone ?: __('Not provided', VD_HOME_TEXT_DOMAIN),
+            $phone ?: 'Không cung cấp',
             $message,
             get_bloginfo('name')
         );
@@ -234,11 +234,11 @@ class VD_Contact {
         
         if ($sent) {
             wp_send_json_success(array(
-                'message' => __('Thank you for your message. We will get back to you soon!', VD_HOME_TEXT_DOMAIN)
+                'message' => 'Cảm ơn bạn đã liên hệ. Chúng tôi sẽ phản hồi sớm nhất có thể!'
             ));
         } else {
             wp_send_json_error(array(
-                'message' => __('Sorry, there was an error sending your message. Please try again later.', VD_HOME_TEXT_DOMAIN)
+                'message' => 'Xin lỗi, đã có lỗi xảy ra khi gửi tin nhắn. Vui lòng thử lại sau.'
             ));
         }
     }
