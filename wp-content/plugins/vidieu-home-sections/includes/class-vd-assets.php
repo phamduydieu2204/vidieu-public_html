@@ -81,15 +81,6 @@ class VD_Assets {
                 VD_HOME_VERSION,
                 true
             );
-            
-            // Enqueue quickview inline fix script
-            wp_enqueue_script(
-                'vd-quickview-inline-fix',
-                VD_HOME_PLUGIN_URL . 'assets/js/quickview-inline-fix.js',
-                array('jquery', 'vd-custom-quickview'),
-                VD_HOME_VERSION,
-                true
-            );
         }
         
         // Enqueue select options open quickview script
@@ -128,39 +119,6 @@ class VD_Assets {
             'nonce' => wp_create_nonce('vidieu_ajax_nonce')
         ));
         
-        // Enqueue single product buy now script on product pages
-        if (is_singular('product')) {
-            wp_enqueue_script(
-                'vd-single-product-buy-now',
-                VD_HOME_PLUGIN_URL . 'assets/js/single-product-buy-now.js',
-                array('jquery', 'vd-home-script'),
-                VD_HOME_VERSION,
-                true
-            );
-        }
-        
-        // Enqueue contact form assets if contact shortcode is present
-        if ($this->has_contact_shortcode()) {
-            wp_enqueue_style(
-                'vd-contact-style',
-                VD_HOME_PLUGIN_URL . 'assets/css/contact.css',
-                array('vd-home-style'),
-                VD_HOME_VERSION
-            );
-            
-            wp_enqueue_script(
-                'vd-contact-script',
-                VD_HOME_PLUGIN_URL . 'assets/js/contact.js',
-                array('jquery'),
-                VD_HOME_VERSION,
-                true
-            );
-            
-            wp_localize_script('vd-contact-script', 'vd_ajax_object', array(
-                'ajax_url' => admin_url('admin-ajax.php'),
-                'error_message' => 'Đã có lỗi xảy ra. Vui lòng thử lại.'
-            ));
-        }
     }
     
     /**
@@ -202,18 +160,11 @@ class VD_Assets {
             return false;
         }
         
-        // Load on single product pages when buy now is enabled
-        if (is_singular('product') && VD_Admin::get_option('enable_buy_now', false)) {
-            return true;
-        }
-        
         // Check if this is front page or contains shortcodes anywhere
         $should_load = false;
         
         // Check for shortcodes in post content
-        if (has_shortcode($post->post_content, 'vidieu_home_products') || 
-            has_shortcode($post->post_content, 'vidieu_home_posts') || 
-            has_shortcode($post->post_content, 'vd_contact')) {
+        if (has_shortcode($post->post_content, 'vidieu_home_products') || has_shortcode($post->post_content, 'vidieu_home_posts')) {
             $should_load = true;
         }
         
@@ -237,9 +188,7 @@ class VD_Assets {
                 if (is_array($meta_array)) {
                     foreach ($meta_array as $meta_value) {
                         if (is_string($meta_value)) {
-                            if (strpos($meta_value, '[vidieu_home_products') !== false || 
-                                strpos($meta_value, '[vidieu_home_posts') !== false ||
-                                strpos($meta_value, '[vd_contact') !== false) {
+                            if (strpos($meta_value, '[vidieu_home_products') !== false || strpos($meta_value, '[vidieu_home_posts') !== false) {
                                 $should_load = true;
                                 break 2;
                             }
@@ -269,34 +218,5 @@ class VD_Assets {
     public static function should_load_assets_static() {
         $instance = self::get_instance();
         return $instance->should_load_assets();
-    }
-    
-    /**
-     * Check if contact shortcode is present
-     */
-    private function has_contact_shortcode() {
-        global $post;
-        if (!$post) {
-            return false;
-        }
-        
-        // Check in post content
-        if (has_shortcode($post->post_content, 'vd_contact')) {
-            return true;
-        }
-        
-        // Check in meta fields
-        $meta_values = get_post_meta($post->ID);
-        foreach ($meta_values as $meta_key => $meta_array) {
-            if (is_array($meta_array)) {
-                foreach ($meta_array as $meta_value) {
-                    if (is_string($meta_value) && strpos($meta_value, '[vd_contact') !== false) {
-                        return true;
-                    }
-                }
-            }
-        }
-        
-        return false;
     }
 }

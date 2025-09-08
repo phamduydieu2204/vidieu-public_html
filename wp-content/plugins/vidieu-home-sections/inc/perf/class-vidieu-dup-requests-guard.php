@@ -238,7 +238,7 @@ class Vidieu_Dup_Requests_Guard {
                 
                 // Skip if same request already pending
                 if (ajaxQueue[key] && ajaxQueue[key].state && ajaxQueue[key].state() === 'pending') {
-                    // Production: Duplicate AJAX prevention active
+                    console.log('[Vidieu Perf] Prevented duplicate AJAX: ' + key);
                     return ajaxQueue[key];
                 }
                 

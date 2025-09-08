@@ -14,6 +14,7 @@
         ajaxUrl: '/wp-admin/admin-ajax.php',
         isOrderReceived: false,
         isCheckout: false,
+        debug: false
     };
 
     // QR selectors
@@ -264,6 +265,8 @@
             return;
         }
         window.vcbQRInitialized = true;
+        
+        
         // Check for payment containers
         const $rightCol = $('#right-col');
         const $paymentInfo = $('#payment-info');
@@ -446,10 +449,12 @@
         });
     }
 
-    // Debug logging - removed for production
-    // Keep function signature for compatibility but make it a no-op
+    // Debug logging - only active when VIDIEU_VCBQR_DEBUG is enabled
     function log(message, data) {
-        // Production: no logging
+        // Only log when debug flag is explicitly enabled
+        if ((config.debug === 1 || config.debug === '1' || window.VIDIEU_VCBQR_DEBUG) && console && console.log) {
+            console.info('[VCB QR Compat] ' + message, data || '');
+        }
     }
 
     // Manage spinner placement and visibility
@@ -528,8 +533,10 @@
         $('#vcb-qr-spinner-slot').hide();
         $('.momo-loading').hide();
     }
+    
     // Initialize when DOM is ready
     $(document).ready(function() {
+        
         // Remove our extra script tag from DOM
         $('#vidieu-vcb-qr-compat-js-extra').remove();
         

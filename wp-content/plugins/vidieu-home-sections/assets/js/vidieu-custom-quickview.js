@@ -463,5 +463,7 @@
         }
     });
     
+    // Expose to global scope for debugging and control
+    window.VidieuCustomQuickview = VidieuCustomQuickview;
     
 })(jQuery);

@@ -99,7 +99,8 @@ class VD_Buy_Now {
            data-product-type="<?php echo esc_attr($product_type); ?>"
            data-action="<?php echo esc_attr($button_action); ?>"
            data-buy-now-label="<?php echo esc_attr($simple_label); ?>"
-           data-select-label="<?php echo esc_attr($variable_label); ?>">
+           data-select-label="<?php echo esc_attr($variable_label); ?>"
+           data-nonce="<?php echo wp_create_nonce('vd_buy_now_' . $product_id); ?>">
             <?php echo esc_html($button_label); ?>
         </a>
         <?php

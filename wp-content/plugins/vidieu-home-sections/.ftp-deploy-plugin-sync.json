@@ -1,13 +1,13 @@
 {
     "description": "DO NOT DELETE THIS FILE. This file is used to keep track of which files have been synced in the most recent deployment. If you delete this file a resync will need to be done (which can take a while) - read more: https://github.com/SamKirkland/FTP-Deploy-Action",
     "version": "1.0.0",
-    "generatedTime": 1757329381399,
+    "generatedTime": 1757246994522,
     "data": [
         {
             "type": "file",
             "name": ".ftp-deploy-plugin-sync.json",
-            "size": 12981,
-            "hash": "9b940300013be819642919f0a63dec8f32f2356eb90fabb503d6fba75e800667"
+            "size": 10509,
+            "hash": "e25ecefa38a0b2a7e7ee3e8cd7cd6708f305468e5bb40418d301c07028a9d6bb"
         },
         {
             "type": "file",
@@ -18,8 +18,8 @@
         {
             "type": "file",
             "name": "CHANGELOG.md",
-            "size": 10602,
-            "hash": "7469a1e4021cd6176a04e4301fda4d13f517b4145b2aab0a60d11ada0151f0ec"
+            "size": 5613,
+            "hash": "fff5296be90d09a155175b29ba95ab5673b70f0deefb59aa993570f193a2d6d9"
         },
         {
             "type": "file",
@@ -72,8 +72,8 @@
         {
             "type": "file",
             "name": "vidieu-home-sections.php",
-            "size": 5245,
-            "hash": "22233dc9ce09a17f901333f22e7e1ab2f5225265002b3f4729b35da6948c7703"
+            "size": 5467,
+            "hash": "b5427d92055f790dc669f5f3de9f48e1b225b6f4762e3d0c0a125a2058a7459d"
         },
         {
             "type": "folder",
@@ -91,21 +91,9 @@
         },
         {
             "type": "file",
-            "name": "docs/buy-now-simple-logic.md",
-            "size": 17078,
-            "hash": "9f65e4afc8b5ab3c9472e1ec38218c3ca37f7e47dc565cafce1fd039522ac997"
-        },
-        {
-            "type": "file",
             "name": "docs/cleanup-notes.md",
             "size": 1621,
             "hash": "21bec051011833053f70476f3cf54d41ace23c6b8b2b3a2a1ccca534bb045313"
-        },
-        {
-            "type": "file",
-            "name": "docs/cleanup-report-2025-09-07.md",
-            "size": 3770,
-            "hash": "6a7e6f4e2cdc0080226860683ef7cdede1168f09d9db5ae077906bc3755193c8"
         },
         {
             "type": "file",
@@ -120,10 +108,6 @@
         {
             "type": "folder",
             "name": "inc/perf"
-        },
-        {
-            "type": "folder",
-            "name": "inc/seo"
         },
         {
             "type": "file",
@@ -146,20 +130,14 @@
         {
             "type": "file",
             "name": "includes/class-vd-assets.php",
-            "size": 9734,
-            "hash": "9d9fc25a251e3d426b165599fa192ed3be05d397eac13a457191aba4ee30e97b"
+            "size": 6962,
+            "hash": "8b7829bcdfc523658a6e4e68fac52b9aca2a4adad95286a94e58c60a0c7343f2"
         },
         {
             "type": "file",
             "name": "includes/class-vd-buy-now.php",
-            "size": 11880,
-            "hash": "645388601eff2b8ea1f76f9ad805e6de894c416af5ce035f1a5acacf7736420e"
-        },
-        {
-            "type": "file",
-            "name": "includes/class-vd-contact.php",
-            "size": 22141,
-            "hash": "3fe4dfd6697e6cf349ad497480379d66f9dbf9dcd76e9d535d64522f4d4642c5"
+            "size": 11964,
+            "hash": "c4eb5425ef3910cc238b0b04f137496365488252cdce636ffd6e6c28208e6e2e"
         },
         {
             "type": "file",
@@ -229,18 +207,6 @@
         },
         {
             "type": "file",
-            "name": "assets/css/contact.css",
-            "size": 6973,
-            "hash": "e226b4a5746a2585bdcc80ad6d09002dd620b72a245053416cb26e8060b0c92e"
-        },
-        {
-            "type": "file",
-            "name": "assets/css/font-fallback.css",
-            "size": 834,
-            "hash": "c2f005fe20fb3b75db0f72d97b5dcdf3a18fd970af63094d08dcd38442f1a40a"
-        },
-        {
-            "type": "file",
             "name": "assets/css/vcb-qr-compat.css",
             "size": 10292,
             "hash": "50a04e461e68f2b09050778d59f130c8aaee17bc0f227791f95b9d3024e27741"
@@ -265,27 +231,9 @@
         },
         {
             "type": "file",
-            "name": "assets/js/contact.js",
-            "size": 4735,
-            "hash": "b352c91c47c19777fd97627087fb6e33e134c226078a1c79021ad978f782458c"
-        },
-        {
-            "type": "file",
-            "name": "assets/js/quickview-inline-fix.js",
-            "size": 5442,
-            "hash": "a3d01c1b0d9cdb85d68838e67779477f35d948f0cdd15987c9f6827cb7df2d6e"
-        },
-        {
-            "type": "file",
-            "name": "assets/js/single-product-buy-now.js",
-            "size": 9422,
-            "hash": "0ed1671b4d2a3c8063dabe718035f4fd37e33a08926de44aa4eb452e759c11c5"
-        },
-        {
-            "type": "file",
             "name": "assets/js/vcb-qr-compat.js",
-            "size": 21442,
-            "hash": "bd52f606137e56d69aebee343f5812803d7de1f3094dd8041c3390343fec73ad"
+            "size": 21667,
+            "hash": "bfd369171de8cca7b5eceffef884566bb382f517772a3e51335fe5828a1ce463"
         },
         {
             "type": "file",
@@ -308,14 +256,14 @@
         {
             "type": "file",
             "name": "assets/js/vidieu-custom-quickview.js",
-            "size": 20114,
-            "hash": "dd71aa17a4b93c8a956d77a8d3f6ee792b08fdb15d148c54a979d0737903d4f7"
+            "size": 20228,
+            "hash": "93634b6ad23ab5326c034adb9f9ca4bb6bced8534cd93e390e404b3b01ba739d"
         },
         {
             "type": "file",
             "name": "assets/js/vidieu-home.js",
-            "size": 78532,
-            "hash": "1dee32327e3ae6208daa6dfdab00f46bcbc406353dce073c7b60ab5379583836"
+            "size": 78579,
+            "hash": "caefd5ca83a51d75d7ed710d433f1ea43c70ea0513ee448364d7588dd8c7b8a3"
         },
         {
             "type": "folder",
@@ -348,8 +296,8 @@
         {
             "type": "file",
             "name": "inc/perf/class-vidieu-dup-requests-guard-v2-ultimate.php",
-            "size": 43828,
-            "hash": "fcbe822e0b9787193df6e79e48edd49e0259554c3d828ef09166fcb5081fe6f8"
+            "size": 44120,
+            "hash": "78e9593c87b70cc8dd612072ef02f98c5ac1d694ec3f340525be861986c8afdc"
         },
         {
             "type": "file",
@@ -360,26 +308,8 @@
         {
             "type": "file",
             "name": "inc/perf/class-vidieu-dup-requests-guard.php",
-            "size": 12522,
-            "hash": "dedc5e409c454ae596dbf34ab7df857c996f26df915730dab31bca69c8ada3ce"
-        },
-        {
-            "type": "file",
-            "name": "inc/perf/class-vidieu-font-cleanup.php",
-            "size": 6656,
-            "hash": "989f037f70efeef7a36d33e4437bd6bd898d70262aca745e71c906e492588706"
-        },
-        {
-            "type": "file",
-            "name": "inc/seo/class-vidieu-seo-bootstrap.php",
-            "size": 23687,
-            "hash": "d272cfeea1c8f0f9cd2c37ebe3c7eba2f64a6648d81b663004a6271ffd41888e"
-        },
-        {
-            "type": "file",
-            "name": "inc/seo/class-vidieu-seo-enhanced.php",
-            "size": 36481,
-            "hash": "8724fb90587f9a29b62e20150d1491f55afac622dbf6154e2c08e714dff57609"
+            "size": 12537,
+            "hash": "690b1a7c26f28772b8d9e5153d3c7683c4247fc5c53c9bd371fef27a3516affa"
         },
         {
             "type": "file",

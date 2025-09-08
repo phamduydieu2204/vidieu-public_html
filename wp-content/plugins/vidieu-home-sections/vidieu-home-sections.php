@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Vidieu Home Sections
  * Description: Tạo các khối sản phẩm và bài viết tùy biến cho trang chủ Vidieu.vn
- * Version: 1.6.2
+ * Version: 1.2.6
  * Author: Vidieu Development Team
  * Text Domain: vidieu-home-sections
  * Domain Path: /languages
@@ -18,7 +18,7 @@ if (!defined('ABSPATH')) {
 }
 
 // Define plugin constants
-define('VD_HOME_VERSION', '1.7.1');
+define('VD_HOME_VERSION', '1.2.6');
 define('VD_HOME_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('VD_HOME_PLUGIN_URL', plugin_dir_url(__FILE__));
 define('VD_HOME_TEXT_DOMAIN', 'vidieu-home-sections');
@@ -84,34 +84,24 @@ class Vidieu_Home_Sections {
         require_once VD_HOME_PLUGIN_DIR . 'includes/class-vd-page-sidebar-mappings.php';
         require_once VD_HOME_PLUGIN_DIR . 'includes/class-vd-contact.php';
         
-        // Performance optimization - Using V2 Ultimate (most optimized version)
+        // Performance optimizations - V2 Ultimate priority based on HAR analysis
         if (file_exists(VD_HOME_PLUGIN_DIR . 'inc/perf/class-vidieu-dup-requests-guard-v2-ultimate.php')) {
             require_once VD_HOME_PLUGIN_DIR . 'inc/perf/class-vidieu-dup-requests-guard-v2-ultimate.php';
-        }
-        
-        // Font cleanup - Fix 404s and unused preloads
-        if (file_exists(VD_HOME_PLUGIN_DIR . 'inc/perf/class-vidieu-font-cleanup.php')) {
-            require_once VD_HOME_PLUGIN_DIR . 'inc/perf/class-vidieu-font-cleanup.php';
+        } elseif (file_exists(VD_HOME_PLUGIN_DIR . 'inc/perf/class-vidieu-dup-requests-guard-v2-safe.php')) {
+            require_once VD_HOME_PLUGIN_DIR . 'inc/perf/class-vidieu-dup-requests-guard-v2-safe.php';
+        } elseif (file_exists(VD_HOME_PLUGIN_DIR . 'inc/perf/class-vidieu-dup-requests-guard-v2-stepped.php')) {
+            require_once VD_HOME_PLUGIN_DIR . 'inc/perf/class-vidieu-dup-requests-guard-v2-stepped.php';
+        } elseif (file_exists(VD_HOME_PLUGIN_DIR . 'inc/perf/class-vidieu-dup-requests-guard-v2-enhanced.php')) {
+            require_once VD_HOME_PLUGIN_DIR . 'inc/perf/class-vidieu-dup-requests-guard-v2-enhanced.php';
+        } elseif (file_exists(VD_HOME_PLUGIN_DIR . 'inc/perf/class-vidieu-dup-requests-guard-v2.php')) {
+            require_once VD_HOME_PLUGIN_DIR . 'inc/perf/class-vidieu-dup-requests-guard-v2.php';
+        } elseif (file_exists(VD_HOME_PLUGIN_DIR . 'inc/perf/class-vidieu-dup-requests-guard.php')) {
+            require_once VD_HOME_PLUGIN_DIR . 'inc/perf/class-vidieu-dup-requests-guard.php';
         }
         
         // Compatibility layers
         if (file_exists(VD_HOME_PLUGIN_DIR . 'compat/compat-vcbmh.php')) {
             require_once VD_HOME_PLUGIN_DIR . 'compat/compat-vcbmh.php';
-        }
-        
-        // SEO Bootstrap
-        if (file_exists(VD_HOME_PLUGIN_DIR . 'inc/seo/class-vidieu-seo-bootstrap.php')) {
-            require_once VD_HOME_PLUGIN_DIR . 'inc/seo/class-vidieu-seo-bootstrap.php';
-        }
-        
-        // Enhanced SEO Module (for 95+ score)
-        if (file_exists(VD_HOME_PLUGIN_DIR . 'inc/seo/class-vidieu-seo-enhanced.php')) {
-            require_once VD_HOME_PLUGIN_DIR . 'inc/seo/class-vidieu-seo-enhanced.php';
-        }
-        
-        // Mobile Fix Module
-        if (file_exists(VD_HOME_PLUGIN_DIR . 'inc/mobile-fix/class-vidieu-mobile-fix.php')) {
-            require_once VD_HOME_PLUGIN_DIR . 'inc/mobile-fix/class-vidieu-mobile-fix.php';
         }
     }
     

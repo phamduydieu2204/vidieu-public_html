@@ -1135,6 +1135,7 @@
             var productId = $button.data('product-id');
             var productType = $button.data('product-type');
             var action = $button.data('action');
+            var nonce = $button.data('nonce');
             var variationSelected = $button.attr('data-variation-selected') === 'true';
             
             // Find product section and content
