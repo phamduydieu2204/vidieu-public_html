@@ -140,16 +140,16 @@ function vidieu_floating_contact_widget() {
     </div>
     
     <style>
-        /* Floating contact widget container - positioned at left bottom */
+        /* Floating contact widget container - positioned like NASA buttons */
         .vd-floating-contact-widget {
             position: fixed;
             bottom: 10px;
-            left: 25px;
+            right: 25px;
             z-index: 9999;
             display: flex;
             flex-direction: column;
             gap: 10px;
-            align-items: flex-start;
+            align-items: flex-end;
         }
         
         /* Floating item wrapper */
@@ -257,7 +257,7 @@ function vidieu_floating_contact_widget() {
         /* Slide content styling */
         .vd-slide-content {
             position: absolute;
-            left: 60px;
+            right: 60px;
             background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(10px);
             -webkit-backdrop-filter: blur(10px);
@@ -267,7 +267,7 @@ function vidieu_floating_contact_widget() {
             white-space: nowrap;
             opacity: 0;
             visibility: hidden;
-            transform: translateX(-20px);
+            transform: translateX(20px);
             transition: all 0.3s ease;
             pointer-events: none;
             min-width: 160px;
@@ -276,12 +276,12 @@ function vidieu_floating_contact_widget() {
         .vd-slide-content:after {
             content: '';
             position: absolute;
-            left: -8px;
+            right: -8px;
             top: 50%;
             transform: translateY(-50%);
             width: 0;
             height: 0;
-            border-right: 8px solid rgba(255, 255, 255, 0.95);
+            border-left: 8px solid rgba(255, 255, 255, 0.95);
             border-top: 8px solid transparent;
             border-bottom: 8px solid transparent;
         }
@@ -344,9 +344,9 @@ function vidieu_floating_contact_widget() {
         }
         
         /* Animation on page load */
-        @keyframes slideInLeft {
+        @keyframes slideInRight {
             from {
-                transform: translateX(-100px);
+                transform: translateX(100px);
                 opacity: 0;
             }
             to {
@@ -356,7 +356,7 @@ function vidieu_floating_contact_widget() {
         }
         
         .vd-floating-item {
-            animation: slideInLeft 0.5s ease-out backwards;
+            animation: slideInRight 0.5s ease-out backwards;
         }
         
         .vd-floating-item:nth-child(1) {

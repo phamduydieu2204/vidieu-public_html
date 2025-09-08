@@ -1,13 +1,13 @@
 {
     "description": "DO NOT DELETE THIS FILE. This file is used to keep track of which files have been synced in the most recent deployment. If you delete this file a resync will need to be done (which can take a while) - read more: https://github.com/SamKirkland/FTP-Deploy-Action",
     "version": "1.0.0",
-    "generatedTime": 1757254607272,
+    "generatedTime": 1757267009367,
     "data": [
         {
             "type": "file",
             "name": ".ftp-deploy-plugin-sync.json",
-            "size": 10509,
-            "hash": "e25ecefa38a0b2a7e7ee3e8cd7cd6708f305468e5bb40418d301c07028a9d6bb"
+            "size": 12107,
+            "hash": "645f9a0db250e417ff8d2fa7b71f136cd2c2ef1ea7057c20a50f99af4e70a7cd"
         },
         {
             "type": "file",
@@ -18,8 +18,8 @@
         {
             "type": "file",
             "name": "CHANGELOG.md",
-            "size": 9234,
-            "hash": "38782a2dcb76979bedd98f647ca945c87b2698d77a93e2ebf52c5679292fc279"
+            "size": 9789,
+            "hash": "6f2b2725ee386aa7ff94dff624560772c3466e34d7820b7f42ff3e768ec1a5bd"
         },
         {
             "type": "file",
@@ -73,7 +73,7 @@
             "type": "file",
             "name": "vidieu-home-sections.php",
             "size": 5134,
-            "hash": "f2ef95f2903c476221715a6a79f9a901634177f1d0a16c1d45a4b218205560ff"
+            "hash": "c1088f220f4462fb01c48edbe0845f29715ade7b4310a91e1d9e451b27417779"
         },
         {
             "type": "folder",
@@ -91,9 +91,21 @@
         },
         {
             "type": "file",
+            "name": "docs/buy-now-simple-logic.md",
+            "size": 17078,
+            "hash": "9f65e4afc8b5ab3c9472e1ec38218c3ca37f7e47dc565cafce1fd039522ac997"
+        },
+        {
+            "type": "file",
             "name": "docs/cleanup-notes.md",
             "size": 1621,
             "hash": "21bec051011833053f70476f3cf54d41ace23c6b8b2b3a2a1ccca534bb045313"
+        },
+        {
+            "type": "file",
+            "name": "docs/cleanup-report-2025-09-07.md",
+            "size": 3770,
+            "hash": "6a7e6f4e2cdc0080226860683ef7cdede1168f09d9db5ae077906bc3755193c8"
         },
         {
             "type": "file",
@@ -134,14 +146,14 @@
         {
             "type": "file",
             "name": "includes/class-vd-assets.php",
-            "size": 6962,
-            "hash": "8b7829bcdfc523658a6e4e68fac52b9aca2a4adad95286a94e58c60a0c7343f2"
+            "size": 7889,
+            "hash": "9cd6950e947cb700d8773e1f2a2cb5fbfdf830ae7c851fa3c4047ccc896002ee"
         },
         {
             "type": "file",
             "name": "includes/class-vd-buy-now.php",
-            "size": 11964,
-            "hash": "c4eb5425ef3910cc238b0b04f137496365488252cdce636ffd6e6c28208e6e2e"
+            "size": 11880,
+            "hash": "645388601eff2b8ea1f76f9ad805e6de894c416af5ce035f1a5acacf7736420e"
         },
         {
             "type": "file",
@@ -241,9 +253,21 @@
         },
         {
             "type": "file",
+            "name": "assets/js/quickview-inline-fix.js",
+            "size": 5442,
+            "hash": "a3d01c1b0d9cdb85d68838e67779477f35d948f0cdd15987c9f6827cb7df2d6e"
+        },
+        {
+            "type": "file",
+            "name": "assets/js/single-product-buy-now.js",
+            "size": 9422,
+            "hash": "0ed1671b4d2a3c8063dabe718035f4fd37e33a08926de44aa4eb452e759c11c5"
+        },
+        {
+            "type": "file",
             "name": "assets/js/vcb-qr-compat.js",
-            "size": 21463,
-            "hash": "964eb9a312c485ca1ed1f0e12a5067316d48d361b2e8052b6efba610db60acf8"
+            "size": 21442,
+            "hash": "bd52f606137e56d69aebee343f5812803d7de1f3094dd8041c3390343fec73ad"
         },
         {
             "type": "file",
@@ -266,14 +290,14 @@
         {
             "type": "file",
             "name": "assets/js/vidieu-custom-quickview.js",
-            "size": 20228,
-            "hash": "93634b6ad23ab5326c034adb9f9ca4bb6bced8534cd93e390e404b3b01ba739d"
+            "size": 20114,
+            "hash": "dd71aa17a4b93c8a956d77a8d3f6ee792b08fdb15d148c54a979d0737903d4f7"
         },
         {
             "type": "file",
             "name": "assets/js/vidieu-home.js",
-            "size": 78579,
-            "hash": "caefd5ca83a51d75d7ed710d433f1ea43c70ea0513ee448364d7588dd8c7b8a3"
+            "size": 78532,
+            "hash": "1dee32327e3ae6208daa6dfdab00f46bcbc406353dce073c7b60ab5379583836"
         },
         {
             "type": "folder",
