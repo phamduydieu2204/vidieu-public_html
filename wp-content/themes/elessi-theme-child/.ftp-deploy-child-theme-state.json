@@ -1,13 +1,13 @@
 {
     "description": "DO NOT DELETE THIS FILE. This file is used to keep track of which files have been synced in the most recent deployment. If you delete this file a resync will need to be done (which can take a while) - read more: https://github.com/SamKirkland/FTP-Deploy-Action",
     "version": "1.0.0",
-    "generatedTime": 1757258699055,
+    "generatedTime": 1757323190310,
     "data": [
         {
             "type": "file",
             "name": ".ftp-deploy-child-theme-state.json",
             "size": 8771,
-            "hash": "8fd50bd26733ead9513c532499c63f4fa9265baf58dd94b2c3c5ec00ee0cf72c"
+            "hash": "52a7d980a733fdd736bc1880138d6b4fc46ad7410a66e805b796ad5ef9b1ba41"
         },
         {
             "type": "file",
@@ -147,9 +147,15 @@
         },
         {
             "type": "file",
+            "name": "translation-cleanup-report.md",
+            "size": 1701,
+            "hash": "9bd0c71ae2b18792d7f09918cdd1b817c90378fe141f5aa597e9be076cb1c9cf"
+        },
+        {
+            "type": "file",
             "name": "translations-vietnamese.php",
-            "size": 9684,
-            "hash": "58cd43ab8fb23aa8babb2905e48d1e6f3716df803bd072b037ebdeae6bf43dc4"
+            "size": 23636,
+            "hash": "755008cfe39f92e0dcb74aa994716d0479c6d927d22f4107662d3db02d14a3ff"
         },
         {
             "type": "file",
@@ -236,6 +242,12 @@
             "name": "assets/js/hide-empty-topbar.js",
             "size": 6177,
             "hash": "0e2a3d17f520b9be5927056ddafadf683b84dcfe33ef3752e44c2115e2635ee5"
+        },
+        {
+            "type": "file",
+            "name": "assets/js/product-translations.js",
+            "size": 5384,
+            "hash": "1201664de808026c4e079ffa68539b4afce32afb7dcbc9513b8811aeeea5b26b"
         },
         {
             "type": "file",
