@@ -525,7 +525,22 @@ function elessi_child_vietnamese_translations($translated_text, $text, $domain) 
 
             case "people":
                 return "người";
-                
+
+            case "Close":
+                return "Đóng";
+
+            case "My Cart":
+                return "Giỏ hàng của tôi";
+
+            case "No products in the cart.":
+                return "Chưa có sản phẩm trong giỏ hàng.";
+
+            case "RETURN TO SHOP":
+                return "QUAY LẠI CỬA HÀNG";
+            
+            case "Related Products":
+                return "Sản phẩm liên quan";
+
             // Add more translations as needed...
         }
     }
