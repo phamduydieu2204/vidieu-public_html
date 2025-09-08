@@ -269,6 +269,22 @@ function elessi_child_vietnamese_translations($translated_text, $text, $domain) 
 
             case "Hello":
                 return "Xin chào";
+
+            case "Size Guide":
+                return "Hướng dẫn kích thước";
+
+            case "Delivery & Return":
+                return "Giao hàng & Đổi trả";
+
+            case "people are viewing this right now":
+                return "người đang xem sản phẩm này ngay bây giờ";
+
+            case "Share":
+                return "Chia sẻ";
+
+            case "Guaranteed Safe Checkout":
+                return "Thanh toán an toàn được đảm bảo";
+
                 
             // Add more translations as needed...
         }
