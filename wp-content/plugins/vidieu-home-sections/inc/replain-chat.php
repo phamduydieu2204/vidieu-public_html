@@ -217,8 +217,7 @@ class VD_Replain_Chat {
             }
         };
         
-        <?php if (!$hide_on_mobile || !wp_is_mobile()) : ?>
-        // Load Re:plain immediately on desktop or if not hiding on mobile
+        // Always load Re:plain on both desktop and mobile
         (function(u){
             var s=document.createElement('script');
             s.async=true;
@@ -233,7 +232,6 @@ class VD_Replain_Chat {
                 document.body.classList.add('replain-loaded');
             };
         })('https://widget.replain.cc/dist/client.js');
-        <?php endif; ?>
         </script>
         <!-- End Re:plain -->
         <?php

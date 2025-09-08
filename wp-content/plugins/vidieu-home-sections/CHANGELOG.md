@@ -5,6 +5,17 @@ All notable changes to this plugin will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.7.6] - 2025-09-08
+
+### Changed
+- Mobile: Re:plain bubble now loads but positioned outside viewport (bottom: -100px)
+- Re:plain script now loads on both desktop and mobile
+- Removed conditional loading based on device type
+
+### Improved
+- Re:plain features work on mobile even with hidden bubble
+- Better support for Re:plain analytics and tracking on all devices
+
 ## [1.7.5] - 2025-09-08
 
 ### Added

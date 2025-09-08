@@ -1,6 +1,6 @@
 # Re:plain Live Chat Integration
 
-**Version:** 1.7.5  
+**Version:** 1.7.6  
 **Last Updated:** 2025-09-08  
 **Context:** Re:plain live chat widget integration for Vidieu.vn
 
@@ -17,11 +17,11 @@ This module integrates Re:plain live chat widget into the website with customize
 - Z-index: 99997 (above most elements but below mobile popup)
 
 ### Mobile (<768px)
-- Re:plain bubble is **hidden**
+- Re:plain bubble is **positioned outside viewport** (bottom: -100px)
+- Bubble loads but stays below visible area
 - Added "Chat trực tiếp (Re:plain)" item to mobile chat popup
-- Lazy loading - script loads only when user clicks the chat item
 - Opens fullscreen when activated
-- No page reload required
+- Script loads immediately on page load
 
 ## Configuration
 
@@ -96,9 +96,18 @@ vidieu-home-sections/
 
 ### CSS Behavior
 - Desktop: Fixed at right-bottom (20px right, 60px bottom)
-- Mobile: Hides widget with `display: none` until explicitly opened
+- Mobile: Positioned outside viewport (bottom: -100px) but still rendered
 - Body class `replain-loaded` added when Re:plain script loads
 - Z-index management to avoid conflicts with other elements
+
+### Position Changes (v1.7.6)
+- **Mobile positioning update**:
+  - Bubble now loads on mobile but positioned outside viewport (bottom: -100px)
+  - Re:plain script loads on both desktop and mobile
+  - Allows Re:plain features to work even when bubble is hidden
+- **Desktop positioning** (unchanged):
+  - Fixed position at right-bottom (20px from right, 60px from bottom)
+  - Bottom offset ensures widget stays above bottom navigation
 
 ### Position Changes (v1.7.5)
 - **Desktop positioning**:
@@ -150,17 +159,19 @@ When opened on mobile, the widget gets class `replain-opened` to force visibilit
 
 ## Important Note
 
-**As of v1.7.5**: 
+**As of v1.7.6**: 
 - Desktop: Re:plain bubble positioned 60px above bottom to avoid bottom navigation
-- Mobile: Bubble completely hidden, access only through popup chat menu
-- Clean implementation without complex JavaScript positioning
+- Mobile: Bubble loads but positioned outside viewport (bottom: -100px)
+- Re:plain script loads on both desktop and mobile for full functionality
+- Clean CSS-only implementation without complex JavaScript positioning
 
 ## Testing Checklist
 
 - [ ] Desktop: Re:plain widget appears at right-bottom (20px, 60px)
 - [ ] Desktop: Widget positioned above bottom navigation
 - [ ] Desktop: No overlap with bottom navigation bar
-- [ ] Mobile: Widget bubble is completely hidden
+- [ ] Mobile: Widget bubble loads but positioned outside viewport (bottom: -100px)
+- [ ] Mobile: Widget is not visible but Re:plain functionality works
 - [ ] Mobile: "Chat trực tiếp (Re:plain)" appears in popup
 - [ ] Mobile: Chat opens fullscreen when clicked from popup
 - [ ] Admin: Scripts don't load in wp-admin

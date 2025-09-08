@@ -18,23 +18,27 @@
     }
 }
 
-/* Mobile: Hide Re:plain bubble by default */
+/* Mobile: Show Re:plain bubble outside viewport */
 @media (max-width: 768px) {
+    /* Position Re:plain widget outside viewport on mobile */
     #replain-widget,
     .replain-widget,
-    [id*="replain"]:not(.replain-opened),
+    [id*="replain"]:not(script):not(style):not(.replain-opened),
     [class*="replain-messenger"]:not(.replain-opened) {
-        display: none !important;
-        visibility: hidden !important;
+        position: fixed !important;
+        bottom: -100px !important; /* Position below viewport */
+        right: 20px !important;
+        z-index: 99997 !important;
+        /* Keep visible but outside viewport */
+        display: block !important;
+        visibility: visible !important;
     }
     
-    /* Show when explicitly opened via JS */
+    /* When opened, show fullscreen */
     #replain-widget.replain-opened,
     .replain-widget.replain-opened,
     [id*="replain"].replain-opened,
     [class*="replain-messenger"].replain-opened {
-        display: block !important;
-        visibility: visible !important;
         position: fixed !important;
         z-index: 999999 !important;
         top: 0 !important;
