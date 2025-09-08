@@ -183,13 +183,13 @@ function elessi_child_vietnamese_translations($translated_text, $text, $domain) 
             case "Manage Your Items List":
                 return "Quản lý danh sách sản phẩm của bạn";
 
-            case "CHECKOUT DETAILS":
+            case "Checkout Details":
                 return "Chi tiết thanh toán";
 
             case "Checkout Your Items List":
                 return "Thanh toán danh sách sản phẩm của bạn";
 
-            case "ORDER CONPLETE":
+            case "Order Complete":
                 return "Đơn hàng hoàn tất";
 
             case "Review Your Order":
@@ -213,7 +213,7 @@ function elessi_child_vietnamese_translations($translated_text, $text, $domain) 
             case "My account":
                 return "Tài khoản của tôi";
 
-            case "Login/Register":
+            case "Login / Register":
                 return "Đăng nhập/Đăng ký";
 
             case "Great to have you back!":
@@ -231,11 +231,11 @@ function elessi_child_vietnamese_translations($translated_text, $text, $domain) 
             case "Lost?":
                 return "Quên mật khẩu?";
 
-            case "SING IN TO YOUR ACCOUNT":
+            case "SIGN IN TO YOUR ACCOUNT":
                 return "Đăng nhập vào tài khoản của bạn";
 
-            case "Not a member?":
-                return "Chưa có tài khoản?";
+            case "Not a member":
+                return "Chưa có tài khoản";
 
             case "Create an account":
                 return "Tạo tài khoản";
