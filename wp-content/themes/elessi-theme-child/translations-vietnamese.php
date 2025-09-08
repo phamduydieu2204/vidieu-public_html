@@ -496,8 +496,8 @@ function elessi_child_vietnamese_translations($translated_text, $text, $domain) 
             case "Guaranteed Safe Checkout":
                 return "Thanh toán an toàn được đảm bảo";
 
-            case "{n} people are viewing this right now":
-                return "{n} người đang xem sản phẩm này ngay bây giờ";
+            case "people are viewing this right now":
+                return "người đang xem sản phẩm này ngay bây giờ";
 
                 
             // Add more translations as needed...
