@@ -15,12 +15,26 @@
         left: 20px !important;
         right: auto !important;
         bottom: 20px !important;
+        z-index: 99998 !important;
     }
     
-    /* Ensure it doesn't conflict with right-side contact buttons */
+    /* Move contact icons to right-bottom */
     .nasa-contact-floating {
-        right: 20px;
-        left: auto;
+        position: fixed !important;
+        right: 20px !important;
+        bottom: 20px !important;
+        left: auto !important;
+        z-index: 99997 !important;
+    }
+    
+    /* Additional specificity for NASA theme contact buttons */
+    body .nasa-contact-floating,
+    body .nasa-fixed-contact,
+    body [class*="contact-float"],
+    body .contact-icons-wrapper {
+        right: 20px !important;
+        bottom: 20px !important;
+        left: auto !important;
     }
 }
 
@@ -110,4 +124,24 @@
 #replain-widget,
 .replain-widget {
     z-index: 99998 !important; /* Below mobile popup which is 99999 */
+}
+
+/* Additional rules to ensure proper positioning */
+@media (min-width: 769px) {
+    /* Ensure no overlap between Re:plain and contact icons */
+    body.replain-loaded .nasa-contact-floating {
+        right: 20px !important;
+        left: auto !important;
+    }
+    
+    /* If Re:plain widget has specific width */
+    body.replain-loaded #replain-widget,
+    body.replain-loaded .replain-widget {
+        max-width: calc(50% - 40px) !important;
+    }
+    
+    /* Contact icons should also have max width to prevent overlap */
+    body .nasa-contact-floating {
+        max-width: calc(50% - 40px) !important;
+    }
 }

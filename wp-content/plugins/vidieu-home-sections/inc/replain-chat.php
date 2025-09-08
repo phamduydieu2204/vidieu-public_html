@@ -205,6 +205,9 @@ class VD_Replain_Chat {
                     self.isLoaded = true;
                     self.isLoading = false;
                     
+                    // Add class to body for CSS targeting
+                    document.body.classList.add('replain-loaded');
+                    
                     // Wait a bit for Re:plain to initialize
                     setTimeout(function() {
                         // Execute all callbacks
@@ -239,6 +242,8 @@ class VD_Replain_Chat {
             // Mark as loaded when script loads
             s.onload = function() {
                 window.VidieuReplain.isLoaded = true;
+                // Add class to body for CSS targeting
+                document.body.classList.add('replain-loaded');
             };
         })('https://widget.replain.cc/dist/client.js');
         <?php endif; ?>

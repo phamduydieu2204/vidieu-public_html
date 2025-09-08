@@ -9,16 +9,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - Re:plain live chat integration with custom positioning and behavior
-- Desktop: Widget positioned at left-bottom corner to avoid conflicts
+- Desktop: Widget positioned at left-bottom corner (20px margin)
+- Desktop: Contact icons moved to right-bottom corner (20px margin)
 - Mobile: Hidden bubble with "Chat trực tiếp (Re:plain)" item in popup
 - Lazy loading on mobile - script loads only when user initiates chat
 - Global JavaScript API: window.VidieuReplain.open() for programmatic access
 - Configuration via constants: VIDIEU_REPLAIN_ENABLE, VIDIEU_REPLAIN_HIDE_ON_MOBILE
 - Comprehensive documentation in docs/replain.md
+- Body class 'replain-loaded' when script loads for CSS targeting
 
 ### Changed  
-- No modifications to existing functionality
-- All changes are additive and backward compatible
+- Contact icons position from default to fixed right-bottom on desktop
+- Max-width constraint (50%) for both Re:plain and contact icons to prevent overlap
+- Z-index management: Re:plain (99998), Contact icons (99997)
 
 ## [1.6.2] - 2025-09-07
 

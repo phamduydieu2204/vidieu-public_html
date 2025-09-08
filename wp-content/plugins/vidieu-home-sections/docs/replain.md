@@ -12,7 +12,9 @@ This module integrates Re:plain live chat widget into the website with customize
 
 ### Desktop
 - Widget positioned at **left-bottom** corner (20px margin)
-- Does not conflict with existing contact buttons on the right
+- Contact icons moved to **right-bottom** corner (20px margin)  
+- No overlap between Re:plain widget and contact icons
+- Both elements have max-width of 50% to ensure proper spacing
 - Loads immediately on page load
 
 ### Mobile  
@@ -101,9 +103,14 @@ vidieu-home-sections/
 - Prevents loading in admin area
 
 ### CSS Positioning
-- Desktop: Uses `!important` only for positioning to override Re:plain defaults
+- Desktop: 
+  - Re:plain: Fixed at left-bottom (20px margin) with z-index: 99998
+  - Contact icons: Fixed at right-bottom (20px margin) with z-index: 99997
+  - Both elements limited to max-width: 50% to prevent overlap
+  - Uses `!important` only where necessary to override theme defaults
 - Mobile: Hides widget with `display: none` until explicitly opened
 - Z-index management to prevent conflicts
+- Body class `replain-loaded` added when Re:plain script loads
 
 ### Mobile Integration
 - Dynamically injects Re:plain item into existing chat popup
@@ -142,14 +149,17 @@ When opened on mobile, the widget gets class `replain-opened` to force visibilit
 
 ## Testing Checklist
 
-- [ ] Desktop: Widget appears at left-bottom corner
-- [ ] Desktop: No overlap with right-side contact buttons
+- [ ] Desktop: Re:plain widget appears at left-bottom corner (20px margin)
+- [ ] Desktop: Contact icons appear at right-bottom corner (20px margin)
+- [ ] Desktop: No overlap between Re:plain and contact icons
+- [ ] Desktop: Both elements respect max-width constraint
 - [ ] Mobile: Widget bubble is hidden by default
 - [ ] Mobile: "Chat trực tiếp (Re:plain)" appears in popup
 - [ ] Mobile: Clicking item opens Re:plain without page reload
 - [ ] Mobile: Popup closes when Re:plain opens
 - [ ] Admin: No Re:plain script in wp-admin
 - [ ] Performance: Lazy load works on mobile
+- [ ] CSS: Body gets `replain-loaded` class when script loads
 
 ## Troubleshooting
 
