@@ -662,7 +662,13 @@ function elessi_child_vietnamese_translations($translated_text, $text, $domain) 
                 
             case "You must accept the terms and conditions before sending your message.":
                 return "Bạn phải chấp nhận điều khoản trước khi gửi.";
-                
+
+            case "CONTINUE READING  ➞":
+               return "ĐỌC TIẾP  ➞";
+
+            case "By admin":
+                return "Bởi admin";
+
             // Add more Contact Form 7 translations here...
         }
     }
