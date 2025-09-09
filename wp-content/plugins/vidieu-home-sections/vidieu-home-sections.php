@@ -84,19 +84,9 @@ class Vidieu_Home_Sections {
         require_once VD_HOME_PLUGIN_DIR . 'includes/class-vd-page-sidebar-mappings.php';
         require_once VD_HOME_PLUGIN_DIR . 'includes/class-vd-contact.php';
         
-        // Performance optimizations - V2 Ultimate priority based on HAR analysis
+        // Performance optimization
         if (file_exists(VD_HOME_PLUGIN_DIR . 'inc/perf/class-vidieu-dup-requests-guard-v2-ultimate.php')) {
             require_once VD_HOME_PLUGIN_DIR . 'inc/perf/class-vidieu-dup-requests-guard-v2-ultimate.php';
-        } elseif (file_exists(VD_HOME_PLUGIN_DIR . 'inc/perf/class-vidieu-dup-requests-guard-v2-safe.php')) {
-            require_once VD_HOME_PLUGIN_DIR . 'inc/perf/class-vidieu-dup-requests-guard-v2-safe.php';
-        } elseif (file_exists(VD_HOME_PLUGIN_DIR . 'inc/perf/class-vidieu-dup-requests-guard-v2-stepped.php')) {
-            require_once VD_HOME_PLUGIN_DIR . 'inc/perf/class-vidieu-dup-requests-guard-v2-stepped.php';
-        } elseif (file_exists(VD_HOME_PLUGIN_DIR . 'inc/perf/class-vidieu-dup-requests-guard-v2-enhanced.php')) {
-            require_once VD_HOME_PLUGIN_DIR . 'inc/perf/class-vidieu-dup-requests-guard-v2-enhanced.php';
-        } elseif (file_exists(VD_HOME_PLUGIN_DIR . 'inc/perf/class-vidieu-dup-requests-guard-v2.php')) {
-            require_once VD_HOME_PLUGIN_DIR . 'inc/perf/class-vidieu-dup-requests-guard-v2.php';
-        } elseif (file_exists(VD_HOME_PLUGIN_DIR . 'inc/perf/class-vidieu-dup-requests-guard.php')) {
-            require_once VD_HOME_PLUGIN_DIR . 'inc/perf/class-vidieu-dup-requests-guard.php';
         }
         
         // Compatibility layers
