@@ -1,0 +1,241 @@
+{
+    "description": "DO NOT DELETE THIS FILE. This file is used to keep track of which files have been synced in the most recent deployment. If you delete this file a resync will need to be done (which can take a while) - read more: https://github.com/SamKirkland/FTP-Deploy-Action",
+    "version": "1.0.0",
+    "generatedTime": 1757240599990,
+    "data": [
+        {
+            "type": "file",
+            "name": ".ftp-deploy-child-theme-state.json",
+            "size": 8348,
+            "hash": "1544bf3ef5c58980f200bd07fd45e8d122dfb4518e9f4ad9972389280f941b92"
+        },
+        {
+            "type": "file",
+            "name": "CHANGELOG_ORDER_RECEIVED_FIX.md",
+            "size": 3159,
+            "hash": "025ccce8c1c4b8a4c57f7923955c17e55eff4eed00e9b04f0166aafc5cf69a75"
+        },
+        {
+            "type": "file",
+            "name": "CHANGELOG_VIETQR.md",
+            "size": 2618,
+            "hash": "780ea633b89d2e9ae443183b84055354197213cfe14816dbb124c3794f084546"
+        },
+        {
+            "type": "file",
+            "name": "CHECKOUT_HEADER_FIX.md",
+            "size": 3327,
+            "hash": "916ab0c98d6cb3f4add0b0143d2efab0c8f04c265abdaee77600bc5fe631383f"
+        },
+        {
+            "type": "file",
+            "name": "CLEANUP_LOG.md",
+            "size": 10232,
+            "hash": "ecb883254ab056c959a0a2747eaf0d2d5136249812ba4616d240d59843c87364"
+        },
+        {
+            "type": "file",
+            "name": "CONTACT-FORM-GUIDE.md",
+            "size": 2511,
+            "hash": "1da3ccf37ad2d8acfad022d78f502912c1e41c0d32224ce5bf5afb6ef35044c3"
+        },
+        {
+            "type": "folder",
+            "name": "assets"
+        },
+        {
+            "type": "file",
+            "name": "cart-page-boxed-layout.php",
+            "size": 6921,
+            "hash": "da8208fc2f6f782a8870aa3c3effe271c2631f2555fa064d211ee990376eafab"
+        },
+        {
+            "type": "file",
+            "name": "contact-form-styles.css",
+            "size": 4092,
+            "hash": "d49835f05fb1e4618a0039438dea380555251c6d775ef0624d5a03914cccd5b9"
+        },
+        {
+            "type": "file",
+            "name": "contact-form-vietnamese-template.txt",
+            "size": 3743,
+            "hash": "ef693e17007044b90f2c47e7bb50a58e3d08782d73604915f6842999428e4b0c"
+        },
+        {
+            "type": "file",
+            "name": "contact-page-template.html",
+            "size": 7181,
+            "hash": "9f22e186f7d8b5b3b2585d932ddcebf33a798f14e50de15807905ea089f08586"
+        },
+        {
+            "type": "file",
+            "name": "empty-template.php",
+            "size": 243,
+            "hash": "b20d4db43ec43c26c25ff5d7ad71b8fbad0c23b61cdfc507c9b1e8bc5dc53e44"
+        },
+        {
+            "type": "file",
+            "name": "fix-cart-count-display.php",
+            "size": 21890,
+            "hash": "6661a8615400665a09d3a6a755c2af516fcd67b950715b5b3c4a3ed55997b8ec"
+        },
+        {
+            "type": "file",
+            "name": "fix-login-state-consistency.php",
+            "size": 8968,
+            "hash": "abc0cd33cc29b23da29806b6671e281cce152c5ba9090bb07451a20cb1afe0f9"
+        },
+        {
+            "type": "file",
+            "name": "floating-contact-widget.php",
+            "size": 28823,
+            "hash": "79c2abd844903bbf716bb12c1f9a86ec30d9e9706899430c8d701ca9a212932a"
+        },
+        {
+            "type": "file",
+            "name": "functions-ajax-performance.php",
+            "size": 10088,
+            "hash": "b9a87d346d6e3e1ea9d5de8295bf7ff1f0cf4d79a9f826c8a5a56a3b2b7b401b"
+        },
+        {
+            "type": "file",
+            "name": "functions-performance-v3.php",
+            "size": 39307,
+            "hash": "387be6f55d4a4d22a5ac410e9678c47dbdb4a498b0a841df094ff478e8c8f417"
+        },
+        {
+            "type": "file",
+            "name": "functions-performance.php",
+            "size": 10243,
+            "hash": "625bc44e8df396b305b5d64e8d31065a4fa30e7ff1246486f12c304c435efbe1"
+        },
+        {
+            "type": "file",
+            "name": "functions-vcb-mh-clean.php",
+            "size": 7243,
+            "hash": "e6ae12e253875997ae36c91ca33084ec06330cc3eba3c643c3c35ae1f1be4912"
+        },
+        {
+            "type": "file",
+            "name": "functions.php",
+            "size": 12933,
+            "hash": "73256c6f11f0225715029407a7e3fd026d7bc4e5d6dfa1d1710640667ce1ce95"
+        },
+        {
+            "type": "file",
+            "name": "hide-nasa-floating-buttons.php",
+            "size": 2149,
+            "hash": "2f18e37340ebdabe44abf05082677c04becdf359a3826cab4fb56191e3293a2e"
+        },
+        {
+            "type": "file",
+            "name": "mobile-bottom-bar-customization.php",
+            "size": 32380,
+            "hash": "6b6b5bceef9988d0c6a191a08968cb386df12316592f873458f5fc0e4be02043"
+        },
+        {
+            "type": "file",
+            "name": "style.css",
+            "size": 835,
+            "hash": "df244e5515bc2133200675c9e3187d6c7a4a36b70f299d658b2fcc4c22933232"
+        },
+        {
+            "type": "file",
+            "name": "translations-vietnamese.php",
+            "size": 9684,
+            "hash": "58cd43ab8fb23aa8babb2905e48d1e6f3716df803bd072b037ebdeae6bf43dc4"
+        },
+        {
+            "type": "file",
+            "name": "woocommerce-admin-order-display.php",
+            "size": 5323,
+            "hash": "e5061e2110b190185f6d93550b476ab53d862be88a349b1cd1358fe2b530a834"
+        },
+        {
+            "type": "file",
+            "name": "woocommerce-ajax-checkout-bypass.php",
+            "size": 20679,
+            "hash": "5970b11078ba5899e3d31af40514aa30148b12fa4cc1da3c01821276ed53ddf8"
+        },
+        {
+            "type": "file",
+            "name": "woocommerce-block-checkout-force-submit.js",
+            "size": 4426,
+            "hash": "6617a89496a277bd80a34e9e77c8cf804ccb58d8053bcd0b870ac90fe9803c70"
+        },
+        {
+            "type": "file",
+            "name": "woocommerce-block-checkout-hide-fields.css",
+            "size": 15767,
+            "hash": "d5b6ec21d9c62070fbfc990cbfd0f7d4e7f698e099c4f1f1c6720cbb712f5967"
+        },
+        {
+            "type": "file",
+            "name": "woocommerce-block-checkout-hide-fields.js",
+            "size": 13418,
+            "hash": "da337089fafc90f0d21abc0dcff2cd361536fc5ec7bd73c4264929437c81465a"
+        },
+        {
+            "type": "file",
+            "name": "woocommerce-block-checkout-validation-fix.js",
+            "size": 7934,
+            "hash": "7ba532451b72b098ddbe43e4730ce9621ded7985821db4c693860cf74feb6538"
+        },
+        {
+            "type": "file",
+            "name": "woocommerce-checkout-simple-fix.php",
+            "size": 9594,
+            "hash": "ec68e4b5f928fd5b1c26c0da5fcc50a8222bfb0685523e94db46db489660d8ed"
+        },
+        {
+            "type": "file",
+            "name": "woocommerce-thankyou-fix.php",
+            "size": 2618,
+            "hash": "273848795d0cea3708107589f2d973142f082c2acb1af33f1af1bf17a54d3a72"
+        },
+        {
+            "type": "file",
+            "name": "woocommerce-vietqr-integration.php",
+            "size": 18391,
+            "hash": "74f17d591434b3c8dde2b4a31db4036a0ab40dd82ba727f55d8249a447f5ef57"
+        },
+        {
+            "type": "folder",
+            "name": "assets/css"
+        },
+        {
+            "type": "folder",
+            "name": "assets/js"
+        },
+        {
+            "type": "file",
+            "name": "assets/css/hide-breadcrumb.css",
+            "size": 1595,
+            "hash": "b21855a884ff681e0b1a06ebdb154c6102416a94a235776b4768581834fc5a8e"
+        },
+        {
+            "type": "file",
+            "name": "assets/css/hide-empty-topbar.css",
+            "size": 2533,
+            "hash": "e8a0096e1ee11e76e30adaf04822bd9150b384a573184a7211a9dbee73b836ce"
+        },
+        {
+            "type": "file",
+            "name": "assets/js/hide-breadcrumb.js",
+            "size": 3103,
+            "hash": "57fca05f115170c7c4247b3d4402e9531959ec39c38c5402aeb030798e84e613"
+        },
+        {
+            "type": "file",
+            "name": "assets/js/hide-empty-topbar.js",
+            "size": 6177,
+            "hash": "0e2a3d17f520b9be5927056ddafadf683b84dcfe33ef3752e44c2115e2635ee5"
+        },
+        {
+            "type": "file",
+            "name": "assets/js/search-vietnamese.js",
+            "size": 1155,
+            "hash": "9474e70d4f5ab3c24fcf52f00fa6a078b7e17689359b77cccb5a3aead80aefb9"
+        }
+    ]
+}

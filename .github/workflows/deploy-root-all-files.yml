@@ -1,0 +1,55 @@
+name: Deploy ALL root files when root changed (FTP/FTPS)
+
+on:
+  push:
+    branches: ["main"]
+    # Chỉ kích hoạt khi có thay đổi ở các file ngay dưới public_html (root)
+    # '*' = file/dir ở root; '!*/*' = loại trừ mọi thứ trong thư mục con
+    paths:
+      - '*'        # tệp ngay tại root
+      - '!*/*'     # không theo dõi tệp trong thư mục con
+  workflow_dispatch: {}
+
+concurrency:
+  group: deploy-root
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      # Có thể đưa REMOTE_ROOT vào Secrets; nếu không có sẽ dùng mặc định dưới đây
+      REMOTE_ROOT: ${{ secrets.REMOTE_ROOT || '/domains/vidieu.vn/public_html' }}
+
+    steps:
+      - name: Checkout repo (full)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # Thu gom TOÀN BỘ các file ở root vào thư mục tạm để upload
+      - name: Collect ALL root files (no subfolders)
+        shell: bash
+        run: |
+          set -e
+          rm -rf .deploy-root
+          mkdir -p .deploy-root
+          # Lấy tất cả file nằm trực tiếp ở root (không có '/')
+          while IFS= read -r f; do
+            echo "Stage: $f"
+            install -D "$f" ".deploy-root/$f"
+          done < <(find . -maxdepth 1 -type f -printf '%P\n')
+          echo "---- Files to deploy (root) ----"
+          ls -la .deploy-root || true
+
+      - name: Deploy root files via FTP/FTPS
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+        with:
+          server:     ${{ secrets.FTP_SERVER }}
+          username:   ${{ secrets.FTP_USERNAME }}
+          password:   ${{ secrets.FTP_PASSWORD }}
+          port:       ${{ secrets.FTP_PORT }}
+          protocol:   ftps                   # nếu host không hỗ trợ FTPS, đổi thành: ftp
+          local-dir:  ./.deploy-root/        # CHỈ upload file root đã gom
+          server-dir: ${{ env.REMOTE_ROOT }}/
+          log-level:  verbose

@@ -82,7 +82,6 @@ class Vidieu_Home_Sections {
         require_once VD_HOME_PLUGIN_DIR . 'includes/class-vd-buy-now.php';
         require_once VD_HOME_PLUGIN_DIR . 'includes/class-vd-translations.php';
         require_once VD_HOME_PLUGIN_DIR . 'includes/class-vd-page-sidebar-mappings.php';
-        require_once VD_HOME_PLUGIN_DIR . 'includes/class-vd-contact.php';
         
         // Performance optimizations - V2 Ultimate priority based on HAR analysis
         if (file_exists(VD_HOME_PLUGIN_DIR . 'inc/perf/class-vidieu-dup-requests-guard-v2-ultimate.php')) {
@@ -122,7 +121,6 @@ class Vidieu_Home_Sections {
         VD_Buy_Now::get_instance();
         VD_Translations::get_instance();
         VD_Page_Sidebar_Mappings::get_instance();
-        VD_Contact::get_instance();
     }
     
     /**

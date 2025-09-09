@@ -1,0 +1,1039 @@
+{
+    "success": true,
+    "message": "Success",
+    "transactions": [
+        {
+            "TransactionDate": "09/09/2021",
+            "Reference": "5088 - 94845",
+            "CD": "-",
+            "Amount": "110,000",
+            "Description": "Ecom.EW21090932156317.VINID.0336564989.CashIn",
+            "PCTime": "173301"
+        },
+        {
+            "TransactionDate": "09/09/2021",
+            "Reference": "5071 - 47513",
+            "CD": "-",
+            "Amount": "45,009,900",
+            "Description": "MBVCB.1350786883.013277.DO MINH HAI chuyen tien.CT tu 0011004369018 DO MINH HAI toi 19037366294017 DO MINH HAI (TECHCOMBANK) Ky thuong Viet Nam",
+            "PCTime": "164433"
+        },
+        {
+            "TransactionDate": "09/09/2021",
+            "Reference": "5078 - 95126",
+            "CD": "-",
+            "Amount": "400,000",
+            "Description": "MBVCB.1350684127.DO MINH HAI chuyen tien.CT tu 0011004369018 DO MINH HAI toi0971000019897 HOANG VAN DUY",
+            "PCTime": "160230"
+        },
+        {
+            "TransactionDate": "09/09/2021",
+            "Reference": "5078 - 92859",
+            "CD": "-",
+            "Amount": "1,000",
+            "Description": "MBVCB.1350677989.DO MINH HAI chuyen tien.CT tu 0011004369018 DO MINH HAI toi0971000019897 HOANG VAN DUY",
+            "PCTime": "155955"
+        },
+        {
+            "TransactionDate": "09/09/2021",
+            "Reference": "5017 - 77942",
+            "CD": "+",
+            "Amount": "190,000",
+            "Description": "600041.090921.142520.Fb Tran Dinh FT21252671361924",
+            "PCTime": "142522"
+        },
+        {
+            "TransactionDate": "09/09/2021",
+            "Reference": "5017 - 55722",
+            "CD": "+",
+            "Amount": "50,000",
+            "Description": "228639.090921.081905.Hehe FT21252141100029",
+            "PCTime": "81907"
+        },
+        {
+            "TransactionDate": "08/09/2021",
+            "Reference": "5071 - 15785",
+            "CD": "-",
+            "Amount": "5,006,600",
+            "Description": "MBVCB.1348831183.095112.DO MINH HAI cho thong vay.CT tu 0011004369018 DO MINH HAI toi 19031412934028 NGUYEN DINH THONG (TECHCOMBANK) Ky thuong Viet Nam",
+            "PCTime": "165030"
+        },
+        {
+            "TransactionDate": "06/09/2021",
+            "Reference": "5017 - 99173",
+            "CD": "+",
+            "Amount": "12,525,000",
+            "Description": "218013.060921.181526.Luong t8",
+            "PCTime": "181503"
+        },
+        {
+            "TransactionDate": "06/09/2021",
+            "Reference": "5017 - 33164",
+            "CD": "+",
+            "Amount": "2,000,000",
+            "Description": "945724.060921.081213.IBFT hungnh - thanh toan lan 2 simso",
+            "PCTime": "81217"
+        },
+        {
+            "TransactionDate": "04/09/2021",
+            "Reference": "5088 - 03945",
+            "CD": "-",
+            "Amount": "100,000",
+            "Description": "Ecom.EW21090429488751.VINID.0336564989.CashIn",
+            "PCTime": "174406"
+        },
+        {
+            "TransactionDate": "03/09/2021",
+            "Reference": "5071 - 67731",
+            "CD": "-",
+            "Amount": "20,009,900",
+            "Description": "MBVCB.1339533738.045994.Thai gui tien.CT tu 0011004369018 DO MINH HAI toi 10522705600011 NGUYEN QUANG TRUNG (TECHCOMBANK) Ky thuong Viet Nam",
+            "PCTime": "152949"
+        },
+        {
+            "TransactionDate": "01/09/2021",
+            "Reference": "9403 - 0000230171",
+            "CD": "-",
+            "Amount": "2,200",
+            "Description": "THU PHI QLTK CA NHAN- VND",
+            "PCTime": "225648"
+        },
+        {
+            "TransactionDate": "01/09/2021",
+            "Reference": "5078 - 68042",
+            "CD": "-",
+            "Amount": "20,001,100",
+            "Description": "MBVCB.1336575828.DO MINH HAI chuyen tien.CT tu 0011004369018 DO MINH HAI toi0011004355795 DO THI CAN",
+            "PCTime": "200424"
+        },
+        {
+            "TransactionDate": "01/09/2021",
+            "Reference": "5088 - 57901",
+            "CD": "-",
+            "Amount": "94,000",
+            "Description": "Ecom.EW21090127810259.VINID.0336564989.CashIn",
+            "PCTime": "75753"
+        },
+        {
+            "TransactionDate": "31/08/2021",
+            "Reference": "5078 - 46508",
+            "CD": "+",
+            "Amount": "200,000",
+            "Description": "MBVCB.1334246374.PHAM HUY HOANG chuyen tien.CT tu 1022439999 PHAM HUY HOANG toi0011004369018 DO MINH HAI",
+            "PCTime": "180756"
+        },
+        {
+            "TransactionDate": "31/08/2021",
+            "Reference": "5078 - 60675",
+            "CD": "+",
+            "Amount": "800,000",
+            "Description": "MBVCB.1334023561.PHAM HUY HOANG chuyen tien.CT tu 1022439999 PHAM HUY HOANG toi0011004369018 DO MINH HAI",
+            "PCTime": "163355"
+        },
+        {
+            "TransactionDate": "30/08/2021",
+            "Reference": "5078 - 10040",
+            "CD": "+",
+            "Amount": "1,200,000",
+            "Description": "MBVCB.1331824357.DAO TIEN DUNG chuyen tien.CT tu 0271000828146 DAO TIEN DUNG toi0011004369018 DO MINH HAI",
+            "PCTime": "143735"
+        },
+        {
+            "TransactionDate": "29/08/2021",
+            "Reference": "5078 - 58642",
+            "CD": "-",
+            "Amount": "201,100",
+            "Description": "MBVCB.1330443279.DO MINH HAI chuyen tien.CT tu 0011004369018 DO MINH HAI toi0011007300602 QUY HY VONG",
+            "PCTime": "173846"
+        },
+        {
+            "TransactionDate": "29/08/2021",
+            "Reference": "5017 - 09128",
+            "CD": "+",
+            "Amount": "600,000",
+            "Description": "165343.290821.092115.Kimthuset com vn",
+            "PCTime": "92139"
+        },
+        {
+            "TransactionDate": "28/08/2021",
+            "Reference": "5088 - 51436",
+            "CD": "-",
+            "Amount": "102,000",
+            "Description": "Ecom.EW21082826269229.VINID.0336564989.CashIn",
+            "PCTime": "151602"
+        },
+        {
+            "TransactionDate": "26/08/2021",
+            "Reference": "5078 - 08778",
+            "CD": "-",
+            "Amount": "851,100",
+            "Description": "MBVCB.1326106394.DO MINH HAI chuyen tien.CT tu 0011004369018 DO MINH HAI toi0011004355795 DO THI CAN",
+            "PCTime": "223416"
+        },
+        {
+            "TransactionDate": "26/08/2021",
+            "Reference": "5078 - 75078",
+            "CD": "+",
+            "Amount": "490,000",
+            "Description": "MBVCB.1326030239.LUU TUAN VAN chuyen tien momo.CT tu 0441000755897 LUU TUAN VAN toi0011004369018 DO MINH HAI",
+            "PCTime": "212707"
+        },
+        {
+            "TransactionDate": "26/08/2021",
+            "Reference": "5017 - 32870",
+            "CD": "+",
+            "Amount": "190,000",
+            "Description": "117047.260821.170647.Le Van Huy chuyen tien plugin",
+            "PCTime": "170648"
+        },
+        {
+            "TransactionDate": "26/08/2021",
+            "Reference": "5078 - 36739",
+            "CD": "+",
+            "Amount": "750,000",
+            "Description": "MBVCB.1324917399.PHAM HUY HOANG chuyen tien.CT tu 1022439999 PHAM HUY HOANG toi0011004369018 DO MINH HAI",
+            "PCTime": "109999"
+        },
+        {
+            "TransactionDate": "26/08/2021",
+            "Reference": "5088 - 21345",
+            "CD": "-",
+            "Amount": "10,000",
+            "Description": "Ecom.EW21082625292521.VINID.0336564989.CashIn",
+            "PCTime": "91959"
+        },
+        {
+            "TransactionDate": "26/08/2021",
+            "Reference": "5088 - 21317",
+            "CD": "-",
+            "Amount": "153,000",
+            "Description": "Ecom.EW21082625292491.VINID.0336564989.CashIn",
+            "PCTime": "91949"
+        },
+        {
+            "TransactionDate": "26/08/2021",
+            "Reference": "5078 - 44982",
+            "CD": "-",
+            "Amount": "101,100",
+            "Description": "MBVCB.1324670567.UNG HO BAC SI SAI GON.CT tu 0011004369018 DO MINH HAI toi0691000393103 DO THI THANH PHUONG",
+            "PCTime": "85808"
+        },
+        {
+            "TransactionDate": "25/08/2021",
+            "Reference": "9703 - 0000230171",
+            "CD": "+",
+            "Amount": "4,439",
+            "Description": "INTEREST PAYMENT",
+            "PCTime": "230008"
+        },
+        {
+            "TransactionDate": "25/08/2021",
+            "Reference": "5017 - 39711",
+            "CD": "+",
+            "Amount": "4,490,000",
+            "Description": "867333.250821.211542.Tt aff va momo",
+            "PCTime": "211606"
+        },
+        {
+            "TransactionDate": "25/08/2021",
+            "Reference": "5078 - 92463",
+            "CD": "-",
+            "Amount": "751,100",
+            "Description": "MBVCB.1322772227.DO MINH HAI chuyen tien.CT tu 0011004369018 DO MINH HAI toi0011004355795 DO THI CAN",
+            "PCTime": "65845"
+        },
+        {
+            "TransactionDate": "24/08/2021",
+            "Reference": "5078 - 02996",
+            "CD": "+",
+            "Amount": "800,000",
+            "Description": "MBVCB.1322087575.NGUYEN KIM THUAN chuyen tien.CT tu 0061001098893 NGUYEN KIM THUAN toi0011004369018 DO MINH HAI",
+            "PCTime": "165405"
+        },
+        {
+            "TransactionDate": "22/08/2021",
+            "Reference": "5088 - 44323",
+            "CD": "-",
+            "Amount": "10,000",
+            "Description": "Ecom.EW21082223789396.VINID.0336564989.CashIn",
+            "PCTime": "151546"
+        },
+        {
+            "TransactionDate": "20/08/2021",
+            "Reference": "5078 - 51658",
+            "CD": "+",
+            "Amount": "200,000",
+            "Description": "MBVCB.1315361306.NGUYEN QUANG KINH chuyen tien.CT tu 0421000448093 NGUYEN QUANG KINH toi0011004369018 DO MINH HAI",
+            "PCTime": "214944"
+        },
+        {
+            "TransactionDate": "20/08/2021",
+            "Reference": "5017 - 08818",
+            "CD": "+",
+            "Amount": "500,000",
+            "Description": "826919.200821.162812.A Toan chuyen tien FT21232033435907",
+            "PCTime": "162812"
+        },
+        {
+            "TransactionDate": "19/08/2021",
+            "Reference": "5017 - 65575",
+            "CD": "+",
+            "Amount": "500,000",
+            "Description": "323083.190821.122529.HUYNH NGOC NGHI chuyen khoan",
+            "PCTime": "122551"
+        },
+        {
+            "TransactionDate": "18/08/2021",
+            "Reference": "5017 - 64676",
+            "CD": "+",
+            "Amount": "2,000,000",
+            "Description": "448907.180821.160559.IBFT hungnh coc simso",
+            "PCTime": "160600"
+        },
+        {
+            "TransactionDate": "17/08/2021",
+            "Reference": "5078 - 18566",
+            "CD": "+",
+            "Amount": "1,000,000",
+            "Description": "MBVCB.1308110826.A minh ck.CT tu 0771000585868 VAN NGOC MINH toi0011004369018 DO MINH HAI",
+            "PCTime": "100649"
+        },
+        {
+            "TransactionDate": "16/08/2021",
+            "Reference": "5078 - 54191",
+            "CD": "+",
+            "Amount": "250,000",
+            "Description": "MBVCB.1306943534.ck plugin dm skin365.vn.CT tu 0771000585868 VAN NGOC MINH toi0011004369018 DO MINH HAI",
+            "PCTime": "164614"
+        },
+        {
+            "TransactionDate": "16/08/2021",
+            "Reference": "5017 - 20105",
+            "CD": "+",
+            "Amount": "500,000",
+            "Description": "936097.160821.125819.Phuong thanh toan Slider. FT21228314719691",
+            "PCTime": "125819"
+        },
+        {
+            "TransactionDate": "16/08/2021",
+            "Reference": "5017 - 11210",
+            "CD": "+",
+            "Amount": "200,000",
+            "Description": "841164.160821.112419.Phuong ck tien coc Slider. FT21228029700230",
+            "PCTime": "112420"
+        },
+        {
+            "TransactionDate": "14/08/2021",
+            "Reference": "5071 - 71962",
+            "CD": "-",
+            "Amount": "104,400",
+            "Description": "MBVCB.1303684421.038198.ung ho may tho.CT tu 0011004369018 DO MINH HAI toi 19024389653011 HOANG THI HOA (TECHCOMBANK) Ky thuong Viet Nam",
+            "PCTime": "204727"
+        },
+        {
+            "TransactionDate": "14/08/2021",
+            "Reference": "5153 - 52692",
+            "CD": "-",
+            "Amount": "30,000",
+            "Description": "MBVCB.1302990233.TOPUP Mobifone 0906757420 30000",
+            "PCTime": "144647"
+        },
+        {
+            "TransactionDate": "14/08/2021",
+            "Reference": "9913 - 83946",
+            "CD": "-",
+            "Amount": "5,000",
+            "Description": "Thu phi quan ly the Visa Debit thang 07-2021, No:428310...7580. SO TIEN 5000 VND",
+            "PCTime": "102100"
+        },
+        {
+            "TransactionDate": "13/08/2021",
+            "Reference": "5071 - 85178",
+            "CD": "-",
+            "Amount": "104,400",
+            "Description": "MBVCB.1301702400.080692.mong me ban mau khoe.CT tu 0011004369018 DO MINH HAI toi 242566696 MOHAMAD AMINE (VPBANK) Viet Nam Thinh Vuong",
+            "PCTime": "192207"
+        },
+        {
+            "TransactionDate": "13/08/2021",
+            "Reference": "5088 - 37666",
+            "CD": "-",
+            "Amount": "500,000",
+            "Description": "Ecom.EW21081318787473.VINID.0336564989.CashIn",
+            "PCTime": "174026"
+        },
+        {
+            "TransactionDate": "13/08/2021",
+            "Reference": "5017 - 00436",
+            "CD": "+",
+            "Amount": "9,600,000",
+            "Description": "176248.130821.103022.Em phong FT21225379954990",
+            "PCTime": "103023"
+        },
+        {
+            "TransactionDate": "13/08/2021",
+            "Reference": "5088 - 27672",
+            "CD": "+",
+            "Amount": "800,000",
+            "Description": "Ecom.EW21081318539396.MOMO.0336564989.CashOut",
+            "PCTime": "95507"
+        },
+        {
+            "TransactionDate": "12/08/2021",
+            "Reference": "5088 - 06240",
+            "CD": "-",
+            "Amount": "49,000",
+            "Description": "Ecom.EW21081218042963.VINID.0336564989.CashIn",
+            "PCTime": "103600"
+        },
+        {
+            "TransactionDate": "11/08/2021",
+            "Reference": "5088 - 70989",
+            "CD": "-",
+            "Amount": "47,000",
+            "Description": "Ecom.EW21081117415839.VINID.0336564989.CashIn",
+            "PCTime": "63321"
+        },
+        {
+            "TransactionDate": "10/08/2021",
+            "Reference": "5071 - 30840",
+            "CD": "-",
+            "Amount": "104,400",
+            "Description": "MBVCB.1293949520.004359.ung ho gia dinh.CT tu 0011004369018 DO MINH HAI toi 45210000846068 NGUYEN THI HUYEN (BIDV) Dau tu va phat trien Viet Nam",
+            "PCTime": "225445"
+        },
+        {
+            "TransactionDate": "10/08/2021",
+            "Reference": "5017 - 77497",
+            "CD": "+",
+            "Amount": "330,000",
+            "Description": "550856.100821.132455.Ga thang FT21222840480733",
+            "PCTime": "132456"
+        },
+        {
+            "TransactionDate": "09/08/2021",
+            "Reference": "5017 - 65485",
+            "CD": "+",
+            "Amount": "3,000,000",
+            "Description": "016009.090821.192014.Huhu FT21221160343974",
+            "PCTime": "192015"
+        },
+        {
+            "TransactionDate": "09/08/2021",
+            "Reference": "5088 - 43005",
+            "CD": "-",
+            "Amount": "160,000",
+            "Description": "Ecom.EW21080916441254.VINID.0336564989.CashIn",
+            "PCTime": "120555"
+        },
+        {
+            "TransactionDate": "09/08/2021",
+            "Reference": "5017 - 66902",
+            "CD": "+",
+            "Amount": "600,000",
+            "Description": "219831.090821.114110.PHAM VIET PHUONG chuyen tien mua plugin reviewr",
+            "PCTime": "114111"
+        },
+        {
+            "TransactionDate": "08/08/2021",
+            "Reference": "5017 - 40882",
+            "CD": "+",
+            "Amount": "500,000",
+            "Description": "737284.080821.093549.Doan Phu FT21221001085900",
+            "PCTime": "93550"
+        },
+        {
+            "TransactionDate": "07/08/2021",
+            "Reference": "9914 - 69377",
+            "CD": "-",
+            "Amount": "11,000",
+            "Description": "THU PHI DICH VU NHDT THANG 07/2021.SO TIEN 11000 VND.DV: VCB Digibank",
+            "PCTime": "134706"
+        },
+        {
+            "TransactionDate": "07/08/2021",
+            "Reference": "5088 - 89932",
+            "CD": "-",
+            "Amount": "73,000",
+            "Description": "Ecom.EW21080715075591.VINID.0336564989.CashIn",
+            "PCTime": "71746"
+        },
+        {
+            "TransactionDate": "06/08/2021",
+            "Reference": "5088 - 22127",
+            "CD": "-",
+            "Amount": "21,000",
+            "Description": "Ecom.EW21080614757502.VINID.0336564989.CashIn",
+            "PCTime": "134651"
+        },
+        {
+            "TransactionDate": "05/08/2021",
+            "Reference": "5017 - 06689",
+            "CD": "+",
+            "Amount": "15,012,000",
+            "Description": "265718.050821.082201.Luong t7",
+            "PCTime": "82204"
+        },
+        {
+            "TransactionDate": "05/08/2021",
+            "Reference": "5088 - 87985",
+            "CD": "-",
+            "Amount": "20,000",
+            "Description": "Ecom.EW21080514127847.VINID.0336564989.CashIn",
+            "PCTime": "75354"
+        },
+        {
+            "TransactionDate": "04/08/2021",
+            "Reference": "5017 - 82980",
+            "CD": "+",
+            "Amount": "1,000,000",
+            "Description": "005844.040821.182448.code",
+            "PCTime": "182509"
+        },
+        {
+            "TransactionDate": "04/08/2021",
+            "Reference": "5078 - 01412",
+            "CD": "+",
+            "Amount": "500,000",
+            "Description": "MBVCB.1284816113.NGUYEN HUU HIEU chuyen tien.CT tu 1012659186 NGUYEN HUU HIEU toi0011004369018 DO MINH HAI",
+            "PCTime": "164026"
+        },
+        {
+            "TransactionDate": "04/08/2021",
+            "Reference": "5017 - 16721",
+            "CD": "+",
+            "Amount": "600,000",
+            "Description": "241385.040821.104955.Evranguyen chuyen khoan mua pkugin FT21216789408163",
+            "PCTime": "104956"
+        },
+        {
+            "TransactionDate": "03/08/2021",
+            "Reference": "5017 - 40966",
+            "CD": "+",
+            "Amount": "190,000",
+            "Description": "996100.030821.220641.Tam truong FT21216273290951",
+            "PCTime": "220642"
+        },
+        {
+            "TransactionDate": "03/08/2021",
+            "Reference": "5078 - 74568",
+            "CD": "-",
+            "Amount": "3,002,200",
+            "Description": "MBVCB.1282968348.DO MINH HAI chuyen tien.CT tu 0011004369018 DO MINH HAI toi0501000117556 LE MINH THIEN",
+            "PCTime": "153158"
+        },
+        {
+            "TransactionDate": "03/08/2021",
+            "Reference": "5017 - 03404",
+            "CD": "+",
+            "Amount": "3,000,000",
+            "Description": "320550.030821.095555.TT code hyh.vn FT21215134931884",
+            "PCTime": "95556"
+        },
+        {
+            "TransactionDate": "03/08/2021",
+            "Reference": "5088 - 91207",
+            "CD": "-",
+            "Amount": "100,000",
+            "Description": "Ecom.EW21080313303220.VINID.0336564989.CashIn",
+            "PCTime": "92337"
+        },
+        {
+            "TransactionDate": "02/08/2021",
+            "Reference": "5088 - 96177",
+            "CD": "+",
+            "Amount": "400,000",
+            "Description": "Ecom.EW21080212953585.MOMO.0336564989.CashOut",
+            "PCTime": "130855"
+        },
+        {
+            "TransactionDate": "02/08/2021",
+            "Reference": "5017 - 33764",
+            "CD": "+",
+            "Amount": "700,000",
+            "Description": "015125.020821.100526.ck tinh nang",
+            "PCTime": "100526"
+        },
+        {
+            "TransactionDate": "01/08/2021",
+            "Reference": "9403 - 0000230171",
+            "CD": "-",
+            "Amount": "2,200",
+            "Description": "THU PHI QLTK CA NHAN- VND",
+            "PCTime": "224909"
+        },
+        {
+            "TransactionDate": "01/08/2021",
+            "Reference": "5071 - 74769",
+            "CD": "-",
+            "Amount": "35,500",
+            "Description": "MBVCB.1279759448.056580.DO MINH HAI chuyen tien.CT tu 0011004369018 DO MINH HAI toi 19037366294017 DO MINH HAI (TECHCOMBANK) Ky thuong Viet Nam",
+            "PCTime": "192510"
+        },
+        {
+            "TransactionDate": "01/08/2021",
+            "Reference": "5088 - 56103",
+            "CD": "-",
+            "Amount": "40,000",
+            "Description": "Ecom.EW21080112435859.VINID.0336564989.CashIn",
+            "PCTime": "93750"
+        },
+        {
+            "TransactionDate": "31/07/2021",
+            "Reference": "5017 - 19287",
+            "CD": "+",
+            "Amount": "500,000",
+            "Description": "342206.310721.221308.tinh nang web",
+            "PCTime": "221308"
+        },
+        {
+            "TransactionDate": "30/07/2021",
+            "Reference": "5017 - 43482",
+            "CD": "+",
+            "Amount": "1,000,000",
+            "Description": "713384.300721.154450.code",
+            "PCTime": "154509"
+        },
+        {
+            "TransactionDate": "30/07/2021",
+            "Reference": "5017 - 26943",
+            "CD": "+",
+            "Amount": "750,000",
+            "Description": "336777.300721.153150.Hieu ck chi phi tool menu web phatviet FT21211306609993",
+            "PCTime": "153151"
+        },
+        {
+            "TransactionDate": "30/07/2021",
+            "Reference": "5078 - 03627",
+            "CD": "-",
+            "Amount": "102,200",
+            "Description": "MBVCB.1275884273.ung ho Cay luong thuc.CT tu 0011004369018 DO MINH HAI toi0611001897871 HOANG THI HOA",
+            "PCTime": "115611"
+        },
+        {
+            "TransactionDate": "30/07/2021",
+            "Reference": "5071 - 40752",
+            "CD": "-",
+            "Amount": "105,500",
+            "Description": "MBVCB.1275397553.045847.ung ho chi va 2 be.CT tu 0011004369018 DO MINH HAI toi 100002720586 LE THI YEN (VIETINBANK) Cong Thuong Viet Nam",
+            "PCTime": "70209"
+        },
+        {
+            "TransactionDate": "29/07/2021",
+            "Reference": "5078 - 94237",
+            "CD": "+",
+            "Amount": "200,000",
+            "Description": "MBVCB.1275142833.NGUYEN TRUNG THONG chuyen tien.CT tu 0531002573705 NGUYEN TRUNG THONG toi0011004369018 DO MINH HAI",
+            "PCTime": "205301"
+        },
+        {
+            "TransactionDate": "29/07/2021",
+            "Reference": "5088 - 48699",
+            "CD": "-",
+            "Amount": "30,000",
+            "Description": "Ecom.EW21072911258893.VINID.0336564989.CashIn",
+            "PCTime": "190223"
+        },
+        {
+            "TransactionDate": "28/07/2021",
+            "Reference": "5017 - 30920",
+            "CD": "+",
+            "Amount": "2,000,000",
+            "Description": "802423.280721.161308.Thuan ck FT21209797479345",
+            "PCTime": "161308"
+        },
+        {
+            "TransactionDate": "28/07/2021",
+            "Reference": "5088 - 41355",
+            "CD": "-",
+            "Amount": "172,000",
+            "Description": "Ecom.EW21072810704226.VINID.0336564989.CashIn",
+            "PCTime": "155229"
+        },
+        {
+            "TransactionDate": "28/07/2021",
+            "Reference": "5017 - 13146",
+            "CD": "+",
+            "Amount": "5,600,000",
+            "Description": "511305.280721.102224.Trinh Hao FT21209691000801",
+            "PCTime": "102225"
+        },
+        {
+            "TransactionDate": "28/07/2021",
+            "Reference": "5071 - 27758",
+            "CD": "-",
+            "Amount": "2,005,500",
+            "Description": "MBVCB.1272253900.096806.DO MINH HAI chuyen tien.CT tu 0011004369018 DO MINH HAI toi 19035814467014 LE VAN HOAN (TECHCOMBANK) Ky thuong Viet Nam",
+            "PCTime": "72407"
+        },
+        {
+            "TransactionDate": "27/07/2021",
+            "Reference": "5078 - 59954",
+            "CD": "+",
+            "Amount": "500,000",
+            "Description": "MBVCB.1271534992.NGUYEN QUANG KINH chuyen tien.CT tu 0421000448093 NGUYEN QUANG KINH toi0011004369018 DO MINH HAI",
+            "PCTime": "162639"
+        },
+        {
+            "TransactionDate": "27/07/2021",
+            "Reference": "5017 - 54271",
+            "CD": "+",
+            "Amount": "300,000",
+            "Description": "962198.270721.083456.IBFT hungnh momo",
+            "PCTime": "83457"
+        },
+        {
+            "TransactionDate": "26/07/2021",
+            "Reference": "5078 - 10210",
+            "CD": "+",
+            "Amount": "1,000,000",
+            "Description": "MBVCB.1269921963.E Hieu coc web n7clothing.CT tu 1012659186 NGUYEN HUU HIEU toi0011004369018 DO MINH HAI",
+            "PCTime": "164138"
+        },
+        {
+            "TransactionDate": "25/07/2021",
+            "Reference": "9704 - 0000230171",
+            "CD": "+",
+            "Amount": "2,172",
+            "Description": "INTEREST PAYMENT",
+            "PCTime": "235226"
+        },
+        {
+            "TransactionDate": "25/07/2021",
+            "Reference": "5088 - 65238",
+            "CD": "+",
+            "Amount": "1,200,000",
+            "Description": "Ecom.EW21072509331970.MOMO.0336564989.CashOut",
+            "PCTime": "213240"
+        },
+        {
+            "TransactionDate": "25/07/2021",
+            "Reference": "5017 - 43711",
+            "CD": "+",
+            "Amount": "300,000",
+            "Description": "598149.250721.212453.Thuan ck FT21207425786711",
+            "PCTime": "212454"
+        },
+        {
+            "TransactionDate": "25/07/2021",
+            "Reference": "5088 - 24893",
+            "CD": "-",
+            "Amount": "60,000",
+            "Description": "Ecom.EW21072509000712.VINID.0336564989.CashIn",
+            "PCTime": "94000"
+        },
+        {
+            "TransactionDate": "24/07/2021",
+            "Reference": "5017 - 79595",
+            "CD": "+",
+            "Amount": "400,000",
+            "Description": "625083.240721.161740.Thuan ck FT21205190758128",
+            "PCTime": "161741"
+        },
+        {
+            "TransactionDate": "23/07/2021",
+            "Reference": "5078 - 57325",
+            "CD": "+",
+            "Amount": "300,000",
+            "Description": "MBVCB.1264624337.PHAM MINH BAO chuyen tien.CT tu 0691000340273 PHAM MINH BAO toi0011004369018 DO MINH HAI",
+            "PCTime": "113056"
+        },
+        {
+            "TransactionDate": "22/07/2021",
+            "Reference": "5088 - 22790",
+            "CD": "-",
+            "Amount": "100,000",
+            "Description": "Ecom.EW21072207792411.VINID.0336564989.CashIn",
+            "PCTime": "210833"
+        },
+        {
+            "TransactionDate": "22/07/2021",
+            "Reference": "5017 - 11443",
+            "CD": "+",
+            "Amount": "580,000",
+            "Description": "008836.220721.190435.Hihihi.vn",
+            "PCTime": "190440"
+        },
+        {
+            "TransactionDate": "22/07/2021",
+            "Reference": "5017 - 95331",
+            "CD": "+",
+            "Amount": "390,000",
+            "Description": "962909.220721.171326.Lieu Nguyen mua plugin FT21203042269072",
+            "PCTime": "171326"
+        },
+        {
+            "TransactionDate": "22/07/2021",
+            "Reference": "5078 - 52354",
+            "CD": "-",
+            "Amount": "392,200",
+            "Description": "MBVCB.1263392177.DO MINH HAI chuyen tien.CT tu 0011004369018 DO MINH HAI toi0931004178413 TRAN VAN QUAN",
+            "PCTime": "160758"
+        },
+        {
+            "TransactionDate": "21/07/2021",
+            "Reference": "5078 - 42542",
+            "CD": "+",
+            "Amount": "550,000",
+            "Description": "MBVCB.1260417641.chuyen tien 2 plugin.CT tu 0751000045197 NGUYEN THANH TRUNG toi0011004369018 DO MINH HAI",
+            "PCTime": "224424"
+        },
+        {
+            "TransactionDate": "21/07/2021",
+            "Reference": "5078 - 91154",
+            "CD": "+",
+            "Amount": "390,000",
+            "Description": "MBVCB.1261512417.ck mua plugin momo.CT tu 0931004178413 TRAN VAN QUAN toi0011004369018 DO MINH HAI",
+            "PCTime": "153136"
+        },
+        {
+            "TransactionDate": "21/07/2021",
+            "Reference": "0003 - 00238",
+            "CD": "+",
+            "Amount": "390,000",
+            "Description": "DO MINH HAI NT",
+            "PCTime": "152653"
+        },
+        {
+            "TransactionDate": "21/07/2021",
+            "Reference": "5078 - 32261",
+            "CD": "+",
+            "Amount": "390,000",
+            "Description": "MBVCB.1261367228.PHAM THANH HAI chuyen tien.CT tu 0041000230052 PHAM THANH HAI toi0011004369018 DO MINH HAI",
+            "PCTime": "141811"
+        },
+        {
+            "TransactionDate": "20/07/2021",
+            "Reference": "5017 - 51566",
+            "CD": "+",
+            "Amount": "390,000",
+            "Description": "280564.200721.155959.Khanh mua plugin momo",
+            "PCTime": "159999"
+        },
+        {
+            "TransactionDate": "20/07/2021",
+            "Reference": "5078 - 78200",
+            "CD": "+",
+            "Amount": "390,000",
+            "Description": "MBVCB.1259212038.NGUYEN HUU THUAT chuyen tien.CT tu 0531002498420 NGUYEN HUU THUAT toi0011004369018 DO MINH HAI",
+            "PCTime": "115836"
+        },
+        {
+            "TransactionDate": "19/07/2021",
+            "Reference": "5017 - 83233",
+            "CD": "+",
+            "Amount": "1,000,000",
+            "Description": "579986.190721.133507.duc anh",
+            "PCTime": "133525"
+        },
+        {
+            "TransactionDate": "19/07/2021",
+            "Reference": "5017 - 21770",
+            "CD": "+",
+            "Amount": "50,000",
+            "Description": "821957.190721.122422.Chuyen tien FT21200520293847",
+            "PCTime": "122422"
+        },
+        {
+            "TransactionDate": "19/07/2021",
+            "Reference": "5017 - 98418",
+            "CD": "+",
+            "Amount": "150,000",
+            "Description": "843502.190721.120112.Mua plugin Organic FT21200885935401",
+            "PCTime": "120113"
+        },
+        {
+            "TransactionDate": "19/07/2021",
+            "Reference": "5071 - 56649",
+            "CD": "-",
+            "Amount": "247,500",
+            "Description": "MBVCB.1257310336.044258.DO MINH HAI chuyen tien.CT tu 0011004369018 DO MINH HAI toi 066704060099998 LY THI TRA MY (VIB) Quoc te",
+            "PCTime": "114641"
+        },
+        {
+            "TransactionDate": "19/07/2021",
+            "Reference": "5017 - 17291",
+            "CD": "+",
+            "Amount": "190,000",
+            "Description": "031394.190721.104719.Le Van Huy chuyen tien plugin phan trang",
+            "PCTime": "104723"
+        },
+        {
+            "TransactionDate": "18/07/2021",
+            "Reference": "5088 - 66070",
+            "CD": "-",
+            "Amount": "200,000",
+            "Description": "Ecom.EW21071805624785.VINID.0336564989.CashIn",
+            "PCTime": "212534"
+        },
+        {
+            "TransactionDate": "18/07/2021",
+            "Reference": "5088 - 57232",
+            "CD": "-",
+            "Amount": "20,000",
+            "Description": "Ecom.EW21071805225121.VINID.0336564989.CashIn",
+            "PCTime": "80500"
+        },
+        {
+            "TransactionDate": "17/07/2021",
+            "Reference": "5017 - 69043",
+            "CD": "+",
+            "Amount": "190,000",
+            "Description": "899032.170721.212007.Mua Plugin",
+            "PCTime": "212015"
+        },
+        {
+            "TransactionDate": "17/07/2021",
+            "Reference": "5088 - 97521",
+            "CD": "-",
+            "Amount": "50,000",
+            "Description": "Ecom.EW21071704998209.VINID.0336564989.CashIn",
+            "PCTime": "185855"
+        },
+        {
+            "TransactionDate": "17/07/2021",
+            "Reference": "5017 - 81983",
+            "CD": "+",
+            "Amount": "190,000",
+            "Description": "174679.170721.151342.Chuyen tien lien ngan hang",
+            "PCTime": "150929"
+        },
+        {
+            "TransactionDate": "15/07/2021",
+            "Reference": "5017 - 02582",
+            "CD": "+",
+            "Amount": "900,000",
+            "Description": "357014.150721.091019.CODE THEM CHUC NANG BAT TAT GIA DONG BO HOA GIA WEB-150721-09:09:46 357014",
+            "PCTime": "90949"
+        },
+        {
+            "TransactionDate": "15/07/2021",
+            "Reference": "5078 - 89842",
+            "CD": "+",
+            "Amount": "150,000",
+            "Description": "MBVCB.1249753612.Minh Bao ck tien ho tro sua web.CT tu 0691000340273 PHAM MINH BAO toi0011004369018 DO MINH HAI",
+            "PCTime": "84446"
+        },
+        {
+            "TransactionDate": "14/07/2021",
+            "Reference": "5017 - 38755",
+            "CD": "+",
+            "Amount": "300,000",
+            "Description": "145603.140721.161809.CHUYEN KHOAN TU MOMO",
+            "PCTime": "161810"
+        },
+        {
+            "TransactionDate": "14/07/2021",
+            "Reference": "5071 - 07563",
+            "CD": "-",
+            "Amount": "25,011,000",
+            "Description": "MBVCB.1248217959.071854.DO MINH HAI chuyen tien.CT tu 0011004369018 DO MINH HAI toi 19032704034016 NGO MINH DAT (TECHCOMBANK) Ky thuong Viet Nam",
+            "PCTime": "113700"
+        },
+        {
+            "TransactionDate": "13/07/2021",
+            "Reference": "5088 - 12391",
+            "CD": "-",
+            "Amount": "28,000",
+            "Description": "Ecom.EW21071302546544.VINID.0336564989.CashIn",
+            "PCTime": "194454"
+        },
+        {
+            "TransactionDate": "13/07/2021",
+            "Reference": "5088 - 32806",
+            "CD": "-",
+            "Amount": "91,000",
+            "Description": "Ecom.EW21071302204000.VINID.0336564989.CashIn",
+            "PCTime": "85325"
+        },
+        {
+            "TransactionDate": "13/07/2021",
+            "Reference": "5088 - 30030",
+            "CD": "-",
+            "Amount": "30,000",
+            "Description": "Ecom.EW21071302200645.VINID.0336564989.CashIn",
+            "PCTime": "84541"
+        },
+        {
+            "TransactionDate": "12/07/2021",
+            "Reference": "5088 - 74433",
+            "CD": "-",
+            "Amount": "10,000",
+            "Description": "Ecom.EW21071202012691.VINID.0336564989.CashIn",
+            "PCTime": "200435"
+        },
+        {
+            "TransactionDate": "12/07/2021",
+            "Reference": "5017 - 99457",
+            "CD": "+",
+            "Amount": "3,000,000",
+            "Description": "244091.120721.145025.Chi ck lam website FT21193847800307",
+            "PCTime": "145026"
+        },
+        {
+            "TransactionDate": "11/07/2021",
+            "Reference": "5071 - 49882",
+            "CD": "-",
+            "Amount": "1,005,500",
+            "Description": "MBVCB.1242928745.068795.DO MINH HAI chuyen tien.CT tu 0011004369018 DO MINH HAI toi 3160205418603 BUI THI MINH PHUONG (AGRIBANK) Nong nghiep va phat trien nong thon Viet Nam",
+            "PCTime": "190900"
+        },
+        {
+            "TransactionDate": "11/07/2021",
+            "Reference": "9914 - 16798",
+            "CD": "-",
+            "Amount": "11,000",
+            "Description": "THU PHI DICH VU NHDT THANG 06/2021.SO TIEN 11000 VND.DV: VCB Digibank",
+            "PCTime": "135004"
+        },
+        {
+            "TransactionDate": "11/07/2021",
+            "Reference": "5088 - 10151",
+            "CD": "-",
+            "Amount": "20,000",
+            "Description": "Ecom.EW21071101097599.VINID.0336564989.CashIn",
+            "PCTime": "80650"
+        },
+        {
+            "TransactionDate": "10/07/2021",
+            "Reference": "5017 - 04072",
+            "CD": "+",
+            "Amount": "2,000,000",
+            "Description": "476767.100721.144814.IBFT hungnh thanh toan outsource",
+            "PCTime": "144815"
+        },
+        {
+            "TransactionDate": "09/07/2021",
+            "Reference": "5153 - 79949",
+            "CD": "-",
+            "Amount": "30,000",
+            "Description": "MBVCB.1238988725.TOPUP Viettel 0327273133 30000",
+            "PCTime": "170515"
+        },
+        {
+            "TransactionDate": "09/07/2021",
+            "Reference": "5153 - 68172",
+            "CD": "-",
+            "Amount": "30,000",
+            "Description": "MBVCB.1238750071.TOPUP Viettel 0327273133 30000",
+            "PCTime": "154424"
+        },
+        {
+            "TransactionDate": "08/07/2021",
+            "Reference": "5017 - 43979",
+            "CD": "+",
+            "Amount": "2,000,000",
+            "Description": "287608.080721.101021.code filter",
+            "PCTime": "101037"
+        },
+        {
+            "TransactionDate": "06/07/2021",
+            "Reference": "5071 - 28781",
+            "CD": "-",
+            "Amount": "1,005,500",
+            "Description": "MBVCB.1232097094.048247.DO MINH HAI chuyen tien.CT tu 0011004369018 DO MINH HAI toi 119399114 NGUYEN THI NGOC ANH (VPBANK) Viet Nam Thinh Vuong",
+            "PCTime": "84622"
+        }
+    ],
+    "nextIndex": "-1"
+}

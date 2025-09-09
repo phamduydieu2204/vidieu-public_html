@@ -1,0 +1,30 @@
+/*
+Theme Name: Elessi Child Theme
+Theme URI: https://vidieu.vn
+Author: Vidieu Team
+Author URI: https://vidieu.vn
+Description: Child theme for Elessi Theme with Performance Optimizations
+Template: elessi-theme
+Version: 1.0.0
+License: GPL v2 or later
+Text Domain: elessi-child
+Last Updated: 2025-09-04 16:30
+*/
+
+/* ==========================================================================
+   Custom Styles for Child Theme
+   ========================================================================== */
+
+/* Add your custom CSS below this line */
+
+/* Hide "Browse Categories" title in vertical menu */
+.nasa-title-vertical-menu,
+h5.nasa-title-vertical-menu {
+    display: none !important;
+    visibility: hidden !important;
+}
+
+/* Alternative selector if needed */
+.section-title.nasa-title-vertical-menu {
+    display: none !important;
+}

@@ -1,0 +1,38 @@
+name: Deploy prerf only
+
+on:
+  push:
+    paths:
+      - 'wp-content/plugins/prerf/**'   # chỉ khi plugin này thay đổi mới chạy
+  workflow_dispatch: {}                                 # cho phép chạy thủ công
+
+concurrency:
+  group: deploy-prerf
+  cancel-in-progress: true
+
+jobs:
+  deploy-plugin:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Deploy prerf via FTP/FTPS
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          port: ${{ secrets.FTP_PORT }}
+          protocol: ftps                   # nếu fail TLS thì đổi thành ftp
+          server-dir: /domains/vidieu.vn/public_html/wp-content/prerf/
+          local-dir: ./wp-content/prerf/
+          state-name: .ftp-deploy-prerf-sync.json
+          log-level: verbose
+
+          exclude: |
+            **/.git*
+            **/.github/**
+            **/node_modules/**
+            **/*.log
+            .DS_Store

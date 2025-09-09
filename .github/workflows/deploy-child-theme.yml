@@ -1,0 +1,39 @@
+name: Deploy child theme (FTP/FTPS)
+
+on:
+  push:
+    paths:
+      - "wp-content/themes/elessi-theme-child/**"   # chỉ chạy khi child theme đổi
+  workflow_dispatch: {}                              # có thể bấm chạy tay
+
+concurrency:
+  group: deploy-child-theme
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Deploy child theme via FTP/FTPS
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+        with:
+          server:     ${{ secrets.FTP_SERVER }}
+          username:   ${{ secrets.FTP_USERNAME }}
+          password:   ${{ secrets.FTP_PASSWORD }}
+          port:       ${{ secrets.FTP_PORT }}  # shared hosting thường là 21
+          protocol:   ftps                     # nếu host không hỗ trợ FTPS thì đổi thành: ftp
+          server-dir: /domains/vidieu.vn/public_html/wp-content/themes/elessi-theme-child/
+          local-dir:  ./wp-content/themes/elessi-theme-child/
+          state-name: .ftp-deploy-child-theme-state.json
+          log-level: verbose
+
+          exclude: |
+            **/.git*
+            **/.github/**
+            **/node_modules/**
+            **/*.log
+            **/*.map
+            .DS_Store
