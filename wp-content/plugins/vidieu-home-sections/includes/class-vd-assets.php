@@ -119,6 +119,28 @@ class VD_Assets {
             'nonce' => wp_create_nonce('vidieu_ajax_nonce')
         ));
         
+        // Enqueue contact form assets if contact shortcode is present
+        if ($this->has_contact_shortcode()) {
+            wp_enqueue_style(
+                'vd-contact-style',
+                VD_HOME_PLUGIN_URL . 'assets/css/contact.css',
+                array('vd-home-style'),
+                VD_HOME_VERSION
+            );
+            
+            wp_enqueue_script(
+                'vd-contact-script',
+                VD_HOME_PLUGIN_URL . 'assets/js/contact.js',
+                array('jquery'),
+                VD_HOME_VERSION,
+                true
+            );
+            
+            wp_localize_script('vd-contact-script', 'vd_ajax_object', array(
+                'ajax_url' => admin_url('admin-ajax.php'),
+                'error_message' => 'Đã có lỗi xảy ra. Vui lòng thử lại.'
+            ));
+        }
     }
     
     /**
@@ -164,7 +186,9 @@ class VD_Assets {
         $should_load = false;
         
         // Check for shortcodes in post content
-        if (has_shortcode($post->post_content, 'vidieu_home_products') || has_shortcode($post->post_content, 'vidieu_home_posts')) {
+        if (has_shortcode($post->post_content, 'vidieu_home_products') || 
+            has_shortcode($post->post_content, 'vidieu_home_posts') || 
+            has_shortcode($post->post_content, 'vd_contact')) {
             $should_load = true;
         }
         
@@ -188,7 +212,9 @@ class VD_Assets {
                 if (is_array($meta_array)) {
                     foreach ($meta_array as $meta_value) {
                         if (is_string($meta_value)) {
-                            if (strpos($meta_value, '[vidieu_home_products') !== false || strpos($meta_value, '[vidieu_home_posts') !== false) {
+                            if (strpos($meta_value, '[vidieu_home_products') !== false || 
+                                strpos($meta_value, '[vidieu_home_posts') !== false ||
+                                strpos($meta_value, '[vd_contact') !== false) {
                                 $should_load = true;
                                 break 2;
                             }
@@ -218,5 +244,34 @@ class VD_Assets {
     public static function should_load_assets_static() {
         $instance = self::get_instance();
         return $instance->should_load_assets();
+    }
+    
+    /**
+     * Check if contact shortcode is present
+     */
+    private function has_contact_shortcode() {
+        global $post;
+        if (!$post) {
+            return false;
+        }
+        
+        // Check in post content
+        if (has_shortcode($post->post_content, 'vd_contact')) {
+            return true;
+        }
+        
+        // Check in meta fields
+        $meta_values = get_post_meta($post->ID);
+        foreach ($meta_values as $meta_key => $meta_array) {
+            if (is_array($meta_array)) {
+                foreach ($meta_array as $meta_value) {
+                    if (is_string($meta_value) && strpos($meta_value, '[vd_contact') !== false) {
+                        return true;
+                    }
+                }
+            }
+        }
+        
+        return false;
     }
 }
