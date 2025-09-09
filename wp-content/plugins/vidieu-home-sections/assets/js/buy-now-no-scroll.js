@@ -38,8 +38,9 @@
         preventDefaultBehavior: function() {
             var self = this;
             
-            // Handle clicks on Buy Now buttons
-            $(document).on('click', '.vd-buy-now-button', function(e) {
+            // Handle clicks on Buy Now buttons - DISABLED for Simple Products
+            // Simple products now use standardized handler
+            $(document).on('click', '.vd-buy-now-button:not(.vd-buy-now-simple)', function(e) {
                 var $btn = $(this);
                 var action = $btn.attr('data-action');
                 var href = $btn.attr('href');
@@ -147,8 +148,9 @@
         enhanceButtonFeedback: function() {
             var self = this;
             
-            // Override the original Buy Now handler to add feedback
-            $(document).on('click', '.vd-buy-now-button', function(e) {
+            // Override the original Buy Now handler - DISABLED for Simple Products
+            // Simple products use standardized handler with proper state management
+            $(document).on('click', '.vd-buy-now-button:not(.vd-buy-now-simple)', function(e) {
                 var $btn = $(this);
                 var action = $btn.attr('data-action');
                 
@@ -169,20 +171,22 @@
                         .prop('disabled', true)
                         .html('<span class="vd-spinner"></span> Đang xử lý...');
                     
-                    // Handle success after a delay (will be replaced by actual AJAX callback)
-                    setTimeout(function() {
-                        $btn.removeClass('vd-is-busy')
-                            .addClass('vd-success')
-                            .html('<span class="vd-checkmark">✓</span> Đã thêm')
-                            .prop('disabled', false);
-                        
-                        // Restore original text after 1.5s
+                    // Skip hardcoded delays for simple products
+                    if (!$btn.hasClass('vd-buy-now-simple')) {
+                        // Keep delays only for variable products
                         setTimeout(function() {
-                            $btn.removeClass('vd-success')
-                                .html(originalText);
-                            self.isProcessing = false;
-                        }, 1500);
-                    }, 1000);
+                            $btn.removeClass('vd-is-busy')
+                                .addClass('vd-success')
+                                .html('<span class="vd-checkmark">✓</span> Đã thêm')
+                                .prop('disabled', false);
+                            
+                            setTimeout(function() {
+                                $btn.removeClass('vd-success')
+                                    .html(originalText);
+                                self.isProcessing = false;
+                            }, 1500);
+                        }, 1000);
+                    }
                 }
                 
                 // For variable products without selection

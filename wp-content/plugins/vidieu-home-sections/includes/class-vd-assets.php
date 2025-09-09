@@ -142,7 +142,28 @@ class VD_Assets {
             ));
         }
         
-        // Enqueue Buy Now No-Scroll fix if enabled
+        // Enqueue Buy Now Simple standardized handler
+        $enable_buy_now = VD_Admin::get_option('enable_buy_now', false);
+        if (!is_admin() && $enable_buy_now) {
+            // Buy Now Simple styles
+            wp_enqueue_style(
+                'vd-buynow-simple',
+                VD_HOME_PLUGIN_URL . 'assets/css/buynow-simple.css',
+                array('vd-home-style'),
+                VD_HOME_VERSION
+            );
+            
+            // Buy Now Simple script
+            wp_enqueue_script(
+                'vd-buynow-simple',
+                VD_HOME_PLUGIN_URL . 'assets/js/buynow-simple.js',
+                array('jquery'),
+                VD_HOME_VERSION,
+                true
+            );
+        }
+        
+        // Legacy Buy Now No-Scroll fix (kept for variable products)
         if (!is_admin() && defined('VD_FIX_BUY_NOW_NOSCROLL') && VD_FIX_BUY_NOW_NOSCROLL) {
             wp_enqueue_script(
                 'vd-buy-now-no-scroll',

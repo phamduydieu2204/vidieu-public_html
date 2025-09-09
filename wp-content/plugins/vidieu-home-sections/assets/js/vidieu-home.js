@@ -279,8 +279,9 @@
                 self.handlePaginationClick($(this));
             }, 300));
             
-            // Handle Buy Now button clicks
-            $(document).on('click', '.vd-buy-now-button', debounce(function(e) {
+            // Handle Buy Now button clicks - Adding namespace for cleanup
+            // Simple products will use standardized handler instead
+            $(document).off('click.vdBuyNow').on('click.vdBuyNow', '.vd-buy-now-button:not(.vd-buy-now-simple)', debounce(function(e) {
                 e.preventDefault();
                 self.handleBuyNowClick($(this));
             }, 300));
@@ -1227,10 +1228,8 @@
                             // Keep original button text
                             // $button.text(response.data.message || 'Redirecting...');
                             
-                            // Just redirect without changing button text
-                            setTimeout(function() {
-                                window.location.href = response.data.redirect_url;
-                            }, 100);
+                            // Redirect immediately - no delay needed
+                            window.location.href = response.data.redirect_url;
                         } else if (response.data.action === 'open_quickview') {
                             // This shouldn't happen for simple products
                             var $quickviewBtn = $product.find('.quick-view');
@@ -1373,10 +1372,8 @@
                             // Keep original button text
                             // $button.text(response.data.message || 'Redirecting...');
                             
-                            // Just redirect without changing button text
-                            setTimeout(function() {
-                                window.location.href = response.data.redirect_url;
-                            }, 100);
+                            // Redirect immediately - no delay needed
+                            window.location.href = response.data.redirect_url;
                         }
                     } else {
                         var errorMsg = (response.data && response.data.message) ? response.data.message : 'An error occurred';

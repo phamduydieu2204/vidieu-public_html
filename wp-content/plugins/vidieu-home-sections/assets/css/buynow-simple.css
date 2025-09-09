@@ -1,0 +1,146 @@
+/**
+ * Buy Now Simple Styles
+ * Styles for standardized Buy Now button states
+ * 
+ * @package VidieuHomeSections
+ * @version 1.0.0
+ */
+
+/* Button States */
+.vd-buy-now-button.vd-buy-now-simple {
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.vd-buy-now-button.vd-buy-now-simple:disabled,
+.vd-buy-now-button.vd-buy-now-simple[disabled] {
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+/* Loading State */
+.vd-buy-now-button.is-loading {
+    color: transparent !important;
+    pointer-events: none;
+}
+
+.vd-buy-now-button.is-loading .spinner {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-top-color: currentColor;
+    border-radius: 50%;
+    animation: vd-spin 0.8s linear infinite;
+    vertical-align: middle;
+    margin-right: 5px;
+}
+
+/* Success State */
+.vd-buy-now-button.is-success {
+    background-color: #28a745 !important;
+    border-color: #28a745 !important;
+    color: #fff !important;
+}
+
+.vd-buy-now-button.is-success .checkmark {
+    display: inline-block;
+    vertical-align: middle;
+    margin-right: 5px;
+    font-size: 1.1em;
+}
+
+/* Error State */
+.vd-buy-now-button.is-error {
+    background-color: #dc3545 !important;
+    border-color: #dc3545 !important;
+    color: #fff !important;
+}
+
+.vd-buy-now-button.is-error .error-icon {
+    display: inline-block;
+    vertical-align: middle;
+    margin-right: 5px;
+    font-size: 1.1em;
+}
+
+/* Animation */
+@keyframes vd-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Toast Notifications */
+.vd-toast {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background: #333;
+    color: #fff;
+    padding: 12px 24px;
+    border-radius: 4px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    z-index: 99999;
+    font-size: 14px;
+    max-width: 90%;
+    text-align: center;
+    opacity: 0;
+    transition: all 0.3s ease;
+}
+
+.vd-toast.show {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+}
+
+.vd-toast-error {
+    background: #dc3545;
+}
+
+.vd-toast-success {
+    background: #28a745;
+}
+
+/* Mobile Styles */
+@media (max-width: 767px) {
+    .vd-buy-now-button.vd-buy-now-simple {
+        min-height: 38px;
+        font-size: 13px;
+        padding: 7px 14px;
+    }
+    
+    .vd-toast {
+        bottom: 10px;
+        left: 10px;
+        right: 10px;
+        transform: translateY(100px);
+        max-width: none;
+    }
+    
+    .vd-toast.show {
+        transform: translateY(0);
+    }
+}
+
+/* High Contrast Mode */
+@media (prefers-contrast: high) {
+    .vd-buy-now-button.is-loading .spinner {
+        border-color: currentColor;
+        border-top-color: transparent;
+    }
+}
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+    .vd-buy-now-button,
+    .vd-toast {
+        transition: none !important;
+    }
+    
+    .vd-buy-now-button.is-loading .spinner {
+        animation: none !important;
+    }
+}
