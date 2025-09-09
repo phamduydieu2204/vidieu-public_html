@@ -28,7 +28,7 @@
             debounceDelay: 300,
             successDuration: 1500,
             selector: '.vd-buy-now-button.vd-buy-now-simple',
-            namespace: '.vdBuyNow',
+            namespace: '.vdBuyNowSimple', // Changed to unique namespace
             processingAttr: 'data-processing',
             originalTextAttr: 'data-original-text',
             
@@ -105,13 +105,31 @@
             var boundCorrectly = false;
             if (events && events.click) {
                 events.click.forEach(function(e) {
-                    if (e.namespace === 'vdBuyNow' && e.selector === '.vd-buy-now-button.vd-buy-now-simple') {
+                    if (e.namespace === 'vdBuyNowSimple' && e.selector === '.vd-buy-now-button.vd-buy-now-simple') {
                         boundCorrectly = true;
                     }
                 });
             }
             console.log('[VDBuyNowSimple] Event bound correctly:', boundCorrectly);
+            
+            // Also show all click events for debugging
+            console.log('[VDBuyNowSimple] All click events with vd-buy-now selector:');
+            if (events && events.click) {
+                events.click.forEach(function(e, i) {
+                    if (e.selector && e.selector.includes('vd-buy-now')) {
+                        console.log(`  - Event ${i}: selector="${e.selector}", namespace="${e.namespace}"`);
+                    }
+                });
+            }
             console.log('[VDBuyNowSimple] Events bound successfully');
+            
+            // TEST: Add direct handler without debounce to verify selector works
+            $(document).on('click.vdBuyNowTest', '.vd-buy-now-button.vd-buy-now-simple', function(e) {
+                console.log('[VDBuyNowSimple TEST] Direct click detected!');
+                console.log('[VDBuyNowSimple TEST] Button:', this);
+                console.log('[VDBuyNowSimple TEST] Classes:', this.className);
+                // Don't prevent default here - let the debounced handler do its work
+            });
         },
         
         /**
