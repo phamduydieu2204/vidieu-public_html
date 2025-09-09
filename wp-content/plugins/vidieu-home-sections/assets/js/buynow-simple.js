@@ -231,8 +231,9 @@
                         .attr({
                             [this.config.processingAttr]: 'true',
                             'aria-busy': 'true',
-                            'disabled': true
+                            'disabled': 'disabled'
                         })
+                        .prop('disabled', true)
                         .addClass(classes.loading)
                         .html('<span class="spinner" aria-hidden="true"></span> ' + this.config.labels.processing);
                     break;
