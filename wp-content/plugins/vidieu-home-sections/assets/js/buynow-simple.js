@@ -74,46 +74,39 @@
         bindEvents: function() {
             var self = this;
             
+            // Always off before on - be more specific
+            $(document).off('click.vdBuyNowSimple', '.vd-buy-now-button.vd-buy-now-simple');
             
-            // Always off before on
-            $(document).off('click' + this.config.namespace, this.config.selector);
-            
-            // Single delegated handler with namespace and debounce
-            var debouncedHandler = this.debounce(function(e) {
+            // Single delegated handler - NO DEBOUNCE for immediate response
+            $(document).on('click.vdBuyNowSimple', '.vd-buy-now-button.vd-buy-now-simple', function(e) {
                 e.preventDefault();
                 e.stopImmediatePropagation();
-                self.handleClick($(this));
-            }, this.config.debounceDelay);
-            
-            $(document).on('click' + this.config.namespace, this.config.selector, debouncedHandler);
-            
+                
+                // Check if already processing inline
+                var $button = $(this);
+                if ($button.attr('data-processing') === 'true') {
+                    return false;
+                }
+                
+                self.handleClick($button);
+            });
         },
         
         /**
          * Handle button click
          */
         handleClick: function($button) {
-            
-            // Check if already processing
-            if ($button.attr(this.config.processingAttr) === 'true') {
-                return false;
-            }
-            
-            // Get button data
-            var productId = $button.data('product-id');
-            // Use vd_home_ajax.nonce instead of button's data-nonce for security check
-            var nonce = (window.vd_home_ajax ? vd_home_ajax.nonce : '');
-            var quantity = parseInt($button.data('qty') || 1);
-            var redirect = $button.data('redirect') || 'checkout';
-            
-            
-            // Save original text
+            // Set loading state IMMEDIATELY
             if (!$button.attr(this.config.originalTextAttr)) {
                 $button.attr(this.config.originalTextAttr, $button.text());
             }
-            
-            // Set processing state
             this.setButtonState($button, 'loading');
+            
+            // Get button data
+            var productId = $button.data('product-id');
+            var nonce = (window.vd_home_ajax ? vd_home_ajax.nonce : '');
+            var quantity = parseInt($button.data('qty') || 1);
+            var redirect = $button.data('redirect') || 'checkout';
             
             // Make AJAX request
             this.processBuyNow($button, {
@@ -166,11 +159,8 @@
                     // Redirect immediately - no delay
                     window.location.href = response.data.redirect_url;
                 } else {
-                    // No redirect - reset button after success duration
-                    var timeout = setTimeout(() => {
-                        this.setButtonState($button, 'idle');
-                    }, this.config.successDuration);
-                    this.timeouts.push(timeout);
+                    // No redirect - reset immediately
+                    this.setButtonState($button, 'idle');
                 }
             } else {
                 // Server returned error
@@ -198,17 +188,16 @@
          * Show error message
          */
         showError: function(message, $button) {
-            // Set error state
+            // Set error state briefly then reset
             this.setButtonState($button, 'error');
             
-            // Show toast notification
-            this.showToast(message, 'error');
-            
-            // Reset button after delay
-            var timeout = setTimeout(() => {
-                this.setButtonState($button, 'idle');
-            }, this.config.successDuration);
-            this.timeouts.push(timeout);
+            // Small delay for UX only when not redirecting
+            if (this.timeouts.length === 0) {
+                var timeout = setTimeout(() => {
+                    this.setButtonState($button, 'idle');
+                }, 300);
+                this.timeouts.push(timeout);
+            }
         },
         
         /**
@@ -261,55 +250,6 @@
             }
         },
         
-        /**
-         * Show toast notification
-         */
-        showToast: function(message, type) {
-            // Remove any existing toasts
-            $('.vd-toast').remove();
-            
-            // Create toast element
-            var $toast = $('<div>', {
-                'class': 'vd-toast vd-toast-' + type,
-                'role': 'alert',
-                'aria-live': 'polite',
-                'text': message
-            });
-            
-            // Add to body
-            $('body').append($toast);
-            
-            // Animate in with requestAnimationFrame for performance
-            requestAnimationFrame(() => {
-                $toast.addClass('show');
-            });
-            
-            // Remove after delay
-            var timeout1 = setTimeout(() => {
-                $toast.removeClass('show');
-                var timeout2 = setTimeout(() => {
-                    $toast.remove();
-                }, 300);
-                this.timeouts.push(timeout2);
-            }, 3000);
-            this.timeouts.push(timeout1);
-        },
-        
-        /**
-         * Debounce utility
-         */
-        debounce: function(func, wait) {
-            var timeout;
-            return function() {
-                var context = this, args = arguments;
-                var later = function() {
-                    timeout = null;
-                    func.apply(context, args);
-                };
-                clearTimeout(timeout);
-                timeout = setTimeout(later, wait);
-            };
-        },
         
         /**
          * Destroy and cleanup
@@ -330,18 +270,27 @@
     // Initialize on DOM ready
     $(document).ready(function() {
         VDBuyNowSimple.init();
+        
+        // TEMP LOG - Remove after testing
+        setTimeout(() => {
+            var events = jQuery._data(document, 'events');
+            var handlers = [];
+            if (events && events.click) {
+                events.click.forEach(e => {
+                    if (e.selector && e.selector.includes('vd-buy-now')) {
+                        handlers.push({sel: e.selector, ns: e.namespace || 'none'});
+                    }
+                });
+            }
+            console.log('[BuyNowSimple] Handlers:', handlers.length, handlers);
+            console.log('[BuyNowSimple] Timeouts in module:', VDBuyNowSimple.timeouts.length);
+        }, 1000);
     });
     
-    // Re-initialize after AJAX loads - but only bind once
+    // Re-initialize after AJAX loads
     $(document).on('vidieu_products_filtered vidieu_products_page_loaded nasa_after_load', function() {
-        // Use requestAnimationFrame to avoid blocking
-        requestAnimationFrame(() => {
-            VDBuyNowSimple.bindEvents();
-        });
+        VDBuyNowSimple.bindEvents();
     });
-    
-    // Skip fragment refresh for Buy Now Simple (they redirect)
-    // No need to listen to wc_fragments_refreshed
     
     // Expose for debugging
     window.VDBuyNowSimple = VDBuyNowSimple;
