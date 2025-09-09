@@ -232,32 +232,65 @@
         
         // Export console output to file
         exportConsoleToFile();
+        
+        // Also save to window for manual access
+        window.BuyNowTestResults = {
+            raw: testResults,
+            log: consoleOutput.join('\n'),
+            getResults: function() {
+                return this.log;
+            },
+            download: function() {
+                exportConsoleToFile();
+            }
+        };
+        
+        console.log('\n💡 TIP: You can access results with: window.BuyNowTestResults.getResults()');
+        console.log('💡 Or download again with: window.BuyNowTestResults.download()');
     }
     
     // Export console output to text file
     function exportConsoleToFile() {
+        // Restore original console methods
         console.log = originalLog;
         console.warn = originalWarn;
         console.error = originalError;
         
-        var content = consoleOutput.join('\n');
-        var blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
-        var url = URL.createObjectURL(blob);
-        
-        var link = document.createElement('a');
-        link.href = url;
-        link.download = 'buynow-test-console.txt';
-        link.style.display = 'none';
-        
-        document.body.appendChild(link);
-        link.click();
-        
-        setTimeout(function() {
-            document.body.removeChild(link);
-            URL.revokeObjectURL(url);
-        }, 100);
-        
-        originalLog('📥 Console output saved to buynow-test-console.txt');
+        try {
+            var content = consoleOutput.join('\n');
+            var blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+            var url = URL.createObjectURL(blob);
+            
+            // Create download link
+            var link = document.createElement('a');
+            link.href = url;
+            link.download = 'buynow-test-console.txt';
+            link.style.cssText = 'position:fixed;bottom:20px;right:20px;background:#0073aa;color:white;padding:10px 20px;text-decoration:none;border-radius:5px;z-index:9999';
+            link.textContent = '📥 Download Test Results';
+            
+            // Add to page for manual click if auto-download fails
+            document.body.appendChild(link);
+            
+            // Try auto-download
+            try {
+                link.click();
+                originalLog('📥 Auto-downloading console output...');
+            } catch(e) {
+                originalLog('⚠️ Auto-download failed. Please click the blue button at bottom-right to download results.');
+            }
+            
+            // Keep button visible for 10 seconds
+            setTimeout(function() {
+                if (link.parentNode) {
+                    document.body.removeChild(link);
+                }
+                URL.revokeObjectURL(url);
+            }, 10000);
+            
+        } catch(error) {
+            originalLog('❌ Error exporting console:', error);
+            originalLog('📋 Manual copy - Select all text above and copy.');
+        }
     }
     
     // Check jQuery availability
