@@ -96,7 +96,6 @@
                     
                     // Block scroll to top
                     if (targetY === 0 || targetY < 100) {
-                        console.log('[VD Buy Now] Blocked scroll to top');
                         return;
                     }
                 }
@@ -115,7 +114,6 @@
                         element.classList.contains('woocommerce-message') ||
                         element.classList.contains('woocommerce-info')
                     )) {
-                        console.log('[VD Buy Now] Blocked scroll to notices');
                         return;
                     }
                 }
@@ -136,7 +134,6 @@
                             left: 0,
                             behavior: 'instant'
                         });
-                        console.log('[VD Buy Now] Restored scroll position');
                     }
                     
                     lastScrollY = currentScrollY;
