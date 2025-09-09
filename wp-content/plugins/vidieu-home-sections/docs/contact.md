@@ -13,7 +13,7 @@
   - `show_map`: Hiển thị bản đồ (yes/no, mặc định: yes)
   - `map_height`: Chiều cao bản đồ (mặc định: 400px)
   - `company_name`: Tên công ty (mặc định: "Vidieu.vn")
-  - `address`: Địa chỉ (mặc định: "Hà Nội, Việt Nam")
+  - `address`: Địa chỉ (mặc định: "Đông các, Đông Hưng, Thái Bình")
 
 ### Files Created
 1. **PHP Class**: `/includes/class-vd-contact.php`

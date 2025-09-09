@@ -55,9 +55,9 @@ class VD_Contact {
             'show_map' => 'yes',
             'map_height' => '400',
             'company_name' => 'Vidieu.vn',
-            'address' => 'Hà Nội, Việt Nam',
-            'lat' => '21.0285',
-            'lng' => '105.8542'
+            'address' => 'Đông các, Đông Hưng, Thái Bình',
+            'lat' => '20.5439',
+            'lng' => '106.3409'
         ), $atts, 'vd_contact');
         
         // Get current user info if logged in
