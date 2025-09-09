@@ -21,6 +21,34 @@
         clickTime: null
     };
     
+    // Console output storage
+    var consoleOutput = [];
+    var originalLog = console.log;
+    var originalWarn = console.warn;
+    var originalError = console.error;
+    
+    // Override console methods to capture output
+    console.log = function() {
+        var args = Array.prototype.slice.call(arguments);
+        var message = args.map(arg => typeof arg === 'object' ? JSON.stringify(arg, null, 2) : arg).join(' ');
+        consoleOutput.push('[LOG] ' + message);
+        originalLog.apply(console, arguments);
+    };
+    
+    console.warn = function() {
+        var args = Array.prototype.slice.call(arguments);
+        var message = args.map(arg => typeof arg === 'object' ? JSON.stringify(arg, null, 2) : arg).join(' ');
+        consoleOutput.push('[WARN] ' + message);
+        originalWarn.apply(console, arguments);
+    };
+    
+    console.error = function() {
+        var args = Array.prototype.slice.call(arguments);
+        var message = args.map(arg => typeof arg === 'object' ? JSON.stringify(arg, null, 2) : arg).join(' ');
+        consoleOutput.push('[ERROR] ' + message);
+        originalError.apply(console, arguments);
+    };
+    
     // 1. Hook into XMLHttpRequest to count requests
     var originalOpen = XMLHttpRequest.prototype.open;
     var originalSetTimeout = window.setTimeout;
@@ -201,6 +229,35 @@
         window.setTimeout = originalSetTimeout;
         
         console.log('\n✅ Test completed. Original functions restored.');
+        
+        // Export console output to file
+        exportConsoleToFile();
+    }
+    
+    // Export console output to text file
+    function exportConsoleToFile() {
+        console.log = originalLog;
+        console.warn = originalWarn;
+        console.error = originalError;
+        
+        var content = consoleOutput.join('\n');
+        var blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+        var url = URL.createObjectURL(blob);
+        
+        var link = document.createElement('a');
+        link.href = url;
+        link.download = 'buynow-test-console.txt';
+        link.style.display = 'none';
+        
+        document.body.appendChild(link);
+        link.click();
+        
+        setTimeout(function() {
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+        }, 100);
+        
+        originalLog('📥 Console output saved to buynow-test-console.txt');
     }
     
     // Check jQuery availability
