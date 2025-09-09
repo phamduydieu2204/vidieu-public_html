@@ -270,21 +270,6 @@
     // Initialize on DOM ready
     $(document).ready(function() {
         VDBuyNowSimple.init();
-        
-        // TEMP LOG - Remove after testing
-        setTimeout(() => {
-            var events = jQuery._data(document, 'events');
-            var handlers = [];
-            if (events && events.click) {
-                events.click.forEach(e => {
-                    if (e.selector && e.selector.includes('vd-buy-now')) {
-                        handlers.push({sel: e.selector, ns: e.namespace || 'none'});
-                    }
-                });
-            }
-            console.log('[BuyNowSimple] Handlers:', handlers.length, handlers);
-            console.log('[BuyNowSimple] Timeouts in module:', VDBuyNowSimple.timeouts.length);
-        }, 1000);
     });
     
     // Re-initialize after AJAX loads

@@ -161,6 +161,15 @@ class VD_Assets {
                 VD_HOME_VERSION,
                 true
             );
+            
+            // Buy Now Simple Override - MUST load last
+            wp_enqueue_script(
+                'vd-buynow-simple-override',
+                VD_HOME_PLUGIN_URL . 'assets/js/buynow-simple-override.js',
+                array('jquery', 'vd-buynow-simple', 'vd-select-options-open-qv', 'vd-buy-now-no-scroll'),
+                VD_HOME_VERSION,
+                true
+            );
         }
         
         // Legacy Buy Now No-Scroll fix (kept for variable products)

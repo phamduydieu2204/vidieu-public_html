@@ -101,9 +101,11 @@
                 return originalScrollIntoView.apply(this, arguments);
             };
             
-            // Monitor scroll position changes
+            // Monitor scroll position changes - DISABLED for Simple Products
+            // Simple products use direct redirect, no need for scroll monitoring
             var lastScrollY = window.scrollY;
-            setInterval(function() {
+            var scrollMonitor = setInterval(function() {
+                // Only monitor for variable/complex products
                 if (self.currentAction === 'buy-now' && self.savedScrollPosition !== null) {
                     var currentScrollY = window.scrollY;
                     
@@ -119,6 +121,9 @@
                     lastScrollY = currentScrollY;
                 }
             }, 100);
+            
+            // Store interval reference for cleanup
+            self.scrollMonitorInterval = scrollMonitor;
         },
         
         /**
@@ -262,6 +267,22 @@
                     $tooltip.remove();
                 }, 300);
             }, 2000);
+        },
+        
+        /**
+         * Cleanup and destroy
+         */
+        destroy: function() {
+            // Clear scroll monitor interval
+            if (this.scrollMonitorInterval) {
+                clearInterval(this.scrollMonitorInterval);
+                this.scrollMonitorInterval = null;
+            }
+            
+            // Reset state
+            this.currentAction = null;
+            this.savedScrollPosition = null;
+            this.isProcessing = false;
         },
         
         /**

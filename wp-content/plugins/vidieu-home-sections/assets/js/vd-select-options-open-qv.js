@@ -37,13 +37,12 @@
         // Remove previous handlers to prevent double-binding
         $containers.off('click.vdhs');
         
-        // Attach delegated event handler
-        $containers.on('click.vdhs', '.vd-buy-now-button', function(e) {
+        // Attach delegated event handler - ONLY for select-options buttons
+        $containers.on('click.vdhs', '.vd-buy-now-button[data-action="select-options"]', function(e) {
             var $btn = $(this);
             
-            // Check if this is truly a select-options button
+            // Double-check if this is truly a select-options button
             if (!self.isSelectOptionsButton($btn)) {
-                // Don't prevent default for "Mua ngay" buttons
                 return;
             }
             
