@@ -28,3 +28,4 @@ git checkout -b test-claude
 Sau đó merge vào main khi đã ổn định.
 Rollback nhanh: git revert <commit> rồi git push.
 Lưu ý: comit và message bắt buộc phải bằng tiếng việt
+Cú pháp commit: Tên nhiệm vụ + hành động. Ví dụ: "Buy Now Simple - Tạo script kiểm tra handler registration"

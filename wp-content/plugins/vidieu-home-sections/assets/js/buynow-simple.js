@@ -84,20 +84,33 @@
             $(document).off('click' + this.config.namespace, this.config.selector);
             
             // Single delegated handler with namespace and debounce
-            $(document).on('click' + this.config.namespace, this.config.selector, 
-                this.debounce(function(e) {
-                    console.log('[VDBuyNowSimple] Button clicked!');
-                    console.log('[VDBuyNowSimple] Button data:', {
-                        productId: $(this).data('product-id'),
-                        productType: $(this).data('product-type'),
-                        action: $(this).data('action')
-                    });
-                    e.preventDefault();
-                    e.stopImmediatePropagation();
-                    self.handleClick($(this));
-                }, this.config.debounceDelay)
-            );
+            var debouncedHandler = this.debounce(function(e) {
+                console.log('[VDBuyNowSimple] Button clicked!');
+                console.log('[VDBuyNowSimple] Button data:', {
+                    productId: $(this).data('product-id'),
+                    productType: $(this).data('product-type'),
+                    action: $(this).data('action')
+                });
+                e.preventDefault();
+                e.stopImmediatePropagation();
+                self.handleClick($(this));
+            }, this.config.debounceDelay);
             
+            console.log('[VDBuyNowSimple] Debounced handler:', typeof debouncedHandler);
+            
+            $(document).on('click' + this.config.namespace, this.config.selector, debouncedHandler);
+            
+            // Verify event was bound
+            var events = $._data(document, 'events');
+            var boundCorrectly = false;
+            if (events && events.click) {
+                events.click.forEach(function(e) {
+                    if (e.namespace === 'vdBuyNow' && e.selector === '.vd-buy-now-button.vd-buy-now-simple') {
+                        boundCorrectly = true;
+                    }
+                });
+            }
+            console.log('[VDBuyNowSimple] Event bound correctly:', boundCorrectly);
             console.log('[VDBuyNowSimple] Events bound successfully');
         },
         
