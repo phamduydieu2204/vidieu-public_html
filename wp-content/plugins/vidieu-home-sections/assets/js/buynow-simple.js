@@ -10,8 +10,8 @@
 (function($) {
     'use strict';
     
-    // Check dependencies
-    if (typeof vd_home_ajax === 'undefined' || typeof $ === 'undefined') {
+    // Check jQuery dependency
+    if (typeof $ === 'undefined') {
         return;
     }
     
@@ -53,8 +53,8 @@
          * Initialize the module
          */
         init: function() {
-            this.bindEvents();
             this.cleanupOldHandlers();
+            this.bindEvents();
         },
         
         /**
@@ -98,7 +98,7 @@
             
             // Get button data
             var productId = $button.data('product-id');
-            var nonce = $button.data('nonce') || vd_home_ajax.nonce;
+            var nonce = $button.data('nonce') || (window.vd_home_ajax ? vd_home_ajax.nonce : '');
             var quantity = parseInt($button.data('qty') || 1);
             var redirect = $button.data('redirect') || 'checkout';
             
@@ -126,7 +126,7 @@
             var self = this;
             
             $.ajax({
-                url: vd_home_ajax.ajax_url,
+                url: (window.vd_home_ajax ? vd_home_ajax.ajax_url : (window.ajaxurl || '/wp-admin/admin-ajax.php')),
                 type: 'POST',
                 data: {
                     action: 'vidieu_buy_now',

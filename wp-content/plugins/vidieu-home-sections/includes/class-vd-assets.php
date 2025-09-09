@@ -157,7 +157,7 @@ class VD_Assets {
             wp_enqueue_script(
                 'vd-buynow-simple',
                 VD_HOME_PLUGIN_URL . 'assets/js/buynow-simple.js',
-                array('jquery'),
+                array('jquery', 'vd-home-script'),
                 VD_HOME_VERSION,
                 true
             );
