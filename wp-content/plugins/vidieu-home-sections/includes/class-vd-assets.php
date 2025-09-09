@@ -141,6 +141,28 @@ class VD_Assets {
                 'error_message' => 'Đã có lỗi xảy ra. Vui lòng thử lại.'
             ));
         }
+        
+        // Enqueue Buy Now No-Scroll fix if enabled
+        if (!is_admin() && defined('VD_FIX_BUY_NOW_NOSCROLL') && VD_FIX_BUY_NOW_NOSCROLL) {
+            wp_enqueue_script(
+                'vd-buy-now-no-scroll',
+                VD_HOME_PLUGIN_URL . 'assets/js/buy-now-no-scroll.js',
+                array('jquery', 'vd-home-script'),
+                VD_HOME_VERSION,
+                true
+            );
+        }
+        
+        // Enqueue debug script if in debug mode (temporary)
+        if (!is_admin() && defined('VD_DEBUG_SCROLL') && VD_DEBUG_SCROLL) {
+            wp_enqueue_script(
+                'vd-buy-now-scroll-debug',
+                VD_HOME_PLUGIN_URL . 'assets/js/buy-now-scroll-debug.js',
+                array('jquery'),
+                VD_HOME_VERSION,
+                true
+            );
+        }
     }
     
     /**

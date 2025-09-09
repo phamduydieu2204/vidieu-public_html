@@ -23,6 +23,14 @@ define('VD_HOME_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('VD_HOME_PLUGIN_URL', plugin_dir_url(__FILE__));
 define('VD_HOME_TEXT_DOMAIN', 'vidieu-home-sections');
 
+// Feature flags for Buy Now enhancements
+if (!defined('VD_FIX_BUY_NOW_NOSCROLL')) {
+    define('VD_FIX_BUY_NOW_NOSCROLL', true); // Enable no-scroll fix
+}
+if (!defined('VD_DEBUG_SCROLL')) {
+    define('VD_DEBUG_SCROLL', false); // Disable debug mode by default
+}
+
 /**
  * Main plugin class
  */
