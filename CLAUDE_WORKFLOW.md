@@ -29,3 +29,4 @@ Sau đó merge vào main khi đã ổn định.
 Rollback nhanh: git revert <commit> rồi git push.
 Lưu ý: comit và message bắt buộc phải bằng tiếng việt
 Cú pháp commit: Tên nhiệm vụ + hành động. Ví dụ: "Buy Now Simple - Tạo script kiểm tra handler registration"
+Các vấn đề tôi muốn bạn hãy tìm ra gốc rễ đoạn code gây nên và xử lý thay vì chỉ tạo file fix và xử lý phần ngọn

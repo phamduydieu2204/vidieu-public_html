@@ -219,15 +219,10 @@
             var originalText = $button.attr(this.config.originalTextAttr) || $button.text();
             var classes = this.config.classes;
             
-            // Batch DOM updates with requestAnimationFrame
-            requestAnimationFrame(() => {
-                // Remove all state classes
-                $button.removeClass([classes.loading, classes.success, classes.error].join(' '));
-            });
-            
             switch (state) {
                 case 'loading':
                     $button
+                        .removeClass([classes.loading, classes.success, classes.error].join(' '))
                         .attr({
                             [this.config.processingAttr]: 'true',
                             'aria-busy': 'true',

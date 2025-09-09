@@ -40,28 +40,7 @@
             
             // Handle clicks on Buy Now buttons - DISABLED for Simple Products
             // Simple products now use standardized handler
-            $(document).on('click', '.vd-buy-now-button:not(.vd-buy-now-simple)', function(e) {
-                var $btn = $(this);
-                var action = $btn.attr('data-action');
-                var href = $btn.attr('href');
-                
-                // Prevent navigation for # or empty hrefs
-                if (href === '#' || href === '' || !href) {
-                    e.preventDefault();
-                }
-                
-                // Track if this is a buy-now action
-                if (action === 'buy-now') {
-                    self.currentAction = 'buy-now';
-                    self.savedScrollPosition = window.scrollY;
-                    
-                    // Clear action tracking after 3 seconds
-                    setTimeout(function() {
-                        self.currentAction = null;
-                        self.savedScrollPosition = null;
-                    }, 3000);
-                }
-            });
+            // REMOVED: Duplicate handler - already handled in vidieu-home.js with namespace .vdBuyNow
             
             // Prevent quickview icons from scrolling in our sections
             $(document).on('click', '.vd-home-section .quick-view', function(e) {
@@ -150,6 +129,8 @@
             
             // Override the original Buy Now handler - DISABLED for Simple Products
             // Simple products use standardized handler with proper state management
+            // REMOVED: Duplicate handler #2 - already handled in vidieu-home.js
+            /*
             $(document).on('click', '.vd-buy-now-button:not(.vd-buy-now-simple)', function(e) {
                 var $btn = $(this);
                 var action = $btn.attr('data-action');
@@ -211,6 +192,7 @@
                     }
                 }
             });
+            */
         },
         
         /**
