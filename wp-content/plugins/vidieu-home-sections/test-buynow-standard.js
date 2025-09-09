@@ -114,24 +114,40 @@
     function checkLoadingState($button) {
         console.log('\n🔄 Checking Loading State...');
         
-        // Use setTimeout to check state after processing
-        setTimeout(function() {
-            testResults.loadingState = {
-                disabled: $button.prop('disabled'),
-                ariaBusy: $button.attr('aria-busy'),
-                dataProcessing: $button.attr('data-processing'),
-                classes: $button.attr('class').split(' ').filter(c => 
-                    c.includes('loading') || c.includes('processing') || c.includes('busy')
-                ),
-                text: $button.text().trim()
-            };
+        // Check state multiple times to capture loading state
+        var checkCount = 0;
+        var stateInterval = setInterval(function() {
+            var currentClasses = $button.attr('class').split(' ').filter(c => 
+                c.includes('loading') || c.includes('processing') || c.includes('busy') || 
+                c === 'is-loading' || c === 'is-success' || c === 'is-error'
+            );
             
-            console.log('📌 BuyNow Test → State after click:');
-            console.log(`   - disabled: ${testResults.loadingState.disabled}`);
-            console.log(`   - aria-busy: ${testResults.loadingState.ariaBusy}`);
-            console.log(`   - data-processing: ${testResults.loadingState.dataProcessing}`);
-            console.log(`   - loading classes: [${testResults.loadingState.classes.join(', ')}]`);
-            console.log(`   - button text: "${testResults.loadingState.text}"`);
+            // Capture loading state when detected
+            if (currentClasses.length > 0 && !testResults.loadingState.captured) {
+                testResults.loadingState = {
+                    disabled: $button.prop('disabled'),
+                    ariaBusy: $button.attr('aria-busy'),
+                    dataProcessing: $button.attr('data-processing'),
+                    classes: currentClasses,
+                    text: $button.text().trim(),
+                    captured: true
+                };
+                
+                console.log('📌 BuyNow Test → Loading state captured:');
+                console.log(`   - disabled: ${testResults.loadingState.disabled}`);
+                console.log(`   - aria-busy: ${testResults.loadingState.ariaBusy}`);
+                console.log(`   - data-processing: ${testResults.loadingState.dataProcessing}`);
+                console.log(`   - loading classes: [${testResults.loadingState.classes.join(', ')}]`);
+                console.log(`   - button text: "${testResults.loadingState.text}"`);
+            }
+            
+            checkCount++;
+            if (checkCount > 10) {
+                clearInterval(stateInterval);
+                if (!testResults.loadingState.captured) {
+                    console.log('⚠️ No loading state captured');
+                }
+            }
         }, 50);
     }
     
