@@ -127,77 +127,11 @@
         },
         
         /**
-         * Enhance button feedback
+         * Enhance button feedback - Simplified for variable products only
          */
         enhanceButtonFeedback: function() {
-            var self = this;
-            
-            // Override the original Buy Now handler - DISABLED for Simple Products
-            // Simple products use standardized handler with proper state management
-            // REMOVED: Duplicate handler #2 - already handled in vidieu-home.js
-            /*
-            $(document).on('click', '.vd-buy-now-button:not(.vd-buy-now-simple)', function(e) {
-                var $btn = $(this);
-                var action = $btn.attr('data-action');
-                
-                // Skip if already processing
-                if (self.isProcessing || $btn.hasClass('vd-is-busy')) {
-                    e.preventDefault();
-                    e.stopImmediatePropagation();
-                    return false;
-                }
-                
-                // For buy-now action, add visual feedback
-                if (action === 'buy-now') {
-                    self.isProcessing = true;
-                    var originalText = $btn.text();
-                    
-                    // Add busy state
-                    $btn.addClass('vd-is-busy')
-                        .prop('disabled', true)
-                        .html('<span class="vd-spinner"></span> Đang xử lý...');
-                    
-                    // Skip hardcoded delays for simple products
-                    if (!$btn.hasClass('vd-buy-now-simple')) {
-                        // Keep delays only for variable products
-                        setTimeout(function() {
-                            $btn.removeClass('vd-is-busy')
-                                .addClass('vd-success')
-                                .html('<span class="vd-checkmark">✓</span> Đã thêm')
-                                .prop('disabled', false);
-                            
-                            setTimeout(function() {
-                                $btn.removeClass('vd-success')
-                                    .html(originalText);
-                                self.isProcessing = false;
-                            }, 1500);
-                        }, 1000);
-                    }
-                }
-                
-                // For variable products without selection
-                if (action === 'select-options' && $btn.hasClass('vd-buy-now-variable')) {
-                    var $product = $btn.closest('.product');
-                    var hasSelection = $product.find('input[name^="attribute_"]:checked').length > 0 ||
-                                     $product.find('select[name^="attribute_"] option:selected[value!=""]').length > 0;
-                    
-                    if (!hasSelection && $btn.text().toLowerCase().includes('mua ngay')) {
-                        e.preventDefault();
-                        e.stopImmediatePropagation();
-                        
-                        // Add shake effect
-                        $btn.addClass('vd-shake');
-                        setTimeout(function() {
-                            $btn.removeClass('vd-shake');
-                        }, 500);
-                        
-                        // Show tooltip
-                        self.showTooltip($btn, 'Vui lòng chọn thuộc tính');
-                        return false;
-                    }
-                }
-            });
-            */
+            // All button feedback now handled by respective specialized handlers
+            // This function is kept for potential future enhancements
         },
         
         /**

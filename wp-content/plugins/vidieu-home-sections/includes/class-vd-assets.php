@@ -182,17 +182,6 @@ class VD_Assets {
                 true
             );
         }
-        
-        // Enqueue debug script if in debug mode (temporary)
-        if (!is_admin() && defined('VD_DEBUG_SCROLL') && VD_DEBUG_SCROLL) {
-            wp_enqueue_script(
-                'vd-buy-now-scroll-debug',
-                VD_HOME_PLUGIN_URL . 'assets/js/buy-now-scroll-debug.js',
-                array('jquery'),
-                VD_HOME_VERSION,
-                true
-            );
-        }
     }
     
     /**
