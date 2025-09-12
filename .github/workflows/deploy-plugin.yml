@@ -36,3 +36,20 @@ jobs:
             **/node_modules/**
             **/*.log
             .DS_Store
+
+      - name: Create deploy marker file
+        run: |
+          mkdir -p deploy-marker/wp-content
+          echo "${{ github.sha }}" > deploy-marker/wp-content/deploy.txt
+
+      - name: Deploy marker via FTP/FTPS
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          port: ${{ secrets.FTP_PORT }}
+          protocol: ftps
+          server-dir: /domains/vidieu.vn/public_html/
+          local-dir: ./deploy-marker/
+          log-level: minimal

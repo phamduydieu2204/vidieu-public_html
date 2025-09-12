@@ -1,0 +1,16 @@
+{
+  "name": "vidieu-performance-recorder",
+  "version": "1.0.0",
+  "description": "Performance recorder for Buy Now button testing",
+  "private": true,
+  "scripts": {
+    "record:buy-now-variable": "node tools/recorder/runner.js --base=https://vidieu.vn"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.40.0",
+    "playwright": "^1.40.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
