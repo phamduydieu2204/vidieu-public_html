@@ -354,6 +354,12 @@ require_once get_stylesheet_directory() . '/woocommerce-admin-order-display.php'
 require_once get_stylesheet_directory() . '/fix-checkout-account-creation.php';
 
 /**
+ * Include Auto Account Creation (Fallback)
+ * @since 2025-09-20
+ */
+require_once get_stylesheet_directory() . '/fix-checkout-auto-account.php';
+
+/**
  * Include Floating Contact Widget
  * @since 2025-08-30
  */
