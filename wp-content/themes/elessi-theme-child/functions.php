@@ -360,6 +360,12 @@ require_once get_stylesheet_directory() . '/fix-checkout-account-creation.php';
 require_once get_stylesheet_directory() . '/fix-checkout-auto-account.php';
 
 /**
+ * Include Debug Account Password Tool
+ * @since 2025-09-20
+ */
+require_once get_stylesheet_directory() . '/debug-account-password.php';
+
+/**
  * Include Floating Contact Widget
  * @since 2025-08-30
  */

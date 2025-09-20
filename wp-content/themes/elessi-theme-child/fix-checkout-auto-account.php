@@ -30,8 +30,8 @@ function elessi_child_auto_create_account_fallback($order_id, $posted_data, $ord
         return;
     }
 
-    // Generate random password
-    $password = wp_generate_password(12, false);
+    // Generate simple password (no special characters to avoid encoding issues)
+    $password = wp_generate_password(8, false, false);
 
     // Create new customer
     $customer_id = wc_create_new_customer(
@@ -55,11 +55,18 @@ function elessi_child_auto_create_account_fallback($order_id, $posted_data, $ord
         // Send password email
         $user = get_user_by('id', $customer_id);
         if ($user) {
-            // Store password for password reset
+            // Store password for debugging and password reset
             update_user_meta($customer_id, 'auto_generated_password', $password);
+
+            // Also store in order meta for reference
+            $order->update_meta_data('_auto_generated_password', $password);
+            $order->save();
 
             // Send welcome email with password
             elessi_child_send_welcome_email($user, $password);
+
+            // Debug log
+            error_log("Account created for {$email} with password: {$password}");
         }
 
         // Add success notice for next page load
@@ -67,6 +74,9 @@ function elessi_child_auto_create_account_fallback($order_id, $posted_data, $ord
             WC()->session->set('auto_account_created', true);
             WC()->session->set('auto_account_password', $password);
         }
+    } else {
+        // Log error
+        error_log("Failed to create account for {$email}: " . $customer_id->get_error_message());
     }
 }
 
