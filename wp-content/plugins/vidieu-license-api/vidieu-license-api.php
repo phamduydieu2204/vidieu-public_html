@@ -26,38 +26,53 @@ class VidieuLicenseAPI {
     }
 
     public function validate_license($request) {
+        error_log('License API called');
+
         try {
             $license_key = sanitize_text_field($request->get_param('license_key'));
             $email = sanitize_email($request->get_param('email'));
             $allowed_product_ids = $request->get_param('allowed_product_ids');
             $source = sanitize_text_field($request->get_param('source'));
 
+            error_log('Params: ' . json_encode([
+                'license_key' => substr($license_key, 0, 8) . '***',
+                'email' => $email,
+                'product_ids' => $allowed_product_ids
+            ]));
+
             if (empty($license_key) || empty($email) || !is_array($allowed_product_ids) || empty($allowed_product_ids) || !str_starts_with($license_key, 'PPC')) {
+                error_log('Input validation failed');
                 return $this->error_response('');
             }
 
             $license_data = $this->get_license_data($license_key);
 
             if (!$license_data['success']) {
+                error_log('License data failed');
                 return $this->error_response('');
             }
 
             $license = $license_data['data']['data'];
+            error_log('Product ID: ' . $license['productId'] . ', Expires: ' . $license['expiresAt']);
 
             if (!in_array($license['productId'], $allowed_product_ids)) {
+                error_log('Product ID mismatch');
                 return $this->error_response('');
             }
 
             $expiry_check = $this->check_license_expiry($license);
             if (!$expiry_check['valid']) {
+                error_log('License expired, status: ' . $expiry_check['status']);
                 return $this->error_response('', $expiry_check['status']);
             }
 
             $activation_check = $this->check_activation_status($license_key, $license, $email);
 
             if ($activation_check['success']) {
+                error_log('License validation SUCCESS');
                 return $this->success_response($license, '', $activation_check['status']);
             } else {
+                error_log('Activation check failed');
                 return $this->error_response('', $activation_check['status']);
             }
 
