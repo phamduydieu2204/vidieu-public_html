@@ -33,80 +33,45 @@ class VidieuLicenseAPI {
             $allowed_product_ids = $request->get_param('allowed_product_ids');
             $source = sanitize_text_field($request->get_param('source'));
 
-            // Log request để debug
-            error_log('Vidieu License API Request: ' . json_encode([
-                'license_key' => substr($license_key, 0, 8) . '***' . substr($license_key, -4),
-                'email' => $email,
-                'allowed_product_ids' => $allowed_product_ids,
-                'source' => $source
-            ]));
-
             // Validate input
-            if (empty($license_key)) {
-                return $this->error_response('Thiếu License Key trong request.');
+            if (empty($license_key) || empty($email) || !is_array($allowed_product_ids) || empty($allowed_product_ids) || !str_starts_with($license_key, 'PPC')) {
+                return $this->error_response('');
             }
 
-            if (empty($email)) {
-                return $this->error_response('Thiếu email trong request.');
-            }
-
-            if (!is_array($allowed_product_ids) || empty($allowed_product_ids)) {
-                return $this->error_response('Danh sách Product ID không hợp lệ.');
-            }
-
-            // Kiểm tra prefix PPC
-            if (!str_starts_with($license_key, 'PPC')) {
-                return $this->error_response('License Key không hợp lệ. Key này không thuộc phần mềm PPC Amazon.');
-            }
-
-            // Lấy thông tin license từ LMfWC API
             $license_data = $this->get_license_data($license_key);
 
             if (!$license_data['success']) {
-                return $this->error_response($license_data['message']);
+                return $this->error_response('');
             }
 
             $license = $license_data['data'];
 
-            // Kiểm tra product ID
             if (!in_array($license['product_id'], $allowed_product_ids)) {
-                return $this->error_response(
-                    'License này không dành cho các sản phẩm được hỗ trợ (Product IDs: ' .
-                    implode(', ', $allowed_product_ids) . ').'
-                );
+                return $this->error_response('');
             }
 
-            // Kiểm tra hạn sử dụng
             $expiry_check = $this->check_license_expiry($license);
             if (!$expiry_check['valid']) {
-                return $this->error_response($expiry_check['message'], $expiry_check['status']);
+                return $this->error_response('', $expiry_check['status']);
             }
 
-            // Kiểm tra và xử lý activation
             $activation_check = $this->check_activation_status($license_key, $license, $email);
 
             if ($activation_check['success']) {
-                return $this->success_response(
-                    $license,
-                    $activation_check['message'],
-                    $activation_check['status']
-                );
+                return $this->success_response($license, '', $activation_check['status']);
             } else {
-                return $this->error_response(
-                    $activation_check['message'],
-                    $activation_check['status']
-                );
+                return $this->error_response('', $activation_check['status']);
             }
 
         } catch (Exception $e) {
-            error_log('Vidieu License API Error: ' . $e->getMessage());
-            return $this->error_response('Có lỗi xảy ra khi xử lý license. Vui lòng thử lại sau.');
+            return $this->error_response('');
         }
     }
 
     private function get_license_data($license_key) {
-        $consumer_key = "ck_947cc6b4c800204a32bff1159497999486560ee3";
-        $consumer_secret = "cs_f01741effc56456935c132758acf8b855a13c664";
+        // Consumer credentials được lưu bảo mật trên server
+        $consumer_key = $this->get_consumer_key();
+        $consumer_secret = $this->get_consumer_secret();
 
         $url = "https://vidieu.vn/wp-json/lmfwc/v2/licenses/{$license_key}?consumer_key={$consumer_key}&consumer_secret={$consumer_secret}";
 
@@ -120,31 +85,25 @@ class VidieuLicenseAPI {
         if (is_wp_error($response)) {
             return array(
                 'success' => false,
-                'message' => 'Không thể kết nối đến máy chủ License. Vui lòng thử lại sau.'
+                'message' => ''
             );
         }
 
         $response_code = wp_remote_retrieve_response_code($response);
-        $response_body = wp_remote_retrieve_body($response);
-
-        error_log('LMfWC API Response: ' . json_encode([
-            'code' => $response_code,
-            'body' => $response_body
-        ]));
 
         if ($response_code !== 200) {
             return array(
                 'success' => false,
-                'message' => 'License không tồn tại trên hệ thống.'
+                'message' => ''
             );
         }
 
-        $license_data = json_decode($response_body, true);
+        $license_data = json_decode(wp_remote_retrieve_body($response), true);
 
         if (!$license_data) {
             return array(
                 'success' => false,
-                'message' => 'Dữ liệu license không hợp lệ.'
+                'message' => ''
             );
         }
 
@@ -233,8 +192,8 @@ class VidieuLicenseAPI {
     }
 
     private function activate_license($license_key, $email) {
-        $consumer_key = "ck_947cc6b4c800204a32bff1159497999486560ee3";
-        $consumer_secret = "cs_f01741effc56456935c132758acf8b855a13c664";
+        $consumer_key = $this->get_consumer_key();
+        $consumer_secret = $this->get_consumer_secret();
 
         $url = "https://vidieu.vn/wp-json/lmfwc/v2/licenses/activate/{$license_key}?consumer_key={$consumer_key}&consumer_secret={$consumer_secret}&label=" . urlencode($email);
 
@@ -245,29 +204,21 @@ class VidieuLicenseAPI {
             )
         ));
 
-        if (is_wp_error($response)) {
-            return array(
-                'success' => false,
-                'message' => 'Không thể kích hoạt license - lỗi kết nối.'
-            );
-        }
-
-        $response_code = wp_remote_retrieve_response_code($response);
-        $response_body = wp_remote_retrieve_body($response);
-
-        error_log('License Activation Response: ' . json_encode([
-            'code' => $response_code,
-            'body' => $response_body
-        ]));
-
-        if ($response_code !== 200) {
-            return array(
-                'success' => false,
-                'message' => 'Không thể kích hoạt license - mã lỗi: ' . $response_code
-            );
+        if (is_wp_error($response) || wp_remote_retrieve_response_code($response) !== 200) {
+            return array('success' => false, 'message' => '');
         }
 
         return array('success' => true);
+    }
+
+    private function get_consumer_key() {
+        // Lấy từ WordPress options hoặc constants
+        return defined('VIDIEU_CONSUMER_KEY') ? VIDIEU_CONSUMER_KEY : get_option('vidieu_consumer_key', 'ck_947cc6b4c800204a32bff1159497999486560ee3');
+    }
+
+    private function get_consumer_secret() {
+        // Lấy từ WordPress options hoặc constants
+        return defined('VIDIEU_CONSUMER_SECRET') ? VIDIEU_CONSUMER_SECRET : get_option('vidieu_consumer_secret', 'cs_f01741effc56456935c132758acf8b855a13c664');
     }
 
     private function success_response($license_data, $message = '', $status = 'success') {
