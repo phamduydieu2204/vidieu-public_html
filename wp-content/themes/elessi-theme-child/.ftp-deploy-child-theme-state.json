@@ -1,13 +1,13 @@
 {
     "description": "DO NOT DELETE THIS FILE. This file is used to keep track of which files have been synced in the most recent deployment. If you delete this file a resync will need to be done (which can take a while) - read more: https://github.com/SamKirkland/FTP-Deploy-Action",
     "version": "1.0.0",
-    "generatedTime": 1757240599990,
+    "generatedTime": 1758341981568,
     "data": [
         {
             "type": "file",
             "name": ".ftp-deploy-child-theme-state.json",
-            "size": 8348,
-            "hash": "1544bf3ef5c58980f200bd07fd45e8d122dfb4518e9f4ad9972389280f941b92"
+            "size": 8568,
+            "hash": "9285bb5e90b615f6085f4efaaf0f348335003b19542c92d3cc4751693ee5474c"
         },
         {
             "type": "file",
@@ -69,6 +69,12 @@
         },
         {
             "type": "file",
+            "name": "debug-account-password.php",
+            "size": 6252,
+            "hash": "57bbc25fa74f893de4bb3ec3cd9499b1abb40a041ab2b6d57a65273d67aa32a4"
+        },
+        {
+            "type": "file",
             "name": "empty-template.php",
             "size": 243,
             "hash": "b20d4db43ec43c26c25ff5d7ad71b8fbad0c23b61cdfc507c9b1e8bc5dc53e44"
@@ -78,6 +84,18 @@
             "name": "fix-cart-count-display.php",
             "size": 21890,
             "hash": "6661a8615400665a09d3a6a755c2af516fcd67b950715b5b3c4a3ed55997b8ec"
+        },
+        {
+            "type": "file",
+            "name": "fix-checkout-account-creation.php",
+            "size": 10088,
+            "hash": "68265f7872c6b791bf3c43b36d1d12dec5572e2de2f918f3d365b707fb4c24f9"
+        },
+        {
+            "type": "file",
+            "name": "fix-checkout-auto-account.php",
+            "size": 5792,
+            "hash": "e7d774e99568b4770cdd97a16cacc4279bc9e855100c5e2c09109c7d1484a132"
         },
         {
             "type": "file",
@@ -118,8 +136,8 @@
         {
             "type": "file",
             "name": "functions.php",
-            "size": 12933,
-            "hash": "73256c6f11f0225715029407a7e3fd026d7bc4e5d6dfa1d1710640667ce1ce95"
+            "size": 13376,
+            "hash": "3d08cc4d8d1c3522ef942008e2ff64fe48d2dd49a88ccf6eda2856b63e1f9a80"
         },
         {
             "type": "file",
