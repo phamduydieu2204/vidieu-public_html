@@ -40,16 +40,31 @@ class VidieuLicenseAPI {
                 'product_ids' => $allowed_product_ids
             ]));
 
-            if (empty($license_key) || empty($email) || !is_array($allowed_product_ids) || empty($allowed_product_ids) || !str_starts_with($license_key, 'PPC')) {
-                error_log('Input validation failed');
-                return $this->error_response('');
+            if (empty($license_key)) {
+                error_log('Empty license key');
+                return $this->error_response('Thiếu License Key. Vui lòng nhập license key vào ô D4 trước khi tiếp tục.');
+            }
+
+            if (empty($email)) {
+                error_log('Empty email');
+                return $this->error_response('Không thể xác định email người dùng. Vui lòng đăng nhập lại Google Apps Script.');
+            }
+
+            if (!is_array($allowed_product_ids) || empty($allowed_product_ids)) {
+                error_log('Invalid product IDs');
+                return $this->error_response('Lỗi cấu hình hệ thống. Vui lòng liên hệ hỗ trợ.');
+            }
+
+            if (!str_starts_with($license_key, 'PPC')) {
+                error_log('Invalid license format');
+                return $this->error_response('License Key không hợp lệ. Key này không thuộc phần mềm PPC Amazon.');
             }
 
             $license_data = $this->get_license_data($license_key);
 
             if (!$license_data['success']) {
                 error_log('License data failed');
-                return $this->error_response('');
+                return $this->error_response('License Key không tồn tại trên hệ thống. Vui lòng kiểm tra lại.');
             }
 
             $license = $license_data['data']['data'];
@@ -57,23 +72,23 @@ class VidieuLicenseAPI {
 
             if (!in_array($license['productId'], $allowed_product_ids)) {
                 error_log('Product ID mismatch');
-                return $this->error_response('');
+                return $this->error_response('License này không dành cho phần mềm này. Vui lòng sử dụng license key phù hợp.');
             }
 
             $expiry_check = $this->check_license_expiry($license);
             if (!$expiry_check['valid']) {
                 error_log('License expired, status: ' . $expiry_check['status']);
-                return $this->error_response('', $expiry_check['status']);
+                return $this->error_response($expiry_check['message'], $expiry_check['status']);
             }
 
             $activation_check = $this->check_activation_status($license_key, $license, $email);
 
             if ($activation_check['success']) {
                 error_log('License validation SUCCESS');
-                return $this->success_response($license, '', $activation_check['status']);
+                return $this->success_response($license, $activation_check['message'], $activation_check['status']);
             } else {
                 error_log('Activation check failed');
-                return $this->error_response('', $activation_check['status']);
+                return $this->error_response($activation_check['message'], $activation_check['status']);
             }
 
         } catch (Exception $e) {
@@ -109,11 +124,20 @@ class VidieuLicenseAPI {
 
     private function check_license_expiry($license) {
         if (empty($license['expiresAt'])) {
-            return array('valid' => false, 'status' => 'error', 'message' => '');
+            return array(
+                'valid' => false,
+                'status' => 'error',
+                'message' => 'License không có ngày hết hạn hợp lệ. Vui lòng liên hệ hỗ trợ để kiểm tra.'
+            );
         }
 
         if (time() > strtotime($license['expiresAt'])) {
-            return array('valid' => false, 'status' => 'warning', 'message' => '');
+            $expiry_date = date('d/m/Y H:i', strtotime($license['expiresAt']));
+            return array(
+                'valid' => false,
+                'status' => 'warning',
+                'message' => "License đã hết hạn vào {$expiry_date}. Vui lòng gia hạn để tiếp tục sử dụng."
+            );
         }
 
         return array('valid' => true);
@@ -130,14 +154,14 @@ class VidieuLicenseAPI {
                 return array(
                     'success' => true,
                     'status' => 'success',
-                    'message' => 'License được kích hoạt thành công với email hiện tại.'
+                    'message' => "License đã được kích hoạt thành công cho email: {$current_email}"
                 );
             } else {
                 // Fallback: Cho phép sử dụng nhưng cảnh báo
                 return array(
                     'success' => true,
                     'status' => 'warning',
-                    'message' => 'Không thể kích hoạt License tự động, nhưng License vẫn hợp lệ. Bạn có thể tiếp tục sử dụng.\n\nLý do: ' . $activation_result['message']
+                    'message' => "Không thể kích hoạt license tự động, nhưng bạn vẫn có thể sử dụng.\n\nVui lòng liên hệ hỗ trợ nếu gặp vấn đề."
                 );
             }
         }
@@ -156,13 +180,13 @@ class VidieuLicenseAPI {
                 return array(
                     'success' => true,
                     'status' => 'success',
-                    'message' => 'Xác thực thành công.'
+                    'message' => 'Xác thực license thành công. Chào mừng bạn trở lại!'
                 );
             } else {
                 return array(
                     'success' => false,
                     'status' => 'error',
-                    'message' => "Email không trùng khớp. License này đã được kích hoạt cho email: {$registered_email}"
+                    'message' => "Email không trùng khớp với license này.\n\nEmail đăng ký license: {$registered_email}\nEmail hiện tại: {$current_email}\n\nVui lòng sử dụng đúng email đã đăng ký hoặc liên hệ hỗ trợ."
                 );
             }
         }
@@ -170,7 +194,7 @@ class VidieuLicenseAPI {
         return array(
             'success' => false,
             'status' => 'error',
-            'message' => 'Không thể xác định trạng thái kích hoạt của license.'
+            'message' => 'Không thể xác định trạng thái kích hoạt của license. Vui lòng liên hệ hỗ trợ.'
         );
     }
 
