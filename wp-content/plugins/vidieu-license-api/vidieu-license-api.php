@@ -73,10 +73,12 @@ class VidieuLicenseAPI {
                 return $this->error_response('License not found');
             }
 
-            $license = $license_data['data'];
-            error_log('License product_id: ' . $license['product_id']);
+            // Fix double nesting - LMfWC trả về data.data
+            $license = $license_data['data']['data'];
+            error_log('License productId: ' . $license['productId']);
+            error_log('Allowed product IDs: ' . json_encode($allowed_product_ids));
 
-            if (!in_array($license['product_id'], $allowed_product_ids)) {
+            if (!in_array($license['productId'], $allowed_product_ids)) {
                 error_log('FAILED: Product ID not in allowed list');
                 return $this->error_response('Product ID mismatch');
             }
@@ -164,7 +166,7 @@ class VidieuLicenseAPI {
     }
 
     private function check_license_expiry($license) {
-        if (empty($license['expires_at'])) {
+        if (empty($license['expiresAt'])) {
             return array(
                 'valid' => false,
                 'status' => 'error',
@@ -172,8 +174,11 @@ class VidieuLicenseAPI {
             );
         }
 
-        $expiry_date = strtotime($license['expires_at']);
+        $expiry_date = strtotime($license['expiresAt']);
         $current_date = time();
+
+        error_log('Expiry date: ' . $license['expiresAt'] . ' (timestamp: ' . $expiry_date . ')');
+        error_log('Current date: ' . date('Y-m-d H:i:s') . ' (timestamp: ' . $current_date . ')');
 
         if ($current_date > $expiry_date) {
             return array(
@@ -187,7 +192,8 @@ class VidieuLicenseAPI {
     }
 
     private function check_activation_status($license_key, $license, $current_email) {
-        $activation_data = isset($license['activation_data']) ? $license['activation_data'] : array();
+        $activation_data = isset($license['activationData']) ? $license['activationData'] : array();
+        error_log('Activation data count: ' . count($activation_data));
 
         // Nếu chưa có activation data -> kích hoạt tự động
         if (empty($activation_data)) {
