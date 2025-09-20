@@ -26,6 +26,9 @@ class VidieuLicenseAPI {
     }
 
     public function validate_license($request) {
+        // Thêm logging để debug
+        error_log('=== VIDIEU LICENSE API DEBUG START ===');
+
         try {
             // Lấy dữ liệu từ request
             $license_key = sanitize_text_field($request->get_param('license_key'));
@@ -33,38 +36,75 @@ class VidieuLicenseAPI {
             $allowed_product_ids = $request->get_param('allowed_product_ids');
             $source = sanitize_text_field($request->get_param('source'));
 
+            error_log('Request params: ' . json_encode([
+                'license_key' => substr($license_key, 0, 8) . '***' . substr($license_key, -4),
+                'email' => $email,
+                'allowed_product_ids' => $allowed_product_ids,
+                'source' => $source
+            ]));
+
             // Validate input
-            if (empty($license_key) || empty($email) || !is_array($allowed_product_ids) || empty($allowed_product_ids) || !str_starts_with($license_key, 'PPC')) {
-                return $this->error_response('');
+            if (empty($license_key)) {
+                error_log('FAILED: Empty license key');
+                return $this->error_response('Empty license key');
             }
 
+            if (empty($email)) {
+                error_log('FAILED: Empty email');
+                return $this->error_response('Empty email');
+            }
+
+            if (!is_array($allowed_product_ids) || empty($allowed_product_ids)) {
+                error_log('FAILED: Invalid allowed_product_ids');
+                return $this->error_response('Invalid product IDs');
+            }
+
+            if (!str_starts_with($license_key, 'PPC')) {
+                error_log('FAILED: License key does not start with PPC');
+                return $this->error_response('Invalid license key format');
+            }
+
+            error_log('Input validation passed, getting license data...');
             $license_data = $this->get_license_data($license_key);
+            error_log('License data result: ' . json_encode($license_data));
 
             if (!$license_data['success']) {
-                return $this->error_response('');
+                error_log('FAILED: License data retrieval failed');
+                return $this->error_response('License not found');
             }
 
             $license = $license_data['data'];
+            error_log('License product_id: ' . $license['product_id']);
 
             if (!in_array($license['product_id'], $allowed_product_ids)) {
-                return $this->error_response('');
+                error_log('FAILED: Product ID not in allowed list');
+                return $this->error_response('Product ID mismatch');
             }
 
+            error_log('Checking license expiry...');
             $expiry_check = $this->check_license_expiry($license);
+            error_log('Expiry check result: ' . json_encode($expiry_check));
+
             if (!$expiry_check['valid']) {
-                return $this->error_response('', $expiry_check['status']);
+                error_log('FAILED: License expired or invalid expiry');
+                return $this->error_response('License expired', $expiry_check['status']);
             }
 
+            error_log('Checking activation status...');
             $activation_check = $this->check_activation_status($license_key, $license, $email);
+            error_log('Activation check result: ' . json_encode($activation_check));
 
             if ($activation_check['success']) {
-                return $this->success_response($license, '', $activation_check['status']);
+                error_log('SUCCESS: License validation completed');
+                return $this->success_response($license, 'License validated successfully', $activation_check['status']);
             } else {
-                return $this->error_response('', $activation_check['status']);
+                error_log('FAILED: Activation check failed');
+                return $this->error_response('Activation failed', $activation_check['status']);
             }
 
         } catch (Exception $e) {
-            return $this->error_response('');
+            error_log('EXCEPTION: ' . $e->getMessage());
+            return $this->error_response('System error: ' . $e->getMessage());
         }
     }
 
@@ -73,7 +113,10 @@ class VidieuLicenseAPI {
         $consumer_key = $this->get_consumer_key();
         $consumer_secret = $this->get_consumer_secret();
 
+        error_log('Consumer key: ' . substr($consumer_key, 0, 10) . '...');
+
         $url = "https://vidieu.vn/wp-json/lmfwc/v2/licenses/{$license_key}?consumer_key={$consumer_key}&consumer_secret={$consumer_secret}";
+        error_log('LMfWC API URL: ' . $url);
 
         $response = wp_remote_get($url, array(
             'timeout' => 15,
@@ -83,30 +126,37 @@ class VidieuLicenseAPI {
         ));
 
         if (is_wp_error($response)) {
+            error_log('WP Error: ' . $response->get_error_message());
             return array(
                 'success' => false,
-                'message' => ''
+                'message' => 'WP Error: ' . $response->get_error_message()
             );
         }
 
         $response_code = wp_remote_retrieve_response_code($response);
+        $response_body = wp_remote_retrieve_body($response);
+
+        error_log('LMfWC Response Code: ' . $response_code);
+        error_log('LMfWC Response Body: ' . $response_body);
 
         if ($response_code !== 200) {
             return array(
                 'success' => false,
-                'message' => ''
+                'message' => 'HTTP ' . $response_code
             );
         }
 
-        $license_data = json_decode(wp_remote_retrieve_body($response), true);
+        $license_data = json_decode($response_body, true);
 
         if (!$license_data) {
+            error_log('Failed to parse JSON response');
             return array(
                 'success' => false,
-                'message' => ''
+                'message' => 'Invalid JSON'
             );
         }
 
+        error_log('License data parsed successfully');
         return array(
             'success' => true,
             'data' => $license_data
