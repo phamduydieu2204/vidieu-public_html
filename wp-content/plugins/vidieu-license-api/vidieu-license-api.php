@@ -55,10 +55,7 @@ class VidieuLicenseAPI {
                 return $this->error_response('Lỗi cấu hình hệ thống. Vui lòng liên hệ hỗ trợ.');
             }
 
-            if (!str_starts_with($license_key, 'PPC')) {
-                error_log('Invalid license format');
-                return $this->error_response('License Key không hợp lệ. Key này không thuộc phần mềm PPC Amazon.');
-            }
+            // Bỏ điều kiện prefix PPC - chấp nhận mọi format license key
 
             $license_data = $this->get_license_data($license_key);
 
