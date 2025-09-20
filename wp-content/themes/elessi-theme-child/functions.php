@@ -348,6 +348,12 @@ require_once get_stylesheet_directory() . '/woocommerce-admin-order-display.php'
 // require_once get_stylesheet_directory() . '/woocommerce-vietqr-integration.php';
 
 /**
+ * Include Checkout Account Creation Fix
+ * @since 2025-09-20
+ */
+require_once get_stylesheet_directory() . '/fix-checkout-account-creation.php';
+
+/**
  * Include Floating Contact Widget
  * @since 2025-08-30
  */
