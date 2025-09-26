@@ -69,7 +69,26 @@ CREATE TABLE vd_content_versions (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 ```
 
-### 3. Bảng License Assignments (Sticky)
+### 3. Bảng License Management (Core)
+```sql
+CREATE TABLE vd_licenses (
+  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  license_key VARCHAR(64) NOT NULL UNIQUE,
+  product_id BIGINT UNSIGNED NOT NULL,         -- WooCommerce product_id
+  order_id BIGINT UNSIGNED NULL,               -- WooCommerce order_id
+  user_id BIGINT UNSIGNED NULL,                -- WordPress user_id
+  status ENUM('active','expired','suspended') NOT NULL DEFAULT 'active',
+  max_devices INT UNSIGNED NULL,               -- Override device limit cho license này
+  expires_at DATETIME NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  INDEX idx_product_id (product_id),
+  INDEX idx_status_expires (status, expires_at),
+  INDEX idx_user_id (user_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+```
+
+### 4. Bảng License Assignments (Sticky)
 ```sql
 CREATE TABLE vd_license_assignments (
   id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
@@ -80,11 +99,29 @@ CREATE TABLE vd_license_assignments (
   status ENUM('active','migrating','inactive') NOT NULL DEFAULT 'active',
   UNIQUE KEY uq_license_assignment (license_id),
   INDEX idx_account_load (provider_account_id, status),
+  FOREIGN KEY (license_id) REFERENCES vd_licenses(id) ON DELETE CASCADE,
   FOREIGN KEY (provider_account_id) REFERENCES vd_provider_accounts(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 ```
 
-### 4. Bảng Device Management
+### 5. Bảng Product Provider Mapping
+```sql
+CREATE TABLE vd_product_provider_mapping (
+  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  product_id BIGINT UNSIGNED NOT NULL,
+  provider_account_id BIGINT UNSIGNED NOT NULL,
+  allocation_strategy ENUM('round_robin','least_loaded','sequential') NOT NULL DEFAULT 'least_loaded',
+  priority INT NOT NULL DEFAULT 1,              -- Thứ tự ưu tiên (1 = cao nhất)
+  is_active TINYINT(1) NOT NULL DEFAULT 1,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  UNIQUE KEY uq_product_provider_priority (product_id, provider_account_id, priority),
+  INDEX idx_product_active (product_id, is_active),
+  FOREIGN KEY (provider_account_id) REFERENCES vd_provider_accounts(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+```
+
+### 6. Bảng Device Management
 ```sql
 CREATE TABLE vd_device_requests (
   id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
@@ -107,7 +144,7 @@ CREATE TABLE vd_device_requests (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 ```
 
-### 5. Bảng Device Limits
+### 7. Bảng Device Limits
 ```sql
 CREATE TABLE vd_product_device_limits (
   id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
@@ -132,7 +169,7 @@ CREATE TABLE vd_license_device_limits (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 ```
 
-### 6. Bảng Access Logs
+### 8. Bảng Access Logs
 ```sql
 CREATE TABLE vd_access_logs (
   id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
@@ -152,7 +189,7 @@ CREATE TABLE vd_access_logs (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 ```
 
-### 7. Bảng Rate Limiting
+### 9. Bảng Rate Limiting
 ```sql
 CREATE TABLE vd_license_rate_limits (
   id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
@@ -181,7 +218,7 @@ CREATE TABLE vd_rate_limit_configs (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 ```
 
-### 8. Bảng Audit Trail
+### 10. Bảng Audit Trail
 ```sql
 CREATE TABLE vd_audit_logs (
   id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
@@ -204,7 +241,245 @@ CREATE TABLE vd_audit_logs (
 
 ## 🔧 Business Logic
 
-### 1. Smart Auto-Approval System
+### 1. Complete License Resolution Flow
+
+#### Main License Resolution Logic
+```php
+/**
+ * Complete license resolution theo logic mong muốn
+ * Bao gồm tất cả 4 bước kiểm tra
+ */
+function resolve_license_info($license_key, $device_fp, $device_info) {
+    // BƯỚC 1: Kiểm tra license còn hạn
+    $license = get_license_by_key($license_key);
+    if (!$license) {
+        return ['success' => false, 'error' => 'License không tồn tại'];
+    }
+
+    if ($license['status'] !== 'active') {
+        return ['success' => false, 'error' => 'License đã bị tạm khóa'];
+    }
+
+    if ($license['expires_at'] && strtotime($license['expires_at']) < time()) {
+        return ['success' => false, 'error' => 'License đã hết hạn'];
+    }
+
+    // BƯỚC 2: Kiểm tra rate limiting
+    $rate_limit_check = check_rate_limit($license['id']);
+    if (!$rate_limit_check['allowed']) {
+        return [
+            'success' => false,
+            'error' => 'Vượt quá giới hạn request. Vui lòng thử lại sau ' . $rate_limit_check['retry_after'] . ' phút'
+        ];
+    }
+
+    // BƯỚC 3: Kiểm tra device hợp lệ
+    $device_check = check_device_validity($license['id'], $device_fp, $device_info);
+    if (!$device_check['valid']) {
+        return ['success' => false, 'error' => $device_check['message']];
+    }
+
+    // BƯỚC 4: Xác định sản phẩm và cấp phát tài khoản
+    $assignment = get_or_create_assignment($license);
+    if (!$assignment) {
+        return ['success' => false, 'error' => 'Không thể cấp phát tài khoản. Vui lòng liên hệ hỗ trợ.'];
+    }
+
+    // Log access và trả kết quả
+    log_access($license['id'], $device_fp, $assignment['provider_account_id'], 'success');
+
+    return [
+        'success' => true,
+        'license_id' => $license['id'],
+        'product_id' => $license['product_id'],
+        'assigned_account_id' => $assignment['provider_account_id'],
+        'content' => get_provider_content($assignment['provider_account_id']),
+        'rate_limit' => $rate_limit_check
+    ];
+}
+```
+
+#### BƯỚC 4: Product-Based Assignment Logic
+```php
+/**
+ * Logic cấp phát tài khoản theo sản phẩm
+ * Implement các strategy: least_loaded, round_robin, sequential
+ */
+function get_or_create_assignment($license) {
+    // Kiểm tra xem license đã được assign chưa (sticky)
+    $existing = get_existing_assignment($license['id']);
+    if ($existing && $existing['status'] === 'active') {
+        return $existing;
+    }
+
+    // Lấy danh sách provider accounts cho product này
+    $product_providers = get_product_provider_accounts($license['product_id']);
+    if (empty($product_providers)) {
+        error_log("No provider accounts configured for product {$license['product_id']}");
+        return false;
+    }
+
+    // Chọn provider account theo strategy
+    $selected_provider = select_provider_by_strategy($product_providers);
+    if (!$selected_provider) {
+        return false;
+    }
+
+    // Tạo assignment mới
+    return create_license_assignment($license['id'], $selected_provider['id']);
+}
+
+/**
+ * Chọn provider account theo allocation strategy
+ */
+function select_provider_by_strategy($product_providers) {
+    // Group theo strategy
+    $strategies = [];
+    foreach ($product_providers as $pp) {
+        $strategies[$pp['allocation_strategy']][] = $pp;
+    }
+
+    // Ưu tiên strategy: least_loaded > round_robin > sequential
+    if (isset($strategies['least_loaded'])) {
+        return select_least_loaded_provider($strategies['least_loaded']);
+    } elseif (isset($strategies['round_robin'])) {
+        return select_round_robin_provider($strategies['round_robin']);
+    } elseif (isset($strategies['sequential'])) {
+        return select_sequential_provider($strategies['sequential']);
+    }
+
+    return null;
+}
+
+/**
+ * Strategy: Chọn tài khoản có ít license nhất
+ */
+function select_least_loaded_provider($providers) {
+    $loads = [];
+    foreach ($providers as $provider) {
+        $current_load = get_provider_current_load($provider['provider_account_id']);
+        $loads[] = [
+            'provider' => $provider,
+            'load' => $current_load,
+            'load_percentage' => ($current_load / $provider['capacity']) * 100
+        ];
+    }
+
+    // Sắp xếp theo load percentage tăng dần
+    usort($loads, function($a, $b) {
+        return $a['load_percentage'] <=> $b['load_percentage'];
+    });
+
+    // Chọn provider có load thấp nhất và chưa đầy
+    foreach ($loads as $load) {
+        if ($load['load'] < $load['provider']['capacity']) {
+            return $load['provider'];
+        }
+    }
+
+    return null; // Tất cả provider đã đầy
+}
+
+/**
+ * Strategy: Cấp phát theo thứ tự lần lượt
+ */
+function select_sequential_provider($providers) {
+    // Sắp xếp theo priority (1 = cao nhất)
+    usort($providers, function($a, $b) {
+        return $a['priority'] <=> $b['priority'];
+    });
+
+    // Chọn provider đầu tiên chưa đầy
+    foreach ($providers as $provider) {
+        $current_load = get_provider_current_load($provider['provider_account_id']);
+        if ($current_load < $provider['capacity']) {
+            return $provider;
+        }
+    }
+
+    return null;
+}
+```
+
+### 2. Advanced Device Validation
+
+#### Device Validity Check với Multiple Scenarios
+```php
+/**
+ * Kiểm tra device validity với logic phức tạp
+ */
+function check_device_validity($license_id, $device_fp, $device_info) {
+    // Lấy device limits hiệu lực (license > product > global)
+    $limits = get_effective_device_limit($license_id);
+
+    // Kiểm tra device đã được approve chưa
+    $existing_device = get_device_request($license_id, $device_fp);
+
+    if ($existing_device) {
+        // Device đã tồn tại
+        switch ($existing_device['status']) {
+            case 'approved':
+                return ['valid' => true, 'device' => $existing_device];
+
+            case 'blocked':
+                return [
+                    'valid' => false,
+                    'message' => 'Thiết bị này đã bị chặn. Vui lòng liên hệ hỗ trợ.'
+                ];
+
+            case 'pending':
+                return [
+                    'valid' => false,
+                    'message' => 'Thiết bị đang chờ phê duyệt. Admin sẽ xem xét trong 24h.'
+                ];
+
+            case 'over_limit':
+                // Trong grace period
+                return [
+                    'valid' => false,
+                    'message' => 'Thiết bị vượt giới hạn nhưng đang trong thời gian gia hạn. Vui lòng nâng cấp gói.'
+                ];
+        }
+    }
+
+    // Device mới - kiểm tra có vượt limit không
+    $approved_devices = count_approved_devices($license_id);
+
+    if ($approved_devices >= $limits['max_devices']) {
+        return [
+            'valid' => false,
+            'message' => "Đã đạt giới hạn {$limits['max_devices']} thiết bị. Vui lòng nâng cấp gói hoặc liên hệ để tăng giới hạn."
+        ];
+    }
+
+    // Tạo device request mới với risk scoring
+    $risk_score = calculate_risk_score($license_id, $device_fp, $device_info);
+    $auto_approved = should_auto_approve($license_id, $device_fp, $risk_score);
+
+    $device_request = create_device_request([
+        'license_id' => $license_id,
+        'device_fp' => $device_fp,
+        'device_info' => json_encode($device_info),
+        'risk_score' => $risk_score,
+        'auto_approved' => $auto_approved,
+        'status' => $auto_approved ? 'approved' : 'pending',
+        'ip_address' => $device_info['ip'],
+        'user_agent' => $device_info['user_agent'],
+        'country_code' => $device_info['country'] ?? null
+    ]);
+
+    if ($auto_approved) {
+        return ['valid' => true, 'device' => $device_request];
+    } else {
+        return [
+            'valid' => false,
+            'message' => 'Thiết bị mới cần phê duyệt thủ công do risk score cao. Admin sẽ xem xét trong 24h.'
+        ];
+    }
+}
+```
+
+### 3. Smart Auto-Approval System
 
 #### Risk Scoring Algorithm
 ```php
@@ -546,10 +821,19 @@ class VD_License_Core {
 
 #### POST `/wp-json/vd/v1/license/resolve-info`
 ```php
-// Request
+// Request - Enhanced với device info
 {
   "license_key": "VD-1234-ABCD-5678",
-  "device_fp": "a1b2c3d4e5f6..."
+  "device_fp": "a1b2c3d4e5f6...",
+  "device_info": {
+    "ip": "1.2.3.4",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+    "country": "VN",
+    "browser": "Chrome",
+    "os": "Windows",
+    "screen_resolution": "1920x1080",
+    "timezone": "Asia/Ho_Chi_Minh"
+  }
 }
 
 // Response - Success
@@ -645,6 +929,61 @@ Response: {
     "account_1": {"load": 80, "capacity": 100},
     "account_2": {"load": 60, "capacity": 80}
   }
+}
+```
+
+#### Product Provider Mapping Management
+```php
+// Cấu hình provider accounts cho product
+POST /wp-json/vd/v1/admin/product/provider-mapping
+{
+  "product_id": 8210,
+  "provider_mappings": [
+    {
+      "provider_account_id": 1,
+      "allocation_strategy": "least_loaded",
+      "priority": 1,
+      "is_active": true
+    },
+    {
+      "provider_account_id": 2,
+      "allocation_strategy": "least_loaded",
+      "priority": 2,
+      "is_active": true
+    },
+    {
+      "provider_account_id": 3,
+      "allocation_strategy": "sequential",
+      "priority": 3,
+      "is_active": true
+    }
+  ]
+}
+
+// Lấy danh sách provider cho product
+GET /wp-json/vd/v1/admin/product/{product_id}/providers
+Response: {
+  "product_id": 8210,
+  "providers": [
+    {
+      "provider_account_id": 1,
+      "account_name": "helium10-main-01",
+      "provider": "helium10",
+      "allocation_strategy": "least_loaded",
+      "priority": 1,
+      "current_load": 5,
+      "capacity": 10,
+      "load_percentage": 50
+    }
+  ]
+}
+
+// Admin override assignment cho license cụ thể
+POST /wp-json/vd/v1/admin/license/reassign
+{
+  "license_id": 12345,
+  "new_provider_account_id": 7,
+  "reason": "Customer request account change"
 }
 ```
 
