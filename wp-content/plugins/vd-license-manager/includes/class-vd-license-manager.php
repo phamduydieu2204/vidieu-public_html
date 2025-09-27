@@ -130,6 +130,9 @@ class VD_License_Manager {
         // Sprint 3.1 - Load security manager
         require_once VD_LM_PATH . 'includes/class-vd-security-manager.php';
 
+        // Sprint 3.3.1 - Load capability manager (basic structure only)
+        require_once VD_LM_PATH . 'includes/class-vd-capability-manager.php';
+
         // Load admin interface if in admin
         if (vd_is_admin()) {
             require_once VD_LM_PATH . 'admin/class-vd-admin-menu.php';
@@ -187,6 +190,11 @@ class VD_License_Manager {
         // Initialize security manager (Sprint 3.1)
         if (class_exists('VD_Security_Manager')) {
             VD_Security_Manager::get_instance();
+        }
+
+        // Initialize capability manager (Sprint 3.3.1 - basic structure only)
+        if (class_exists('VD_Capability_Manager')) {
+            VD_Capability_Manager::get_instance();
         }
 
         // Initialize other components in later sprints
