@@ -210,6 +210,22 @@ function vd_time_ago($datetime) {
 
     $diff = time() - $timestamp;
 
+    // Use plain text if text domain not loaded yet, otherwise use translation
+    if (!did_action('init')) {
+        if ($diff < 60) {
+            return sprintf('%d second%s ago', $diff, $diff !== 1 ? 's' : '');
+        } elseif ($diff < 3600) {
+            $minutes = floor($diff / 60);
+            return sprintf('%d minute%s ago', $minutes, $minutes !== 1 ? 's' : '');
+        } elseif ($diff < 86400) {
+            $hours = floor($diff / 3600);
+            return sprintf('%d hour%s ago', $hours, $hours !== 1 ? 's' : '');
+        } else {
+            $days = floor($diff / 86400);
+            return sprintf('%d day%s ago', $days, $days !== 1 ? 's' : '');
+        }
+    }
+
     if ($diff < 60) {
         return sprintf(_n('%d second ago', '%d seconds ago', $diff, VD_LM_TEXT_DOMAIN), $diff);
     } elseif ($diff < 3600) {

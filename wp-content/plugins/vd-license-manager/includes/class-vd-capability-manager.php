@@ -65,6 +65,16 @@ class VD_Capability_Manager {
      * @since 1.0.0
      */
     private function __construct() {
+        // Delay initialization until after text domain is loaded
+        add_action('init', [$this, 'delayed_init'], 12);
+    }
+
+    /**
+     * Delayed initialization after text domain is loaded
+     *
+     * @since 1.0.0
+     */
+    public function delayed_init() {
         // Step 3.3.3: Initialize capability definitions and setup hooks
         $this->init_capabilities();
         $this->init_roles();
