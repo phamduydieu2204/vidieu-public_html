@@ -123,6 +123,10 @@ class VD_License_Manager {
         require_once VD_LM_PATH . 'includes/class-vd-provider-account.php';
         require_once VD_LM_PATH . 'includes/class-vd-device-manager.php';
 
+        // Sprint 2.7 - Load migration manager and audit logger
+        require_once VD_LM_PATH . 'includes/class-vd-audit-logger.php';
+        require_once VD_LM_PATH . 'includes/class-vd-migration-manager.php';
+
         // Load admin interface if in admin
         if (vd_is_admin()) {
             require_once VD_LM_PATH . 'admin/class-vd-admin-menu.php';
@@ -171,9 +175,14 @@ class VD_License_Manager {
             $this->admin_menu = new VD_Admin_Menu();
         }
 
+        // Initialize migration manager (Sprint 2.7)
+        if (class_exists('VD_Migration_Manager')) {
+            $migration_manager = VD_Migration_Manager::get_instance();
+            $migration_manager->init();
+        }
+
         // Initialize other components in later sprints
         // Security Manager (Sprint 3)
-        // Database Manager (Sprint 2)
         // API Controllers (Sprint 4)
         // LMfWC Integration (Sprint 5)
     }
