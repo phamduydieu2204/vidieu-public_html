@@ -1,8 +1,8 @@
 # VD License Manager - Implementation Progress Tracker
 
-## 📊 Overall Progress: 25% Complete
+## 📊 Overall Progress: 50% Complete
 
-**Current Phase**: Sprint 2 - Database Layer ✅ **COMPLETED**
+**Current Phase**: Sprint 3 - Security & Capability System (Step 3.3.5a ✅ COMPLETED)
 
 ---
 
@@ -217,13 +217,18 @@ All database layer functionality implemented with full encryption and audit trai
 **3.3.5 - Complete Capability System** 🚨 **ROLLBACK - CHIA THÀNH MICRO-SUB-STEPS**
 ⚠️ **Step 3.3.5 gây fatal error - Chia thành 5 micro-sub-steps nhỏ hơn**
 
-**3.3.5a - Core Capabilities Addition** ⏳ **PENDING**
-- [ ] Add 4 core capabilities: manage_vd_licenses, view_vd_providers, manage_vd_devices, view_vd_devices
-- [ ] Chỉ add vào Administrator role, không tạo custom roles
-- [ ] Test website stability sau khi add capabilities
-- [ ] **Risk**: Thấp - Extend từ single capability test đã working
-- [ ] **Files**: `includes/class-vd-capability-manager.php` (enhance add_capabilities method)
-- [ ] **Test**: Administrator có 5 VD capabilities total (1 existing + 4 new)
+**3.3.5a - Core Capabilities Addition** ✅ **COMPLETED**
+- [x] Add 4 core capabilities: manage_vd_licenses, view_vd_providers, manage_vd_devices, view_vd_devices
+- [x] Chỉ add vào Administrator role, không tạo custom roles
+- [x] Enhanced add_capabilities() method với core capability loop
+- [x] Enhanced remove_capabilities() method với core capability cleanup
+- [x] Added 3 new testing helper methods: are_core_capabilities_assigned(), current_user_core_capabilities(), get_core_capabilities_status()
+- [x] Updated audit logging to track core capability events
+- [x] Maintained backward compatibility với existing view_vd_licenses capability
+- [x] **Risk**: Thấp - Successfully extended từ single capability test
+- [x] **Files**: `includes/class-vd-capability-manager.php` (enhanced with 5 core capabilities)
+- [x] **Test**: Administrator có 5 VD capabilities total (1 existing + 4 new), all testing methods working
+- [x] **Commit**: 02229f2b - "Triển khai Step 3.3.5a - Thêm 5 khả năng cốt lõi"
 
 **3.3.5b - Remaining Capabilities Addition** ⏳ **PENDING**
 - [ ] Add 6 remaining capabilities: manage_vd_providers, manage_vd_settings, view_vd_audit_logs, manage_vd_audit_logs, view_vd_reports, export_vd_data
@@ -273,14 +278,14 @@ All database layer functionality implemented with full encryption and audit trai
 - [ ] **Files**: `includes/class-vd-api-security.php`, `includes/class-vd-request-validator.php`
 
 #### 📊 Micro-Step Tracking
-- **Total Steps**: 12 (3.1 ✅, 3.2 ✅, 3.3.1 ✅, 3.3.2 ✅, 3.3.3 ✅, 3.3.4 ✅, 3.3.5a-e ⏳, 3.4 ⏳, 3.5 ⏳)
-- **Completed**: 6 (50%)
-- **Current**: 3.3.5a - Core Capabilities Addition (READY TO START)
+- **Total Steps**: 12 (3.1 ✅, 3.2 ✅, 3.3.1 ✅, 3.3.2 ✅, 3.3.3 ✅, 3.3.4 ✅, 3.3.5a ✅, 3.3.5b-e ⏳, 3.4 ⏳, 3.5 ⏳)
+- **Completed**: 7 (58.3%)
+- **Current**: 3.3.5b - Remaining Capabilities Addition (READY TO START)
 - **Strategy**: ULTRA-MICRO-STEP approach for Step 3.3.5 (5 micro-sub-steps)
-- **Previous Issue**: Step 3.3.5 monolithic implementation caused fatal error - **SECOND TIME**
-- **Solution**: Break Step 3.3.5 into even smaller increments (capability-by-capability approach)
-- **✅ Success**: Steps 3.3.1-3.3.4 completed without issues - website stable, single capability working
-- **🚨 Critical**: Step 3.3.5 requires ultra-careful micro-sub-step approach
+- **Previous Issue**: Step 3.3.5 monolithic implementation caused fatal error - **RESOLVED WITH MICRO-SUB-STEPS**
+- **Solution**: Break Step 3.3.5 into even smaller increments (capability-by-capability approach) - **WORKING**
+- **✅ Success**: Steps 3.3.1-3.3.5a completed without issues - website stable, 5 core capabilities working
+- **🚀 Momentum**: Step 3.3.5a successful - ultra-micro-step approach proven effective
 
 ### ⏳ Sprint 4: API Layer (Days 11-14) - **WAITING**
 
