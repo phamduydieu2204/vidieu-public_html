@@ -95,6 +95,9 @@ define( 'WPMS_MAIL_FROM_FORCE', true );
 define( 'WPMS_MAIL_FROM_NAME', 'Vidieu.vn' );
 define( 'WPMS_MAIL_FROM_NAME_FORCE', true );
 
+// VD License Manager - Encryption Key (32-byte key for AES-256)
+define( 'VD_ENCRYPTION_KEY', 'base64:VkQtTGljZW5zZS1NYW5hZ2VyLUtleS0zMi1CeXRlcyE=' );
+
 
 /* That's all, stop editing! Happy publishing. */
 
