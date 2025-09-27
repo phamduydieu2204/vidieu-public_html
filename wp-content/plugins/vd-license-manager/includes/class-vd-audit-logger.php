@@ -71,8 +71,14 @@ class VD_Audit_Logger {
             $wpdb->flush();
         }
 
-        // Clear any WordPress object cache for table structure
-        wp_cache_flush_group('table_structures');
+        // Clear any WordPress object cache for table structure (only if object cache is working)
+        if (wp_using_ext_object_cache() && function_exists('wp_cache_flush_group')) {
+            try {
+                wp_cache_flush_group('table_structures');
+            } catch (Exception $e) {
+                vd_debug_log("Failed to flush cache group 'table_structures': " . $e->getMessage());
+            }
+        }
 
         // Delete any possible cached references to old table names
         $old_incorrect_names = [

@@ -380,6 +380,11 @@ class VD_License_Manager {
      * @since 1.0.0
      */
     public function display_admin_notices() {
+        // Only display notices if text domain is loaded to avoid translation timing issues
+        if (!did_action('init')) {
+            return;
+        }
+
         // Check if database tables need to be created
         if (get_option('vd_license_manager_needs_db_creation')) {
             echo '<div class="notice notice-warning"><p>';
