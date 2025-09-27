@@ -43,6 +43,11 @@ class VD_Encryption_Manager {
     ];
 
     /**
+     * Current algorithm (computed property)
+     */
+    private $algorithm = null;
+
+    /**
      * Field-specific encryption keys cache
      */
     private $field_keys = [];
@@ -57,6 +62,7 @@ class VD_Encryption_Manager {
      */
     private function __construct() {
         $this->init_encryption_key();
+        $this->algorithm = $this->algorithms[$this->encryption_version];
     }
 
     /**
@@ -575,8 +581,9 @@ class VD_Encryption_Manager {
 
             $encryption_events = $wpdb->get_var($wpdb->prepare(
                 "SELECT COUNT(*) FROM {$audit_table}
-                 WHERE entity_type = 'encryption'
-                 AND created_at >= DATE_SUB(NOW(), INTERVAL 24 HOUR)"
+                 WHERE entity_type = %s
+                 AND created_at >= DATE_SUB(NOW(), INTERVAL 24 HOUR)",
+                'encryption'
             ));
 
             $stats['encryption_events_24h'] = intval($encryption_events);
@@ -658,5 +665,25 @@ class VD_Encryption_Manager {
             'cached_keys' => $stats['cached_field_keys'],
             'recent_events' => $stats['encryption_events_24h'] ?? 0
         ];
+    }
+
+    /**
+     * Get current algorithm
+     *
+     * @since 1.0.0
+     * @return string Current encryption algorithm
+     */
+    public function get_algorithm() {
+        return $this->algorithm;
+    }
+
+    /**
+     * Get current encryption version
+     *
+     * @since 1.0.0
+     * @return string Current encryption version
+     */
+    public function get_encryption_version() {
+        return $this->encryption_version;
     }
 }
