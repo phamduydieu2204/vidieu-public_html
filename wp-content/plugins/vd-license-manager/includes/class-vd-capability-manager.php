@@ -3,7 +3,7 @@
  * VD Capability Manager
  *
  * Manages WordPress user roles and capabilities for VD License Manager
- * Step 3.3.3: WordPress Integration Foundation - Hook structure without capability registration
+ * Step 3.3.4: Single Capability Test - Testing with one capability only
  *
  * @package VD_License_Manager
  * @since 1.0.0
@@ -18,7 +18,7 @@ if (!defined('ABSPATH')) {
  * VD_Capability_Manager class
  *
  * Handles user roles, capabilities, and permission hierarchy for the plugin
- * Step 3.3.3: WordPress integration foundation with hook structure
+ * Step 3.3.4: Single capability test with WordPress integration
  */
 class VD_Capability_Manager {
 
@@ -306,16 +306,47 @@ class VD_Capability_Manager {
      * @since 1.0.0
      */
     public function add_capabilities() {
-        // Step 3.3.3: Placeholder implementation
-        // This method is called by hooks but doesn't register capabilities yet
-        // Will be implemented in Step 3.3.4 for single capability testing
+        // Step 3.3.4: Single capability test implementation
+        // Test with ONLY 'view_vd_licenses' capability for Administrator role
 
-        // Log that hook was fired (for testing purposes)
-        if (function_exists('vd_debug_log')) {
-            vd_debug_log('VD_Capability_Manager: add_capabilities hook fired (placeholder)');
+        // Get Administrator role
+        $admin_role = get_role('administrator');
+        if (!$admin_role) {
+            // Log error if administrator role not found
+            if (function_exists('vd_debug_log')) {
+                vd_debug_log('VD_Capability_Manager: Administrator role not found');
+            }
+            return;
         }
 
-        // Note: No actual WordPress capability registration in this step
+        // Add ONLY the test capability 'view_vd_licenses'
+        $test_capability = 'view_vd_licenses';
+
+        // Check if capability already exists to avoid duplicates
+        if (!$admin_role->has_cap($test_capability)) {
+            $admin_role->add_cap($test_capability);
+
+            // Log successful capability addition
+            if (function_exists('vd_debug_log')) {
+                vd_debug_log("VD_Capability_Manager: Added capability '{$test_capability}' to Administrator role");
+            }
+        }
+
+        // Log completion of capability addition
+        if (class_exists('VD_Audit_Logger')) {
+            VD_Audit_Logger::get_instance()->log_event([
+                'action' => 'single_capability_added',
+                'object_type' => 'capability',
+                'object_id' => 0,
+                'details' => [
+                    'capability' => $test_capability,
+                    'role' => 'administrator',
+                    'step' => '3.3.4'
+                ]
+            ]);
+        }
+
+        // Note: Step 3.3.4 - Only ONE capability registered for testing
     }
 
     /**
@@ -325,16 +356,47 @@ class VD_Capability_Manager {
      * @since 1.0.0
      */
     public function remove_capabilities() {
-        // Step 3.3.3: Placeholder implementation
-        // This method is called by hooks but doesn't remove capabilities yet
-        // Will be implemented in Step 3.3.4 for single capability testing
+        // Step 3.3.4: Single capability test removal implementation
+        // Remove ONLY 'view_vd_licenses' capability from Administrator role
 
-        // Log that hook was fired (for testing purposes)
-        if (function_exists('vd_debug_log')) {
-            vd_debug_log('VD_Capability_Manager: remove_capabilities hook fired (placeholder)');
+        // Get Administrator role
+        $admin_role = get_role('administrator');
+        if (!$admin_role) {
+            // Log error if administrator role not found
+            if (function_exists('vd_debug_log')) {
+                vd_debug_log('VD_Capability_Manager: Administrator role not found for removal');
+            }
+            return;
         }
 
-        // Note: No actual WordPress capability removal in this step
+        // Remove ONLY the test capability 'view_vd_licenses'
+        $test_capability = 'view_vd_licenses';
+
+        // Check if capability exists before removing
+        if ($admin_role->has_cap($test_capability)) {
+            $admin_role->remove_cap($test_capability);
+
+            // Log successful capability removal
+            if (function_exists('vd_debug_log')) {
+                vd_debug_log("VD_Capability_Manager: Removed capability '{$test_capability}' from Administrator role");
+            }
+        }
+
+        // Log completion of capability removal
+        if (class_exists('VD_Audit_Logger')) {
+            VD_Audit_Logger::get_instance()->log_event([
+                'action' => 'single_capability_removed',
+                'object_type' => 'capability',
+                'object_id' => 0,
+                'details' => [
+                    'capability' => $test_capability,
+                    'role' => 'administrator',
+                    'step' => '3.3.4'
+                ]
+            ]);
+        }
+
+        // Note: Step 3.3.4 - Only ONE capability removed for testing
     }
 
     /**
@@ -404,5 +466,54 @@ class VD_Capability_Manager {
             has_action('vd_license_manager_deactivated', [$this, 'remove_capabilities']) &&
             has_action('admin_init', [$this, 'maybe_update_capabilities'])
         );
+    }
+
+    /**
+     * Check if test capability is properly assigned
+     * Step 3.3.4: Testing helper method for single capability verification
+     *
+     * @since 1.0.0
+     * @return bool True if test capability is assigned to administrator
+     */
+    public function is_test_capability_assigned() {
+        $admin_role = get_role('administrator');
+        if (!$admin_role) {
+            return false;
+        }
+
+        return $admin_role->has_cap('view_vd_licenses');
+    }
+
+    /**
+     * Check if current user has test capability
+     * Step 3.3.4: Testing helper method for current user capability check
+     *
+     * @since 1.0.0
+     * @return bool True if current user can view vd licenses
+     */
+    public function current_user_can_test_capability() {
+        return current_user_can('view_vd_licenses');
+    }
+
+    /**
+     * Get test capability status
+     * Step 3.3.4: Testing helper method for capability status information
+     *
+     * @since 1.0.0
+     * @return array Status information about test capability
+     */
+    public function get_test_capability_status() {
+        $admin_role = get_role('administrator');
+        $current_user = wp_get_current_user();
+
+        return [
+            'capability_name' => 'view_vd_licenses',
+            'admin_role_exists' => ($admin_role !== null),
+            'admin_role_has_capability' => $admin_role ? $admin_role->has_cap('view_vd_licenses') : false,
+            'current_user_id' => $current_user->ID,
+            'current_user_roles' => $current_user->roles,
+            'current_user_can_capability' => current_user_can('view_vd_licenses'),
+            'step' => '3.3.4'
+        ];
     }
 }

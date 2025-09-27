@@ -201,14 +201,18 @@ All database layer functionality implemented with full encryption and audit trai
 - [x] **Files**: `includes/class-vd-capability-manager.php` (enhanced with hook system)
 - [x] **Test**: Plugin activate/deactivate, hooks fire correctly, no actual capabilities registered
 
-**3.3.4 - Single Capability Test** ⏳ **PENDING**
-- [ ] Implement capability registration cho 1 capability duy nhất (view_vd_licenses)
-- [ ] Add capability cho Administrator role only
-- [ ] Test current_user_can('view_vd_licenses')
-- [ ] Verify capability xuất hiện trong user capabilities
-- [ ] **Risk**: Trung bình - First real WordPress capability integration
-- [ ] **Files**: `includes/class-vd-capability-manager.php` (enhance)
-- [ ] **Test**: Single capability works, admin has capability
+**3.3.4 - Single Capability Test** ✅ **COMPLETED**
+- [x] Implement capability registration cho 1 capability duy nhất (view_vd_licenses)
+- [x] Add capability cho Administrator role only với proper error checking
+- [x] Implement capability removal cho plugin deactivation
+- [x] Test current_user_can('view_vd_licenses') với helper method
+- [x] Verify capability xuất hiện trong user capabilities
+- [x] Added comprehensive testing helper methods (3 methods)
+- [x] Added audit logging integration cho capability events
+- [x] Added duplicate prevention và proper error handling
+- [x] **Risk**: Trung bình - Successfully implemented first real WordPress capability integration
+- [x] **Files**: `includes/class-vd-capability-manager.php` (enhanced with single capability system)
+- [x] **Test**: Single capability works, admin has capability, proper add/remove functionality
 
 **3.3.5 - Complete Capability System** ⏳ **PENDING**
 - [ ] Add all 11 capabilities với full definitions
@@ -235,13 +239,13 @@ All database layer functionality implemented with full encryption and audit trai
 - [ ] **Files**: `includes/class-vd-api-security.php`, `includes/class-vd-request-validator.php`
 
 #### 📊 Micro-Step Tracking
-- **Total Steps**: 8 (3.1 ✅, 3.2 ✅, 3.3.1 ✅, 3.3.2 ✅, 3.3.3 ✅, 3.3.4-3.3.5 ⏳, 3.4 ⏳, 3.5 ⏳)
-- **Completed**: 5 (62.5%)
-- **Current**: 3.3.4 - Single Capability Test (READY TO START)
+- **Total Steps**: 8 (3.1 ✅, 3.2 ✅, 3.3.1 ✅, 3.3.2 ✅, 3.3.3 ✅, 3.3.4 ✅, 3.3.5 ⏳, 3.4 ⏳, 3.5 ⏳)
+- **Completed**: 6 (75%)
+- **Current**: 3.3.5 - Complete Capability System (READY TO START)
 - **Strategy**: Micro-step approach for Sprint 3.3 (5 sub-steps)
 - **Previous Issue**: Sprint 3.3 monolithic implementation caused fatal error
 - **Solution**: Break down into smallest possible increments with testing at each step
-- **✅ Success**: Steps 3.3.1, 3.3.2, and 3.3.3 completed without issues - website stable, hook system working
+- **✅ Success**: Steps 3.3.1-3.3.4 completed without issues - website stable, single capability working
 
 ### ⏳ Sprint 4: API Layer (Days 11-14) - **WAITING**
 
