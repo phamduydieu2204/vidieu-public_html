@@ -110,6 +110,9 @@ class VD_License_Manager {
         // Core classes (will be expanded in later sprints)
         // For Sprint 1, we only load basic admin functionality
 
+        // Sprint 2.1 - Load encryption manager
+        require_once VD_LM_PATH . 'includes/class-vd-encryption-manager.php';
+
         // Load admin interface if in admin
         if (vd_is_admin()) {
             require_once VD_LM_PATH . 'admin/class-vd-admin-menu.php';

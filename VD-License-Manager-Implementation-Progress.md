@@ -65,26 +65,64 @@
 
 ## ⏳ Upcoming Sprints Status
 
-### 🔄 Sprint 2: Database Layer (Days 4-7) - **READY TO START**
+### 🔄 Sprint 2: Database Layer (Days 4-7) - **BROKEN INTO MICRO-STEPS**
 
-**Status**: ⏳ **PENDING**
-**Estimated Duration**: 4 days
+**Status**: 🔧 **RESTRUCTURED**
+**New Approach**: Tách thành 7 micro-steps để kiểm soát lỗi
 **Dependencies**: Sprint 1 ✅ Complete
 
-#### 📋 Sprint 2 Planned Objectives
-- [ ] Create all 11 database tables with bz_ prefix
-- [ ] Implement database manager with CRUD operations
-- [ ] Set up database versioning and migrations
-- [ ] Basic data validation
-- [ ] Foreign key relationships
-- [ ] Index optimization
+**⚠️ Lesson Learned**: Sprint 2 ban đầu quá lớn gây ra lỗi nghiêm trọng website.
+Giờ sẽ chia nhỏ thành từng bước để dễ debug và rollback.
 
-#### 📁 Files to Create (Sprint 2)
-- [ ] `includes/class-vd-database-manager.php`
-- [ ] `includes/class-vd-license-core.php`
-- [ ] `includes/class-vd-provider-account.php`
-- [ ] `includes/class-vd-device-manager.php`
-- [ ] Database migration scripts
+#### 🧩 Sprint 2 Micro-Steps (7 steps)
+
+**2.1 - Encryption Foundation** ⏳ **READY**
+- [ ] Tạo `class-vd-encryption-manager.php`
+- [ ] Thêm VD_ENCRYPTION_KEY validation
+- [ ] Test cơ bản encryption/decryption
+- [ ] **Risk**: Thấp - Chỉ tạo utility class
+
+**2.2 - Database Manager Skeleton** ⏳ **PENDING**
+- [ ] Tạo `class-vd-database-manager.php` với structure cơ bản
+- [ ] Thêm table schema definitions (chưa tạo bảng)
+- [ ] Test class loading
+- [ ] **Risk**: Thấp - Chỉ định nghĩa schema
+
+**2.3 - Single Table Creation** ⏳ **PENDING**
+- [ ] Implement table creation cho `bz_licenses` (1 bảng duy nhất)
+- [ ] Test activation hook với 1 bảng
+- [ ] Verify dbDelta integration
+- [ ] **Risk**: Trung bình - Đầu tiên modify database
+
+**2.4 - Core License CRUD** ⏳ **PENDING**
+- [ ] Tạo `class-vd-license-core.php`
+- [ ] Basic CRUD cho bảng `bz_licenses`
+- [ ] Simple validation
+- [ ] **Risk**: Thấp - Chỉ CRUD operations
+
+**2.5 - Remaining Tables Creation** ⏳ **PENDING**
+- [ ] Thêm 10 bảng còn lại vào database manager
+- [ ] Test activation với full schema
+- [ ] Verify foreign key relationships
+- [ ] **Risk**: Cao - Có thể gây conflict
+
+**2.6 - Provider & Device Managers** ⏳ **PENDING**
+- [ ] Tạo `class-vd-provider-account.php` với encryption
+- [ ] Tạo `class-vd-device-manager.php`
+- [ ] Integration với encryption manager
+- [ ] **Risk**: Cao - Complex integration
+
+**2.7 - Migration System** ⏳ **PENDING**
+- [ ] Tạo `class-vd-migration-manager.php`
+- [ ] Database versioning
+- [ ] Default data setup
+- [ ] **Risk**: Trung bình - Migration logic
+
+#### 📊 Micro-Step Tracking
+- **Total Steps**: 7
+- **Completed**: 0
+- **Current**: 2.1 - Encryption Foundation
+- **Estimated**: 1 step per day
 
 ### ⏳ Sprint 3: Security & Encryption (Days 8-10) - **WAITING**
 
@@ -180,17 +218,18 @@
 
 ## 🎯 Next Steps
 
-### Immediate Actions (Sprint 2)
-1. **Start Database Layer Implementation**
-   - Create database manager class
-   - Implement table creation with bz_ prefix
-   - Set up CRUD operations
-   - Add data validation
+### Immediate Actions (Sprint 2 - Micro Approach)
+1. **Step 2.1 - Encryption Foundation (NEXT)**
+   - Create encryption manager utility class only
+   - Add encryption key validation
+   - NO database modifications
+   - Test basic encryption functions
 
-2. **Testing Verification**
-   - Test all database operations
-   - Verify foreign key relationships
-   - Performance testing for queries
+2. **Step-by-Step Testing**
+   - Test website after each micro-step
+   - Commit individually for easy rollback
+   - Monitor for any breaking changes
+   - Immediately rollback if issues occur
 
 ### Quality Assurance Checklist
 - [ ] Code follows WordPress standards
