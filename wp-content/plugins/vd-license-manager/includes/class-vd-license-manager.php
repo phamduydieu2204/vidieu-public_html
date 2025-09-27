@@ -119,6 +119,10 @@ class VD_License_Manager {
         // Sprint 2.4 - Load license core CRUD operations
         require_once VD_LM_PATH . 'includes/class-vd-license-core.php';
 
+        // Sprint 2.6 - Load provider account and device managers
+        require_once VD_LM_PATH . 'includes/class-vd-provider-account.php';
+        require_once VD_LM_PATH . 'includes/class-vd-device-manager.php';
+
         // Load admin interface if in admin
         if (vd_is_admin()) {
             require_once VD_LM_PATH . 'admin/class-vd-admin-menu.php';
