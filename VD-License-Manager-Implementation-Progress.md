@@ -95,11 +95,13 @@ Giờ sẽ chia nhỏ thành từng bước để dễ debug và rollback.
 - [x] Verify dbDelta integration
 - [x] **Risk**: Trung bình - Đầu tiên modify database
 
-**2.4 - Core License CRUD** ⏳ **PENDING**
-- [ ] Tạo `class-vd-license-core.php`
-- [ ] Basic CRUD cho bảng `bz_licenses`
-- [ ] Simple validation
-- [ ] **Risk**: Thấp - Chỉ CRUD operations
+**2.4 - Core License CRUD** ✅ **COMPLETED**
+- [x] Tạo `class-vd-license-core.php`
+- [x] Basic CRUD cho bảng `bz_vd_licenses`
+- [x] Simple validation và sanitization
+- [x] License key generation với uniqueness checks
+- [x] Statistics và search functionality
+- [x] **Risk**: Thấp - Chỉ CRUD operations
 
 **2.5 - Remaining Tables Creation** ⏳ **PENDING**
 - [ ] Thêm 10 bảng còn lại vào database manager
@@ -121,8 +123,8 @@ Giờ sẽ chia nhỏ thành từng bước để dễ debug và rollback.
 
 #### 📊 Micro-Step Tracking
 - **Total Steps**: 7
-- **Completed**: 3 (42.9%)
-- **Current**: 2.4 - Core License CRUD (READY TO START)
+- **Completed**: 4 (57.1%)
+- **Current**: 2.5 - Remaining Tables Creation (READY TO START)
 - **Estimated**: 1 step per day
 
 ### ⏳ Sprint 3: Security & Encryption (Days 8-10) - **WAITING**

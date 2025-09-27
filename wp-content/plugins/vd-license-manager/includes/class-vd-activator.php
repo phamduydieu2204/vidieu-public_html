@@ -153,35 +153,44 @@ class VD_Activator {
     }
 
     /**
-     * Create database tables - Step 2.3: Single table creation
+     * Create database tables - Step 2.5: Full schema creation
      *
      * @since 1.0.0
      */
     private static function create_database_tables() {
-        // Step 2.3: Load database manager and create single table
+        // Step 2.5: Load database manager and create all tables
         if (!class_exists('VD_Database_Manager')) {
             require_once VD_LM_PATH . 'includes/class-vd-database-manager.php';
         }
 
         try {
-            // Create tables (Step 2.3: only bz_vd_licenses)
+            // Create tables (Step 2.5: all 11 tables)
             $result = VD_Database_Manager::create_tables();
 
             if ($result['success']) {
                 update_option('vd_license_manager_db_version', '1.0.0');
                 update_option('vd_license_manager_tables_created', time());
+                update_option('vd_license_manager_full_schema_version', '2.5');
 
                 // Log successful creation
-                error_log('[VD License Manager] Step 2.3 - Database table created successfully: ' .
-                         implode(', ', array_keys($result['tables'])));
+                $created_tables = array_keys(array_filter($result['tables']));
+                error_log('[VD License Manager] Step 2.5 - Full schema created successfully: ' .
+                         implode(', ', $created_tables) . ' (' . count($created_tables) . ' tables)');
             } else {
                 // Log errors but don't prevent activation
-                error_log('[VD License Manager] Step 2.3 - Database table creation issues: ' .
-                         implode(', ', $result['errors']));
+                $errors = !empty($result['errors']) ? implode(', ', $result['errors']) : 'Unknown errors';
+                error_log('[VD License Manager] Step 2.5 - Database table creation issues: ' . $errors);
+
+                // Log summary if available
+                if (isset($result['summary'])) {
+                    $summary = $result['summary'];
+                    error_log('[VD License Manager] Step 2.5 - Summary: ' .
+                             $summary['created'] . '/' . $summary['total_tables'] . ' tables created');
+                }
             }
         } catch (Exception $e) {
             // Log error but don't prevent activation
-            error_log('[VD License Manager] Step 2.3 - Database creation exception: ' . $e->getMessage());
+            error_log('[VD License Manager] Step 2.5 - Database creation exception: ' . $e->getMessage());
         }
     }
 
