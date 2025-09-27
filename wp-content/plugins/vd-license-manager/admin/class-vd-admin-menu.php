@@ -267,7 +267,19 @@ class VD_Admin_Menu {
             wp_die(__('You do not have sufficient permissions to access this page.', VD_LM_TEXT_DOMAIN));
         }
 
-        $requirements = VD_Activator::get_requirements_status();
+        // Ensure VD_Activator class is loaded
+        if (!class_exists('VD_Activator')) {
+            require_once VD_LM_PATH . 'includes/class-vd-activator.php';
+        }
+
+        // Get requirements status with error handling
+        try {
+            $requirements = VD_Activator::get_requirements_status();
+        } catch (Exception $e) {
+            // Fallback if VD_Activator method fails
+            $requirements = $this->get_fallback_requirements_status();
+            error_log('[VD License Manager] Admin Menu - Status page error: ' . $e->getMessage());
+        }
 
         ?>
         <div class="wrap">
@@ -450,5 +462,77 @@ class VD_Admin_Menu {
             'encryption_configured' => defined('VD_ENCRYPTION_KEY') && !empty(VD_ENCRYPTION_KEY),
             'activation_time' => get_option('vd_license_manager_activation_time', time())
         ];
+    }
+
+    /**
+     * Get fallback requirements status if VD_Activator fails
+     *
+     * @since 1.0.0
+     * @return array Fallback requirements status
+     */
+    private function get_fallback_requirements_status() {
+        global $wp_version;
+
+        return [
+            'wordpress_version' => [
+                'required' => '5.0',
+                'current' => $wp_version,
+                'met' => version_compare($wp_version, '5.0', '>=')
+            ],
+            'php_version' => [
+                'required' => '7.4',
+                'current' => PHP_VERSION,
+                'met' => version_compare(PHP_VERSION, '7.4', '>=')
+            ],
+            'extensions' => [
+                'required' => ['openssl', 'json', 'mysqli', 'curl', 'mbstring'],
+                'met' => $this->check_required_extensions()
+            ],
+            'encryption_key' => [
+                'configured' => defined('VD_ENCRYPTION_KEY'),
+                'valid' => $this->check_encryption_key_fallback()
+            ]
+        ];
+    }
+
+    /**
+     * Check required PHP extensions (fallback method)
+     *
+     * @since 1.0.0
+     * @return bool True if all required extensions are loaded
+     */
+    private function check_required_extensions() {
+        $required_extensions = ['openssl', 'json', 'mysqli', 'curl', 'mbstring'];
+
+        foreach ($required_extensions as $extension) {
+            if (!extension_loaded($extension)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Check encryption key configuration (fallback method)
+     *
+     * @since 1.0.0
+     * @return bool True if encryption key is properly configured
+     */
+    private function check_encryption_key_fallback() {
+        if (!defined('VD_ENCRYPTION_KEY') || empty(VD_ENCRYPTION_KEY)) {
+            return false;
+        }
+
+        $key = VD_ENCRYPTION_KEY;
+
+        // Handle base64 encoded keys
+        if (strpos($key, 'base64:') === 0) {
+            $decoded = base64_decode(substr($key, 7));
+            return $decoded !== false && strlen($decoded) === 32;
+        }
+
+        // Direct key should be 32 bytes
+        return strlen($key) === 32;
     }
 }
