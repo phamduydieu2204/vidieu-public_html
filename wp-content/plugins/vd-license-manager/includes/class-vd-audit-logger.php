@@ -72,7 +72,8 @@ class VD_Audit_Logger {
         }
 
         // Clear any WordPress object cache for table structure (only if object cache is working)
-        if (wp_using_ext_object_cache() && function_exists('wp_cache_flush_group')) {
+        // Skip Redis cache operations as server doesn't have Redis service
+        if (wp_using_ext_object_cache() && function_exists('wp_cache_flush_group') && !class_exists('Redis')) {
             try {
                 wp_cache_flush_group('table_structures');
             } catch (Exception $e) {
