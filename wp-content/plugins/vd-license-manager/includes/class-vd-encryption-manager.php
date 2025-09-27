@@ -571,7 +571,7 @@ class VD_Encryption_Manager {
 
         // Get encryption usage stats from audit logs if available
         if (class_exists('VD_Audit_Logger')) {
-            $audit_table = $wpdb->prefix . 'bz_vd_audit_logs';
+            $audit_table = $wpdb->prefix . 'vd_audit_logs';
 
             $encryption_events = $wpdb->get_var($wpdb->prepare(
                 "SELECT COUNT(*) FROM {$audit_table}

@@ -127,6 +127,9 @@ class VD_License_Manager {
         require_once VD_LM_PATH . 'includes/class-vd-audit-logger.php';
         require_once VD_LM_PATH . 'includes/class-vd-migration-manager.php';
 
+        // Table prefix migration utility (temporary)
+        require_once VD_LM_PATH . 'includes/class-vd-table-migrator.php';
+
         // Sprint 3.1 - Load security manager
         require_once VD_LM_PATH . 'includes/class-vd-security-manager.php';
 

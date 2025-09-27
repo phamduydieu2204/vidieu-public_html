@@ -26,7 +26,7 @@ class VD_License_Core {
     /**
      * Table name (without prefix)
      */
-    private $table_name = 'bz_vd_licenses';
+    private $table_name = 'vd_licenses';
 
     /**
      * Full table name (with prefix)

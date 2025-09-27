@@ -285,7 +285,7 @@ class VD_Migration_Manager {
             ]
         ];
 
-        $table_name = $wpdb->prefix . 'bz_vd_providers';
+        $table_name = $wpdb->prefix . 'vd_providers';
 
         foreach ($default_providers as $provider) {
             // Check if provider already exists
@@ -321,7 +321,7 @@ class VD_Migration_Manager {
             'cache_ttl_seconds' => 300
         ];
 
-        $config_table = $wpdb->prefix . 'bz_vd_system_config';
+        $config_table = $wpdb->prefix . 'vd_system_config';
 
         foreach ($default_configs as $key => $value) {
             // Check if config already exists
@@ -382,7 +382,7 @@ class VD_Migration_Manager {
         // Create initial cache entries if needed
         global $wpdb;
 
-        $cache_table = $wpdb->prefix . 'bz_vd_cache_data';
+        $cache_table = $wpdb->prefix . 'vd_cache_data';
 
         // Cache system status
         $system_status = [
@@ -482,7 +482,7 @@ class VD_Migration_Manager {
     public function get_migration_history() {
         global $wpdb;
 
-        $audit_table = $wpdb->prefix . 'bz_vd_audit_logs';
+        $audit_table = $wpdb->prefix . 'vd_audit_logs';
 
         $migrations = $wpdb->get_results($wpdb->prepare(
             "SELECT * FROM {$audit_table}

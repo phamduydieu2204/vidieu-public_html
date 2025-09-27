@@ -56,7 +56,7 @@ class VD_Database_Manager {
         $schemas = array();
 
         // Table 1: Licenses (Core license data)
-        $schemas['bz_vd_licenses'] = "CREATE TABLE {$wpdb->prefix}bz_vd_licenses (
+        $schemas['bz_vd_licenses'] = "CREATE TABLE {$wpdb->prefix}vd_licenses (
             id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
             license_key varchar(255) NOT NULL,
             product_id bigint(20) unsigned NOT NULL,
@@ -75,7 +75,7 @@ class VD_Database_Manager {
         ) $charset_collate;";
 
         // Table 2: Provider Accounts (Encrypted credentials)
-        $schemas['bz_vd_provider_accounts'] = "CREATE TABLE {$wpdb->prefix}bz_vd_provider_accounts (
+        $schemas['bz_vd_provider_accounts'] = "CREATE TABLE {$wpdb->prefix}vd_provider_accounts (
             id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
             product_id bigint(20) unsigned NOT NULL,
             account_name varchar(255) NOT NULL,
@@ -97,7 +97,7 @@ class VD_Database_Manager {
         ) $charset_collate;";
 
         // Table 3: Content Versions (Cookie/content versioning)
-        $schemas['bz_vd_content_versions'] = "CREATE TABLE {$wpdb->prefix}bz_vd_content_versions (
+        $schemas['bz_vd_content_versions'] = "CREATE TABLE {$wpdb->prefix}vd_content_versions (
             id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
             provider_account_id bigint(20) unsigned NOT NULL,
             content_type enum('cookies','profile_data','session_data') NOT NULL,
@@ -113,7 +113,7 @@ class VD_Database_Manager {
         ) $charset_collate;";
 
         // Table 4: License Assignments (License to provider mappings)
-        $schemas['bz_vd_license_assignments'] = "CREATE TABLE {$wpdb->prefix}bz_vd_license_assignments (
+        $schemas['bz_vd_license_assignments'] = "CREATE TABLE {$wpdb->prefix}vd_license_assignments (
             id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
             license_id bigint(20) unsigned NOT NULL,
             provider_account_id bigint(20) unsigned NOT NULL,
@@ -132,7 +132,7 @@ class VD_Database_Manager {
         // Step 2.5: Add remaining tables
 
         // Table 5: Product Settings (Product configurations)
-        $schemas['bz_vd_product_settings'] = "CREATE TABLE {$wpdb->prefix}bz_vd_product_settings (
+        $schemas['bz_vd_product_settings'] = "CREATE TABLE {$wpdb->prefix}vd_product_settings (
             id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
             product_id bigint(20) unsigned NOT NULL,
             setting_key varchar(255) NOT NULL,
@@ -148,7 +148,7 @@ class VD_Database_Manager {
         ) $charset_collate;";
 
         // Table 6: Product Provider Mapping (Which providers serve which products)
-        $schemas['bz_vd_product_provider_mapping'] = "CREATE TABLE {$wpdb->prefix}bz_vd_product_provider_mapping (
+        $schemas['bz_vd_product_provider_mapping'] = "CREATE TABLE {$wpdb->prefix}vd_product_provider_mapping (
             id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
             product_id bigint(20) unsigned NOT NULL,
             provider_account_id bigint(20) unsigned NOT NULL,
@@ -167,7 +167,7 @@ class VD_Database_Manager {
         ) $charset_collate;";
 
         // Table 7: Product Field Sharing Config (Which fields to share for each product)
-        $schemas['bz_vd_product_field_sharing_config'] = "CREATE TABLE {$wpdb->prefix}bz_vd_product_field_sharing_config (
+        $schemas['bz_vd_product_field_sharing_config'] = "CREATE TABLE {$wpdb->prefix}vd_product_field_sharing_config (
             id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
             product_id bigint(20) unsigned NOT NULL,
             field_name varchar(255) NOT NULL,
@@ -186,7 +186,7 @@ class VD_Database_Manager {
         ) $charset_collate;";
 
         // Table 8: Device Requests (Device registration and approval)
-        $schemas['bz_vd_device_requests'] = "CREATE TABLE {$wpdb->prefix}bz_vd_device_requests (
+        $schemas['bz_vd_device_requests'] = "CREATE TABLE {$wpdb->prefix}vd_device_requests (
             id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
             license_id bigint(20) unsigned NOT NULL,
             device_name varchar(255) NOT NULL,
@@ -211,7 +211,7 @@ class VD_Database_Manager {
         ) $charset_collate;";
 
         // Table 9: Access Logs (API access and usage tracking)
-        $schemas['bz_vd_access_logs'] = "CREATE TABLE {$wpdb->prefix}bz_vd_access_logs (
+        $schemas['bz_vd_access_logs'] = "CREATE TABLE {$wpdb->prefix}vd_access_logs (
             id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
             license_id bigint(20) unsigned DEFAULT NULL,
             device_request_id bigint(20) unsigned DEFAULT NULL,
@@ -235,7 +235,7 @@ class VD_Database_Manager {
         ) $charset_collate;";
 
         // Table 10: Credential Audit (Security audit trail for sensitive operations)
-        $schemas['bz_vd_credential_audit'] = "CREATE TABLE {$wpdb->prefix}bz_vd_credential_audit (
+        $schemas['bz_vd_credential_audit'] = "CREATE TABLE {$wpdb->prefix}vd_credential_audit (
             id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
             provider_account_id bigint(20) unsigned NOT NULL,
             audit_type enum('access','update','encryption','decryption','health_check','assignment') NOT NULL,
@@ -256,7 +256,7 @@ class VD_Database_Manager {
         ) $charset_collate;";
 
         // Table 11: Rate Limits (API rate limiting and throttling)
-        $schemas['bz_vd_rate_limits'] = "CREATE TABLE {$wpdb->prefix}bz_vd_rate_limits (
+        $schemas['bz_vd_rate_limits'] = "CREATE TABLE {$wpdb->prefix}vd_rate_limits (
             id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
             identifier varchar(255) NOT NULL,
             identifier_type enum('license_key','ip_address','device_fingerprint','user_agent') NOT NULL,
@@ -311,7 +311,9 @@ class VD_Database_Manager {
     public static function table_exists($table_name) {
         global $wpdb;
 
-        $full_table_name = $wpdb->prefix . $table_name;
+        // Remove bz_ prefix if exists since $wpdb->prefix already contains it
+        $clean_table = str_replace('bz_', '', $table_name);
+        $full_table_name = $wpdb->prefix . $clean_table;
         $result = $wpdb->get_var("SHOW TABLES LIKE '$full_table_name'");
 
         return $result === $full_table_name;
@@ -538,7 +540,9 @@ class VD_Database_Manager {
             }
 
             // Check if table has expected columns
-            $columns = $wpdb->get_results("DESCRIBE {$wpdb->prefix}$table");
+            // Remove bz_ prefix if exists since $wpdb->prefix already contains it
+            $clean_table = str_replace('bz_', '', $table);
+            $columns = $wpdb->get_results("DESCRIBE {$wpdb->prefix}{$clean_table}");
             $column_names = array();
             foreach ($columns as $column) {
                 $column_names[] = $column->Field;
@@ -560,7 +564,9 @@ class VD_Database_Manager {
                 continue;
             }
 
-            $columns = $wpdb->get_results("DESCRIBE {$wpdb->prefix}$table");
+            // Remove bz_ prefix if exists since $wpdb->prefix already contains it
+            $clean_table = str_replace('bz_', '', $table);
+            $columns = $wpdb->get_results("DESCRIBE {$wpdb->prefix}{$clean_table}");
             if (empty($columns)) {
                 $verification['errors'][] = "Table $table exists but has no columns";
                 $verification['success'] = false;

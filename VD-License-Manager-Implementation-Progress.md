@@ -286,6 +286,23 @@ All database layer functionality implemented with full encryption and audit trai
 - [x] **Risk**: Thấp - Logging utility methods only - **COMPLETED SUCCESSFULLY**
 - [x] **Files**: `includes/class-vd-security-audit.php` (enhanced - thêm 180+ lines)
 
+**🔧 CRITICAL BUG FIX - Database Table Prefix Issue** ✅ **COMPLETED**
+⚠️ **Issue**: Double prefix problem in database table creation (bz_bz_vd_* instead of bz_vd_*)
+- [x] **Root Cause**: Manual bz_ prefix + $wpdb->prefix (already bz_) = bz_bz_vd_*
+- [x] **Fixed**: Updated all database schema definitions to use only $wpdb->prefix
+- [x] **Updated Files**:
+  - class-vd-database-manager.php (11 table schemas fixed)
+  - class-vd-migration-manager.php (4 table references fixed)
+  - class-vd-audit-logger.php (5 table references fixed)
+  - class-vd-device-manager.php (2 table references fixed)
+  - class-vd-license-core.php (1 table reference fixed)
+  - class-vd-encryption-manager.php (1 table reference fixed)
+  - class-vd-provider-account.php (2 table references fixed)
+- [x] **Created**: VD_Table_Migrator class for database cleanup
+- [x] **Added**: Migration infrastructure for dropping incorrect tables
+- [x] **Result**: Tables now create as bz_vd_* (correct) instead of bz_bz_vd_* (incorrect)
+- [x] **Status**: Ready for database recreation with correct prefixes
+
 **3.4.3 - Security Analysis Foundation** ⏳ **PENDING**
 - [ ] Thêm security thresholds configuration
 - [ ] Basic pattern analysis methods (stub implementations)

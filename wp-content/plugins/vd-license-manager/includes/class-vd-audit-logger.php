@@ -56,7 +56,7 @@ class VD_Audit_Logger {
         ];
 
         // Insert into audit log table
-        $table_name = $wpdb->prefix . 'bz_vd_audit_logs';
+        $table_name = $wpdb->prefix . 'vd_audit_logs';
 
         $result = $wpdb->insert($table_name, $log_data);
 
@@ -105,7 +105,7 @@ class VD_Audit_Logger {
     public static function get_entity_logs($entity_type, $entity_id, $limit = 20) {
         global $wpdb;
 
-        $table_name = $wpdb->prefix . 'bz_vd_audit_logs';
+        $table_name = $wpdb->prefix . 'vd_audit_logs';
 
         $logs = $wpdb->get_results($wpdb->prepare(
             "SELECT * FROM {$table_name}
@@ -131,7 +131,7 @@ class VD_Audit_Logger {
     public static function get_recent_logs($limit = 50, $entity_type = '') {
         global $wpdb;
 
-        $table_name = $wpdb->prefix . 'bz_vd_audit_logs';
+        $table_name = $wpdb->prefix . 'vd_audit_logs';
 
         $where_clause = '';
         $params = [$limit];
@@ -162,7 +162,7 @@ class VD_Audit_Logger {
     public static function cleanup_old_logs($days = 90) {
         global $wpdb;
 
-        $table_name = $wpdb->prefix . 'bz_vd_audit_logs';
+        $table_name = $wpdb->prefix . 'vd_audit_logs';
 
         $result = $wpdb->query($wpdb->prepare(
             "DELETE FROM {$table_name}
@@ -186,7 +186,7 @@ class VD_Audit_Logger {
     public static function get_statistics() {
         global $wpdb;
 
-        $table_name = $wpdb->prefix . 'bz_vd_audit_logs';
+        $table_name = $wpdb->prefix . 'vd_audit_logs';
 
         // Total logs
         $total_logs = $wpdb->get_var("SELECT COUNT(*) FROM {$table_name}");

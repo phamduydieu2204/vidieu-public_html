@@ -26,7 +26,7 @@ class VD_Device_Manager {
     /**
      * Table name (without prefix)
      */
-    private $table_name = 'bz_vd_device_requests';
+    private $table_name = 'vd_device_requests';
 
     /**
      * Full table name (with prefix)
@@ -613,7 +613,7 @@ class VD_Device_Manager {
         ];
 
         $wpdb->insert(
-            $wpdb->prefix . 'bz_vd_access_logs',
+            $wpdb->prefix . 'vd_access_logs',
             $log_data,
             ['%d', '%s', '%s', '%s', '%s', '%s', '%s']
         );

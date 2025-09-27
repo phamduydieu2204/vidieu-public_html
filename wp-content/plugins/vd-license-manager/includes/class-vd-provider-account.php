@@ -26,7 +26,7 @@ class VD_Provider_Account {
     /**
      * Table name (without prefix)
      */
-    private $table_name = 'bz_vd_provider_accounts';
+    private $table_name = 'vd_provider_accounts';
 
     /**
      * Full table name (with prefix)
@@ -642,7 +642,7 @@ class VD_Provider_Account {
         ];
 
         $wpdb->insert(
-            $wpdb->prefix . 'bz_vd_credential_audit',
+            $wpdb->prefix . 'vd_credential_audit',
             $audit_data,
             ['%d', '%s', '%s', '%s', '%s', '%s', '%s', '%s']
         );
