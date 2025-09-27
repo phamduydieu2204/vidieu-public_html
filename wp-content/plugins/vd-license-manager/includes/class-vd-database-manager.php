@@ -669,4 +669,80 @@ class VD_Database_Manager {
 
         return $verification;
     }
+
+    /**
+     * Alias method for backward compatibility
+     *
+     * Some cache or old code might call get_database_schemas instead of get_table_schemas
+     *
+     * @since 1.0.0
+     * @param string $charset_collate Database charset collation
+     * @return array Table schemas
+     */
+    public static function get_database_schemas($charset_collate = '') {
+        return self::get_table_schemas($charset_collate);
+    }
+
+    /**
+     * Create missing audit logs table specifically
+     *
+     * Fallback method in case some code specifically calls this
+     *
+     * @since 1.0.0
+     * @return array Creation results
+     */
+    public static function create_missing_audit_logs_table() {
+        global $wpdb;
+
+        $table_name = $wpdb->prefix . 'vd_audit_logs';
+
+        // Check if table exists
+        $table_exists = $wpdb->get_var($wpdb->prepare("SHOW TABLES LIKE %s", $table_name));
+
+        if ($table_exists) {
+            return [
+                'success' => true,
+                'message' => 'Audit logs table already exists',
+                'table' => $table_name
+            ];
+        }
+
+        // Create the audit logs table specifically
+        $schemas = self::get_table_schemas();
+
+        if (!isset($schemas['vd_audit_logs'])) {
+            return [
+                'success' => false,
+                'message' => 'Audit logs schema not found',
+                'error' => 'Schema definition missing'
+            ];
+        }
+
+        $sql = $schemas['vd_audit_logs'];
+
+        require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
+
+        $result = dbDelta($sql);
+
+        // Verify table was created
+        $table_exists_after = $wpdb->get_var($wpdb->prepare("SHOW TABLES LIKE %s", $table_name));
+
+        if ($table_exists_after) {
+            error_log("[VD License Manager] Successfully created audit logs table: {$table_name}");
+            return [
+                'success' => true,
+                'message' => 'Audit logs table created successfully',
+                'table' => $table_name,
+                'result' => $result
+            ];
+        } else {
+            error_log("[VD License Manager] Failed to create audit logs table: {$table_name}");
+            return [
+                'success' => false,
+                'message' => 'Failed to create audit logs table',
+                'table' => $table_name,
+                'result' => $result
+            ];
+        }
+    }
 }

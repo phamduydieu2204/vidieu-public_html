@@ -58,6 +58,44 @@ class VD_Audit_Logger {
         // Insert into audit log table
         $table_name = $wpdb->prefix . 'vd_audit_logs';
 
+        // Debug log the exact table name being used
+        vd_debug_log("VD_Audit_Logger: Using table name: {$table_name} (prefix: {$wpdb->prefix})");
+
+        // Clear any cached table schema to prevent old table references
+        wp_cache_delete($table_name, 'table_schema');
+        wp_cache_delete('vd_audit_logs', 'table_schema');
+        wp_cache_delete('bz_vd_audit_logs', 'table_schema');
+
+        // Also flush wpdb cache
+        if (method_exists($wpdb, 'flush')) {
+            $wpdb->flush();
+        }
+
+        // Clear any WordPress object cache for table structure
+        wp_cache_flush_group('table_structures');
+
+        // Delete any possible cached references to old table names
+        $old_incorrect_names = [
+            'bz_bz_vd_audit_logs',
+            $wpdb->prefix . 'bz_vd_audit_logs',
+            'bz_' . $wpdb->prefix . 'vd_audit_logs'
+        ];
+
+        foreach ($old_incorrect_names as $old_name) {
+            wp_cache_delete($old_name, 'table_schema');
+            wp_cache_delete($old_name . '_structure', 'database');
+        }
+
+        // Verify table exists with correct name
+        $table_check = $wpdb->get_var($wpdb->prepare("SHOW TABLES LIKE %s", $table_name));
+        if (!$table_check) {
+            vd_debug_log("Audit table does not exist: {$table_name}. Attempting to create it.");
+            // Try to create table if it doesn't exist
+            if (class_exists('VD_Database_Manager')) {
+                VD_Database_Manager::create_tables();
+            }
+        }
+
         $result = $wpdb->insert($table_name, $log_data);
 
         if (false === $result) {
