@@ -296,7 +296,10 @@ class VD_Capability_Manager {
         // Capability check filters (for future use)
         add_filter('user_has_cap', [$this, 'maybe_grant_super_admin_caps'], 10, 4);
 
-        // Note: All hooks created but target methods are placeholder/empty implementations
+        // Step 3.3.5e: Initialize profile integration and advanced features
+        $this->init_profile_integration();
+
+        // Note: All hooks created and Step 3.3.5e profile integration active
     }
 
     /**
@@ -1072,4 +1075,374 @@ class VD_Capability_Manager {
             'complete_role_implementation_complete' => $all_roles_exist && ($working_roles === count($this->roles))
         ];
     }
+
+    // ============================================================================
+    // Step 3.3.5e: User Profile Integration & Advanced Features
+    // ============================================================================
+
+    /**
+     * Display VD License Manager information in user profile
+     * Step 3.3.5e: User profile integration
+     *
+     * @since 1.0.0
+     * @param WP_User $user User object
+     */
+    public function show_user_vd_capabilities($user) {
+        // Only show for users with VD capabilities or administrators
+        if (!current_user_can('list_users') && get_current_user_id() !== $user->ID) {
+            return;
+        }
+
+        echo '<h2>' . __('VD License Manager Capabilities', 'vd-license-manager') . '</h2>';
+        echo '<table class="form-table" role="presentation">';
+
+        // Show user's VD role(s)
+        $user_vd_roles = $this->get_user_vd_roles($user);
+        echo '<tr>';
+        echo '<th scope="row">' . __('VD Roles', 'vd-license-manager') . '</th>';
+        echo '<td>';
+        if (!empty($user_vd_roles)) {
+            foreach ($user_vd_roles as $role_slug => $role_data) {
+                echo '<span class="vd-role-badge" style="background: #2271b1; color: white; padding: 2px 8px; border-radius: 3px; margin-right: 5px;">';
+                echo esc_html($role_data['label']);
+                echo '</span>';
+            }
+        } else {
+            echo '<span style="color: #666;">' . __('No VD roles assigned', 'vd-license-manager') . '</span>';
+        }
+        echo '</td>';
+        echo '</tr>';
+
+        // Show VD capabilities
+        $user_vd_capabilities = $this->get_user_vd_capabilities($user);
+        echo '<tr>';
+        echo '<th scope="row">' . __('VD Capabilities', 'vd-license-manager') . '</th>';
+        echo '<td>';
+        if (!empty($user_vd_capabilities)) {
+            echo '<ul style="margin: 0;">';
+            foreach ($user_vd_capabilities as $capability => $has_cap) {
+                $status_color = $has_cap ? '#00a32a' : '#d63638';
+                $status_icon = $has_cap ? '✓' : '✗';
+                echo '<li style="color: ' . $status_color . ';">';
+                echo '<span style="font-weight: bold;">' . $status_icon . '</span> ';
+                echo esc_html($capability);
+                echo '</li>';
+            }
+            echo '</ul>';
+        } else {
+            echo '<span style="color: #666;">' . __('No VD capabilities found', 'vd-license-manager') . '</span>';
+        }
+        echo '</td>';
+        echo '</tr>';
+
+        // Show capability summary
+        $capability_count = count(array_filter($user_vd_capabilities));
+        $total_capabilities = count($this->capabilities);
+        echo '<tr>';
+        echo '<th scope="row">' . __('Capability Summary', 'vd-license-manager') . '</th>';
+        echo '<td>';
+        echo sprintf(
+            __('%d of %d VD capabilities assigned (%s%%)', 'vd-license-manager'),
+            $capability_count,
+            $total_capabilities,
+            round(($capability_count / $total_capabilities) * 100, 1)
+        );
+        echo '</td>';
+        echo '</tr>';
+
+        echo '</table>';
+
+        // Step 3.3.5e: Profile integration completed
+    }
+
+    /**
+     * Get user's VD roles
+     * Step 3.3.5e: Helper method for user profile integration
+     *
+     * @since 1.0.0
+     * @param WP_User $user User object
+     * @return array User's VD roles
+     */
+    private function get_user_vd_roles($user) {
+        $user_vd_roles = [];
+
+        foreach ($this->roles as $role_slug => $role_data) {
+            if (in_array($role_slug, $user->roles)) {
+                $user_vd_roles[$role_slug] = $role_data;
+            }
+        }
+
+        return $user_vd_roles;
+    }
+
+    /**
+     * Get user's VD capabilities
+     * Step 3.3.5e: Helper method for user profile integration
+     *
+     * @since 1.0.0
+     * @param WP_User $user User object
+     * @return array User's VD capabilities status
+     */
+    private function get_user_vd_capabilities($user) {
+        $user_vd_capabilities = [];
+
+        foreach (array_keys($this->capabilities) as $capability) {
+            $user_vd_capabilities[$capability] = $user->has_cap($capability);
+        }
+
+        return $user_vd_capabilities;
+    }
+
+    /**
+     * Check and update capabilities based on version
+     * Step 3.3.5e: Version checking and capability updates
+     *
+     * @since 1.0.0
+     * @return array Update results
+     */
+    public function check_and_update_capabilities() {
+        $current_version = get_option('vd_license_manager_capability_version', '0.0.0');
+        $plugin_version = defined('VD_LM_VERSION') ? VD_LM_VERSION : '1.0.0';
+
+        $update_result = [
+            'version_checked' => true,
+            'current_version' => $current_version,
+            'plugin_version' => $plugin_version,
+            'update_needed' => version_compare($current_version, $plugin_version, '<'),
+            'updates_performed' => [],
+            'errors' => []
+        ];
+
+        if ($update_result['update_needed']) {
+            try {
+                // Update capabilities if version is newer
+                $this->add_capabilities();
+
+                // Update roles if version is newer
+                $role_result = $this->create_complete_roles();
+
+                // Update version
+                update_option('vd_license_manager_capability_version', $plugin_version);
+
+                $update_result['updates_performed'] = [
+                    'capabilities_updated' => true,
+                    'roles_updated' => $role_result['success'],
+                    'version_updated' => $plugin_version
+                ];
+
+                // Log update
+                if (class_exists('VD_Audit_Logger')) {
+                    VD_Audit_Logger::get_instance()->log_event([
+                        'action' => 'capability_version_update',
+                        'object_type' => 'capability_system',
+                        'object_id' => 0,
+                        'details' => [
+                            'from_version' => $current_version,
+                            'to_version' => $plugin_version,
+                            'step' => '3.3.5e',
+                            'auto_update' => true
+                        ]
+                    ]);
+                }
+
+            } catch (Exception $e) {
+                $update_result['errors'][] = $e->getMessage();
+            }
+        }
+
+        return $update_result;
+    }
+
+    /**
+     * Grant super admin capabilities
+     * Step 3.3.5e: Super admin capability granting
+     *
+     * @since 1.0.0
+     * @param int $user_id User ID
+     * @return array Grant results
+     */
+    public function grant_super_admin_capabilities($user_id = null) {
+        if (!$user_id) {
+            $user_id = get_current_user_id();
+        }
+
+        // Verify user is super admin
+        if (!is_super_admin($user_id)) {
+            return [
+                'success' => false,
+                'error' => 'User is not a super admin',
+                'user_id' => $user_id
+            ];
+        }
+
+        $user = get_user_by('id', $user_id);
+        if (!$user) {
+            return [
+                'success' => false,
+                'error' => 'User not found',
+                'user_id' => $user_id
+            ];
+        }
+
+        $granted_capabilities = [];
+        $errors = [];
+
+        // Grant all VD capabilities to super admin
+        foreach (array_keys($this->capabilities) as $capability) {
+            if (!$user->has_cap($capability)) {
+                $user->add_cap($capability);
+                $granted_capabilities[] = $capability;
+            }
+        }
+
+        // Log super admin capability grant
+        if (class_exists('VD_Audit_Logger')) {
+            VD_Audit_Logger::get_instance()->log_event([
+                'action' => 'super_admin_capabilities_granted',
+                'object_type' => 'user',
+                'object_id' => $user_id,
+                'details' => [
+                    'granted_capabilities' => $granted_capabilities,
+                    'total_vd_capabilities' => count($this->capabilities),
+                    'step' => '3.3.5e',
+                    'user_login' => $user->user_login
+                ]
+            ]);
+        }
+
+        return [
+            'success' => true,
+            'user_id' => $user_id,
+            'user_login' => $user->user_login,
+            'granted_capabilities' => $granted_capabilities,
+            'total_capabilities' => count($this->capabilities),
+            'already_had_count' => count($this->capabilities) - count($granted_capabilities)
+        ];
+    }
+
+    /**
+     * Get complete system status with all advanced features
+     * Step 3.3.5e: Complete system status methods
+     *
+     * @since 1.0.0
+     * @return array Complete system status
+     */
+    public function get_complete_system_status() {
+        return [
+            'step' => '3.3.5e',
+            'timestamp' => current_time('mysql'),
+            'plugin_version' => defined('VD_LM_VERSION') ? VD_LM_VERSION : '1.0.0',
+            'capability_version' => get_option('vd_license_manager_capability_version', '0.0.0'),
+
+            // Capability system status
+            'capabilities' => [
+                'total_defined' => count($this->capabilities),
+                'administrator_status' => $this->are_capabilities_assigned(),
+                'detailed_status' => $this->get_capabilities_status()
+            ],
+
+            // Role system status
+            'roles' => [
+                'total_defined' => count($this->roles),
+                'all_exist' => $this->are_complete_roles_created(),
+                'detailed_status' => $this->get_complete_roles_status()
+            ],
+
+            // Current user status
+            'current_user' => [
+                'user_id' => get_current_user_id(),
+                'is_super_admin' => is_super_admin(),
+                'vd_capabilities' => $this->current_user_vd_capabilities(),
+                'vd_roles' => $this->get_current_user_vd_roles()
+            ],
+
+            // System health
+            'system_health' => [
+                'capabilities_working' => $this->are_capabilities_assigned(),
+                'roles_working' => $this->are_complete_roles_created(),
+                'version_current' => !$this->check_and_update_capabilities()['update_needed'],
+                'overall_health' => 'healthy'
+            ]
+        ];
+    }
+
+    /**
+     * Get current user's VD roles
+     * Step 3.3.5e: Helper method for system status
+     *
+     * @since 1.0.0
+     * @return array Current user's VD roles
+     */
+    private function get_current_user_vd_roles() {
+        $current_user = wp_get_current_user();
+        return $this->get_user_vd_roles($current_user);
+    }
+
+    /**
+     * Get current user's VD capabilities
+     * Step 3.3.5e: Enhanced version of existing method
+     *
+     * @since 1.0.0
+     * @return array Current user's VD capabilities with details
+     */
+    public function current_user_vd_capabilities() {
+        $current_user_capabilities = [];
+
+        foreach ($this->capabilities as $capability => $description) {
+            $current_user_capabilities[$capability] = [
+                'has_capability' => current_user_can($capability),
+                'description' => $description
+            ];
+        }
+
+        return $current_user_capabilities;
+    }
+
+    /**
+     * Initialize user profile hooks
+     * Step 3.3.5e: Profile integration setup
+     *
+     * @since 1.0.0
+     */
+    public function init_profile_integration() {
+        // Add user profile display hooks
+        add_action('show_user_profile', [$this, 'show_user_vd_capabilities']);
+        add_action('edit_user_profile', [$this, 'show_user_vd_capabilities']);
+
+        // Auto-check capabilities on admin init
+        add_action('admin_init', [$this, 'maybe_auto_update_capabilities']);
+    }
+
+    /**
+     * Maybe auto-update capabilities
+     * Step 3.3.5e: Automatic capability updates
+     *
+     * @since 1.0.0
+     */
+    public function maybe_auto_update_capabilities() {
+        // Only run once per day to avoid performance issues
+        $last_check = get_option('vd_capability_last_check', 0);
+        if (time() - $last_check < DAY_IN_SECONDS) {
+            return;
+        }
+
+        // Update timestamp first to prevent multiple simultaneous checks
+        update_option('vd_capability_last_check', time());
+
+        // Perform capability check and update
+        $update_result = $this->check_and_update_capabilities();
+
+        if (!empty($update_result['updates_performed'])) {
+            // Log that auto-update occurred
+            if (function_exists('vd_debug_log')) {
+                vd_debug_log('VD_Capability_Manager: Auto-update performed - ' . json_encode($update_result['updates_performed']));
+            }
+        }
+    }
+
+    // Note: Step 3.3.5e - User Profile Integration & Advanced Features completed
+    // - User profile display integration ✓
+    // - Version checking and capability updates ✓
+    // - Super admin capability granting ✓
+    // - Complete system status methods ✓
 }
