@@ -281,6 +281,9 @@ class VD_Admin_Menu {
             error_log('[VD License Manager] Admin Menu - Status page error: ' . $e->getMessage());
         }
 
+        // Get advanced encryption status (Sprint 3.2)
+        $encryption_status = $this->get_encryption_status();
+
         ?>
         <div class="wrap">
             <h1><?php echo esc_html(get_admin_page_title()); ?></h1>
@@ -371,6 +374,88 @@ class VD_Admin_Menu {
                     </table>
                 </div>
             </div>
+
+            <!-- Advanced Encryption Status (Sprint 3.2) -->
+            <?php if ($encryption_status && $encryption_status['key_configured']): ?>
+            <div class="postbox">
+                <div class="postbox-header">
+                    <h2><?php _e('Advanced Encryption Status', VD_LM_TEXT_DOMAIN); ?></h2>
+                </div>
+                <div class="inside">
+                    <table class="widefat striped">
+                        <thead>
+                            <tr>
+                                <th><?php _e('Feature', VD_LM_TEXT_DOMAIN); ?></th>
+                                <th><?php _e('Status', VD_LM_TEXT_DOMAIN); ?></th>
+                                <th><?php _e('Details', VD_LM_TEXT_DOMAIN); ?></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><?php _e('Encryption Version', VD_LM_TEXT_DOMAIN); ?></td>
+                                <td>
+                                    <span class="status-indicator status-active">
+                                        <?php echo esc_html($encryption_status['version']); ?>
+                                    </span>
+                                </td>
+                                <td><?php echo esc_html($encryption_status['algorithm']); ?></td>
+                            </tr>
+                            <tr>
+                                <td><?php _e('Field-Level Encryption', VD_LM_TEXT_DOMAIN); ?></td>
+                                <td>
+                                    <?php if ($encryption_status['field_encryption']): ?>
+                                        <span class="status-indicator status-active">✓ <?php _e('Working', VD_LM_TEXT_DOMAIN); ?></span>
+                                    <?php else: ?>
+                                        <span class="status-indicator status-error">✗ <?php _e('Failed', VD_LM_TEXT_DOMAIN); ?></span>
+                                    <?php endif; ?>
+                                </td>
+                                <td><?php _e('HKDF key derivation with per-field keys', VD_LM_TEXT_DOMAIN); ?></td>
+                            </tr>
+                            <tr>
+                                <td><?php _e('Metadata Support', VD_LM_TEXT_DOMAIN); ?></td>
+                                <td>
+                                    <?php if ($encryption_status['metadata_support']): ?>
+                                        <span class="status-indicator status-active">✓ <?php _e('Enabled', VD_LM_TEXT_DOMAIN); ?></span>
+                                    <?php else: ?>
+                                        <span class="status-indicator status-error">✗ <?php _e('Disabled', VD_LM_TEXT_DOMAIN); ?></span>
+                                    <?php endif; ?>
+                                </td>
+                                <td><?php _e('Encryption versioning and context tracking', VD_LM_TEXT_DOMAIN); ?></td>
+                            </tr>
+                            <tr>
+                                <td><?php _e('Legacy Compatibility', VD_LM_TEXT_DOMAIN); ?></td>
+                                <td>
+                                    <?php if ($encryption_status['legacy_compatibility']): ?>
+                                        <span class="status-indicator status-active">✓ <?php _e('Compatible', VD_LM_TEXT_DOMAIN); ?></span>
+                                    <?php else: ?>
+                                        <span class="status-indicator status-warning">⚠ <?php _e('Issues', VD_LM_TEXT_DOMAIN); ?></span>
+                                    <?php endif; ?>
+                                </td>
+                                <td><?php _e('Backward compatibility with Sprint 2 data', VD_LM_TEXT_DOMAIN); ?></td>
+                            </tr>
+                            <tr>
+                                <td><?php _e('Cached Field Keys', VD_LM_TEXT_DOMAIN); ?></td>
+                                <td>
+                                    <span class="status-indicator status-info">
+                                        <?php echo esc_html($encryption_status['cached_keys']); ?>
+                                    </span>
+                                </td>
+                                <td><?php _e('Number of derived keys in memory cache', VD_LM_TEXT_DOMAIN); ?></td>
+                            </tr>
+                            <tr>
+                                <td><?php _e('Recent Events (24h)', VD_LM_TEXT_DOMAIN); ?></td>
+                                <td>
+                                    <span class="status-indicator status-info">
+                                        <?php echo esc_html($encryption_status['recent_events']); ?>
+                                    </span>
+                                </td>
+                                <td><?php _e('Encryption/decryption operations logged', VD_LM_TEXT_DOMAIN); ?></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <?php endif; ?>
 
             <?php if (!$requirements['encryption_key']['configured']): ?>
             <div class="postbox">
@@ -534,5 +619,24 @@ class VD_Admin_Menu {
 
         // Direct key should be 32 bytes
         return strlen($key) === 32;
+    }
+
+    /**
+     * Get encryption status for System Status page
+     *
+     * @since 1.0.0 (Sprint 3.2)
+     * @return array|null Encryption status or null if not available
+     */
+    private function get_encryption_status() {
+        try {
+            if (class_exists('VD_Encryption_Manager')) {
+                $encryption_manager = VD_Encryption_Manager::get_instance();
+                return $encryption_manager->get_encryption_status();
+            }
+        } catch (Exception $e) {
+            error_log('[VD License Manager] Admin Menu - Encryption status error: ' . $e->getMessage());
+        }
+
+        return null;
     }
 }
