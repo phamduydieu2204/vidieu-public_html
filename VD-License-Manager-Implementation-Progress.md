@@ -178,14 +178,16 @@ All database layer functionality implemented with full encryption and audit trai
 - [x] **Files**: `includes/class-vd-capability-manager.php` (created), `includes/class-vd-license-manager.php` (updated)
 - [x] **Test**: Plugin activation, admin dashboard access - All working
 
-**3.3.2 - Capability Definitions** ⏳ **PENDING**
-- [ ] Define capabilities array structure trong class
-- [ ] Add init_capabilities() method với empty implementation
-- [ ] Thêm basic getter methods (get_capabilities())
-- [ ] Test class instantiation và method calls
-- [ ] **Risk**: Rất thấp - Chỉ define data structures, không register
-- [ ] **Files**: `includes/class-vd-capability-manager.php` (enhance)
-- [ ] **Test**: Class methods callable, no WordPress integration yet
+**3.3.2 - Capability Definitions** ✅ **COMPLETED**
+- [x] Define capabilities array structure trong class (11 capabilities)
+- [x] Add init_capabilities() method với proper data structure
+- [x] Add init_roles() method với 3 role definitions
+- [x] Thêm basic getter methods (get_capabilities(), get_roles())
+- [x] Added testing helper methods (get_capability_count(), get_role_count())
+- [x] Test class instantiation và method calls
+- [x] **Risk**: Rất thấp - Successfully implemented data structures without WordPress registration
+- [x] **Files**: `includes/class-vd-capability-manager.php` (enhanced with data definitions)
+- [x] **Test**: Class methods callable, data structures populated, no WordPress integration yet
 
 **3.3.3 - WordPress Integration Foundation** ⏳ **PENDING**
 - [ ] Add setup_hooks() method với empty hooks
@@ -230,13 +232,13 @@ All database layer functionality implemented with full encryption and audit trai
 - [ ] **Files**: `includes/class-vd-api-security.php`, `includes/class-vd-request-validator.php`
 
 #### 📊 Micro-Step Tracking
-- **Total Steps**: 8 (3.1 ✅, 3.2 ✅, 3.3.1 ✅, 3.3.2-3.3.5 ⏳, 3.4 ⏳, 3.5 ⏳)
-- **Completed**: 3 (37.5%)
-- **Current**: 3.3.2 - Capability Definitions (READY TO START)
+- **Total Steps**: 8 (3.1 ✅, 3.2 ✅, 3.3.1 ✅, 3.3.2 ✅, 3.3.3-3.3.5 ⏳, 3.4 ⏳, 3.5 ⏳)
+- **Completed**: 4 (50%)
+- **Current**: 3.3.3 - WordPress Integration Foundation (READY TO START)
 - **Strategy**: Micro-step approach for Sprint 3.3 (5 sub-steps)
 - **Previous Issue**: Sprint 3.3 monolithic implementation caused fatal error
 - **Solution**: Break down into smallest possible increments with testing at each step
-- **✅ Success**: Step 3.3.1 completed without issues - website stable
+- **✅ Success**: Steps 3.3.1 and 3.3.2 completed without issues - website stable, data structures working
 
 ### ⏳ Sprint 4: API Layer (Days 11-14) - **WAITING**
 
