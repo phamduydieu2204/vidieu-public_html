@@ -85,7 +85,8 @@ function vd_license_manager_activate() {
     // Check requirements during activation
     if (!vd_check_requirements()) {
         deactivate_plugins(plugin_basename(__FILE__));
-        wp_die(__('VD License Manager requires PHP 7.4+, WordPress 5.0+, and required PHP extensions.', VD_LM_TEXT_DOMAIN));
+        // Use plain text during activation as text domain is not loaded yet
+        wp_die('VD License Manager requires PHP 7.4+, WordPress 5.0+, and required PHP extensions.');
     }
 
     // Load activator class

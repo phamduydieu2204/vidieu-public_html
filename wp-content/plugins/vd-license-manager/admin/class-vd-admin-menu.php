@@ -26,8 +26,18 @@ class VD_Admin_Menu {
      * @since 1.0.0
      */
     public function __construct() {
-        add_action('admin_menu', [$this, 'add_admin_menu']);
+        // Delay admin menu until after init to ensure text domain is loaded
+        add_action('init', [$this, 'init_admin_menu'], 11);
         add_action('admin_init', [$this, 'admin_init']);
+    }
+
+    /**
+     * Initialize admin menu after text domain is loaded
+     *
+     * @since 1.0.0
+     */
+    public function init_admin_menu() {
+        add_action('admin_menu', [$this, 'add_admin_menu']);
     }
 
     /**

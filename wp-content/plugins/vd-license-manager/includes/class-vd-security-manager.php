@@ -650,7 +650,11 @@ class VD_Security_Manager {
                 'whitelist' => $whitelist
             ]);
 
-            wp_die(__('Access denied from your IP address.', VD_LM_TEXT_DOMAIN));
+            // Use plain text if text domain not loaded yet, otherwise use translation
+            $message = did_action('init')
+                ? __('Access denied from your IP address.', VD_LM_TEXT_DOMAIN)
+                : 'Access denied from your IP address.';
+            wp_die($message);
         }
     }
 
@@ -751,13 +755,18 @@ class VD_Security_Manager {
                 'attempts' => $attempts
             ]);
 
-            return new WP_Error(
-                'too_many_attempts',
-                sprintf(
+            // Use plain text if text domain not loaded yet, otherwise use translation
+            $message = did_action('init')
+                ? sprintf(
                     __('Too many failed login attempts. Please try again in %d minutes.', VD_LM_TEXT_DOMAIN),
                     $this->config['lockout_duration'] / 60
                 )
-            );
+                : sprintf(
+                    'Too many failed login attempts. Please try again in %d minutes.',
+                    $this->config['lockout_duration'] / 60
+                );
+
+            return new WP_Error('too_many_attempts', $message);
         }
 
         return $user;
