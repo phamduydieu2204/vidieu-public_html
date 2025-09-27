@@ -1,0 +1,514 @@
+/*
+ * VD License Manager - Public Styles
+ * Version: 1.0.0
+ * For frontend portal and shortcode display
+ */
+
+/* Base portal styles */
+.vd-license-portal {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    max-width: 800px;
+    margin: 20px auto;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    overflow: hidden;
+}
+
+/* Authentication form */
+.vd-portal-auth {
+    padding: 40px;
+    text-align: center;
+}
+
+.vd-portal-auth .auth-header h2 {
+    margin: 0 0 10px 0;
+    color: #333;
+    font-size: 24px;
+    font-weight: 600;
+}
+
+.vd-portal-auth .auth-header p {
+    margin: 0 0 30px 0;
+    color: #666;
+    font-size: 16px;
+}
+
+.license-auth-form {
+    max-width: 400px;
+    margin: 0 auto;
+}
+
+.form-group {
+    margin-bottom: 20px;
+    text-align: left;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #333;
+}
+
+.license-key-input {
+    width: 100%;
+    padding: 12px 16px;
+    border: 2px solid #ddd;
+    border-radius: 6px;
+    font-size: 16px;
+    font-family: 'Courier New', monospace;
+    transition: border-color 0.3s ease;
+}
+
+.license-key-input:focus {
+    outline: none;
+    border-color: #0073aa;
+    box-shadow: 0 0 0 3px rgba(0, 115, 170, 0.1);
+}
+
+.input-hint {
+    margin-top: 5px;
+    font-size: 12px;
+    color: #666;
+}
+
+.form-actions {
+    margin-top: 30px;
+}
+
+.vd-btn {
+    display: inline-block;
+    padding: 12px 24px;
+    background: #0073aa;
+    color: white;
+    text-decoration: none;
+    border: none;
+    border-radius: 6px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    min-width: 120px;
+}
+
+.vd-btn:hover {
+    background: #005a87;
+    transform: translateY(-1px);
+}
+
+.vd-btn:active {
+    transform: translateY(0);
+}
+
+.vd-btn-primary {
+    background: #0073aa;
+}
+
+.btn-loading {
+    display: none;
+}
+
+.btn-loading .spinner {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-top: 2px solid white;
+    border-radius: 50%;
+    animation: vd-spin 1s linear infinite;
+    margin-right: 8px;
+}
+
+@keyframes vd-spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Portal content (hidden initially) */
+.vd-portal-content {
+    display: none;
+}
+
+/* Portal header */
+.portal-header {
+    padding: 20px 30px;
+    background: #f8f9fa;
+    border-bottom: 1px solid #e9ecef;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.license-info h3 {
+    margin: 0 0 8px 0;
+    color: #333;
+    font-size: 20px;
+}
+
+.license-key-display {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.license-key-display .key-label {
+    font-weight: 600;
+    color: #666;
+}
+
+.license-key-display .license-key {
+    font-family: 'Courier New', monospace;
+    background: #f1f1f1;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.copy-btn {
+    padding: 4px 8px;
+    background: #28a745;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+.copy-btn:hover {
+    background: #218838;
+}
+
+.copy-btn.copied {
+    background: #6c757d;
+}
+
+/* License status */
+.license-status {
+    text-align: right;
+}
+
+.status-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.status-badge.status-active {
+    background: #d4edda;
+    color: #155724;
+}
+
+.status-badge.status-expired {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.status-badge.status-suspended {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.expiration-info {
+    margin-top: 8px;
+    font-size: 14px;
+    color: #666;
+}
+
+/* Tab navigation */
+.portal-tabs {
+    background: #fff;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.tab-list {
+    display: flex;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.tab-item {
+    flex: 1;
+}
+
+.tab-button {
+    width: 100%;
+    padding: 15px 20px;
+    background: none;
+    border: none;
+    border-bottom: 3px solid transparent;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    color: #666;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.tab-button:hover {
+    background: #f8f9fa;
+    color: #333;
+}
+
+.tab-button.active {
+    color: #0073aa;
+    border-bottom-color: #0073aa;
+    background: #f8f9fa;
+}
+
+.tab-icon {
+    font-size: 16px;
+}
+
+.tab-badge {
+    background: #dc3545;
+    color: white;
+    font-size: 10px;
+    padding: 2px 6px;
+    border-radius: 10px;
+    min-width: 16px;
+    text-align: center;
+}
+
+/* Tab content */
+.portal-content-area {
+    padding: 30px;
+    min-height: 400px;
+}
+
+.tab-pane {
+    display: none;
+}
+
+.tab-pane.active {
+    display: block;
+}
+
+/* Error states */
+.auth-errors {
+    margin-top: 20px;
+    padding: 15px;
+    background: #f8d7da;
+    border: 1px solid #f5c6cb;
+    border-radius: 6px;
+    color: #721c24;
+}
+
+.error-message {
+    font-weight: 600;
+    margin-bottom: 10px;
+}
+
+.retry-btn {
+    padding: 8px 16px;
+    background: #dc3545;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.retry-btn:hover {
+    background: #c82333;
+}
+
+/* Help section */
+.auth-help {
+    margin-top: 30px;
+    text-align: left;
+}
+
+.auth-help details {
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 6px;
+    padding: 15px;
+}
+
+.auth-help summary {
+    font-weight: 600;
+    cursor: pointer;
+    color: #0073aa;
+}
+
+.help-content {
+    margin-top: 15px;
+    color: #666;
+}
+
+.help-content ul {
+    margin: 10px 0;
+    padding-left: 20px;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .vd-license-portal {
+        margin: 10px;
+        border-radius: 0;
+    }
+
+    .vd-portal-auth {
+        padding: 30px 20px;
+    }
+
+    .portal-header {
+        flex-direction: column;
+        align-items: flex-start;
+        text-align: left;
+    }
+
+    .license-status {
+        text-align: left;
+        width: 100%;
+    }
+
+    .license-key-display {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+
+    .tab-list {
+        flex-direction: column;
+    }
+
+    .tab-button {
+        text-align: left;
+        justify-content: flex-start;
+    }
+
+    .portal-content-area {
+        padding: 20px;
+    }
+}
+
+@media (max-width: 480px) {
+    .vd-portal-auth .auth-header h2 {
+        font-size: 20px;
+    }
+
+    .license-key-input {
+        font-size: 14px;
+    }
+
+    .tab-button .tab-label {
+        font-size: 12px;
+    }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+    .vd-license-portal {
+        background: #2c3338;
+        color: #ddd;
+    }
+
+    .vd-portal-auth .auth-header h2 {
+        color: #ddd;
+    }
+
+    .form-group label {
+        color: #ddd;
+    }
+
+    .license-key-input {
+        background: #3c434a;
+        border-color: #50575e;
+        color: #ddd;
+    }
+
+    .portal-header {
+        background: #3c434a;
+        border-bottom-color: #50575e;
+    }
+
+    .license-key-display .license-key {
+        background: #50575e;
+        color: #ddd;
+    }
+
+    .portal-tabs {
+        background: #2c3338;
+        border-bottom-color: #50575e;
+    }
+
+    .tab-button {
+        color: #a7aaad;
+    }
+
+    .tab-button:hover {
+        background: #3c434a;
+        color: #ddd;
+    }
+
+    .tab-button.active {
+        background: #3c434a;
+        color: #72aee6;
+        border-bottom-color: #72aee6;
+    }
+}
+
+/* High contrast mode */
+@media (prefers-contrast: high) {
+    .vd-license-portal {
+        border: 2px solid #000;
+    }
+
+    .vd-btn,
+    .copy-btn,
+    .retry-btn {
+        border: 2px solid currentColor;
+    }
+
+    .status-badge {
+        border: 1px solid currentColor;
+    }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+    .vd-btn,
+    .tab-button,
+    .copy-btn {
+        transition: none;
+    }
+
+    .btn-loading .spinner {
+        animation: none;
+    }
+}
+
+/* Print styles */
+@media print {
+    .vd-license-portal {
+        box-shadow: none;
+        border: 1px solid #000;
+    }
+
+    .vd-btn,
+    .copy-btn,
+    .tab-button {
+        display: none;
+    }
+
+    .portal-tabs {
+        display: none;
+    }
+
+    .tab-pane {
+        display: block !important;
+    }
+}

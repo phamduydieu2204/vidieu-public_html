@@ -56,7 +56,7 @@ class VD_Database_Manager {
         $schemas = array();
 
         // Table 1: Licenses (Core license data)
-        $schemas['bz_licenses'] = "CREATE TABLE {$wpdb->prefix}bz_licenses (
+        $schemas['bz_vd_licenses'] = "CREATE TABLE {$wpdb->prefix}bz_vd_licenses (
             id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
             license_key varchar(255) NOT NULL,
             product_id bigint(20) unsigned NOT NULL,
@@ -75,7 +75,7 @@ class VD_Database_Manager {
         ) $charset_collate;";
 
         // Table 2: Provider Accounts (Encrypted credentials)
-        $schemas['bz_provider_accounts'] = "CREATE TABLE {$wpdb->prefix}bz_provider_accounts (
+        $schemas['bz_vd_provider_accounts'] = "CREATE TABLE {$wpdb->prefix}bz_vd_provider_accounts (
             id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
             product_id bigint(20) unsigned NOT NULL,
             account_name varchar(255) NOT NULL,
@@ -97,7 +97,7 @@ class VD_Database_Manager {
         ) $charset_collate;";
 
         // Table 3: Content Versions (Cookie/content versioning)
-        $schemas['bz_content_versions'] = "CREATE TABLE {$wpdb->prefix}bz_content_versions (
+        $schemas['bz_vd_content_versions'] = "CREATE TABLE {$wpdb->prefix}bz_vd_content_versions (
             id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
             provider_account_id bigint(20) unsigned NOT NULL,
             content_type enum('cookies','profile_data','session_data') NOT NULL,
@@ -113,7 +113,7 @@ class VD_Database_Manager {
         ) $charset_collate;";
 
         // Table 4: License Assignments (License to provider mappings)
-        $schemas['bz_license_assignments'] = "CREATE TABLE {$wpdb->prefix}bz_license_assignments (
+        $schemas['bz_vd_license_assignments'] = "CREATE TABLE {$wpdb->prefix}bz_vd_license_assignments (
             id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
             license_id bigint(20) unsigned NOT NULL,
             provider_account_id bigint(20) unsigned NOT NULL,
@@ -140,18 +140,18 @@ class VD_Database_Manager {
      */
     public static function get_table_list() {
         $tables = array(
-            'bz_licenses' => 'Core license data',
-            'bz_provider_accounts' => 'Provider account credentials (encrypted)',
-            'bz_content_versions' => 'Cookie and content versioning',
-            'bz_license_assignments' => 'License to provider mappings',
+            'bz_vd_licenses' => 'Core license data',
+            'bz_vd_provider_accounts' => 'Provider account credentials (encrypted)',
+            'bz_vd_content_versions' => 'Cookie and content versioning',
+            'bz_vd_license_assignments' => 'License to provider mappings',
             // More tables will be added in Step 2.5
-            'bz_product_settings' => 'Product configurations (pending)',
-            'bz_product_provider_mapping' => 'Product-provider relationships (pending)',
-            'bz_product_field_sharing_config' => 'Field sharing config (pending)',
-            'bz_device_requests' => 'Device registration (pending)',
-            'bz_access_logs' => 'Access logging (pending)',
-            'bz_credential_audit' => 'Credential audit trail (pending)',
-            'bz_rate_limits' => 'Rate limiting (pending)'
+            'bz_vd_product_settings' => 'Product configurations (pending)',
+            'bz_vd_product_provider_mapping' => 'Product-provider relationships (pending)',
+            'bz_vd_product_field_sharing_config' => 'Field sharing config (pending)',
+            'bz_vd_device_requests' => 'Device registration (pending)',
+            'bz_vd_access_logs' => 'Access logging (pending)',
+            'bz_vd_credential_audit' => 'Credential audit trail (pending)',
+            'bz_vd_rate_limits' => 'Rate limiting (pending)'
         );
 
         return $tables;
@@ -235,19 +235,68 @@ class VD_Database_Manager {
     }
 
     /**
-     * Step 2.2: NO TABLE CREATION - Just preparation
+     * Step 2.3: Create single table - bz_vd_licenses only
      *
-     * This method will be implemented in Step 2.3
+     * IMPORTANT: Only creates ONE table for testing
      */
     public static function create_tables() {
-        // STEP 2.2: This method is NOT implemented yet
-        // Will be added in Step 2.3 - Single Table Creation
+        global $wpdb;
 
-        return array(
+        // Step 2.3: Only create bz_vd_licenses table
+        $result = array(
             'success' => false,
-            'message' => 'Table creation not implemented in Step 2.2',
-            'step' => '2.2 - Schema definitions only',
-            'next_step' => '2.3 - Single table creation'
+            'step' => '2.3 - Single table creation',
+            'tables' => array(),
+            'errors' => array()
         );
+
+        try {
+            // Get charset for this installation
+            $charset_collate = $wpdb->get_charset_collate();
+
+            // Get all schemas but only create licenses table
+            $schemas = self::get_table_schemas($charset_collate);
+
+            // Step 2.3: ONLY create bz_vd_licenses table
+            $table_to_create = 'bz_vd_licenses';
+
+            if (!isset($schemas[$table_to_create])) {
+                $result['errors'][] = "Schema for $table_to_create not found";
+                return $result;
+            }
+
+            // Use WordPress dbDelta for table creation
+            require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
+
+            // Create the single table
+            $sql = $schemas[$table_to_create];
+
+            // Log the SQL for debugging
+            error_log("[VD License Manager] Step 2.3 - Creating table: $table_to_create");
+            error_log("[VD License Manager] SQL: $sql");
+
+            // Execute dbDelta
+            $dbdelta_result = dbDelta($sql);
+
+            // Check if table was created successfully
+            if (self::table_exists($table_to_create)) {
+                $result['tables'][$table_to_create] = true;
+                $result['success'] = true;
+                error_log("[VD License Manager] Step 2.3 - Table $table_to_create created successfully");
+            } else {
+                $result['tables'][$table_to_create] = false;
+                $result['errors'][] = "Failed to create table $table_to_create";
+                error_log("[VD License Manager] Step 2.3 - Failed to create table $table_to_create");
+            }
+
+            // Add dbDelta output for debugging
+            $result['dbdelta_output'] = $dbdelta_result;
+
+        } catch (Exception $e) {
+            $result['errors'][] = 'Exception: ' . $e->getMessage();
+            error_log("[VD License Manager] Step 2.3 - Exception: " . $e->getMessage());
+        }
+
+        return $result;
     }
 }

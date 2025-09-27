@@ -153,18 +153,18 @@ class VD_Activator {
     }
 
     /**
-     * Create database tables - Step 2.3: Single table creation
+     * Create database tables
      *
      * @since 1.0.0
      */
     private static function create_database_tables() {
-        // Step 2.3: Load database manager and create single table
+        // Load the database manager
         if (!class_exists('VD_Database_Manager')) {
             require_once VD_LM_PATH . 'includes/class-vd-database-manager.php';
         }
 
         try {
-            // Create tables (Step 2.3: only bz_vd_licenses)
+            // Create all database tables
             $result = VD_Database_Manager::create_tables();
 
             if ($result['success']) {
@@ -172,16 +172,22 @@ class VD_Activator {
                 update_option('vd_license_manager_tables_created', time());
 
                 // Log successful creation
-                error_log('[VD License Manager] Step 2.3 - Database table created successfully: ' .
-                         implode(', ', array_keys($result['tables'])));
+                if (function_exists('error_log')) {
+                    error_log('[VD License Manager] Database tables created successfully. Tables: ' .
+                             implode(', ', array_keys($result['tables'])));
+                }
             } else {
                 // Log errors but don't prevent activation
-                error_log('[VD License Manager] Step 2.3 - Database table creation issues: ' .
-                         implode(', ', $result['errors']));
+                if (function_exists('error_log')) {
+                    error_log('[VD License Manager] Database table creation encountered issues: ' .
+                             print_r($result['errors'], true));
+                }
             }
         } catch (Exception $e) {
             // Log error but don't prevent activation
-            error_log('[VD License Manager] Step 2.3 - Database creation exception: ' . $e->getMessage());
+            if (function_exists('error_log')) {
+                error_log('[VD License Manager] Database creation error: ' . $e->getMessage());
+            }
         }
     }
 

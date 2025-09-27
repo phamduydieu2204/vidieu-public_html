@@ -88,11 +88,12 @@ Giờ sẽ chia nhỏ thành từng bước để dễ debug và rollback.
 - [x] Test class loading
 - [x] **Risk**: Thấp - Chỉ định nghĩa schema
 
-**2.3 - Single Table Creation** ⏳ **PENDING**
-- [ ] Implement table creation cho `bz_licenses` (1 bảng duy nhất)
-- [ ] Test activation hook với 1 bảng
-- [ ] Verify dbDelta integration
-- [ ] **Risk**: Trung bình - Đầu tiên modify database
+**2.3 - Single Table Creation** ✅ **COMPLETED**
+- [x] Implement table creation cho `bz_vd_licenses` (1 bảng duy nhất)
+- [x] Cập nhật table prefix thành `bz_vd_` theo yêu cầu
+- [x] Test activation hook với 1 bảng
+- [x] Verify dbDelta integration
+- [x] **Risk**: Trung bình - Đầu tiên modify database
 
 **2.4 - Core License CRUD** ⏳ **PENDING**
 - [ ] Tạo `class-vd-license-core.php`
