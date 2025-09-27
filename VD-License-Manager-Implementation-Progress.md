@@ -214,15 +214,49 @@ All database layer functionality implemented with full encryption and audit trai
 - [x] **Files**: `includes/class-vd-capability-manager.php` (enhanced with single capability system)
 - [x] **Test**: Single capability works, admin has capability, proper add/remove functionality
 
-**3.3.5 - Complete Capability System** ⏳ **PENDING**
-- [ ] Add all 11 capabilities với full definitions
-- [ ] Implement 3 custom roles (Viewer, Operator, Administrator)
-- [ ] Add user profile display integration
-- [ ] Implement capability checking methods
-- [ ] Full testing với multiple users và roles
-- [ ] **Risk**: Thấp - Building on tested foundation
-- [ ] **Files**: `includes/class-vd-capability-manager.php` (complete)
-- [ ] **Test**: All roles, all capabilities, user management interface
+**3.3.5 - Complete Capability System** 🚨 **ROLLBACK - CHIA THÀNH MICRO-SUB-STEPS**
+⚠️ **Step 3.3.5 gây fatal error - Chia thành 5 micro-sub-steps nhỏ hơn**
+
+**3.3.5a - Core Capabilities Addition** ⏳ **PENDING**
+- [ ] Add 4 core capabilities: manage_vd_licenses, view_vd_providers, manage_vd_devices, view_vd_devices
+- [ ] Chỉ add vào Administrator role, không tạo custom roles
+- [ ] Test website stability sau khi add capabilities
+- [ ] **Risk**: Thấp - Extend từ single capability test đã working
+- [ ] **Files**: `includes/class-vd-capability-manager.php` (enhance add_capabilities method)
+- [ ] **Test**: Administrator có 5 VD capabilities total (1 existing + 4 new)
+
+**3.3.5b - Remaining Capabilities Addition** ⏳ **PENDING**
+- [ ] Add 6 remaining capabilities: manage_vd_providers, manage_vd_settings, view_vd_audit_logs, manage_vd_audit_logs, view_vd_reports, export_vd_data
+- [ ] Chỉ add vào Administrator role, vẫn chưa tạo custom roles
+- [ ] Test website stability với full capability set
+- [ ] **Risk**: Thấp - Building on successful 3.3.5a
+- [ ] **Files**: `includes/class-vd-capability-manager.php` (complete all 11 capabilities)
+- [ ] **Test**: Administrator có đầy đủ 11 VD capabilities
+
+**3.3.5c - First Custom Role Creation** ⏳ **PENDING**
+- [ ] Tạo 1 custom role duy nhất: VD License Viewer (5 capabilities)
+- [ ] Test role creation trong WordPress Users → Add New
+- [ ] Verify role có correct capabilities
+- [ ] **Risk**: Trung bình - First custom role creation
+- [ ] **Files**: `includes/class-vd-capability-manager.php` (add single role)
+- [ ] **Test**: VD License Viewer role xuất hiện trong user creation
+
+**3.3.5d - Complete Role System** ⏳ **PENDING**
+- [ ] Add 2 remaining roles: VD License Operator, VD License Administrator
+- [ ] Test all 3 custom roles working correctly
+- [ ] Test role assignment và capability inheritance
+- [ ] **Risk**: Thấp - Building on successful single role creation
+- [ ] **Files**: `includes/class-vd-capability-manager.php` (complete role system)
+- [ ] **Test**: All 3 custom roles available, capabilities correct
+
+**3.3.5e - User Profile Integration & Advanced Features** ⏳ **PENDING**
+- [ ] Implement user profile display integration
+- [ ] Add version checking và capability updates
+- [ ] Add super admin capability granting
+- [ ] Add complete system status methods
+- [ ] **Risk**: Thấp - UI/UX enhancements on stable foundation
+- [ ] **Files**: `includes/class-vd-capability-manager.php` (complete system)
+- [ ] **Test**: User profile shows VD info, all advanced features working
 
 **3.4 - Security Audit Enhancement** ⏳ **PENDING**
 - [ ] Mở rộng audit logging với security focus
@@ -239,13 +273,14 @@ All database layer functionality implemented with full encryption and audit trai
 - [ ] **Files**: `includes/class-vd-api-security.php`, `includes/class-vd-request-validator.php`
 
 #### 📊 Micro-Step Tracking
-- **Total Steps**: 8 (3.1 ✅, 3.2 ✅, 3.3.1 ✅, 3.3.2 ✅, 3.3.3 ✅, 3.3.4 ✅, 3.3.5 ⏳, 3.4 ⏳, 3.5 ⏳)
-- **Completed**: 6 (75%)
-- **Current**: 3.3.5 - Complete Capability System (READY TO START)
-- **Strategy**: Micro-step approach for Sprint 3.3 (5 sub-steps)
-- **Previous Issue**: Sprint 3.3 monolithic implementation caused fatal error
-- **Solution**: Break down into smallest possible increments with testing at each step
+- **Total Steps**: 12 (3.1 ✅, 3.2 ✅, 3.3.1 ✅, 3.3.2 ✅, 3.3.3 ✅, 3.3.4 ✅, 3.3.5a-e ⏳, 3.4 ⏳, 3.5 ⏳)
+- **Completed**: 6 (50%)
+- **Current**: 3.3.5a - Core Capabilities Addition (READY TO START)
+- **Strategy**: ULTRA-MICRO-STEP approach for Step 3.3.5 (5 micro-sub-steps)
+- **Previous Issue**: Step 3.3.5 monolithic implementation caused fatal error - **SECOND TIME**
+- **Solution**: Break Step 3.3.5 into even smaller increments (capability-by-capability approach)
 - **✅ Success**: Steps 3.3.1-3.3.4 completed without issues - website stable, single capability working
+- **🚨 Critical**: Step 3.3.5 requires ultra-careful micro-sub-step approach
 
 ### ⏳ Sprint 4: API Layer (Days 11-14) - **WAITING**
 
