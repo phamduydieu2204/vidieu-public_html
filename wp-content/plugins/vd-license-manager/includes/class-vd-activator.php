@@ -196,67 +196,41 @@ class VD_Activator {
 
     /**
      * Add custom capabilities to WordPress roles
+     * Step 3.3.5b: Use VD_Capability_Manager for standardized capability management
      *
      * @since 1.0.0
      */
     private static function add_custom_capabilities() {
-        // Get administrator role
-        $admin_role = get_role('administrator');
-
-        if ($admin_role) {
-            // Core license management capabilities
-            $admin_role->add_cap('manage_vd_licenses');
-            $admin_role->add_cap('view_vd_licenses');
-            $admin_role->add_cap('edit_vd_licenses');
-            $admin_role->add_cap('delete_vd_licenses');
-
-            // Provider account capabilities
-            $admin_role->add_cap('manage_vd_provider_accounts');
-            $admin_role->add_cap('view_vd_provider_accounts');
-            $admin_role->add_cap('assign_vd_accounts');
-            $admin_role->add_cap('reveal_vd_credentials');
-
-            // Product capabilities
-            $admin_role->add_cap('manage_vd_products');
-            $admin_role->add_cap('configure_vd_field_sharing');
-
-            // User & device capabilities
-            $admin_role->add_cap('view_vd_license_users');
-            $admin_role->add_cap('manage_vd_devices');
-            $admin_role->add_cap('view_vd_usage_reports');
-
-            // Rate limiting capabilities
-            $admin_role->add_cap('manage_vd_rate_limits');
-            $admin_role->add_cap('view_vd_rate_limits');
-
-            // Audit capabilities
-            $admin_role->add_cap('view_vd_audit_logs');
-            $admin_role->add_cap('export_vd_audit_data');
-
-            // System capabilities
-            $admin_role->add_cap('manage_vd_settings');
+        // Step 3.3.5b: Use VD_Capability_Manager for consistent capability management
+        if (!class_exists('VD_Capability_Manager')) {
+            require_once VD_LM_PATH . 'includes/class-vd-capability-manager.php';
         }
 
-        // Create custom role for license managers
-        add_role('vd_license_manager', __('VD License Manager', VD_LM_TEXT_DOMAIN), [
-            'read' => true,
-            'manage_vd_licenses' => true,
-            'view_vd_licenses' => true,
-            'edit_vd_licenses' => true,
-            'view_vd_provider_accounts' => true,
-            'manage_vd_products' => true,
-            'view_vd_license_users' => true,
-            'manage_vd_devices' => true,
-            'view_vd_audit_logs' => true
-        ]);
+        try {
+            // Get capability manager instance and add capabilities
+            $capability_manager = VD_Capability_Manager::get_instance();
+            $capability_manager->add_capabilities();
 
-        // Create custom role for support staff
-        add_role('vd_support_staff', __('VD Support Staff', VD_LM_TEXT_DOMAIN), [
-            'read' => true,
-            'view_vd_licenses' => true,
-            'view_vd_license_users' => true,
-            'view_vd_audit_logs' => true
-        ]);
+            // Fire action for capability addition
+            do_action('vd_license_manager_activated');
+
+            error_log('[VD License Manager] Step 3.3.5b - Capabilities added via VD_Capability_Manager (11 capabilities)');
+
+        } catch (Exception $e) {
+            // Log error but don't prevent activation
+            error_log('[VD License Manager] Step 3.3.5b - Capability addition error: ' . $e->getMessage());
+
+            // Fallback to basic capabilities if VD_Capability_Manager fails
+            $admin_role = get_role('administrator');
+            if ($admin_role) {
+                $admin_role->add_cap('manage_vd_licenses');
+                $admin_role->add_cap('view_vd_licenses');
+                error_log('[VD License Manager] Step 3.3.5b - Fallback: Basic capabilities added');
+            }
+        }
+
+        // Note: Custom roles will be created in Step 3.3.5c-d
+        // For Step 3.3.5b, only Administrator role gets VD capabilities
     }
 
     /**

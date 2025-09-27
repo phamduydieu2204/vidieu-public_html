@@ -301,14 +301,13 @@ class VD_Capability_Manager {
 
     /**
      * Add capabilities to WordPress roles
-     * Step 3.3.5a: Core capabilities addition - 4 capabilities only
+     * Step 3.3.5b: Complete capabilities addition - All 11 capabilities
      *
      * @since 1.0.0
      */
     public function add_capabilities() {
-        // Step 3.3.5a: Core capabilities addition implementation
-        // Add 4 core capabilities: manage_vd_licenses, view_vd_providers, manage_vd_devices, view_vd_devices
-        // Plus keeping existing view_vd_licenses from Step 3.3.4
+        // Step 3.3.5b: Complete capabilities addition implementation
+        // Add all 11 capabilities to Administrator role
 
         // Get Administrator role
         $admin_role = get_role('administrator');
@@ -320,19 +319,36 @@ class VD_Capability_Manager {
             return;
         }
 
-        // Step 3.3.5a: Define core capabilities to add
-        $core_capabilities = [
-            'view_vd_licenses',      // From Step 3.3.4 (keep existing)
-            'manage_vd_licenses',    // New in 3.3.5a
-            'view_vd_providers',     // New in 3.3.5a
-            'manage_vd_devices',     // New in 3.3.5a
-            'view_vd_devices'        // New in 3.3.5a
+        // Step 3.3.5b: Define all VD capabilities to add (complete set)
+        $all_capabilities = [
+            // Core license management (from Step 3.3.4 and 3.3.5a)
+            'view_vd_licenses',      // From Step 3.3.4
+            'manage_vd_licenses',    // From Step 3.3.5a
+
+            // Provider management (from Step 3.3.5a)
+            'view_vd_providers',     // From Step 3.3.5a
+            'manage_vd_providers',   // New in Step 3.3.5b
+
+            // Device management (from Step 3.3.5a)
+            'view_vd_devices',       // From Step 3.3.5a
+            'manage_vd_devices',     // From Step 3.3.5a
+
+            // System settings (new in Step 3.3.5b)
+            'manage_vd_settings',    // New in Step 3.3.5b
+
+            // Audit and logs (new in Step 3.3.5b)
+            'view_vd_audit_logs',    // New in Step 3.3.5b
+            'manage_vd_audit_logs',  // New in Step 3.3.5b
+
+            // Reports and analytics (new in Step 3.3.5b)
+            'view_vd_reports',       // New in Step 3.3.5b
+            'export_vd_data'         // New in Step 3.3.5b
         ];
 
         $added_capabilities = [];
 
-        // Add each core capability
-        foreach ($core_capabilities as $capability) {
+        // Add each capability
+        foreach ($all_capabilities as $capability) {
             // Check if capability already exists to avoid duplicates
             if (!$admin_role->has_cap($capability)) {
                 $admin_role->add_cap($capability);
@@ -345,34 +361,35 @@ class VD_Capability_Manager {
             }
         }
 
-        // Log completion of core capabilities addition
+        // Log completion of all capabilities addition
         if (class_exists('VD_Audit_Logger')) {
             VD_Audit_Logger::get_instance()->log_event([
-                'action' => 'core_capabilities_added',
+                'action' => 'all_capabilities_added',
                 'object_type' => 'capability',
                 'object_id' => 0,
                 'details' => [
-                    'capabilities' => $core_capabilities,
+                    'capabilities' => $all_capabilities,
                     'added_capabilities' => $added_capabilities,
                     'role' => 'administrator',
-                    'step' => '3.3.5a',
-                    'count' => count($core_capabilities)
+                    'step' => '3.3.5b',
+                    'count' => count($all_capabilities),
+                    'total_vd_capabilities' => 11
                 ]
             ]);
         }
 
-        // Note: Step 3.3.5a - 5 core capabilities registered (4 new + 1 existing)
+        // Note: Step 3.3.5b - All 11 VD capabilities registered for Administrator role
     }
 
     /**
      * Remove capabilities from WordPress roles
-     * Step 3.3.5a: Core capabilities removal - 5 capabilities
+     * Step 3.3.5b: Complete capabilities removal - All 11 capabilities
      *
      * @since 1.0.0
      */
     public function remove_capabilities() {
-        // Step 3.3.5a: Core capabilities removal implementation
-        // Remove core capabilities from Administrator role
+        // Step 3.3.5b: Complete capabilities removal implementation
+        // Remove all VD capabilities from Administrator role
 
         // Get Administrator role
         $admin_role = get_role('administrator');
@@ -384,19 +401,36 @@ class VD_Capability_Manager {
             return;
         }
 
-        // Step 3.3.5a: Define core capabilities to remove
-        $core_capabilities = [
+        // Step 3.3.5b: Define all VD capabilities to remove (complete set)
+        $all_capabilities = [
+            // Core license management
             'view_vd_licenses',
             'manage_vd_licenses',
+
+            // Provider management
             'view_vd_providers',
+            'manage_vd_providers',
+
+            // Device management
+            'view_vd_devices',
             'manage_vd_devices',
-            'view_vd_devices'
+
+            // System settings
+            'manage_vd_settings',
+
+            // Audit and logs
+            'view_vd_audit_logs',
+            'manage_vd_audit_logs',
+
+            // Reports and analytics
+            'view_vd_reports',
+            'export_vd_data'
         ];
 
         $removed_capabilities = [];
 
-        // Remove each core capability
-        foreach ($core_capabilities as $capability) {
+        // Remove each capability
+        foreach ($all_capabilities as $capability) {
             // Check if capability exists before removing
             if ($admin_role->has_cap($capability)) {
                 $admin_role->remove_cap($capability);
@@ -409,23 +443,24 @@ class VD_Capability_Manager {
             }
         }
 
-        // Log completion of core capabilities removal
+        // Log completion of all capabilities removal
         if (class_exists('VD_Audit_Logger')) {
             VD_Audit_Logger::get_instance()->log_event([
-                'action' => 'core_capabilities_removed',
+                'action' => 'all_capabilities_removed',
                 'object_type' => 'capability',
                 'object_id' => 0,
                 'details' => [
-                    'capabilities' => $core_capabilities,
+                    'capabilities' => $all_capabilities,
                     'removed_capabilities' => $removed_capabilities,
                     'role' => 'administrator',
-                    'step' => '3.3.5a',
-                    'count' => count($core_capabilities)
+                    'step' => '3.3.5b',
+                    'count' => count($all_capabilities),
+                    'total_vd_capabilities' => 11
                 ]
             ]);
         }
 
-        // Note: Step 3.3.5a - 5 core capabilities removed for testing
+        // Note: Step 3.3.5b - All 11 VD capabilities removed for cleanup
     }
 
     /**
@@ -498,11 +533,11 @@ class VD_Capability_Manager {
     }
 
     /**
-     * Check if core capabilities are properly assigned
-     * Step 3.3.5a: Testing helper method for core capabilities verification
+     * Check if all VD capabilities are properly assigned
+     * Step 3.3.5b: Testing helper method for complete capabilities verification
      *
      * @since 1.0.0
-     * @return bool True if all core capabilities are assigned to administrator
+     * @return bool True if all VD capabilities are assigned to administrator
      */
     public function are_core_capabilities_assigned() {
         $admin_role = get_role('administrator');
@@ -510,15 +545,32 @@ class VD_Capability_Manager {
             return false;
         }
 
-        $core_capabilities = [
+        $all_capabilities = [
+            // Core license management
             'view_vd_licenses',
             'manage_vd_licenses',
+
+            // Provider management
             'view_vd_providers',
+            'manage_vd_providers',
+
+            // Device management
+            'view_vd_devices',
             'manage_vd_devices',
-            'view_vd_devices'
+
+            // System settings
+            'manage_vd_settings',
+
+            // Audit and logs
+            'view_vd_audit_logs',
+            'manage_vd_audit_logs',
+
+            // Reports and analytics
+            'view_vd_reports',
+            'export_vd_data'
         ];
 
-        foreach ($core_capabilities as $capability) {
+        foreach ($all_capabilities as $capability) {
             if (!$admin_role->has_cap($capability)) {
                 return false;
             }
@@ -528,23 +580,40 @@ class VD_Capability_Manager {
     }
 
     /**
-     * Check if current user has core capabilities
-     * Step 3.3.5a: Testing helper method for current user capability check
+     * Check if current user has all VD capabilities
+     * Step 3.3.5b: Testing helper method for current user capability check
      *
      * @since 1.0.0
      * @return array Capabilities status for current user
      */
     public function current_user_core_capabilities() {
-        $core_capabilities = [
+        $all_capabilities = [
+            // Core license management
             'view_vd_licenses',
             'manage_vd_licenses',
+
+            // Provider management
             'view_vd_providers',
+            'manage_vd_providers',
+
+            // Device management
+            'view_vd_devices',
             'manage_vd_devices',
-            'view_vd_devices'
+
+            // System settings
+            'manage_vd_settings',
+
+            // Audit and logs
+            'view_vd_audit_logs',
+            'manage_vd_audit_logs',
+
+            // Reports and analytics
+            'view_vd_reports',
+            'export_vd_data'
         ];
 
         $user_capabilities = [];
-        foreach ($core_capabilities as $capability) {
+        foreach ($all_capabilities as $capability) {
             $user_capabilities[$capability] = current_user_can($capability);
         }
 
@@ -552,42 +621,60 @@ class VD_Capability_Manager {
     }
 
     /**
-     * Get core capabilities status
-     * Step 3.3.5a: Testing helper method for core capabilities status information
+     * Get complete capabilities status
+     * Step 3.3.5b: Testing helper method for complete capabilities status information
      *
      * @since 1.0.0
-     * @return array Status information about core capabilities
+     * @return array Status information about all VD capabilities
      */
     public function get_core_capabilities_status() {
         $admin_role = get_role('administrator');
         $current_user = wp_get_current_user();
 
-        $core_capabilities = [
+        $all_capabilities = [
+            // Core license management
             'view_vd_licenses',
             'manage_vd_licenses',
+
+            // Provider management
             'view_vd_providers',
+            'manage_vd_providers',
+
+            // Device management
+            'view_vd_devices',
             'manage_vd_devices',
-            'view_vd_devices'
+
+            // System settings
+            'manage_vd_settings',
+
+            // Audit and logs
+            'view_vd_audit_logs',
+            'manage_vd_audit_logs',
+
+            // Reports and analytics
+            'view_vd_reports',
+            'export_vd_data'
         ];
 
         $admin_has_capabilities = [];
         $user_has_capabilities = [];
 
-        foreach ($core_capabilities as $capability) {
+        foreach ($all_capabilities as $capability) {
             $admin_has_capabilities[$capability] = $admin_role ? $admin_role->has_cap($capability) : false;
             $user_has_capabilities[$capability] = current_user_can($capability);
         }
 
         return [
-            'core_capabilities' => $core_capabilities,
+            'all_capabilities' => $all_capabilities,
             'admin_role_exists' => ($admin_role !== null),
             'admin_has_capabilities' => $admin_has_capabilities,
             'current_user_id' => $current_user->ID,
             'current_user_roles' => $current_user->roles,
             'user_has_capabilities' => $user_has_capabilities,
             'all_capabilities_assigned' => $this->are_core_capabilities_assigned(),
-            'step' => '3.3.5a',
-            'capability_count' => count($core_capabilities)
+            'step' => '3.3.5b',
+            'capability_count' => count($all_capabilities),
+            'total_vd_capabilities' => 11
         ];
     }
 }
