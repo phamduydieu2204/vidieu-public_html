@@ -113,6 +113,9 @@ class VD_License_Manager {
         // Sprint 2.1 - Load encryption manager
         require_once VD_LM_PATH . 'includes/class-vd-encryption-manager.php';
 
+        // Sprint 2.2 - Load database manager (schema definitions only)
+        require_once VD_LM_PATH . 'includes/class-vd-database-manager.php';
+
         // Load admin interface if in admin
         if (vd_is_admin()) {
             require_once VD_LM_PATH . 'admin/class-vd-admin-menu.php';
