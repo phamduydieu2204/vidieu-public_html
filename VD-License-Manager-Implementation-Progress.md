@@ -165,12 +165,54 @@ All database layer functionality implemented with full encryption and audit trai
 - [x] **Risk**: Trung bình - Successfully modified existing encryption class
 - [x] **Files**: `includes/class-vd-encryption-manager.php` (enhanced), `admin/class-vd-admin-menu.php` (updated)
 
-**3.3 - User Capability System** ⏳ **PENDING**
-- [ ] Implement WordPress user roles cho VD License Manager
-- [ ] Custom capabilities và permission hierarchy
-- [ ] Role-based access control cho admin functions
-- [ ] **Risk**: Thấp - WordPress standard functionality
-- [ ] **Files**: `includes/class-vd-capability-manager.php`
+**3.3 - User Capability System** 🔄 **MICRO-STEP APPROACH**
+⚠️ **Breaking down into 5 micro-steps for safer implementation**
+
+**3.3.1 - Basic Class Structure** ⏳ **PENDING**
+- [ ] Tạo empty VD_Capability_Manager class với singleton pattern
+- [ ] Thêm basic constructor và get_instance() method
+- [ ] Load class trong main plugin file (includes/class-vd-license-manager.php)
+- [ ] Test website stability - verify không có fatal errors
+- [ ] **Risk**: Rất thấp - Chỉ empty class structure
+- [ ] **Files**: `includes/class-vd-capability-manager.php` (create empty)
+- [ ] **Test**: Plugin activation, admin dashboard access
+
+**3.3.2 - Capability Definitions** ⏳ **PENDING**
+- [ ] Define capabilities array structure trong class
+- [ ] Add init_capabilities() method với empty implementation
+- [ ] Thêm basic getter methods (get_capabilities())
+- [ ] Test class instantiation và method calls
+- [ ] **Risk**: Rất thấp - Chỉ define data structures, không register
+- [ ] **Files**: `includes/class-vd-capability-manager.php` (enhance)
+- [ ] **Test**: Class methods callable, no WordPress integration yet
+
+**3.3.3 - WordPress Integration Foundation** ⏳ **PENDING**
+- [ ] Add setup_hooks() method với empty hooks
+- [ ] Implement add_capabilities() và remove_capabilities() methods (empty)
+- [ ] Hook vào plugin activation/deactivation (chưa register capabilities)
+- [ ] Test hook system hoạt động
+- [ ] **Risk**: Thấp - Hook structure without actual capability registration
+- [ ] **Files**: `includes/class-vd-capability-manager.php` (enhance)
+- [ ] **Test**: Plugin activate/deactivate, hooks fire correctly
+
+**3.3.4 - Single Capability Test** ⏳ **PENDING**
+- [ ] Implement capability registration cho 1 capability duy nhất (view_vd_licenses)
+- [ ] Add capability cho Administrator role only
+- [ ] Test current_user_can('view_vd_licenses')
+- [ ] Verify capability xuất hiện trong user capabilities
+- [ ] **Risk**: Trung bình - First real WordPress capability integration
+- [ ] **Files**: `includes/class-vd-capability-manager.php` (enhance)
+- [ ] **Test**: Single capability works, admin has capability
+
+**3.3.5 - Complete Capability System** ⏳ **PENDING**
+- [ ] Add all 11 capabilities với full definitions
+- [ ] Implement 3 custom roles (Viewer, Operator, Administrator)
+- [ ] Add user profile display integration
+- [ ] Implement capability checking methods
+- [ ] Full testing với multiple users và roles
+- [ ] **Risk**: Thấp - Building on tested foundation
+- [ ] **Files**: `includes/class-vd-capability-manager.php` (complete)
+- [ ] **Test**: All roles, all capabilities, user management interface
 
 **3.4 - Security Audit Enhancement** ⏳ **PENDING**
 - [ ] Mở rộng audit logging với security focus
@@ -187,10 +229,12 @@ All database layer functionality implemented with full encryption and audit trai
 - [ ] **Files**: `includes/class-vd-api-security.php`, `includes/class-vd-request-validator.php`
 
 #### 📊 Micro-Step Tracking
-- **Total Steps**: 5
-- **Completed**: 2 (40%)
-- **Current**: 3.3 - User Capability System (READY TO START)
-- **Estimated**: 1 step per day (3.3 next, then 3.4-3.5)
+- **Total Steps**: 8 (3.1 ✅, 3.2 ✅, 3.3.1-3.3.5 ⏳, 3.4 ⏳, 3.5 ⏳)
+- **Completed**: 2 (25%)
+- **Current**: 3.3.1 - Basic Class Structure (READY TO START)
+- **Strategy**: Micro-step approach for Sprint 3.3 (5 sub-steps)
+- **Previous Issue**: Sprint 3.3 monolithic implementation caused fatal error
+- **Solution**: Break down into smallest possible increments with testing at each step
 
 ### ⏳ Sprint 4: API Layer (Days 11-14) - **WAITING**
 
