@@ -382,6 +382,101 @@ class VD_Capability_Manager {
     }
 
     /**
+     * Create single custom role (Step 3.3.5c)
+     * Step 3.3.5c: Create VD License Viewer role only
+     *
+     * @since 1.0.0
+     */
+    public function create_single_role() {
+        // Step 3.3.5c: Create VD License Viewer role only
+        if (!isset($this->roles['vd_license_viewer'])) {
+            if (function_exists('vd_debug_log')) {
+                vd_debug_log('VD_Capability_Manager: vd_license_viewer role not defined');
+            }
+            return;
+        }
+
+        $role_data = $this->roles['vd_license_viewer'];
+
+        // Check if role already exists
+        if (get_role('vd_license_viewer')) {
+            if (function_exists('vd_debug_log')) {
+                vd_debug_log('VD_Capability_Manager: vd_license_viewer role already exists');
+            }
+            return;
+        }
+
+        // Create the role
+        $result = add_role(
+            'vd_license_viewer',
+            $role_data['label'],
+            array_fill_keys($role_data['capabilities'], true)
+        );
+
+        if ($result) {
+            // Log successful role creation
+            if (function_exists('vd_debug_log')) {
+                vd_debug_log('VD_Capability_Manager: Successfully created vd_license_viewer role with capabilities: ' .
+                           implode(', ', $role_data['capabilities']));
+            }
+
+            // Log audit trail
+            if (class_exists('VD_Audit_Logger')) {
+                VD_Audit_Logger::get_instance()->log_event([
+                    'action' => 'single_role_created',
+                    'object_type' => 'role',
+                    'object_id' => 'vd_license_viewer',
+                    'details' => [
+                        'role_name' => $role_data['label'],
+                        'capabilities' => $role_data['capabilities'],
+                        'step' => '3.3.5c',
+                        'capability_count' => count($role_data['capabilities'])
+                    ]
+                ]);
+            }
+        } else {
+            // Log error
+            if (function_exists('vd_debug_log')) {
+                vd_debug_log('VD_Capability_Manager: Failed to create vd_license_viewer role');
+            }
+        }
+
+        // Note: Step 3.3.5c - Single custom role creation completed
+    }
+
+    /**
+     * Remove single custom role (Step 3.3.5c cleanup)
+     * Step 3.3.5c: Remove VD License Viewer role only
+     *
+     * @since 1.0.0
+     */
+    public function remove_single_role() {
+        // Step 3.3.5c: Remove VD License Viewer role only
+        if (get_role('vd_license_viewer')) {
+            remove_role('vd_license_viewer');
+
+            if (function_exists('vd_debug_log')) {
+                vd_debug_log('VD_Capability_Manager: Successfully removed vd_license_viewer role');
+            }
+
+            // Log audit trail
+            if (class_exists('VD_Audit_Logger')) {
+                VD_Audit_Logger::get_instance()->log_event([
+                    'action' => 'single_role_removed',
+                    'object_type' => 'role',
+                    'object_id' => 'vd_license_viewer',
+                    'details' => [
+                        'step' => '3.3.5c',
+                        'reason' => 'cleanup'
+                    ]
+                ]);
+            }
+        }
+
+        // Note: Step 3.3.5c - Single custom role removal completed
+    }
+
+    /**
      * Remove capabilities from WordPress roles
      * Step 3.3.5b: Complete capabilities removal - All 11 capabilities
      *
@@ -675,6 +770,76 @@ class VD_Capability_Manager {
             'step' => '3.3.5b',
             'capability_count' => count($all_capabilities),
             'total_vd_capabilities' => 11
+        ];
+    }
+
+    /**
+     * Check if VD License Viewer role exists
+     * Step 3.3.5c: Testing helper method for single role verification
+     *
+     * @since 1.0.0
+     * @return bool True if VD License Viewer role exists
+     */
+    public function is_single_role_created() {
+        return get_role('vd_license_viewer') !== null;
+    }
+
+    /**
+     * Get VD License Viewer role capabilities
+     * Step 3.3.5c: Testing helper method for role capabilities verification
+     *
+     * @since 1.0.0
+     * @return array Role capabilities status
+     */
+    public function get_single_role_capabilities() {
+        $role = get_role('vd_license_viewer');
+        if (!$role) {
+            return ['error' => 'Role does not exist'];
+        }
+
+        $expected_capabilities = [
+            'read',
+            'view_vd_licenses',
+            'view_vd_providers',
+            'view_vd_devices',
+            'view_vd_reports'
+        ];
+
+        $role_capabilities = [];
+        foreach ($expected_capabilities as $capability) {
+            $role_capabilities[$capability] = $role->has_cap($capability);
+        }
+
+        return [
+            'role_exists' => true,
+            'capabilities' => $role_capabilities,
+            'all_capabilities_present' => !in_array(false, $role_capabilities),
+            'expected_count' => count($expected_capabilities),
+            'actual_count' => array_sum($role_capabilities)
+        ];
+    }
+
+    /**
+     * Get single role status information
+     * Step 3.3.5c: Testing helper method for complete single role status
+     *
+     * @since 1.0.0
+     * @return array Status information about VD License Viewer role
+     */
+    public function get_single_role_status() {
+        $role = get_role('vd_license_viewer');
+        $role_data = $this->roles['vd_license_viewer'] ?? null;
+
+        return [
+            'step' => '3.3.5c',
+            'role_slug' => 'vd_license_viewer',
+            'role_defined' => $role_data !== null,
+            'role_exists_in_wp' => $role !== null,
+            'role_label' => $role_data['label'] ?? null,
+            'role_description' => $role_data['description'] ?? null,
+            'expected_capabilities' => $role_data['capabilities'] ?? [],
+            'capabilities_status' => $this->get_single_role_capabilities(),
+            'single_role_implementation_complete' => $this->is_single_role_created()
         ];
     }
 }

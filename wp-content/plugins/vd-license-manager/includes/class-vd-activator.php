@@ -211,26 +211,29 @@ class VD_Activator {
             $capability_manager = VD_Capability_Manager::get_instance();
             $capability_manager->add_capabilities();
 
+            // Step 3.3.5c: Create single custom role (VD License Viewer)
+            $capability_manager->create_single_role();
+
             // Fire action for capability addition
             do_action('vd_license_manager_activated');
 
-            error_log('[VD License Manager] Step 3.3.5b - Capabilities added via VD_Capability_Manager (11 capabilities)');
+            error_log('[VD License Manager] Step 3.3.5c - Capabilities and single role added via VD_Capability_Manager');
 
         } catch (Exception $e) {
             // Log error but don't prevent activation
-            error_log('[VD License Manager] Step 3.3.5b - Capability addition error: ' . $e->getMessage());
+            error_log('[VD License Manager] Step 3.3.5c - Capability/role addition error: ' . $e->getMessage());
 
             // Fallback to basic capabilities if VD_Capability_Manager fails
             $admin_role = get_role('administrator');
             if ($admin_role) {
                 $admin_role->add_cap('manage_vd_licenses');
                 $admin_role->add_cap('view_vd_licenses');
-                error_log('[VD License Manager] Step 3.3.5b - Fallback: Basic capabilities added');
+                error_log('[VD License Manager] Step 3.3.5c - Fallback: Basic capabilities added');
             }
         }
 
-        // Note: Custom roles will be created in Step 3.3.5c-d
-        // For Step 3.3.5b, only Administrator role gets VD capabilities
+        // Note: Step 3.3.5c - Single custom role creation completed
+        // For Step 3.3.5c: Administrator role gets 11 capabilities + VD License Viewer role created
     }
 
     /**
