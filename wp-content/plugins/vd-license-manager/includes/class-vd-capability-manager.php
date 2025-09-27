@@ -445,6 +445,84 @@ class VD_Capability_Manager {
     }
 
     /**
+     * Create complete role system (Step 3.3.5d)
+     * Step 3.3.5d: Create all 3 VD custom roles
+     *
+     * @since 1.0.0
+     */
+    public function create_complete_roles() {
+        // Step 3.3.5d: Create all 3 VD custom roles
+        $created_roles = [];
+        $failed_roles = [];
+
+        foreach ($this->roles as $role_slug => $role_data) {
+            // Check if role already exists
+            if (get_role($role_slug)) {
+                if (function_exists('vd_debug_log')) {
+                    vd_debug_log("VD_Capability_Manager: Role '{$role_slug}' already exists");
+                }
+                continue;
+            }
+
+            // Create the role
+            $result = add_role(
+                $role_slug,
+                $role_data['label'],
+                array_fill_keys($role_data['capabilities'], true)
+            );
+
+            if ($result) {
+                $created_roles[] = $role_slug;
+
+                // Log successful role creation
+                if (function_exists('vd_debug_log')) {
+                    vd_debug_log("VD_Capability_Manager: Successfully created role '{$role_slug}' with " .
+                               count($role_data['capabilities']) . " capabilities: " .
+                               implode(', ', $role_data['capabilities']));
+                }
+            } else {
+                $failed_roles[] = $role_slug;
+
+                // Log error
+                if (function_exists('vd_debug_log')) {
+                    vd_debug_log("VD_Capability_Manager: Failed to create role '{$role_slug}'");
+                }
+            }
+        }
+
+        // Log completion summary
+        if (function_exists('vd_debug_log')) {
+            vd_debug_log("VD_Capability_Manager: Role creation summary - " .
+                       "Created: " . count($created_roles) . " (" . implode(', ', $created_roles) . "), " .
+                       "Failed: " . count($failed_roles) . " (" . implode(', ', $failed_roles) . ")");
+        }
+
+        // Log audit trail
+        if (class_exists('VD_Audit_Logger')) {
+            VD_Audit_Logger::get_instance()->log_event([
+                'action' => 'complete_roles_created',
+                'object_type' => 'role_system',
+                'object_id' => 'vd_roles',
+                'details' => [
+                    'total_roles' => count($this->roles),
+                    'created_roles' => $created_roles,
+                    'failed_roles' => $failed_roles,
+                    'step' => '3.3.5d',
+                    'role_count' => count($created_roles)
+                ]
+            ]);
+        }
+
+        // Note: Step 3.3.5d - Complete role system creation completed
+        return [
+            'success' => empty($failed_roles),
+            'created' => $created_roles,
+            'failed' => $failed_roles,
+            'total' => count($this->roles)
+        ];
+    }
+
+    /**
      * Remove single custom role (Step 3.3.5c cleanup)
      * Step 3.3.5c: Remove VD License Viewer role only
      *
@@ -474,6 +552,66 @@ class VD_Capability_Manager {
         }
 
         // Note: Step 3.3.5c - Single custom role removal completed
+    }
+
+    /**
+     * Remove complete role system (Step 3.3.5d cleanup)
+     * Step 3.3.5d: Remove all 3 VD custom roles
+     *
+     * @since 1.0.0
+     */
+    public function remove_complete_roles() {
+        // Step 3.3.5d: Remove all 3 VD custom roles
+        $removed_roles = [];
+        $not_found_roles = [];
+
+        foreach ($this->roles as $role_slug => $role_data) {
+            if (get_role($role_slug)) {
+                remove_role($role_slug);
+                $removed_roles[] = $role_slug;
+
+                if (function_exists('vd_debug_log')) {
+                    vd_debug_log("VD_Capability_Manager: Successfully removed role '{$role_slug}'");
+                }
+            } else {
+                $not_found_roles[] = $role_slug;
+
+                if (function_exists('vd_debug_log')) {
+                    vd_debug_log("VD_Capability_Manager: Role '{$role_slug}' not found for removal");
+                }
+            }
+        }
+
+        // Log completion summary
+        if (function_exists('vd_debug_log')) {
+            vd_debug_log("VD_Capability_Manager: Role removal summary - " .
+                       "Removed: " . count($removed_roles) . " (" . implode(', ', $removed_roles) . "), " .
+                       "Not found: " . count($not_found_roles) . " (" . implode(', ', $not_found_roles) . ")");
+        }
+
+        // Log audit trail
+        if (class_exists('VD_Audit_Logger')) {
+            VD_Audit_Logger::get_instance()->log_event([
+                'action' => 'complete_roles_removed',
+                'object_type' => 'role_system',
+                'object_id' => 'vd_roles',
+                'details' => [
+                    'total_roles' => count($this->roles),
+                    'removed_roles' => $removed_roles,
+                    'not_found_roles' => $not_found_roles,
+                    'step' => '3.3.5d',
+                    'reason' => 'cleanup'
+                ]
+            ]);
+        }
+
+        // Note: Step 3.3.5d - Complete role system removal completed
+        return [
+            'success' => true,
+            'removed' => $removed_roles,
+            'not_found' => $not_found_roles,
+            'total' => count($this->roles)
+        ];
     }
 
     /**
@@ -840,6 +978,98 @@ class VD_Capability_Manager {
             'expected_capabilities' => $role_data['capabilities'] ?? [],
             'capabilities_status' => $this->get_single_role_capabilities(),
             'single_role_implementation_complete' => $this->is_single_role_created()
+        ];
+    }
+
+    /**
+     * Check if all VD custom roles exist
+     * Step 3.3.5d: Testing helper method for complete role system verification
+     *
+     * @since 1.0.0
+     * @return bool True if all VD custom roles exist
+     */
+    public function are_complete_roles_created() {
+        foreach ($this->roles as $role_slug => $role_data) {
+            if (!get_role($role_slug)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Get all VD custom roles capabilities status
+     * Step 3.3.5d: Testing helper method for complete role capabilities verification
+     *
+     * @since 1.0.0
+     * @return array All roles capabilities status
+     */
+    public function get_complete_roles_capabilities() {
+        $all_roles_status = [];
+
+        foreach ($this->roles as $role_slug => $role_data) {
+            $role = get_role($role_slug);
+
+            if (!$role) {
+                $all_roles_status[$role_slug] = ['error' => 'Role does not exist'];
+                continue;
+            }
+
+            $expected_capabilities = $role_data['capabilities'];
+            $role_capabilities = [];
+
+            foreach ($expected_capabilities as $capability) {
+                $role_capabilities[$capability] = $role->has_cap($capability);
+            }
+
+            $all_roles_status[$role_slug] = [
+                'role_exists' => true,
+                'label' => $role_data['label'],
+                'description' => $role_data['description'],
+                'capabilities' => $role_capabilities,
+                'all_capabilities_present' => !in_array(false, $role_capabilities),
+                'expected_count' => count($expected_capabilities),
+                'actual_count' => array_sum($role_capabilities)
+            ];
+        }
+
+        return $all_roles_status;
+    }
+
+    /**
+     * Get complete role system status information
+     * Step 3.3.5d: Testing helper method for complete role system status
+     *
+     * @since 1.0.0
+     * @return array Status information about complete VD role system
+     */
+    public function get_complete_roles_status() {
+        $roles_capabilities = $this->get_complete_roles_capabilities();
+        $all_roles_exist = $this->are_complete_roles_created();
+
+        // Count roles by status
+        $existing_roles = 0;
+        $working_roles = 0;
+
+        foreach ($roles_capabilities as $role_slug => $status) {
+            if (isset($status['role_exists']) && $status['role_exists']) {
+                $existing_roles++;
+                if (isset($status['all_capabilities_present']) && $status['all_capabilities_present']) {
+                    $working_roles++;
+                }
+            }
+        }
+
+        return [
+            'step' => '3.3.5d',
+            'total_roles_defined' => count($this->roles),
+            'roles_existing' => $existing_roles,
+            'roles_working_correctly' => $working_roles,
+            'all_roles_exist' => $all_roles_exist,
+            'all_roles_working' => ($working_roles === count($this->roles)),
+            'roles_list' => array_keys($this->roles),
+            'detailed_status' => $roles_capabilities,
+            'complete_role_implementation_complete' => $all_roles_exist && ($working_roles === count($this->roles))
         ];
     }
 }

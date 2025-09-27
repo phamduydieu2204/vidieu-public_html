@@ -211,29 +211,30 @@ class VD_Activator {
             $capability_manager = VD_Capability_Manager::get_instance();
             $capability_manager->add_capabilities();
 
-            // Step 3.3.5c: Create single custom role (VD License Viewer)
-            $capability_manager->create_single_role();
+            // Step 3.3.5d: Create complete custom role system (all 3 VD roles)
+            $role_result = $capability_manager->create_complete_roles();
 
             // Fire action for capability addition
             do_action('vd_license_manager_activated');
 
-            error_log('[VD License Manager] Step 3.3.5c - Capabilities and single role added via VD_Capability_Manager');
+            error_log('[VD License Manager] Step 3.3.5d - Capabilities and complete role system added via VD_Capability_Manager - ' .
+                     'Created: ' . count($role_result['created']) . '/' . $role_result['total'] . ' roles');
 
         } catch (Exception $e) {
             // Log error but don't prevent activation
-            error_log('[VD License Manager] Step 3.3.5c - Capability/role addition error: ' . $e->getMessage());
+            error_log('[VD License Manager] Step 3.3.5d - Capability/role addition error: ' . $e->getMessage());
 
             // Fallback to basic capabilities if VD_Capability_Manager fails
             $admin_role = get_role('administrator');
             if ($admin_role) {
                 $admin_role->add_cap('manage_vd_licenses');
                 $admin_role->add_cap('view_vd_licenses');
-                error_log('[VD License Manager] Step 3.3.5c - Fallback: Basic capabilities added');
+                error_log('[VD License Manager] Step 3.3.5d - Fallback: Basic capabilities added');
             }
         }
 
-        // Note: Step 3.3.5c - Single custom role creation completed
-        // For Step 3.3.5c: Administrator role gets 11 capabilities + VD License Viewer role created
+        // Note: Step 3.3.5d - Complete custom role system creation completed
+        // For Step 3.3.5d: Administrator role gets 11 capabilities + 3 VD custom roles created
     }
 
     /**
