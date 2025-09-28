@@ -136,6 +136,10 @@ class VD_License_Manager {
         // Sprint 3.3.1 - Load capability manager (basic structure only)
         require_once VD_LM_PATH . 'includes/class-vd-capability-manager.php';
 
+        // Step 3.4.6.2 - Safe Variable Declaration (security audit file path)
+        $security_audit_file = VD_LM_PATH . 'includes/class-vd-security-audit.php';
+        // Note: Variable declared only - no file loading or execution yet
+
         // Load admin interface if in admin
         if (vd_is_admin()) {
             require_once VD_LM_PATH . 'admin/class-vd-admin-menu.php';
