@@ -642,9 +642,223 @@ All database layer functionality implemented with full encryption and audit trai
 
 ### 🏁 **Step 3.5 Implementation Roadmap - COMPLETED**
 
-**🚀 NEXT STEPS TO FOLLOW:**
-1. **Step 3.5.1**: Basic API Security Class Structure (Risk: Rất thấp)
-2. **Step 3.5.2**: Request Validator Class Foundation (Risk: Rất thấp)
+---
+
+## 🚀 **SPRINT 4 - API LAYER IMPLEMENTATION**
+
+### 📋 **Sprint 4 Overview**
+**Purpose**: Implement actual API endpoints for license resolution functionality
+**Foundation**: Uses completed Sprint 3 security infrastructure
+**Timeline**: 15-20 micro-steps
+**Risk Level**: Trung bình - Complex business logic implementation
+
+### 📂 **Reference Documents Analyzed:**
+- ✅ VD-License-Manager-Complete-Specifications.md - System overview & business requirements
+- ✅ VD-License-Manager-Business-Logic.md - 4-step license resolution logic
+- ✅ VD-License-Manager-API-Spec.md - REST endpoints, schemas, rate limiting
+- ✅ VD-License-Manager-Implementation-Plan.md - Technical implementation strategy
+- ✅ VD-License-Manager-Database-Schema.md - Database operations for API
+- ✅ VD-License-Manager-Implementation-Progress.md - Current foundation status
+
+### 🎯 **Sprint 4 Micro-Steps Breakdown:**
+
+**4.1 - REST API Router Foundation** ⏳ **PENDING**
+- **Mục tiêu**: Tạo WordPress REST API routing infrastructure
+- **Files**: `includes/class-vd-api-router.php` (new)
+- **Risk**: Thấp - WordPress REST API integration
+- **Kiểm thử**: Nội bộ - endpoint registration verification
+- **Chi tiết**:
+  - Register `/wp-json/vd/v1/` namespace
+  - Basic route handlers structure
+  - Integration với existing VD_API_Security
+
+**4.2 - License Validator Core** ⏳ **PENDING**
+- **Mục tiêu**: Implement license validation logic (Step 1 of 4-step process)
+- **Files**: `includes/class-vd-license-validator.php` (new)
+- **Risk**: Trung bình - Database operations, expiry logic
+- **Kiểm thử**: User verification required - license validation accuracy
+- **Chi tiết**:
+  - License key format validation
+  - Database lookup và status checking
+  - Expiry date validation
+  - License settings inheritance
+
+**4.3 - Device Management Core** ⏳ **PENDING**
+- **Mục tiêu**: Implement device fingerprint validation và management (Step 3 of 4-step)
+- **Files**: `includes/class-vd-device-manager.php` (update existing)
+- **Risk**: Trung bình - Device limits, auto-approval logic
+- **Kiểm thử**: User verification required - device approval workflow
+- **Chi tiết**:
+  - Device fingerprint processing
+  - Device limit checking
+  - Auto-approval risk scoring
+  - Device status management
+
+**4.4 - Provider Assignment Logic** ⏳ **PENDING**
+- **Mục tiêu**: Implement sticky provider assignment (Step 4 of 4-step process)
+- **Files**: `includes/class-vd-provider-assignment.php` (new)
+- **Risk**: Cao - Complex assignment logic, load balancing
+- **Kiểm thử**: User verification required - assignment accuracy
+- **Chi tiết**:
+  - Sticky assignment implementation
+  - Load balancing algorithm
+  - Provider availability checking
+  - Manual override support
+
+**4.5 - Content Retrieval Engine** ⏳ **PENDING**
+- **Mục tiêu**: Implement secure content delivery system
+- **Files**: `includes/class-vd-content-engine.php` (new)
+- **Risk**: Cao - Encryption/decryption, content formatting
+- **Kiểm thử**: User verification required - content accuracy và security
+- **Chi tiết**:
+  - Content decryption
+  - Field sharing configuration
+  - Content versioning support
+  - Format standardization
+
+**4.6 - Rate Limiting Enforcement** ⏳ **PENDING**
+- **Mục tiêu**: Implement actual rate limiting enforcement (Step 2 of 4-step process)
+- **Files**: `includes/class-vd-api-security.php` (update existing)
+- **Risk**: Thấp - Uses existing infrastructure
+- **Kiểm thử**: Nội bộ - rate limit blocking verification
+- **Chi tiết**:
+  - Enforcement integration với resolution flow
+  - Rate limit headers
+  - Block response formatting
+  - Retry-after logic
+
+**4.7 - Main License Resolution Endpoint** ⏳ **PENDING**
+- **Mục tiêu**: Implement primary `/license/resolve-info` endpoint
+- **Files**: `includes/class-vd-license-resolver.php` (new)
+- **Risk**: Cao - Orchestrates all previous components
+- **Kiểm thử**: User verification required - end-to-end functionality
+- **Chi tiết**:
+  - 4-step resolution orchestration
+  - Error handling và rollback
+  - Response formatting
+  - Transaction safety
+
+**4.8 - Cookie Resolution Endpoint** ⏳ **PENDING**
+- **Mục tiêu**: Implement `/license/resolve-cookie` endpoint for cookie updates
+- **Files**: `includes/class-vd-license-resolver.php` (update)
+- **Risk**: Trung bình - Content versioning logic
+- **Kiểm thử**: User verification required - cookie delivery
+- **Chi tiết**:
+  - Version management
+  - Cookie format handling
+  - Update notification system
+  - Backward compatibility
+
+**4.9 - Device Status Endpoint** ⏳ **PENDING**
+- **Mục tiêu**: Implement `/license/device-status` endpoint
+- **Files**: `includes/class-vd-device-status.php` (new)
+- **Risk**: Thấp - Simple status checking
+- **Kiểm thử**: Nội bộ - status response accuracy
+- **Chi tiết**:
+  - Device status checking
+  - Approval status reporting
+  - Access history summary
+  - Lightweight response format
+
+**4.10 - API Response Handler** ⏳ **PENDING**
+- **Mục tiêu**: Standardize API response formatting
+- **Files**: `includes/class-vd-api-response.php` (new)
+- **Risk**: Thấp - Response standardization
+- **Kiểm thử**: Nội bộ - response format consistency
+- **Chi tiết**:
+  - Success response standardization
+  - Error response standardization
+  - Meta data inclusion
+  - HTTP status code management
+
+**4.11 - API Error Handler** ⏳ **PENDING**
+- **Mục tiêu**: Comprehensive API error handling
+- **Files**: `includes/class-vd-api-error.php` (new)
+- **Risk**: Thấp - Error handling patterns
+- **Kiểm thử**: Nội bộ - error response accuracy
+- **Chi tiết**:
+  - Error categorization
+  - User-friendly error messages
+  - Debug information (development mode)
+  - Error logging integration
+
+**4.12 - Database Transaction Manager** ⏳ **PENDING**
+- **Mục tiêu**: Ensure ACID compliance for license operations
+- **Files**: `includes/class-vd-transaction-manager.php` (new)
+- **Risk**: Trung bình - Database transaction complexity
+- **Kiểm thử**: User verification required - transaction integrity
+- **Chi tiết**:
+  - Transaction wrapping
+  - Rollback on failure
+  - Deadlock handling
+  - Performance optimization
+
+**4.13 - API Audit Logger** ⏳ **PENDING**
+- **Mục tiêu**: Comprehensive API request logging
+- **Files**: `includes/class-vd-audit-logger.php` (update existing)
+- **Risk**: Thấp - Extends existing logging
+- **Kiểm thử**: Nội bộ - log completeness
+- **Chi tiết**:
+  - Request/response logging
+  - Performance metrics
+  - Security event logging
+  - Privacy compliance
+
+**4.14 - API Performance Monitor** ⏳ **PENDING**
+- **Mục tiêu**: Monitor API performance và health
+- **Files**: `includes/class-vd-performance-monitor.php` (new)
+- **Risk**: Thấp - Monitoring infrastructure
+- **Kiểm thử**: Nội bộ - monitoring accuracy
+- **Chi tiết**:
+  - Response time tracking
+  - Success/failure rates
+  - Database query monitoring
+  - Resource usage tracking
+
+**4.15 - API Integration Testing** ⏳ **PENDING**
+- **Mục tiêu**: End-to-end API testing framework
+- **Files**: `includes/class-vd-api-tester.php` (new)
+- **Risk**: Thấp - Testing infrastructure
+- **Kiểm thử**: User verification required - comprehensive testing
+- **Chi tiết**:
+  - Integration test scenarios
+  - Mock data generators
+  - Automated test execution
+  - Test result reporting
+
+**4.16 - Main Plugin API Integration** ⏳ **PENDING**
+- **Mục tiêu**: Integrate API components với main plugin
+- **Files**: `includes/class-vd-license-manager.php` (update)
+- **Risk**: Thấp - Uses established patterns
+- **Kiểm thử**: Nội bộ - integration verification
+- **Chi tiết**:
+  - API component loading
+  - Initialization sequence
+  - Health check integration
+  - Configuration management
+
+### 📊 **Sprint 4 Progress Tracking**
+- **Total Steps**: 16 micro-steps
+- **Completed**: 0/16 (0%)
+- **Current**: 4.1 - REST API Router Foundation
+- **Strategy**: Ultra-safe micro-step approach (proven từ Sprint 3)
+- **Foundation**: Sprint 3 security infrastructure (100% complete)
+
+### 🎯 **Sprint 4 Success Criteria**
+- ✅ `/wp-json/vd/v1/license/resolve-info` endpoint fully functional
+- ✅ 4-step license resolution logic implemented
+- ✅ Rate limiting enforcement active
+- ✅ Device management working
+- ✅ Provider assignment logic operational
+- ✅ Content delivery secure
+- ✅ Comprehensive error handling
+- ✅ Full audit logging
+- ✅ Performance monitoring active
+- ✅ Integration testing passed
+
+---
+
+## 🎯 **COMPLETED ROADMAPS:**
 3. **Step 3.5.3**: Basic Authentication Framework (Risk: Thấp)
 4. **Step 3.5.4**: Rate Limiting Infrastructure (Risk: Thấp)
 5. **Step 3.5.5**: CORS and Security Headers (Risk: Thấp)
