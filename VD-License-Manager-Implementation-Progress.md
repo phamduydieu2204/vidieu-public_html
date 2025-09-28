@@ -667,10 +667,72 @@ All database layer functionality implemented with full encryption and audit trai
 - **Files**: `includes/class-vd-api-router.php` (new)
 - **Risk**: Thấp - WordPress REST API integration
 - **Kiểm thử**: Nội bộ - endpoint registration verification
-- **Chi tiết**:
-  - Register `/wp-json/vd/v1/` namespace
-  - Basic route handlers structure
-  - Integration với existing VD_API_Security
+- **Micro-Steps**: 10 steps (4.1.1 → 4.1.10)
+
+### 🔧 **Step 4.1 Micro-Steps Breakdown:**
+
+**4.1.1 - Basic Router Class Structure** ✅ **COMPLETED**
+- **Mục tiêu**: Tạo VD_API_Router class với singleton pattern foundation
+- **File**: `includes/class-vd-api-router.php` (✅ created - 195 lines)
+- **Rủi ro**: **Thấp** - Basic class structure
+- **Kiểm thử**: Nội bộ - Class loading và singleton verification
+- **Completion Date**: 2025-09-28
+
+**4.1.2 - WordPress Integration Setup** ⏳ **PENDING**
+- **Mục tiêu**: Tích hợp class với WordPress và main plugin
+- **File**: `includes/class-vd-license-manager.php` (update)
+- **Rủi ro**: **Thấp** - Proven integration pattern từ Sprint 3
+- **Kiểm thử**: Nội bộ - Plugin loading và class availability
+
+**4.1.3 - REST API Namespace Registration** ⏳ **PENDING**
+- **Mục tiêu**: Đăng ký `/wp-json/vd/v1/` namespace với WordPress
+- **File**: `includes/class-vd-api-router.php` (update)
+- **Rủi ro**: **Thấp** - WordPress REST API standard
+- **Kiểm thử**: Nội bộ - Namespace availability check
+
+**4.1.4 - Core Endpoint Definitions** ⏳ **PENDING**
+- **Mục tiêu**: Định nghĩa 3 core endpoints structure
+- **File**: `includes/class-vd-api-router.php` (update)
+- **Rủi ro**: **Vừa** - Endpoint registration complexity
+- **Kiểm thử**: **User verification required** - Endpoint accessibility
+
+**4.1.5 - Request Parameter Validation Schema** ⏳ **PENDING**
+- **Mục tiêu**: Định nghĩa input validation cho tất cả endpoints
+- **File**: `includes/class-vd-api-router.php` (update)
+- **Rủi ro**: **Vừa** - Validation logic complexity
+- **Kiểm thử**: Nội bộ - Parameter validation testing
+
+**4.1.6 - VD_API_Security Integration** ⏳ **PENDING**
+- **Mục tiêu**: Tích hợp với Sprint 3 security infrastructure
+- **File**: `includes/class-vd-api-router.php` (update)
+- **Rủi ro**: **Thấp** - Existing infrastructure integration
+- **Kiểm thử**: Nội bộ - Security method accessibility
+
+**4.1.7 - Placeholder Response Handlers** ⏳ **PENDING**
+- **Mục tiêu**: Tạo basic response handlers cho testing
+- **File**: `includes/class-vd-api-router.php` (update)
+- **Rủi ro**: **Thấp** - Simple response generation
+- **Kiểm thử**: **User verification required** - Response format validation
+
+**4.1.8 - Error Handling Infrastructure** ⏳ **PENDING**
+- **Mục tiêu**: Implement standardized error handling
+- **File**: `includes/class-vd-api-router.php` (update)
+- **Rủi ro**: **Vừa** - Error handling complexity
+- **Kiểm thử**: Nội bộ - Error response testing
+
+**4.1.9 - Router Status & Diagnostics** ⏳ **PENDING**
+- **Mục tiêu**: Thêm diagnostic methods cho debugging
+- **File**: `includes/class-vd-api-router.php` (update)
+- **Rủi ro**: **Thấp** - Utility methods only
+- **Kiểm thử**: Nội bộ - Diagnostic information accuracy
+
+**4.1.10 - Comprehensive Testing Suite** ⏳ **PENDING**
+- **Mục tiêu**: Tạo complete testing infrastructure
+- **File**: `wp-content/plugins/code-snippets/test-vd-step-4-1-complete.php` (new)
+- **Rủi ro**: **Thấp** - Testing infrastructure
+- **Kiểm thử**: **User verification required** - Full integration testing
+
+📊 **Step 4.1 Progress**: 1/10 micro-steps (10%)
 
 **4.2 - License Validator Core** ⏳ **PENDING**
 - **Mục tiêu**: Implement license validation logic (Step 1 of 4-step process)
