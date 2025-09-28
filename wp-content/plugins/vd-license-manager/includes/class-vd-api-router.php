@@ -308,7 +308,7 @@ class VD_API_Router {
                 'security_manager_available' => !is_null($this->security_manager),
                 'request_validator_available' => !is_null($this->request_validator),
                 'wordpress_rest_api' => array(
-                    'version' => rest_get_server()->get_index()['namespaces'] ?? 'unknown',
+                    'version' => $this->get_safe_rest_index(),
                     'available' => function_exists('register_rest_route')
                 )
             ),
@@ -317,5 +317,27 @@ class VD_API_Router {
         );
 
         return rest_ensure_response($response_data);
+    }
+
+    /**
+     * Get REST API index safely
+     * Step 4.1.3 - Safe REST API index retrieval
+     *
+     * @since 4.1.3
+     * @return string REST API version information
+     */
+    private function get_safe_rest_index() {
+        try {
+            $server = rest_get_server();
+            if ($server && method_exists($server, 'get_index')) {
+                $index = $server->get_index();
+                if (is_array($index) && isset($index['namespaces'])) {
+                    return 'v' . count($index['namespaces']) . ' namespaces';
+                }
+            }
+            return 'REST API available';
+        } catch (Exception $e) {
+            return 'REST API error: ' . $e->getMessage();
+        }
     }
 }
