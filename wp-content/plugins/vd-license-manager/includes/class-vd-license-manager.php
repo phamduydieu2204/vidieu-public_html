@@ -165,19 +165,15 @@ class VD_License_Manager {
                 if ($memory_available >= $required_memory) {
                     // Memory sufficient for large file loading
 
-                    // Step 3.4.6.4d - Silent File Inclusion (TEMPORARILY DISABLED - causing fatal error)
-                    // Load VD_Security_Audit with silent error handling
-                    // ISSUE: This require_once is causing fatal errors on wp-login.php
-                    // TODO: Need to investigate VD_Security_Audit class conflicts
-                    /*
+                    // Step 3.4.6.4d - Silent File Inclusion (SAFE LOADING with class_exists check)
+                    // Load VD_Security_Audit with safe class checking to prevent redeclare errors
                     $security_audit_file = VD_LM_PATH . 'includes/class-vd-security-audit.php';
 
-                    // Silent file inclusion with error suppression
-                    if (file_exists($security_audit_file)) {
+                    // Safe file inclusion với class_exists() protection against redeclare errors
+                    if (file_exists($security_audit_file) && !class_exists('VD_Security_Audit')) {
                         @require_once $security_audit_file;
-                        // Note: @ operator provides silent error handling for file loading stability
+                        // Note: class_exists() check prevents "Cannot redeclare class" fatal errors
                     }
-                    */
                 }
             }
         }
