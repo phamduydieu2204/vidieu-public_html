@@ -364,6 +364,13 @@ class VD_API_Router {
             'permission_callback' => '__return_true', // Public endpoint - will validate internally
             'args' => $this->get_device_status_args()
         ));
+
+        // Step 4.1.6 - Security status endpoint
+        register_rest_route($this->namespace, '/security-status', array(
+            'methods' => 'GET',
+            'callback' => array($this, 'handle_security_status'),
+            'permission_callback' => '__return_true'
+        ));
     }
 
     /**
@@ -495,6 +502,12 @@ class VD_API_Router {
      */
     public function handle_license_resolve_info($request) {
         try {
+            // Step 4.1.6 - Security validation
+            $security_check = $this->validate_request_security($request);
+            if (is_wp_error($security_check)) {
+                return $security_check;
+            }
+
             // Step 4.1.4 - Placeholder implementation
             $response_data = array(
                 'success' => true,
@@ -537,6 +550,12 @@ class VD_API_Router {
      */
     public function handle_license_resolve_cookie($request) {
         try {
+            // Step 4.1.6 - Security validation
+            $security_check = $this->validate_request_security($request);
+            if (is_wp_error($security_check)) {
+                return $security_check;
+            }
+
             // Step 4.1.4 - Placeholder implementation
             $response_data = array(
                 'success' => true,
@@ -576,6 +595,12 @@ class VD_API_Router {
      */
     public function handle_device_status($request) {
         try {
+            // Step 4.1.6 - Security validation
+            $security_check = $this->validate_request_security($request);
+            if (is_wp_error($security_check)) {
+                return $security_check;
+            }
+
             // Step 4.1.4 - Placeholder implementation
             $response_data = array(
                 'success' => true,
@@ -601,6 +626,38 @@ class VD_API_Router {
                 'message' => $e->getMessage(),
                 'timestamp' => current_time('c'),
                 'step' => '4.1.4'
+            ));
+        }
+    }
+
+    /**
+     * Handle security status endpoint
+     * Step 4.1.6 - Security status information endpoint
+     *
+     * @since 4.1.6
+     * @param WP_REST_Request $request The REST request
+     * @return WP_REST_Response Response object
+     */
+    public function handle_security_status($request) {
+        try {
+            $security_status = $this->get_security_status();
+
+            $response_data = array(
+                'success' => true,
+                'message' => 'Security status retrieved successfully',
+                'data' => $security_status,
+                'timestamp' => current_time('c'),
+                'step' => '4.1.6'
+            );
+
+            return rest_ensure_response($response_data);
+        } catch (Exception $e) {
+            return rest_ensure_response(array(
+                'success' => false,
+                'error' => 'Security status retrieval failed',
+                'message' => $e->getMessage(),
+                'timestamp' => current_time('c'),
+                'step' => '4.1.6'
             ));
         }
     }
@@ -917,6 +974,96 @@ class VD_API_Router {
         }
 
         return $value;
+    }
+
+    /**
+     * Validate request security
+     * Step 4.1.6 - Security validation for API requests
+     *
+     * @since 4.1.6
+     * @param WP_REST_Request $request The REST request object
+     * @return bool|WP_Error True if valid, WP_Error if security check fails
+     */
+    private function validate_request_security($request) {
+        // If security manager not available, allow request (fallback)
+        if (!$this->security_manager) {
+            return true;
+        }
+
+        // Get request headers for authentication
+        $headers = $request->get_headers();
+
+        // Check for authentication methods in order of preference
+
+        // 1. Bearer token authentication
+        if (isset($headers['authorization'][0])) {
+            $auth_header = $headers['authorization'][0];
+            if (strpos($auth_header, 'Bearer ') === 0) {
+                $token = substr($auth_header, 7);
+                $result = $this->security_manager->validate_bearer_token($token);
+                if ($result === true) {
+                    return true;
+                }
+            }
+        }
+
+        // 2. API Key authentication
+        if (isset($headers['x_api_key'][0])) {
+            $api_key = $headers['x_api_key'][0];
+            $result = $this->security_manager->validate_api_key($api_key);
+            if ($result === true) {
+                return true;
+            }
+        }
+
+        // 3. WordPress nonce validation for internal requests
+        if ($request->get_param('_wpnonce')) {
+            $nonce = $request->get_param('_wpnonce');
+            $result = $this->security_manager->validate_wp_nonce($nonce);
+            if ($result === true) {
+                return true;
+            }
+        }
+
+        // 4. HMAC signature validation
+        if (isset($headers['x_signature'][0]) && $request->get_body()) {
+            $signature = $headers['x_signature'][0];
+            $payload = $request->get_body();
+            $result = $this->security_manager->validate_hmac_signature($signature, $payload);
+            if ($result === true) {
+                return true;
+            }
+        }
+
+        // No valid authentication found
+        return new WP_Error(
+            'authentication_required',
+            'Authentication required. Provide Bearer token, API key, nonce, or HMAC signature.',
+            array('status' => 401)
+        );
+    }
+
+    /**
+     * Get security validation status
+     * Step 4.1.6 - Security status reporting
+     *
+     * @since 4.1.6
+     * @return array Security status information
+     */
+    public function get_security_status() {
+        $status = array(
+            'security_manager_available' => !is_null($this->security_manager),
+            'request_validator_available' => !is_null($this->request_validator),
+            'supported_auth_methods' => array(),
+            'step' => '4.1.6'
+        );
+
+        if ($this->security_manager) {
+            $status['supported_auth_methods'] = $this->security_manager->get_authentication_methods();
+            $status['security_manager_status'] = $this->security_manager->get_status();
+        }
+
+        return $status;
     }
 
     /**
