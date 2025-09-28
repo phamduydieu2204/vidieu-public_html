@@ -492,6 +492,10 @@ class VD_License_Manager {
 
         // License expiration check
         add_action('vd_check_license_expiration', [$this, 'check_license_expiration']);
+
+        // Step 3.4.6.9 - Basic Cron Hook Declaration
+        // Security audit cron hook - declaration only, handler will be implemented in Step 3.4.6.10
+        add_action('vd_security_audit_cron', [$this, 'handle_security_audit_cron']);
     }
 
     /**
@@ -721,6 +725,26 @@ class VD_License_Manager {
     public function check_license_expiration() {
         // This will be implemented in Sprint 2 - Database Layer
         vd_debug_log('License expiration check cron job executed (placeholder)');
+    }
+
+    /**
+     * Handle security audit cron job
+     * Step 3.4.6.9 - Basic Cron Hook Declaration
+     *
+     * @since 3.4.6.9
+     */
+    public function handle_security_audit_cron() {
+        // Step 3.4.6.9 - Declaration only, handler logic will be implemented in Step 3.4.6.10
+        // NOTE: This is a placeholder method to establish cron hook infrastructure
+
+        $this->vd_native_error_log(
+            'CRON_DECLARATION',
+            'info',
+            'Security audit cron hook declared - handler implementation pending Step 3.4.6.10'
+        );
+
+        // TODO Step 3.4.6.10: Implement actual security audit logic
+        // Will include security scanning, threat detection, and audit reporting
     }
 
     /**
@@ -1370,6 +1394,87 @@ class VD_License_Manager {
         $test_results['test_completed'] = true;
         $test_results['test_timestamp'] = current_time('mysql');
         $test_results['instantiation_summary'] = $instantiation_data;
+
+        return $test_results;
+    }
+
+    /**
+     * Test basic cron hook declaration
+     * Step 3.4.6.9 - Basic Cron Hook Declaration
+     *
+     * @since 3.4.6.9
+     * @return array Cron hook declaration test results
+     */
+    public function test_cron_hook_declaration() {
+        $test_results = [
+            'hook_declaration_method' => 'setup_cron_hooks',
+            'new_hook_name' => 'vd_security_audit_cron',
+            'handler_method' => 'handle_security_audit_cron',
+            'implementation_status' => 'declared_only',
+            'test_scenarios' => []
+        ];
+
+        // Test Scenario 1: Hook registration verification
+        $hook_registered = has_action('vd_security_audit_cron', [$this, 'handle_security_audit_cron']);
+        $test_results['test_scenarios']['hook_registration'] = [
+            'hook_exists' => $hook_registered !== false,
+            'hook_priority' => $hook_registered !== false ? $hook_registered : 'not_registered',
+            'expected_callback' => [$this, 'handle_security_audit_cron']
+        ];
+
+        // Test Scenario 2: Handler method existence
+        $test_results['test_scenarios']['handler_method'] = [
+            'method_exists' => method_exists($this, 'handle_security_audit_cron'),
+            'method_callable' => is_callable([$this, 'handle_security_audit_cron']),
+            'implementation_level' => 'placeholder_only'
+        ];
+
+        // Test Scenario 3: Cron infrastructure verification
+        $existing_cron_hooks = [
+            'vd_cleanup_logs',
+            'vd_check_provider_health',
+            'vd_check_license_expiration',
+            'vd_security_audit_cron'
+        ];
+
+        $cron_infrastructure = [];
+        foreach ($existing_cron_hooks as $hook_name) {
+            $cron_infrastructure[$hook_name] = has_action($hook_name) !== false;
+        }
+
+        $test_results['test_scenarios']['cron_infrastructure'] = [
+            'total_hooks' => count($existing_cron_hooks),
+            'registered_hooks' => array_sum($cron_infrastructure),
+            'hook_status' => $cron_infrastructure
+        ];
+
+        // Test Scenario 4: Declaration-only verification
+        $test_results['test_scenarios']['declaration_verification'] = [
+            'approach' => 'declaration_without_implementation',
+            'step_compliance' => 'Step 3.4.6.9 - Basic Cron Hook Declaration only',
+            'handler_implementation' => 'Step 3.4.6.10 - Future implementation',
+            'risk_level' => 'low - no actual cron logic executed'
+        ];
+
+        // Test Scenario 5: Test handler method (declaration verification)
+        try {
+            // Call the handler to verify it exists and logs appropriately
+            $this->handle_security_audit_cron();
+            $test_results['test_scenarios']['handler_execution'] = [
+                'callable' => true,
+                'execution_result' => 'placeholder_executed',
+                'logs_generated' => true
+            ];
+        } catch (Exception $e) {
+            $test_results['test_scenarios']['handler_execution'] = [
+                'callable' => false,
+                'error' => $e->getMessage(),
+                'logs_generated' => false
+            ];
+        }
+
+        $test_results['test_completed'] = true;
+        $test_results['test_timestamp'] = current_time('mysql');
 
         return $test_results;
     }
