@@ -51,6 +51,33 @@ class VD_License_Manager {
     private $security_fallback_initialized = false;
 
     /**
+     * API Security instance
+     * Step 3.5.6 - API Security Infrastructure
+     *
+     * @since 3.5.6
+     * @var VD_API_Security|null
+     */
+    private $api_security = null;
+
+    /**
+     * Request Validator instance
+     * Step 3.5.6 - Request Validation Infrastructure
+     *
+     * @since 3.5.6
+     * @var VD_Request_Validator|null
+     */
+    private $request_validator = null;
+
+    /**
+     * API Router instance
+     * Step 4.1.2 - WordPress Integration Setup
+     *
+     * @since 4.1.2
+     * @var VD_API_Router|null
+     */
+    private $api_router = null;
+
+    /**
      * Get single instance of the plugin
      *
      * @since 1.0.0
@@ -150,6 +177,9 @@ class VD_License_Manager {
 
         // Step 3.5.2 - Load Request Validator class
         require_once VD_LM_PATH . 'includes/class-vd-request-validator.php';
+
+        // Step 4.1.2 - Load API Router class
+        require_once VD_LM_PATH . 'includes/class-vd-api-router.php';
 
         // Step 3.4.6.2 - Safe Variable Declaration (security audit file path)
         $security_audit_file = VD_LM_PATH . 'includes/class-vd-security-audit.php';
@@ -466,6 +496,16 @@ class VD_License_Manager {
                 'REQUEST_VALIDATOR',
                 'info',
                 'Request Validator infrastructure initialized successfully'
+            );
+        }
+
+        // Step 4.1.2 - Initialize API Router
+        if (class_exists('VD_API_Router')) {
+            $this->api_router = VD_API_Router::get_instance();
+            $this->vd_native_error_log(
+                'API_ROUTER',
+                'info',
+                'API Router infrastructure initialized successfully'
             );
         }
 
@@ -1068,6 +1108,17 @@ class VD_License_Manager {
      */
     public function get_request_validator() {
         return $this->request_validator ?? null;
+    }
+
+    /**
+     * Get API Router instance
+     * Step 4.1.2 - API Router getter
+     *
+     * @since 4.1.2
+     * @return VD_API_Router|null API Router instance
+     */
+    public function get_api_router() {
+        return $this->api_router ?? null;
     }
 
     /**
