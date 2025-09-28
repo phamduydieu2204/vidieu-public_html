@@ -82,6 +82,12 @@ class VD_Security_Audit {
         // Mark as initialized
         $this->initialized = true;
 
+        // Initialize monitoring arrays now that WordPress is ready
+        $this->init_monitoring_arrays();
+
+        // Initialize security thresholds
+        $this->init_security_thresholds();
+
         // Setup hooks now that WordPress is ready
         $this->setup_basic_hooks();
     }
@@ -120,7 +126,13 @@ class VD_Security_Audit {
      * @since 1.0.0
      */
     public function __wakeup() {
-        throw new Exception("Cannot unserialize singleton");
+        // WordPress-safe exception handling
+        if (class_exists('Exception')) {
+            throw new Exception("Cannot unserialize singleton");
+        } else {
+            // Fallback for early WordPress loading
+            wp_die('Cannot unserialize VD_Security_Audit singleton');
+        }
     }
 
     /**

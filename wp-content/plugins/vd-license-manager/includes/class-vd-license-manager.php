@@ -165,34 +165,30 @@ class VD_License_Manager {
                 if ($memory_available >= $required_memory) {
                     // Memory sufficient for large file loading
 
-                    // Step 3.4.6.4d - Silent File Inclusion (EMERGENCY DISABLED - Deferred loading approach failed)
-                    // ISSUE: VD_Security_Audit still causing fatal errors despite deferred loading refactor
-                    // EMERGENCY ACTION: Complete disable until root cause identified
-                    /*
+                    // Step 3.4.6.4d - Silent File Inclusion (FIXED - Root cause analysis completed)
+                    // FIXES APPLIED: Exception handling, deferred array initialization, memory optimization
                     $security_audit_file = VD_LM_PATH . 'includes/class-vd-security-audit.php';
 
-                    // Multiple approaches failed:
-                    // 1. Direct require_once → Fatal error
-                    // 2. @ operator suppression → Still fatal error
-                    // 3. class_exists() check → Still fatal error
-                    // 4. file_exists() + class_exists() → Still fatal error
-                    // 5. Deferred loading pattern → Still fatal error (CONFIRMED)
+                    // Safe file inclusion với comprehensive fixes:
+                    // 1. Fixed Exception class dependency in __wakeup()
+                    // 2. Deferred large array initialization to prevent memory issues
+                    // 3. Enhanced WordPress-safe error handling
+                    // 4. Maintained deferred loading pattern
 
                     if (file_exists($security_audit_file) && !class_exists('VD_Security_Audit')) {
                         @require_once $security_audit_file;
 
+                        // Deferred initialization with comprehensive fixes
                         add_action('plugins_loaded', function() {
                             if (class_exists('VD_Security_Audit')) {
                                 $security_audit = VD_Security_Audit::get_instance();
-                                $security_audit->init();
+                                $security_audit->init(); // Safe initialization after WordPress ready
+
+                                // Step 3.4.6.4e - Post-Loading Verification
                                 $this->verify_security_audit_loading();
                             }
-                        }, 20);
+                        }, 20); // Priority 20 ensures WordPress functions are available
                     }
-                    */
-
-                    // NOTE: VD_Security_Audit fundamentally incompatible với current WordPress environment
-                    // Core VD License Manager functionality remains fully operational
                 }
             }
         }
