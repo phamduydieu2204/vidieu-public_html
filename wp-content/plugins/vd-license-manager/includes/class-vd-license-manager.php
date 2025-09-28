@@ -42,6 +42,15 @@ class VD_License_Manager {
     private $admin_menu;
 
     /**
+     * Security fallback initialization flag
+     * Prevents multiple security fallback executions
+     *
+     * @since 3.4.6.5
+     * @var bool
+     */
+    private $security_fallback_initialized = false;
+
+    /**
      * Get single instance of the plugin
      *
      * @since 1.0.0
@@ -193,10 +202,13 @@ class VD_License_Manager {
 
                     // Step 3.4.6.4f - Error Recovery Mechanism
                     // Implement graceful degradation cho VD_Security_Audit failures
+                    $should_log_init = !$this->security_fallback_initialized;
                     $this->handle_security_audit_fallback();
 
-                    // Step 3.4.6.5 - Test WordPress native logging
-                    $this->vd_log('Plugin Initialization', 'VD License Manager loaded successfully with security fallback', 'info');
+                    // Step 3.4.6.5 - Reduced frequency logging (only once per session)
+                    if ($should_log_init) {
+                        $this->vd_log('Plugin Initialization', 'VD License Manager loaded successfully with security fallback', 'info');
+                    }
 
                     // NOTE: VD_Security_Audit requires complete architectural redesign
                     // Core VD License Manager functionality remains fully operational
@@ -635,10 +647,16 @@ class VD_License_Manager {
      * @return void
      */
     private function handle_security_audit_fallback() {
+        // HOTFIX: Prevent multiple security fallback executions
+        if ($this->security_fallback_initialized) {
+            return;
+        }
+
         // Check if VD_Security_Audit is available
         if (class_exists('VD_Security_Audit')) {
             // VD_Security_Audit loaded successfully
             $this->log_security_audit_status('available', 'VD_Security_Audit class loaded and available');
+            $this->security_fallback_initialized = true;
             return;
         }
 
@@ -655,6 +673,9 @@ class VD_License_Manager {
         $this->setup_minimal_security_hooks();
 
         $this->log_security_audit_status('fallback_complete', 'Security fallback mechanisms activated');
+
+        // Mark as initialized to prevent re-execution
+        $this->security_fallback_initialized = true;
     }
 
     /**
