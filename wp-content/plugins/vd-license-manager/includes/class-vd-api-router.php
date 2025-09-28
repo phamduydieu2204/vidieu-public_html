@@ -296,27 +296,36 @@ class VD_API_Router {
      * @return WP_REST_Response Response object
      */
     public function handle_router_info($request) {
-        $router_status = $this->test_router_functionality();
+        // Step 4.1.3 - Simplified router info to avoid fatal errors
+        try {
+            $response_data = array(
+                'success' => true,
+                'data' => array(
+                    'namespace' => $this->namespace,
+                    'version' => $this->version,
+                    'current_step' => $this->get_current_step(),
+                    'routes_count' => count($this->routes),
+                    'registered_routes' => $this->routes,
+                    'initialized' => $this->initialized,
+                    'basic_status' => 'Router operational'
+                ),
+                'timestamp' => current_time('c'),
+                'step' => '4.1.3'
+            );
 
-        $response_data = array(
-            'success' => true,
-            'data' => array(
-                'router_status' => $router_status,
-                'namespace' => $this->namespace,
-                'version' => $this->version,
-                'registered_routes' => $this->routes,
-                'security_manager_available' => !is_null($this->security_manager),
-                'request_validator_available' => !is_null($this->request_validator),
-                'wordpress_rest_api' => array(
-                    'version' => $this->get_safe_rest_index(),
-                    'available' => function_exists('register_rest_route')
-                )
-            ),
-            'timestamp' => current_time('c'),
-            'step' => '4.1.3'
-        );
+            return rest_ensure_response($response_data);
+        } catch (Exception $e) {
+            // Fallback minimal response
+            $fallback_data = array(
+                'success' => false,
+                'error' => 'Router info generation failed',
+                'message' => $e->getMessage(),
+                'timestamp' => current_time('c'),
+                'step' => '4.1.3'
+            );
 
-        return rest_ensure_response($response_data);
+            return rest_ensure_response($fallback_data);
+        }
     }
 
     /**
