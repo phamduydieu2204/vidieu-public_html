@@ -770,7 +770,7 @@ class VD_License_Manager {
 
         // Security Check 3: User Access Monitoring
         $audit_results['checks_performed'][] = 'user_access_monitoring';
-        $access_monitoring = $this->audit_user_access_patterns();
+        $access_monitoring = $this->audit_user_access_monitoring();
         if (!empty($access_monitoring['issues'])) {
             $audit_results['issues_found'] = array_merge($audit_results['issues_found'], $access_monitoring['issues']);
         }
@@ -900,13 +900,13 @@ class VD_License_Manager {
     }
 
     /**
-     * Audit user access patterns
+     * Audit user access monitoring
      * Step 3.4.6.10 - Security audit helper method
      *
      * @since 3.4.6.10
      * @return array User access audit results
      */
-    private function audit_user_access_patterns() {
+    private function audit_user_access_monitoring() {
         $results = ['issues' => [], 'status' => 'checked'];
 
         // Check for admin users
@@ -1771,7 +1771,7 @@ class VD_License_Manager {
         $security_methods = [
             'audit_wordpress_core_security',
             'audit_plugin_file_integrity',
-            'audit_user_access_patterns',
+            'audit_user_access_monitoring',
             'audit_system_configuration',
             'categorize_security_issues'
         ];
