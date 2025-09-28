@@ -36,7 +36,7 @@ class VD_API_Security {
     }
 
     public function get_current_step() {
-        return '3.5.5';
+        return '3.5.6';
     }
 
     public function get_authentication_methods() {

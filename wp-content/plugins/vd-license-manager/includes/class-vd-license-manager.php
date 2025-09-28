@@ -449,6 +449,26 @@ class VD_License_Manager {
             $migration_manager->init();
         }
 
+        // Step 3.5.6 - Initialize API Security Infrastructure
+        if (class_exists('VD_API_Security')) {
+            $this->api_security = VD_API_Security::get_instance();
+            $this->vd_native_error_log(
+                'API_SECURITY',
+                'info',
+                'API Security infrastructure initialized successfully'
+            );
+        }
+
+        // Step 3.5.6 - Initialize Request Validator
+        if (class_exists('VD_Request_Validator')) {
+            $this->request_validator = VD_Request_Validator::get_instance();
+            $this->vd_native_error_log(
+                'REQUEST_VALIDATOR',
+                'info',
+                'Request Validator infrastructure initialized successfully'
+            );
+        }
+
         // Initialize security manager (Sprint 3.1)
         if (class_exists('VD_Security_Manager')) {
             VD_Security_Manager::get_instance();
@@ -1026,6 +1046,109 @@ class VD_License_Manager {
      */
     public function get_admin_menu() {
         return $this->admin_menu;
+    }
+
+    /**
+     * Get API Security instance
+     * Step 3.5.6 - API Security getter
+     *
+     * @since 3.5.6
+     * @return VD_API_Security|null API Security instance
+     */
+    public function get_api_security() {
+        return $this->api_security ?? null;
+    }
+
+    /**
+     * Get Request Validator instance
+     * Step 3.5.6 - Request Validator getter
+     *
+     * @since 3.5.6
+     * @return VD_Request_Validator|null Request Validator instance
+     */
+    public function get_request_validator() {
+        return $this->request_validator ?? null;
+    }
+
+    /**
+     * Test API Security Integration
+     * Step 3.5.6 - Integration testing method
+     *
+     * @since 3.5.6
+     * @return array Integration test results
+     */
+    public function test_api_security_integration() {
+        $results = [
+            'timestamp' => current_time('timestamp'),
+            'api_security' => [
+                'class_loaded' => class_exists('VD_API_Security'),
+                'instance_available' => !is_null($this->get_api_security()),
+                'current_step' => null,
+                'authentication_ready' => false,
+                'rate_limiting_ready' => false,
+                'cors_ready' => false
+            ],
+            'request_validator' => [
+                'class_loaded' => class_exists('VD_Request_Validator'),
+                'instance_available' => !is_null($this->get_request_validator()),
+                'current_step' => null,
+                'validation_methods_ready' => false
+            ],
+            'integration_status' => 'testing',
+            'overall_health' => 'unknown'
+        ];
+
+        // Test API Security
+        $api_security = $this->get_api_security();
+        if ($api_security) {
+            $results['api_security']['current_step'] = $api_security->get_current_step();
+            $results['api_security']['authentication_ready'] = $api_security->is_authentication_framework_ready();
+            $results['api_security']['rate_limiting_ready'] = $api_security->is_rate_limiting_framework_ready();
+            $results['api_security']['cors_ready'] = $api_security->is_cors_framework_ready();
+        }
+
+        // Test Request Validator
+        $request_validator = $this->get_request_validator();
+        if ($request_validator) {
+            $results['request_validator']['current_step'] = $request_validator->get_current_step();
+            $methods = $request_validator->get_validation_methods();
+            $results['request_validator']['validation_methods_ready'] = (count($methods) >= 5);
+        }
+
+        // Determine overall health
+        $api_ready = $results['api_security']['instance_available'] &&
+                    $results['api_security']['authentication_ready'] &&
+                    $results['api_security']['rate_limiting_ready'] &&
+                    $results['api_security']['cors_ready'];
+
+        $validator_ready = $results['request_validator']['instance_available'] &&
+                          $results['request_validator']['validation_methods_ready'];
+
+        if ($api_ready && $validator_ready) {
+            $results['integration_status'] = 'excellent';
+            $results['overall_health'] = 'production_ready';
+        } elseif ($api_ready || $validator_ready) {
+            $results['integration_status'] = 'good';
+            $results['overall_health'] = 'partially_ready';
+        } else {
+            $results['integration_status'] = 'needs_attention';
+            $results['overall_health'] = 'not_ready';
+        }
+
+        // Store results
+        update_option('vd_api_security_integration_test', $results);
+
+        // Log results
+        $this->vd_native_error_log(
+            'API_INTEGRATION_TEST',
+            'info',
+            sprintf('API Security integration test: %s (Health: %s)',
+                $results['integration_status'],
+                $results['overall_health']
+            )
+        );
+
+        return $results;
     }
 
     /**

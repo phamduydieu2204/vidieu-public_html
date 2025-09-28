@@ -36,7 +36,7 @@ class VD_Request_Validator {
     }
 
     public function get_current_step() {
-        return '3.5.2';
+        return '3.5.6';
     }
 
     public function get_validation_methods() {
