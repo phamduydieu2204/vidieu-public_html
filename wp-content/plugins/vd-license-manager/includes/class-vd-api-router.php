@@ -368,9 +368,9 @@ class VD_API_Router {
 
     /**
      * Get license resolve endpoint arguments
-     * Step 4.1.4 - Request parameter validation
+     * Step 4.1.5 - Enhanced parameter validation schema
      *
-     * @since 4.1.4
+     * @since 4.1.5
      * @return array Endpoint arguments
      */
     private function get_license_resolve_args() {
@@ -378,38 +378,54 @@ class VD_API_Router {
             'license_key' => array(
                 'required' => true,
                 'type' => 'string',
-                'description' => 'License key to resolve',
-                'pattern' => '^VD-[A-Z0-9]+-[0-9]{4}-[A-Z0-9]+$'
+                'description' => 'License key to resolve (format: VD-[PROVIDER]-[YEAR]-[CODE])',
+                'minLength' => 10,
+                'maxLength' => 50,
+                'pattern' => '^VD-[A-Z0-9]+-[0-9]{4}-[A-Z0-9]+$',
+                'validate_callback' => array($this, 'validate_license_key'),
+                'sanitize_callback' => array($this, 'sanitize_license_key')
             ),
             'device_fingerprint' => array(
                 'required' => true,
                 'type' => 'string',
-                'description' => 'SHA256 device fingerprint (64 characters)',
-                'pattern' => '^[a-f0-9]{64}$'
+                'description' => 'SHA256 device fingerprint (64 hex characters)',
+                'minLength' => 64,
+                'maxLength' => 64,
+                'pattern' => '^[a-f0-9]{64}$',
+                'validate_callback' => array($this, 'validate_device_fingerprint'),
+                'sanitize_callback' => array($this, 'sanitize_device_fingerprint')
             ),
             'device_info' => array(
                 'required' => false,
                 'type' => 'object',
-                'description' => 'Device information object'
+                'description' => 'Device information object với browser, OS, timezone, etc.',
+                'validate_callback' => array($this, 'validate_device_info'),
+                'sanitize_callback' => array($this, 'sanitize_device_info')
             ),
             'client_ip' => array(
                 'required' => false,
                 'type' => 'string',
-                'description' => 'Client IP address'
+                'description' => 'Client IP address (IPv4 hoặc IPv6)',
+                'validate_callback' => array($this, 'validate_ip_address'),
+                'sanitize_callback' => array($this, 'sanitize_ip_address')
             ),
             'request_id' => array(
                 'required' => false,
                 'type' => 'string',
-                'description' => 'Request tracking ID'
+                'description' => 'Request tracking ID (alphanumeric, underscore, dash)',
+                'maxLength' => 100,
+                'pattern' => '^[a-zA-Z0-9_-]+$',
+                'validate_callback' => array($this, 'validate_request_id'),
+                'sanitize_callback' => array($this, 'sanitize_request_id')
             )
         );
     }
 
     /**
      * Get cookie resolve endpoint arguments
-     * Step 4.1.4 - Request parameter validation
+     * Step 4.1.5 - Enhanced parameter validation schema
      *
-     * @since 4.1.4
+     * @since 4.1.5
      * @return array Endpoint arguments
      */
     private function get_cookie_resolve_args() {
@@ -417,23 +433,31 @@ class VD_API_Router {
             'license_key' => array(
                 'required' => true,
                 'type' => 'string',
-                'description' => 'License key to resolve',
-                'pattern' => '^VD-[A-Z0-9]+-[0-9]{4}-[A-Z0-9]+$'
+                'description' => 'License key to resolve (format: VD-[PROVIDER]-[YEAR]-[CODE])',
+                'minLength' => 10,
+                'maxLength' => 50,
+                'pattern' => '^VD-[A-Z0-9]+-[0-9]{4}-[A-Z0-9]+$',
+                'validate_callback' => array($this, 'validate_license_key'),
+                'sanitize_callback' => array($this, 'sanitize_license_key')
             ),
             'device_fingerprint' => array(
                 'required' => true,
                 'type' => 'string',
-                'description' => 'SHA256 device fingerprint (64 characters)',
-                'pattern' => '^[a-f0-9]{64}$'
+                'description' => 'SHA256 device fingerprint (64 hex characters)',
+                'minLength' => 64,
+                'maxLength' => 64,
+                'pattern' => '^[a-f0-9]{64}$',
+                'validate_callback' => array($this, 'validate_device_fingerprint'),
+                'sanitize_callback' => array($this, 'sanitize_device_fingerprint')
             )
         );
     }
 
     /**
      * Get device status endpoint arguments
-     * Step 4.1.4 - Request parameter validation
+     * Step 4.1.5 - Enhanced parameter validation schema
      *
-     * @since 4.1.4
+     * @since 4.1.5
      * @return array Endpoint arguments
      */
     private function get_device_status_args() {
@@ -441,14 +465,22 @@ class VD_API_Router {
             'license_key' => array(
                 'required' => true,
                 'type' => 'string',
-                'description' => 'License key',
-                'pattern' => '^VD-[A-Z0-9]+-[0-9]{4}-[A-Z0-9]+$'
+                'description' => 'License key (format: VD-[PROVIDER]-[YEAR]-[CODE])',
+                'minLength' => 10,
+                'maxLength' => 50,
+                'pattern' => '^VD-[A-Z0-9]+-[0-9]{4}-[A-Z0-9]+$',
+                'validate_callback' => array($this, 'validate_license_key'),
+                'sanitize_callback' => array($this, 'sanitize_license_key')
             ),
             'device_fingerprint' => array(
                 'required' => true,
                 'type' => 'string',
-                'description' => 'SHA256 device fingerprint (64 characters)',
-                'pattern' => '^[a-f0-9]{64}$'
+                'description' => 'SHA256 device fingerprint (64 hex characters)',
+                'minLength' => 64,
+                'maxLength' => 64,
+                'pattern' => '^[a-f0-9]{64}$',
+                'validate_callback' => array($this, 'validate_device_fingerprint'),
+                'sanitize_callback' => array($this, 'sanitize_device_fingerprint')
             )
         );
     }
@@ -571,6 +603,320 @@ class VD_API_Router {
                 'step' => '4.1.4'
             ));
         }
+    }
+
+    /**
+     * Validate license key format
+     * Step 4.1.5 - License key validation
+     *
+     * @since 4.1.5
+     * @param string $value License key value
+     * @param WP_REST_Request $request Request object
+     * @param string $param Parameter name
+     * @return bool|WP_Error True if valid, WP_Error if invalid
+     */
+    public function validate_license_key($value, $request, $param) {
+        if (!is_string($value)) {
+            return new WP_Error('invalid_license_key', 'License key must be a string', array('status' => 400));
+        }
+
+        $value = trim($value);
+
+        // Check length
+        if (strlen($value) < 10 || strlen($value) > 50) {
+            return new WP_Error('invalid_license_key_length', 'License key must be between 10-50 characters', array('status' => 400));
+        }
+
+        // Check format: VD-[PROVIDER]-[YEAR]-[CODE]
+        if (!preg_match('/^VD-[A-Z0-9]+-[0-9]{4}-[A-Z0-9]+$/', $value)) {
+            return new WP_Error('invalid_license_key_format', 'License key format invalid. Expected: VD-[PROVIDER]-[YEAR]-[CODE]', array('status' => 400));
+        }
+
+        // Additional security checks
+        if (preg_match('/[<>"\']/', $value)) {
+            return new WP_Error('invalid_license_key_chars', 'License key contains invalid characters', array('status' => 400));
+        }
+
+        return true;
+    }
+
+    /**
+     * Sanitize license key
+     * Step 4.1.5 - License key sanitization
+     *
+     * @since 4.1.5
+     * @param string $value License key value
+     * @param WP_REST_Request $request Request object
+     * @param string $param Parameter name
+     * @return string Sanitized license key
+     */
+    public function sanitize_license_key($value, $request, $param) {
+        if (!is_string($value)) {
+            return '';
+        }
+
+        // Remove whitespace and convert to uppercase
+        $value = strtoupper(trim($value));
+
+        // Remove any non-alphanumeric characters except dash
+        $value = preg_replace('/[^A-Z0-9-]/', '', $value);
+
+        return $value;
+    }
+
+    /**
+     * Validate device fingerprint
+     * Step 4.1.5 - Device fingerprint validation
+     *
+     * @since 4.1.5
+     * @param string $value Device fingerprint value
+     * @param WP_REST_Request $request Request object
+     * @param string $param Parameter name
+     * @return bool|WP_Error True if valid, WP_Error if invalid
+     */
+    public function validate_device_fingerprint($value, $request, $param) {
+        if (!is_string($value)) {
+            return new WP_Error('invalid_device_fingerprint', 'Device fingerprint must be a string', array('status' => 400));
+        }
+
+        $value = trim($value);
+
+        // Must be exactly 64 characters
+        if (strlen($value) !== 64) {
+            return new WP_Error('invalid_device_fingerprint_length', 'Device fingerprint must be exactly 64 characters', array('status' => 400));
+        }
+
+        // Must be valid hex string
+        if (!preg_match('/^[a-f0-9]{64}$/', $value)) {
+            return new WP_Error('invalid_device_fingerprint_format', 'Device fingerprint must be 64 lowercase hex characters (SHA256)', array('status' => 400));
+        }
+
+        return true;
+    }
+
+    /**
+     * Sanitize device fingerprint
+     * Step 4.1.5 - Device fingerprint sanitization
+     *
+     * @since 4.1.5
+     * @param string $value Device fingerprint value
+     * @param WP_REST_Request $request Request object
+     * @param string $param Parameter name
+     * @return string Sanitized device fingerprint
+     */
+    public function sanitize_device_fingerprint($value, $request, $param) {
+        if (!is_string($value)) {
+            return '';
+        }
+
+        // Remove whitespace and convert to lowercase
+        $value = strtolower(trim($value));
+
+        // Keep only hex characters
+        $value = preg_replace('/[^a-f0-9]/', '', $value);
+
+        // Ensure exactly 64 characters
+        if (strlen($value) > 64) {
+            $value = substr($value, 0, 64);
+        }
+
+        return $value;
+    }
+
+    /**
+     * Validate device info object
+     * Step 4.1.5 - Device info validation
+     *
+     * @since 4.1.5
+     * @param mixed $value Device info value
+     * @param WP_REST_Request $request Request object
+     * @param string $param Parameter name
+     * @return bool|WP_Error True if valid, WP_Error if invalid
+     */
+    public function validate_device_info($value, $request, $param) {
+        if ($value === null || $value === '') {
+            return true; // Optional parameter
+        }
+
+        if (!is_array($value) && !is_object($value)) {
+            return new WP_Error('invalid_device_info', 'Device info must be an object/array', array('status' => 400));
+        }
+
+        // Convert to array for validation
+        $device_info = (array) $value;
+
+        // Validate specific fields if present
+        $allowed_fields = array(
+            'browser', 'browser_version', 'os', 'os_version',
+            'screen_resolution', 'timezone', 'language',
+            'user_agent', 'ip', 'country'
+        );
+
+        foreach ($device_info as $key => $val) {
+            // Check allowed fields
+            if (!in_array($key, $allowed_fields)) {
+                return new WP_Error('invalid_device_info_field', "Unknown device info field: {$key}", array('status' => 400));
+            }
+
+            // Basic sanitization check
+            if (is_string($val) && (strlen($val) > 500 || preg_match('/[<>"]/', $val))) {
+                return new WP_Error('invalid_device_info_value', "Invalid value for device info field: {$key}", array('status' => 400));
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Sanitize device info object
+     * Step 4.1.5 - Device info sanitization
+     *
+     * @since 4.1.5
+     * @param mixed $value Device info value
+     * @param WP_REST_Request $request Request object
+     * @param string $param Parameter name
+     * @return array Sanitized device info
+     */
+    public function sanitize_device_info($value, $request, $param) {
+        if ($value === null || $value === '') {
+            return array();
+        }
+
+        if (!is_array($value) && !is_object($value)) {
+            return array();
+        }
+
+        $device_info = (array) $value;
+        $sanitized = array();
+
+        $allowed_fields = array(
+            'browser', 'browser_version', 'os', 'os_version',
+            'screen_resolution', 'timezone', 'language',
+            'user_agent', 'ip', 'country'
+        );
+
+        foreach ($device_info as $key => $val) {
+            if (in_array($key, $allowed_fields) && is_string($val)) {
+                // Sanitize string values
+                $sanitized[$key] = sanitize_text_field(substr($val, 0, 500));
+            }
+        }
+
+        return $sanitized;
+    }
+
+    /**
+     * Validate IP address
+     * Step 4.1.5 - IP address validation
+     *
+     * @since 4.1.5
+     * @param string $value IP address value
+     * @param WP_REST_Request $request Request object
+     * @param string $param Parameter name
+     * @return bool|WP_Error True if valid, WP_Error if invalid
+     */
+    public function validate_ip_address($value, $request, $param) {
+        if ($value === null || $value === '') {
+            return true; // Optional parameter
+        }
+
+        if (!is_string($value)) {
+            return new WP_Error('invalid_ip', 'IP address must be a string', array('status' => 400));
+        }
+
+        $value = trim($value);
+
+        // Validate IPv4 or IPv6
+        if (!filter_var($value, FILTER_VALIDATE_IP)) {
+            return new WP_Error('invalid_ip_format', 'Invalid IP address format', array('status' => 400));
+        }
+
+        return true;
+    }
+
+    /**
+     * Sanitize IP address
+     * Step 4.1.5 - IP address sanitization
+     *
+     * @since 4.1.5
+     * @param string $value IP address value
+     * @param WP_REST_Request $request Request object
+     * @param string $param Parameter name
+     * @return string Sanitized IP address
+     */
+    public function sanitize_ip_address($value, $request, $param) {
+        if (!is_string($value)) {
+            return '';
+        }
+
+        $value = trim($value);
+
+        // Basic IP sanitization
+        if (filter_var($value, FILTER_VALIDATE_IP)) {
+            return $value;
+        }
+
+        return '';
+    }
+
+    /**
+     * Validate request ID
+     * Step 4.1.5 - Request ID validation
+     *
+     * @since 4.1.5
+     * @param string $value Request ID value
+     * @param WP_REST_Request $request Request object
+     * @param string $param Parameter name
+     * @return bool|WP_Error True if valid, WP_Error if invalid
+     */
+    public function validate_request_id($value, $request, $param) {
+        if ($value === null || $value === '') {
+            return true; // Optional parameter
+        }
+
+        if (!is_string($value)) {
+            return new WP_Error('invalid_request_id', 'Request ID must be a string', array('status' => 400));
+        }
+
+        $value = trim($value);
+
+        if (strlen($value) > 100) {
+            return new WP_Error('invalid_request_id_length', 'Request ID must be 100 characters or less', array('status' => 400));
+        }
+
+        if (!preg_match('/^[a-zA-Z0-9_-]+$/', $value)) {
+            return new WP_Error('invalid_request_id_format', 'Request ID can only contain alphanumeric characters, underscore, and dash', array('status' => 400));
+        }
+
+        return true;
+    }
+
+    /**
+     * Sanitize request ID
+     * Step 4.1.5 - Request ID sanitization
+     *
+     * @since 4.1.5
+     * @param string $value Request ID value
+     * @param WP_REST_Request $request Request object
+     * @param string $param Parameter name
+     * @return string Sanitized request ID
+     */
+    public function sanitize_request_id($value, $request, $param) {
+        if (!is_string($value)) {
+            return '';
+        }
+
+        $value = trim($value);
+
+        // Keep only alphanumeric, underscore, and dash
+        $value = preg_replace('/[^a-zA-Z0-9_-]/', '', $value);
+
+        // Limit length
+        if (strlen($value) > 100) {
+            $value = substr($value, 0, 100);
+        }
+
+        return $value;
     }
 
     /**
