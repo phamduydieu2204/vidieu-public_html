@@ -165,15 +165,26 @@ class VD_License_Manager {
                 if ($memory_available >= $required_memory) {
                     // Memory sufficient for large file loading
 
-                    // Step 3.4.6.4d - Silent File Inclusion (SAFE LOADING with class_exists check)
-                    // Load VD_Security_Audit with safe class checking to prevent redeclare errors
+                    // Step 3.4.6.4d - Silent File Inclusion (DISABLED - class_exists() approach failed)
+                    // ISSUE: VD_Security_Audit loading causes fatal errors regardless of class_exists() check
+                    // ROOT CAUSE: Potential WordPress core/plugin conflicts với VD_Security_Audit class
+                    // DECISION: Disable Security Audit loading để maintain website stability
+                    /*
                     $security_audit_file = VD_LM_PATH . 'includes/class-vd-security-audit.php';
 
-                    // Safe file inclusion với class_exists() protection against redeclare errors
+                    // Multiple approaches tested:
+                    // 1. Direct require_once → Fatal error
+                    // 2. @ operator suppression → Still fatal error
+                    // 3. class_exists() check → Still fatal error
+                    // 4. file_exists() + class_exists() → Still fatal error
+
                     if (file_exists($security_audit_file) && !class_exists('VD_Security_Audit')) {
                         @require_once $security_audit_file;
-                        // Note: class_exists() check prevents "Cannot redeclare class" fatal errors
                     }
+                    */
+
+                    // NOTE: VD_Security_Audit features will be implemented differently in later steps
+                    // Core VD License Manager functionality remains fully operational
                 }
             }
         }
