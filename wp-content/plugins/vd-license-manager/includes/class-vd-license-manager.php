@@ -178,6 +178,9 @@ class VD_License_Manager {
                             if (class_exists('VD_Security_Audit')) {
                                 $security_audit = VD_Security_Audit::get_instance();
                                 $security_audit->init(); // Safe initialization after WordPress ready
+
+                                // Step 3.4.6.4e - Post-Loading Verification
+                                $this->verify_security_audit_loading();
                             }
                         }, 20); // Priority 20 ensures WordPress functions are available
                     }
@@ -565,5 +568,46 @@ class VD_License_Manager {
         }
 
         return $numeric_value;
+    }
+
+    /**
+     * Verify VD_Security_Audit loading success
+     * Step 3.4.6.4e - Post-Loading Verification
+     *
+     * @since 3.4.6.4e
+     * @return bool True if verification passes
+     */
+    private function verify_security_audit_loading() {
+        // Verify class exists after loading
+        if (!class_exists('VD_Security_Audit')) {
+            vd_debug_log('Step 3.4.6.4e: VD_Security_Audit class not found after loading');
+            return false;
+        }
+
+        // Test class instantiation without full initialization
+        try {
+            $instance = VD_Security_Audit::get_instance();
+
+            if (!is_object($instance)) {
+                vd_debug_log('Step 3.4.6.4e: VD_Security_Audit get_instance() failed');
+                return false;
+            }
+
+            // Verify class has required methods (without calling them)
+            $required_methods = ['init', 'get_status', 'handle_login_failed'];
+            foreach ($required_methods as $method) {
+                if (!method_exists($instance, $method)) {
+                    vd_debug_log("Step 3.4.6.4e: VD_Security_Audit missing method: {$method}");
+                    return false;
+                }
+            }
+
+            vd_debug_log('Step 3.4.6.4e: VD_Security_Audit verification passed - class loaded successfully');
+            return true;
+
+        } catch (Exception $e) {
+            vd_debug_log('Step 3.4.6.4e: VD_Security_Audit verification failed: ' . $e->getMessage());
+            return false;
+        }
     }
 }
