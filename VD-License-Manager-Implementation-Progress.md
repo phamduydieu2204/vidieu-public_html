@@ -685,11 +685,13 @@ All database layer functionality implemented with full encryption and audit trai
 - **Kiểm thử**: Nội bộ - Plugin loading và class availability
 - **Completion Date**: 2025-09-28
 
-**4.1.3 - REST API Namespace Registration** ⏳ **PENDING**
+**4.1.3 - REST API Namespace Registration** ✅ **COMPLETED**
 - **Mục tiêu**: Đăng ký `/wp-json/vd/v1/` namespace với WordPress
-- **File**: `includes/class-vd-api-router.php` (update)
+- **File**: `includes/class-vd-api-router.php` (✅ updated - REST API hooks added)
+- **Main Plugin**: `includes/class-vd-license-manager.php` (✅ updated - router init() called)
 - **Rủi ro**: **Thấp** - WordPress REST API standard
-- **Kiểm thử**: Nội bộ - Namespace availability check
+- **Kiểm thử**: **User verification required** - Namespace availability via `/wp-json/vd/v1/status`
+- **Completion Date**: 2025-09-28
 
 **4.1.4 - Core Endpoint Definitions** ⏳ **PENDING**
 - **Mục tiêu**: Định nghĩa 3 core endpoints structure
@@ -733,7 +735,7 @@ All database layer functionality implemented with full encryption and audit trai
 - **Rủi ro**: **Thấp** - Testing infrastructure
 - **Kiểm thử**: **User verification required** - Full integration testing
 
-📊 **Step 4.1 Progress**: 2/10 micro-steps (20%)
+📊 **Step 4.1 Progress**: 3/10 micro-steps (30%)
 
 **4.2 - License Validator Core** ⏳ **PENDING**
 - **Mục tiêu**: Implement license validation logic (Step 1 of 4-step process)

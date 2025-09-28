@@ -224,22 +224,98 @@ class VD_API_Router {
     }
 
     /**
-     * Initialize router (placeholder for future steps)
+     * Initialize router - WordPress REST API integration
+     * Step 4.1.3 - REST API Namespace Registration
      *
-     * @since 4.1.1
+     * @since 4.1.3
      */
     public function init() {
-        // Placeholder for WordPress integration
-        // Will be implemented in step 4.1.3
+        // Step 4.1.3 - Register REST API hooks
+        add_action('rest_api_init', array($this, 'register_routes'));
     }
 
     /**
-     * Register routes (placeholder for future steps)
+     * Register routes with WordPress REST API
+     * Step 4.1.3 - REST API Namespace Registration
      *
-     * @since 4.1.1
+     * @since 4.1.3
      */
     public function register_routes() {
-        // Placeholder for route registration
-        // Will be implemented in step 4.1.4
+        // Step 4.1.3 - Basic namespace registration
+        // Register a test route to verify namespace accessibility
+        register_rest_route($this->namespace, '/status', array(
+            'methods' => 'GET',
+            'callback' => array($this, 'handle_status_check'),
+            'permission_callback' => '__return_true', // Public endpoint for testing
+            'args' => array()
+        ));
+
+        // Step 4.1.3 - Register router info endpoint
+        register_rest_route($this->namespace, '/router-info', array(
+            'methods' => 'GET',
+            'callback' => array($this, 'handle_router_info'),
+            'permission_callback' => '__return_true', // Public endpoint for testing
+            'args' => array()
+        ));
+
+        // Update routes array for tracking
+        $this->routes = array(
+            'GET /status' => 'Namespace status verification endpoint',
+            'GET /router-info' => 'Router information và diagnostics endpoint'
+        );
+    }
+
+    /**
+     * Handle status check endpoint
+     * Step 4.1.3 - Basic namespace verification
+     *
+     * @since 4.1.3
+     * @param WP_REST_Request $request The REST request
+     * @return WP_REST_Response Response object
+     */
+    public function handle_status_check($request) {
+        $response_data = array(
+            'success' => true,
+            'message' => 'VD License Manager REST API namespace active',
+            'namespace' => $this->namespace,
+            'timestamp' => current_time('c'),
+            'version' => $this->version,
+            'step' => '4.1.3',
+            'endpoints_registered' => count($this->routes)
+        );
+
+        return rest_ensure_response($response_data);
+    }
+
+    /**
+     * Handle router info endpoint
+     * Step 4.1.3 - Router diagnostics và information
+     *
+     * @since 4.1.3
+     * @param WP_REST_Request $request The REST request
+     * @return WP_REST_Response Response object
+     */
+    public function handle_router_info($request) {
+        $router_status = $this->test_router_functionality();
+
+        $response_data = array(
+            'success' => true,
+            'data' => array(
+                'router_status' => $router_status,
+                'namespace' => $this->namespace,
+                'version' => $this->version,
+                'registered_routes' => $this->routes,
+                'security_manager_available' => !is_null($this->security_manager),
+                'request_validator_available' => !is_null($this->request_validator),
+                'wordpress_rest_api' => array(
+                    'version' => rest_get_server()->get_index()['namespaces'] ?? 'unknown',
+                    'available' => function_exists('register_rest_route')
+                )
+            ),
+            'timestamp' => current_time('c'),
+            'step' => '4.1.3'
+        );
+
+        return rest_ensure_response($response_data);
     }
 }

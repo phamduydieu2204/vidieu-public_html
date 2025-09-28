@@ -502,10 +502,14 @@ class VD_License_Manager {
         // Step 4.1.2 - Initialize API Router
         if (class_exists('VD_API_Router')) {
             $this->api_router = VD_API_Router::get_instance();
+
+            // Step 4.1.3 - Initialize REST API hooks
+            $this->api_router->init();
+
             $this->vd_native_error_log(
                 'API_ROUTER',
                 'info',
-                'API Router infrastructure initialized successfully'
+                'API Router infrastructure và REST API hooks initialized successfully'
             );
         }
 
