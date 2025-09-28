@@ -508,34 +508,76 @@ class VD_API_Router {
                 return $security_check;
             }
 
-            // Step 4.1.4 - Placeholder implementation
+            // Step 4.1.7 - Enhanced placeholder implementation with proper API format
             $response_data = array(
                 'success' => true,
-                'message' => 'License resolve info endpoint ready',
                 'data' => array(
-                    'endpoint' => '/license/resolve-info',
-                    'method' => 'POST',
-                    'status' => 'placeholder_implementation',
-                    'received_params' => array(
-                        'license_key' => $request->get_param('license_key'),
-                        'device_fingerprint' => $request->get_param('device_fingerprint'),
-                        'has_device_info' => !is_null($request->get_param('device_info')),
-                        'client_ip' => $request->get_param('client_ip'),
-                        'request_id' => $request->get_param('request_id')
+                    'license' => array(
+                        'id' => 12345,
+                        'license_key' => $request->get_param('license_key') ?: 'VD-H10-2024-PLACEHOLDER',
+                        'product_id' => 8210,
+                        'status' => 'active',
+                        'expires_at' => gmdate('Y-m-d\TH:i:sP', strtotime('+1 year')),
+                        'max_devices' => 3,
+                        'device_count' => 1
+                    ),
+                    'provider' => array(
+                        'id' => 7,
+                        'account_name' => 'placeholder-h10-account',
+                        'provider' => 'helium10',
+                        'share_type' => 'credentials_2fa'
+                    ),
+                    'content' => array(
+                        'Email đăng nhập' => 'placeholder@helium10.com',
+                        'Mật khẩu' => '[PLACEHOLDER_PASSWORD]',
+                        'Mã 2FA' => '[PLACEHOLDER_2FA]',
+                        'Cookie đăng nhập' => 'session_id=placeholder123; auth_token=placeholder456',
+                        'Ngày hết hạn tài khoản' => gmdate('Y-m-d', strtotime('+1 year')),
+                        'Trạng thái' => 'active',
+                        'Ghi chú' => 'Placeholder implementation - Step 4.1.7'
+                    ),
+                    'device' => array(
+                        'device_fingerprint' => $request->get_param('device_fingerprint') ?: 'placeholder_device_fingerprint',
+                        'status' => 'approved',
+                        'auto_approved' => true,
+                        'first_seen' => current_time('c'),
+                        'approved_at' => current_time('c'),
+                        'last_access' => current_time('c'),
+                        'access_count' => 1
+                    ),
+                    'rate_limit' => array(
+                        'requests_remaining' => 49,
+                        'window_reset' => gmdate('Y-m-d\TH:i:sP', strtotime('+1 hour')),
+                        'retry_after' => null
+                    ),
+                    'meta' => array(
+                        'content_version' => 1,
+                        'response_time_ms' => 145,
+                        'cached' => false,
+                        'request_id' => $request->get_param('request_id') ?: 'req_' . uniqid(),
+                        'step' => '4.1.7',
+                        'implementation' => 'placeholder'
                     )
                 ),
-                'timestamp' => current_time('c'),
-                'step' => '4.1.4'
+                'timestamp' => current_time('c')
             );
 
             return rest_ensure_response($response_data);
         } catch (Exception $e) {
             return rest_ensure_response(array(
                 'success' => false,
-                'error' => 'License resolve info failed',
-                'message' => $e->getMessage(),
-                'timestamp' => current_time('c'),
-                'step' => '4.1.4'
+                'error' => array(
+                    'code' => 'RESOLVE_INFO_ERROR',
+                    'message' => 'License resolve info request failed: ' . $e->getMessage(),
+                    'details' => array(
+                        'error_type' => 'processing_error',
+                        'step' => '4.1.7',
+                        'implementation' => 'placeholder'
+                    ),
+                    'retry_after' => null,
+                    'request_id' => 'req_' . uniqid()
+                ),
+                'timestamp' => current_time('c')
             ));
         }
     }
@@ -556,31 +598,78 @@ class VD_API_Router {
                 return $security_check;
             }
 
-            // Step 4.1.4 - Placeholder implementation
+            // Step 4.1.7 - Enhanced placeholder implementation for cookie endpoint
             $response_data = array(
                 'success' => true,
-                'message' => 'License resolve cookie endpoint ready',
                 'data' => array(
-                    'endpoint' => '/license/resolve-cookie',
-                    'method' => 'POST',
-                    'status' => 'placeholder_implementation',
-                    'received_params' => array(
-                        'license_key' => $request->get_param('license_key'),
-                        'device_fingerprint' => $request->get_param('device_fingerprint')
+                    'license' => array(
+                        'id' => 12346,
+                        'license_key' => $request->get_param('license_key') ?: 'VD-MJ-2024-PLACEHOLDER',
+                        'product_id' => 8211,
+                        'status' => 'active',
+                        'expires_at' => gmdate('Y-m-d\TH:i:sP', strtotime('+1 year')),
+                        'max_devices' => 5,
+                        'device_count' => 2
+                    ),
+                    'provider' => array(
+                        'id' => 8,
+                        'account_name' => 'placeholder-mj-account',
+                        'provider' => 'midjourney',
+                        'share_type' => 'cookie_session'
+                    ),
+                    'content' => array(
+                        'Discord Token' => '[PLACEHOLDER_DISCORD_TOKEN]',
+                        'Session Cookie' => '__Secure-next-auth.session-token=placeholder_session_token_123456789',
+                        'User Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/120.0.0.0',
+                        'Channel ID' => '1234567890123456789',
+                        'Server ID' => '9876543210987654321',
+                        'Subscription Status' => 'active',
+                        'Trạng thái' => 'ready',
+                        'Ghi chú' => 'Placeholder cookie implementation - Step 4.1.7'
+                    ),
+                    'device' => array(
+                        'device_fingerprint' => $request->get_param('device_fingerprint') ?: 'placeholder_cookie_device_fp',
+                        'status' => 'approved',
+                        'auto_approved' => true,
+                        'first_seen' => current_time('c'),
+                        'approved_at' => current_time('c'),
+                        'last_access' => current_time('c'),
+                        'access_count' => 5
+                    ),
+                    'rate_limit' => array(
+                        'requests_remaining' => 47,
+                        'window_reset' => gmdate('Y-m-d\TH:i:sP', strtotime('+1 hour')),
+                        'retry_after' => null
+                    ),
+                    'meta' => array(
+                        'content_version' => 2,
+                        'response_time_ms' => 132,
+                        'cached' => false,
+                        'request_id' => $request->get_param('request_id') ?: 'req_' . uniqid(),
+                        'step' => '4.1.7',
+                        'implementation' => 'placeholder',
+                        'endpoint_type' => 'cookie_resolve'
                     )
                 ),
-                'timestamp' => current_time('c'),
-                'step' => '4.1.4'
+                'timestamp' => current_time('c')
             );
 
             return rest_ensure_response($response_data);
         } catch (Exception $e) {
             return rest_ensure_response(array(
                 'success' => false,
-                'error' => 'License resolve cookie failed',
-                'message' => $e->getMessage(),
-                'timestamp' => current_time('c'),
-                'step' => '4.1.4'
+                'error' => array(
+                    'code' => 'RESOLVE_COOKIE_ERROR',
+                    'message' => 'License resolve cookie request failed: ' . $e->getMessage(),
+                    'details' => array(
+                        'error_type' => 'processing_error',
+                        'step' => '4.1.7',
+                        'implementation' => 'placeholder'
+                    ),
+                    'retry_after' => null,
+                    'request_id' => 'req_' . uniqid()
+                ),
+                'timestamp' => current_time('c')
             ));
         }
     }
@@ -601,31 +690,82 @@ class VD_API_Router {
                 return $security_check;
             }
 
-            // Step 4.1.4 - Placeholder implementation
+            // Step 4.1.7 - Enhanced placeholder implementation for device status
             $response_data = array(
                 'success' => true,
-                'message' => 'Device status endpoint ready',
                 'data' => array(
-                    'endpoint' => '/license/device-status',
-                    'method' => 'GET',
-                    'status' => 'placeholder_implementation',
-                    'received_params' => array(
-                        'license_key' => $request->get_param('license_key'),
-                        'device_fingerprint' => $request->get_param('device_fingerprint')
+                    'license_key' => $request->get_param('license_key') ?: 'VD-FP-2024-PLACEHOLDER',
+                    'max_devices' => 3,
+                    'devices' => array(
+                        array(
+                            'device_fingerprint' => $request->get_param('device_fingerprint') ?: 'placeholder_device_fp_1',
+                            'device_info' => array(
+                                'browser' => 'Chrome',
+                                'os' => 'Windows',
+                                'last_ip' => '127.0.0.1',
+                                'country' => 'VN'
+                            ),
+                            'status' => 'approved',
+                            'first_seen' => gmdate('Y-m-d\TH:i:sP', strtotime('-7 days')),
+                            'last_access' => current_time('c'),
+                            'access_count' => 25,
+                            'auto_approved' => true
+                        ),
+                        array(
+                            'device_fingerprint' => 'placeholder_device_fp_2',
+                            'device_info' => array(
+                                'browser' => 'Firefox',
+                                'os' => 'macOS',
+                                'last_ip' => '127.0.0.2',
+                                'country' => 'VN'
+                            ),
+                            'status' => 'pending',
+                            'first_seen' => gmdate('Y-m-d\TH:i:sP', strtotime('-1 day')),
+                            'last_access' => gmdate('Y-m-d\TH:i:sP', strtotime('-1 day')),
+                            'access_count' => 3,
+                            'auto_approved' => false
+                        )
+                    ),
+                    'current_device' => array(
+                        'device_fingerprint' => $request->get_param('device_fingerprint') ?: 'placeholder_device_fp_1',
+                        'status' => 'approved',
+                        'is_current' => true,
+                        'can_access' => true,
+                        'last_verification' => current_time('c')
+                    ),
+                    'rate_limit' => array(
+                        'requests_remaining' => 48,
+                        'window_reset' => gmdate('Y-m-d\TH:i:sP', strtotime('+1 hour')),
+                        'retry_after' => null
+                    ),
+                    'meta' => array(
+                        'response_time_ms' => 98,
+                        'cached' => false,
+                        'request_id' => $request->get_param('request_id') ?: 'req_' . uniqid(),
+                        'step' => '4.1.7',
+                        'implementation' => 'placeholder',
+                        'endpoint_type' => 'device_status'
                     )
                 ),
-                'timestamp' => current_time('c'),
-                'step' => '4.1.4'
+                'timestamp' => current_time('c')
             );
 
             return rest_ensure_response($response_data);
         } catch (Exception $e) {
             return rest_ensure_response(array(
                 'success' => false,
-                'error' => 'Device status check failed',
-                'message' => $e->getMessage(),
-                'timestamp' => current_time('c'),
-                'step' => '4.1.4'
+                'error' => array(
+                    'code' => 'DEVICE_STATUS_ERROR',
+                    'message' => 'Device status check failed: ' . $e->getMessage(),
+                    'details' => array(
+                        'error_type' => 'processing_error',
+                        'step' => '4.1.7',
+                        'implementation' => 'placeholder'
+                    ),
+                    'retry_after' => null,
+                    'request_id' => 'req_' . uniqid()
+                ),
+                'timestamp' => current_time('c')
             ));
         }
     }
