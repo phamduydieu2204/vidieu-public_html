@@ -140,6 +140,12 @@ class VD_License_Manager {
         $security_audit_file = VD_LM_PATH . 'includes/class-vd-security-audit.php';
         // Note: Variable declared only - no file loading or execution yet
 
+        // Step 3.4.6.3 - Basic File Existence Check (security audit readiness)
+        if (file_exists($security_audit_file)) {
+            // File exists - ready for loading in next step
+            // Note: No file loading or class instantiation yet - check only
+        }
+
         // Load admin interface if in admin
         if (vd_is_admin()) {
             require_once VD_LM_PATH . 'admin/class-vd-admin-menu.php';
