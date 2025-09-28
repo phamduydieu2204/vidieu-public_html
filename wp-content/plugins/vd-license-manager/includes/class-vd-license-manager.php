@@ -844,15 +844,16 @@ class VD_License_Manager {
     /**
      * WordPress native error logging implementation
      * Step 3.4.6.5 - Basic Error Logging
+     * Enhanced in Step 3.4.6.6 - Custom Logging Integration
      *
      * @since 3.4.6.5
+     * @since 3.4.6.6 Enhanced với custom vd_debug_log() integration
      * @param string $component Component name
      * @param string $level Log level (info, warning, error, debug)
      * @param string $message Log message
      * @return void
      */
     private function vd_native_error_log($component, $level, $message) {
-        // Use only WordPress built-in logging functions
         // Format: [VD License Manager] [Component] [Level]: Message
         $formatted_message = sprintf(
             '[VD License Manager] [%s] [%s]: %s',
@@ -861,7 +862,14 @@ class VD_License_Manager {
             $message
         );
 
-        // WordPress native error_log() - Primary logging method
+        // Step 3.4.6.6 - Custom Logging Integration
+        // Priority 1: Use custom vd_debug_log() if available
+        if (function_exists('vd_debug_log')) {
+            vd_debug_log($formatted_message);
+            return;
+        }
+
+        // Priority 2: WordPress native error_log() - Fallback method
         if (defined('WP_DEBUG_LOG') && WP_DEBUG_LOG) {
             // Use WordPress debug.log when debug logging enabled
             error_log($formatted_message);
@@ -875,7 +883,12 @@ class VD_License_Manager {
             // Log context information for debugging
             $context = wp_debug_backtrace_summary(__CLASS__, 0, false);
             if ($context && $level === 'error') {
-                error_log("[VD License Manager] [Context]: {$context}");
+                // Use appropriate logging method for context
+                if (function_exists('vd_debug_log')) {
+                    vd_debug_log("[VD License Manager] [Context]: {$context}");
+                } else {
+                    error_log("[VD License Manager] [Context]: {$context}");
+                }
             }
         }
     }
@@ -920,8 +933,10 @@ class VD_License_Manager {
     /**
      * Test WordPress native logging functionality
      * Step 3.4.6.5 - Basic Error Logging
+     * Enhanced in Step 3.4.6.6 - Custom Logging Integration
      *
      * @since 3.4.6.5
+     * @since 3.4.6.6 Enhanced với custom logging integration testing
      * @return array Test results
      */
     public function test_native_logging() {
@@ -931,14 +946,61 @@ class VD_License_Manager {
             'wp_debug_value' => defined('WP_DEBUG') ? WP_DEBUG : false,
             'wp_debug_log_value' => defined('WP_DEBUG_LOG') ? WP_DEBUG_LOG : false,
             'error_log_function' => function_exists('error_log'),
-            'wp_debug_backtrace_function' => function_exists('wp_debug_backtrace_summary')
+            'wp_debug_backtrace_function' => function_exists('wp_debug_backtrace_summary'),
+            // Step 3.4.6.6 - Custom logging detection
+            'vd_debug_log_function' => function_exists('vd_debug_log'),
+            'custom_logging_available' => function_exists('vd_debug_log'),
+            'active_logging_method' => function_exists('vd_debug_log') ? 'custom' : 'native'
         );
 
-        // Test logging functionality
-        $test_message = 'Step 3.4.6.5 - WordPress native logging test';
+        // Test logging functionality with integration detection
+        $test_message = function_exists('vd_debug_log') ?
+            'Step 3.4.6.6 - Custom logging integration test' :
+            'Step 3.4.6.5 - WordPress native logging test';
+
         $this->vd_log('Testing', $test_message, 'info');
 
         $results['test_logged'] = true;
+        $results['test_timestamp'] = current_time('mysql');
+        $results['integration_level'] = 'Step 3.4.6.6 - Custom Logging Integration';
+
+        return $results;
+    }
+
+    /**
+     * Test custom logging integration specifically
+     * Step 3.4.6.6 - Custom Logging Integration
+     *
+     * @since 3.4.6.6
+     * @return array Custom logging test results
+     */
+    public function test_custom_logging_integration() {
+        $results = array(
+            'custom_function_exists' => function_exists('vd_debug_log'),
+            'integration_priority' => 'custom_first_fallback_native',
+            'test_scenarios' => array()
+        );
+
+        // Test Scenario 1: Custom logging (if available)
+        if (function_exists('vd_debug_log')) {
+            $this->vd_log('Custom Integration Test', 'Testing vd_debug_log() priority', 'info');
+            $results['test_scenarios']['custom_logging'] = 'executed';
+        } else {
+            $results['test_scenarios']['custom_logging'] = 'not_available';
+        }
+
+        // Test Scenario 2: Fallback to native logging
+        $this->vd_log('Integration Test', 'Testing logging integration fallback mechanism', 'debug');
+        $results['test_scenarios']['fallback_logging'] = 'executed';
+
+        // Test Scenario 3: Different log levels
+        $levels = array('info', 'warning', 'error', 'debug');
+        foreach ($levels as $level) {
+            $this->vd_log('Level Test', "Testing {$level} level logging", $level);
+        }
+        $results['test_scenarios']['multiple_levels'] = count($levels) . '_levels_tested';
+
+        $results['test_completed'] = true;
         $results['test_timestamp'] = current_time('mysql');
 
         return $results;
@@ -947,18 +1009,28 @@ class VD_License_Manager {
     /**
      * Get logging configuration status
      * Step 3.4.6.5 - Basic Error Logging
+     * Enhanced in Step 3.4.6.6 - Custom Logging Integration
      *
      * @since 3.4.6.5
+     * @since 3.4.6.6 Enhanced với custom logging detection
      * @return array Logging configuration details
      */
     public function get_logging_config() {
+        // Step 3.4.6.6 - Detect custom logging availability
+        $custom_logging_available = function_exists('vd_debug_log');
+        $active_method = $custom_logging_available ? 'Custom vd_debug_log()' : 'WordPress Native error_log()';
+
         return array(
-            'logging_method' => 'WordPress Native error_log()',
+            'logging_method' => $active_method,
+            'custom_logging_available' => $custom_logging_available,
+            'custom_function' => 'vd_debug_log',
+            'fallback_method' => 'WordPress Native error_log()',
             'primary_condition' => 'WP_DEBUG_LOG = true',
             'secondary_condition' => 'WP_DEBUG = true',
             'log_format' => '[VD License Manager] [Component] [Level]: Message',
             'context_logging' => function_exists('wp_debug_backtrace_summary'),
-            'current_status' => $this->is_logging_enabled()
+            'current_status' => $this->is_logging_enabled(),
+            'integration_level' => 'Step 3.4.6.6 - Custom Logging Integration'
         );
     }
 
