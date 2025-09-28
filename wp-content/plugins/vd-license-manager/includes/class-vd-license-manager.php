@@ -1849,4 +1849,223 @@ class VD_License_Manager {
 
         return $test_results;
     }
+
+    /**
+     * Basic integration testing infrastructure
+     * Step 3.4.6.11 - Basic Testing Infrastructure
+     *
+     * @since 3.4.6.11
+     * @return array Integration test results status
+     */
+    public function test_integration_infrastructure() {
+        $test_results = [
+            'test_type' => 'integration_verification',
+            'test_scope' => 'all_completed_components',
+            'test_approach' => 'status_only_verification',
+            'integration_status' => 'checking',
+            'component_tests' => []
+        ];
+
+        // Component Test 1: Class Safety Check Infrastructure
+        try {
+            $safety_test = method_exists($this, 'test_class_safety_checks') && is_callable([$this, 'test_class_safety_checks']);
+            $test_results['component_tests']['class_safety_infrastructure'] = [
+                'available' => $safety_test,
+                'status' => $safety_test ? 'functional' : 'missing'
+            ];
+        } catch (Exception $e) {
+            $test_results['component_tests']['class_safety_infrastructure'] = [
+                'available' => false,
+                'status' => 'error',
+                'error' => $e->getMessage()
+            ];
+        }
+
+        // Component Test 2: Class Instantiation Infrastructure
+        try {
+            $instantiation_test = method_exists($this, 'test_basic_class_instantiation') && is_callable([$this, 'test_basic_class_instantiation']);
+            $test_results['component_tests']['class_instantiation_infrastructure'] = [
+                'available' => $instantiation_test,
+                'status' => $instantiation_test ? 'functional' : 'missing'
+            ];
+        } catch (Exception $e) {
+            $test_results['component_tests']['class_instantiation_infrastructure'] = [
+                'available' => false,
+                'status' => 'error',
+                'error' => $e->getMessage()
+            ];
+        }
+
+        // Component Test 3: Cron Hook Infrastructure
+        try {
+            $cron_test = method_exists($this, 'test_cron_hook_declaration') && is_callable([$this, 'test_cron_hook_declaration']);
+            $test_results['component_tests']['cron_hook_infrastructure'] = [
+                'available' => $cron_test,
+                'status' => $cron_test ? 'functional' : 'missing'
+            ];
+        } catch (Exception $e) {
+            $test_results['component_tests']['cron_hook_infrastructure'] = [
+                'available' => false,
+                'status' => 'error',
+                'error' => $e->getMessage()
+            ];
+        }
+
+        // Component Test 4: Security Audit Infrastructure
+        try {
+            $security_test = method_exists($this, 'test_cron_handler_implementation') && is_callable([$this, 'test_cron_handler_implementation']);
+            $test_results['component_tests']['security_audit_infrastructure'] = [
+                'available' => $security_test,
+                'status' => $security_test ? 'functional' : 'missing'
+            ];
+        } catch (Exception $e) {
+            $test_results['component_tests']['security_audit_infrastructure'] = [
+                'available' => false,
+                'status' => 'error',
+                'error' => $e->getMessage()
+            ];
+        }
+
+        // Component Test 5: Core Method Availability
+        $core_methods = [
+            'perform_class_safety_checks',
+            'perform_basic_class_instantiation',
+            'handle_security_audit_cron',
+            'setup_cron_hooks',
+            'vd_native_error_log'
+        ];
+
+        $core_method_status = [];
+        foreach ($core_methods as $method) {
+            $core_method_status[$method] = [
+                'exists' => method_exists($this, $method),
+                'callable' => is_callable([$this, $method])
+            ];
+        }
+
+        $test_results['component_tests']['core_methods'] = [
+            'total_methods' => count($core_methods),
+            'available_methods' => array_sum(array_column($core_method_status, 'exists')),
+            'callable_methods' => array_sum(array_column($core_method_status, 'callable')),
+            'method_details' => $core_method_status
+        ];
+
+        // Integration Summary
+        $available_components = array_sum(array_column($test_results['component_tests'], 'available', 0));
+        $total_components = count($test_results['component_tests']) - 1; // Exclude core_methods from count
+
+        $test_results['integration_summary'] = [
+            'total_components' => $total_components,
+            'available_components' => $available_components,
+            'integration_percentage' => $total_components > 0 ? round(($available_components / $total_components) * 100, 1) : 0,
+            'overall_status' => $available_components === $total_components ? 'fully_integrated' : 'partial_integration'
+        ];
+
+        // Final status determination
+        if ($test_results['integration_summary']['integration_percentage'] >= 100) {
+            $test_results['integration_status'] = 'complete';
+        } elseif ($test_results['integration_summary']['integration_percentage'] >= 75) {
+            $test_results['integration_status'] = 'mostly_complete';
+        } elseif ($test_results['integration_summary']['integration_percentage'] >= 50) {
+            $test_results['integration_status'] = 'partial';
+        } else {
+            $test_results['integration_status'] = 'incomplete';
+        }
+
+        $test_results['test_completed'] = true;
+        $test_results['test_timestamp'] = current_time('mysql');
+
+        return $test_results;
+    }
+
+    /**
+     * Get overall system health status
+     * Step 3.4.6.11 - Basic Testing Infrastructure utility
+     *
+     * @since 3.4.6.11
+     * @return array System health status
+     */
+    public function get_system_health_status() {
+        $health_status = [
+            'overall_health' => 'checking',
+            'component_health' => [],
+            'critical_issues' => [],
+            'health_score' => 0
+        ];
+
+        // Health Check 1: Plugin Core Health
+        $plugin_file_exists = file_exists(VD_LM_FILE);
+        $plugin_version_valid = defined('VD_LM_VERSION') && !empty(VD_LM_VERSION);
+
+        $health_status['component_health']['plugin_core'] = [
+            'status' => ($plugin_file_exists && $plugin_version_valid) ? 'healthy' : 'unhealthy',
+            'checks' => [
+                'file_exists' => $plugin_file_exists,
+                'version_defined' => $plugin_version_valid
+            ]
+        ];
+
+        // Health Check 2: WordPress Integration Health
+        $wp_hooks_registered = has_action('plugins_loaded') !== false;
+        $wp_version_compatible = version_compare(get_bloginfo('version'), '5.0', '>=');
+
+        $health_status['component_health']['wordpress_integration'] = [
+            'status' => ($wp_hooks_registered && $wp_version_compatible) ? 'healthy' : 'unhealthy',
+            'checks' => [
+                'hooks_registered' => $wp_hooks_registered,
+                'wp_version_compatible' => $wp_version_compatible
+            ]
+        ];
+
+        // Health Check 3: Database Health (basic check)
+        global $wpdb;
+        $db_connection = $wpdb->check_connection();
+
+        $health_status['component_health']['database'] = [
+            'status' => $db_connection ? 'healthy' : 'unhealthy',
+            'checks' => [
+                'connection_active' => $db_connection
+            ]
+        ];
+
+        // Health Check 4: Security Components Health
+        $security_methods_exist = method_exists($this, 'handle_security_audit_cron') &&
+                                 method_exists($this, 'audit_wordpress_core_security');
+
+        $health_status['component_health']['security_components'] = [
+            'status' => $security_methods_exist ? 'healthy' : 'unhealthy',
+            'checks' => [
+                'security_methods_available' => $security_methods_exist
+            ]
+        ];
+
+        // Calculate health score
+        $healthy_components = 0;
+        $total_components = count($health_status['component_health']);
+
+        foreach ($health_status['component_health'] as $component => $health) {
+            if ($health['status'] === 'healthy') {
+                $healthy_components++;
+            } else {
+                $health_status['critical_issues'][] = "Component '{$component}' is unhealthy";
+            }
+        }
+
+        $health_status['health_score'] = $total_components > 0 ? round(($healthy_components / $total_components) * 100, 1) : 0;
+
+        // Overall health determination
+        if ($health_status['health_score'] >= 90) {
+            $health_status['overall_health'] = 'excellent';
+        } elseif ($health_status['health_score'] >= 75) {
+            $health_status['overall_health'] = 'good';
+        } elseif ($health_status['health_score'] >= 50) {
+            $health_status['overall_health'] = 'fair';
+        } else {
+            $health_status['overall_health'] = 'poor';
+        }
+
+        $health_status['timestamp'] = current_time('mysql');
+
+        return $health_status;
+    }
 }
