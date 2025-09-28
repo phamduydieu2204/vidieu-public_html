@@ -693,11 +693,14 @@ All database layer functionality implemented with full encryption and audit trai
 - **Kiểm thử**: **User verification required** - Namespace availability via `/wp-json/vd/v1/status`
 - **Completion Date**: 2025-09-28
 
-**4.1.4 - Core Endpoint Definitions** ⏳ **PENDING**
+**4.1.4 - Core Endpoint Definitions** ✅ **COMPLETED**
 - **Mục tiêu**: Định nghĩa 3 core endpoints structure
-- **File**: `includes/class-vd-api-router.php` (update)
+- **File**: `includes/class-vd-api-router.php` (✅ updated - 3 core endpoints added)
+- **Endpoints**: `/license/resolve-info`, `/license/resolve-cookie`, `/license/device-status`
+- **Features**: Request validation, placeholder handlers, error handling
 - **Rủi ro**: **Vừa** - Endpoint registration complexity
-- **Kiểm thử**: **User verification required** - Endpoint accessibility
+- **Kiểm thử**: **User verification required** - Endpoint accessibility via POST/GET
+- **Completion Date**: 2025-09-28
 
 **4.1.5 - Request Parameter Validation Schema** ⏳ **PENDING**
 - **Mục tiêu**: Định nghĩa input validation cho tất cả endpoints
@@ -735,7 +738,7 @@ All database layer functionality implemented with full encryption and audit trai
 - **Rủi ro**: **Thấp** - Testing infrastructure
 - **Kiểm thử**: **User verification required** - Full integration testing
 
-📊 **Step 4.1 Progress**: 3/10 micro-steps (30%)
+📊 **Step 4.1 Progress**: 4/10 micro-steps (40%)
 
 **4.2 - License Validator Core** ⏳ **PENDING**
 - **Mục tiêu**: Implement license validation logic (Step 1 of 4-step process)

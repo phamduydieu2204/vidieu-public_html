@@ -258,10 +258,16 @@ class VD_API_Router {
             'args' => array()
         ));
 
+        // Step 4.1.4 - Core License Management Endpoints
+        $this->register_core_license_endpoints();
+
         // Update routes array for tracking
         $this->routes = array(
             'GET /status' => 'Namespace status verification endpoint',
-            'GET /router-info' => 'Router information và diagnostics endpoint'
+            'GET /router-info' => 'Router information và diagnostics endpoint',
+            'POST /license/resolve-info' => 'Main license resolution endpoint',
+            'POST /license/resolve-cookie' => 'Cookie-based license resolution endpoint',
+            'GET /license/device-status' => 'Device status checking endpoint'
         );
     }
 
@@ -325,6 +331,245 @@ class VD_API_Router {
             );
 
             return rest_ensure_response($fallback_data);
+        }
+    }
+
+    /**
+     * Register core license management endpoints
+     * Step 4.1.4 - Core Endpoint Definitions
+     *
+     * @since 4.1.4
+     */
+    private function register_core_license_endpoints() {
+        // 1. Main license resolution endpoint
+        register_rest_route($this->namespace, '/license/resolve-info', array(
+            'methods' => 'POST',
+            'callback' => array($this, 'handle_license_resolve_info'),
+            'permission_callback' => '__return_true', // Public endpoint - will validate internally
+            'args' => $this->get_license_resolve_args()
+        ));
+
+        // 2. Cookie-based license resolution endpoint
+        register_rest_route($this->namespace, '/license/resolve-cookie', array(
+            'methods' => 'POST',
+            'callback' => array($this, 'handle_license_resolve_cookie'),
+            'permission_callback' => '__return_true', // Public endpoint - will validate internally
+            'args' => $this->get_cookie_resolve_args()
+        ));
+
+        // 3. Device status checking endpoint
+        register_rest_route($this->namespace, '/license/device-status', array(
+            'methods' => 'GET',
+            'callback' => array($this, 'handle_device_status'),
+            'permission_callback' => '__return_true', // Public endpoint - will validate internally
+            'args' => $this->get_device_status_args()
+        ));
+    }
+
+    /**
+     * Get license resolve endpoint arguments
+     * Step 4.1.4 - Request parameter validation
+     *
+     * @since 4.1.4
+     * @return array Endpoint arguments
+     */
+    private function get_license_resolve_args() {
+        return array(
+            'license_key' => array(
+                'required' => true,
+                'type' => 'string',
+                'description' => 'License key to resolve',
+                'pattern' => '^VD-[A-Z0-9]+-[0-9]{4}-[A-Z0-9]+$'
+            ),
+            'device_fingerprint' => array(
+                'required' => true,
+                'type' => 'string',
+                'description' => 'SHA256 device fingerprint (64 characters)',
+                'pattern' => '^[a-f0-9]{64}$'
+            ),
+            'device_info' => array(
+                'required' => false,
+                'type' => 'object',
+                'description' => 'Device information object'
+            ),
+            'client_ip' => array(
+                'required' => false,
+                'type' => 'string',
+                'description' => 'Client IP address'
+            ),
+            'request_id' => array(
+                'required' => false,
+                'type' => 'string',
+                'description' => 'Request tracking ID'
+            )
+        );
+    }
+
+    /**
+     * Get cookie resolve endpoint arguments
+     * Step 4.1.4 - Request parameter validation
+     *
+     * @since 4.1.4
+     * @return array Endpoint arguments
+     */
+    private function get_cookie_resolve_args() {
+        return array(
+            'license_key' => array(
+                'required' => true,
+                'type' => 'string',
+                'description' => 'License key to resolve',
+                'pattern' => '^VD-[A-Z0-9]+-[0-9]{4}-[A-Z0-9]+$'
+            ),
+            'device_fingerprint' => array(
+                'required' => true,
+                'type' => 'string',
+                'description' => 'SHA256 device fingerprint (64 characters)',
+                'pattern' => '^[a-f0-9]{64}$'
+            )
+        );
+    }
+
+    /**
+     * Get device status endpoint arguments
+     * Step 4.1.4 - Request parameter validation
+     *
+     * @since 4.1.4
+     * @return array Endpoint arguments
+     */
+    private function get_device_status_args() {
+        return array(
+            'license_key' => array(
+                'required' => true,
+                'type' => 'string',
+                'description' => 'License key',
+                'pattern' => '^VD-[A-Z0-9]+-[0-9]{4}-[A-Z0-9]+$'
+            ),
+            'device_fingerprint' => array(
+                'required' => true,
+                'type' => 'string',
+                'description' => 'SHA256 device fingerprint (64 characters)',
+                'pattern' => '^[a-f0-9]{64}$'
+            )
+        );
+    }
+
+    /**
+     * Handle license resolve info endpoint
+     * Step 4.1.4 - Main license resolution endpoint
+     *
+     * @since 4.1.4
+     * @param WP_REST_Request $request The REST request
+     * @return WP_REST_Response Response object
+     */
+    public function handle_license_resolve_info($request) {
+        try {
+            // Step 4.1.4 - Placeholder implementation
+            $response_data = array(
+                'success' => true,
+                'message' => 'License resolve info endpoint ready',
+                'data' => array(
+                    'endpoint' => '/license/resolve-info',
+                    'method' => 'POST',
+                    'status' => 'placeholder_implementation',
+                    'received_params' => array(
+                        'license_key' => $request->get_param('license_key'),
+                        'device_fingerprint' => $request->get_param('device_fingerprint'),
+                        'has_device_info' => !is_null($request->get_param('device_info')),
+                        'client_ip' => $request->get_param('client_ip'),
+                        'request_id' => $request->get_param('request_id')
+                    )
+                ),
+                'timestamp' => current_time('c'),
+                'step' => '4.1.4'
+            );
+
+            return rest_ensure_response($response_data);
+        } catch (Exception $e) {
+            return rest_ensure_response(array(
+                'success' => false,
+                'error' => 'License resolve info failed',
+                'message' => $e->getMessage(),
+                'timestamp' => current_time('c'),
+                'step' => '4.1.4'
+            ));
+        }
+    }
+
+    /**
+     * Handle license resolve cookie endpoint
+     * Step 4.1.4 - Cookie-based license resolution endpoint
+     *
+     * @since 4.1.4
+     * @param WP_REST_Request $request The REST request
+     * @return WP_REST_Response Response object
+     */
+    public function handle_license_resolve_cookie($request) {
+        try {
+            // Step 4.1.4 - Placeholder implementation
+            $response_data = array(
+                'success' => true,
+                'message' => 'License resolve cookie endpoint ready',
+                'data' => array(
+                    'endpoint' => '/license/resolve-cookie',
+                    'method' => 'POST',
+                    'status' => 'placeholder_implementation',
+                    'received_params' => array(
+                        'license_key' => $request->get_param('license_key'),
+                        'device_fingerprint' => $request->get_param('device_fingerprint')
+                    )
+                ),
+                'timestamp' => current_time('c'),
+                'step' => '4.1.4'
+            );
+
+            return rest_ensure_response($response_data);
+        } catch (Exception $e) {
+            return rest_ensure_response(array(
+                'success' => false,
+                'error' => 'License resolve cookie failed',
+                'message' => $e->getMessage(),
+                'timestamp' => current_time('c'),
+                'step' => '4.1.4'
+            ));
+        }
+    }
+
+    /**
+     * Handle device status endpoint
+     * Step 4.1.4 - Device status checking endpoint
+     *
+     * @since 4.1.4
+     * @param WP_REST_Request $request The REST request
+     * @return WP_REST_Response Response object
+     */
+    public function handle_device_status($request) {
+        try {
+            // Step 4.1.4 - Placeholder implementation
+            $response_data = array(
+                'success' => true,
+                'message' => 'Device status endpoint ready',
+                'data' => array(
+                    'endpoint' => '/license/device-status',
+                    'method' => 'GET',
+                    'status' => 'placeholder_implementation',
+                    'received_params' => array(
+                        'license_key' => $request->get_param('license_key'),
+                        'device_fingerprint' => $request->get_param('device_fingerprint')
+                    )
+                ),
+                'timestamp' => current_time('c'),
+                'step' => '4.1.4'
+            );
+
+            return rest_ensure_response($response_data);
+        } catch (Exception $e) {
+            return rest_ensure_response(array(
+                'success' => false,
+                'error' => 'Device status check failed',
+                'message' => $e->getMessage(),
+                'timestamp' => current_time('c'),
+                'step' => '4.1.4'
+            ));
         }
     }
 
