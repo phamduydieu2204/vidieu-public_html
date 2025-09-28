@@ -371,6 +371,13 @@ class VD_API_Router {
             'callback' => array($this, 'handle_security_status'),
             'permission_callback' => '__return_true'
         ));
+
+        // Step 4.1.8 - Error handling statistics endpoint
+        register_rest_route($this->namespace, '/error-statistics', array(
+            'methods' => 'GET',
+            'callback' => array($this, 'handle_error_statistics'),
+            'permission_callback' => '__return_true'
+        ));
     }
 
     /**
@@ -1204,6 +1211,246 @@ class VD_API_Router {
         }
 
         return $status;
+    }
+
+    /**
+     * Create standardized API error response
+     * Step 4.1.8 - Error handling infrastructure
+     *
+     * @since 4.1.8
+     * @param string $error_code Error code identifier
+     * @param string $message Human-readable error message
+     * @param array $details Additional error context
+     * @param int $http_status HTTP status code (default: 400)
+     * @param int|null $retry_after Retry after seconds for rate limiting
+     * @return WP_Error Standardized error response
+     */
+    private function create_api_error($error_code, $message, $details = [], $http_status = 400, $retry_after = null) {
+        $error_data = array(
+            'code' => $error_code,
+            'message' => $message,
+            'details' => array_merge([
+                'step' => '4.1.8',
+                'timestamp' => current_time('c'),
+                'http_status' => $http_status
+            ], $details),
+            'retry_after' => $retry_after,
+            'request_id' => 'req_' . uniqid()
+        );
+
+        // Log error if debug enabled
+        if (defined('WP_DEBUG') && WP_DEBUG) {
+            error_log('[VD API Error] ' . $error_code . ': ' . $message . ' | Details: ' . json_encode($details));
+        }
+
+        return new WP_Error($error_code, $message, array(
+            'status' => $http_status,
+            'error_data' => $error_data
+        ));
+    }
+
+    /**
+     * Format error response for REST API
+     * Step 4.1.8 - Standardized error response formatting
+     *
+     * @since 4.1.8
+     * @param WP_Error|string $error Error object or error code
+     * @param string $message Optional error message if $error is string
+     * @param array $details Optional error details
+     * @param int $http_status HTTP status code
+     * @return WP_REST_Response Formatted error response
+     */
+    private function format_error_response($error, $message = '', $details = [], $http_status = 400) {
+        if (is_wp_error($error)) {
+            $error_data = $error->get_error_data();
+            $response_data = array(
+                'success' => false,
+                'error' => isset($error_data['error_data']) ? $error_data['error_data'] : array(
+                    'code' => $error->get_error_code(),
+                    'message' => $error->get_error_message(),
+                    'details' => $details,
+                    'retry_after' => null,
+                    'request_id' => 'req_' . uniqid()
+                ),
+                'timestamp' => current_time('c')
+            );
+            $status = isset($error_data['status']) ? $error_data['status'] : $http_status;
+        } else {
+            $response_data = array(
+                'success' => false,
+                'error' => array(
+                    'code' => $error,
+                    'message' => $message,
+                    'details' => array_merge([
+                        'step' => '4.1.8',
+                        'http_status' => $http_status
+                    ], $details),
+                    'retry_after' => null,
+                    'request_id' => 'req_' . uniqid()
+                ),
+                'timestamp' => current_time('c')
+            );
+            $status = $http_status;
+        }
+
+        return rest_ensure_response($response_data)->set_status($status);
+    }
+
+    /**
+     * Handle validation errors
+     * Step 4.1.8 - Validation error handling
+     *
+     * @since 4.1.8
+     * @param array $validation_errors Array of validation errors
+     * @param string $context Validation context (e.g., 'license_key', 'device_fingerprint')
+     * @return WP_Error Validation error response
+     */
+    private function handle_validation_errors($validation_errors, $context = 'request') {
+        $error_details = array(
+            'validation_context' => $context,
+            'validation_errors' => $validation_errors,
+            'error_count' => count($validation_errors)
+        );
+
+        return $this->create_api_error(
+            'VALIDATION_ERROR',
+            'Request validation failed. Please check your input parameters.',
+            $error_details,
+            400
+        );
+    }
+
+    /**
+     * Handle rate limiting errors
+     * Step 4.1.8 - Rate limiting error handling
+     *
+     * @since 4.1.8
+     * @param int $requests_made Number of requests made
+     * @param int $requests_limit Request limit
+     * @param int $window_reset_seconds Seconds until rate limit window resets
+     * @return WP_Error Rate limit error response
+     */
+    private function handle_rate_limit_error($requests_made, $requests_limit, $window_reset_seconds) {
+        $error_details = array(
+            'requests_made' => $requests_made,
+            'requests_limit' => $requests_limit,
+            'window_reset_seconds' => $window_reset_seconds,
+            'reset_time' => gmdate('Y-m-d\TH:i:sP', time() + $window_reset_seconds)
+        );
+
+        return $this->create_api_error(
+            'RATE_LIMITED',
+            "Rate limit exceeded. You've made {$requests_made}/{$requests_limit} requests. Try again in {$window_reset_seconds} seconds.",
+            $error_details,
+            429,
+            $window_reset_seconds
+        );
+    }
+
+    /**
+     * Handle business logic errors
+     * Step 4.1.8 - Business logic error handling
+     *
+     * @since 4.1.8
+     * @param string $error_type Business error type
+     * @param string $message Error message
+     * @param array $business_context Business-specific context
+     * @return WP_Error Business logic error response
+     */
+    private function handle_business_error($error_type, $message, $business_context = []) {
+        $error_codes_map = array(
+            'invalid_license' => array('code' => 'INVALID_LICENSE', 'status' => 404),
+            'license_expired' => array('code' => 'LICENSE_EXPIRED', 'status' => 403),
+            'device_limit_exceeded' => array('code' => 'DEVICE_LIMIT_EXCEEDED', 'status' => 403),
+            'device_not_approved' => array('code' => 'DEVICE_NOT_APPROVED', 'status' => 403),
+            'provider_unavailable' => array('code' => 'PROVIDER_UNAVAILABLE', 'status' => 503),
+            'database_error' => array('code' => 'DATABASE_ERROR', 'status' => 500)
+        );
+
+        $error_info = isset($error_codes_map[$error_type]) ? $error_codes_map[$error_type] :
+                      array('code' => 'BUSINESS_ERROR', 'status' => 400);
+
+        $error_details = array_merge([
+            'business_error_type' => $error_type,
+            'business_context' => $business_context
+        ], $business_context);
+
+        return $this->create_api_error(
+            $error_info['code'],
+            $message,
+            $error_details,
+            $error_info['status']
+        );
+    }
+
+    /**
+     * Get error statistics
+     * Step 4.1.8 - Error monitoring and statistics
+     *
+     * @since 4.1.8
+     * @return array Error statistics
+     */
+    public function get_error_statistics() {
+        // This would integrate with actual error logging/monitoring
+        // For now, return placeholder statistics
+        return array(
+            'error_handling_version' => '4.1.8',
+            'supported_error_types' => [
+                'VALIDATION_ERROR',
+                'RATE_LIMITED',
+                'INVALID_LICENSE',
+                'LICENSE_EXPIRED',
+                'DEVICE_LIMIT_EXCEEDED',
+                'DEVICE_NOT_APPROVED',
+                'PROVIDER_UNAVAILABLE',
+                'DATABASE_ERROR',
+                'AUTHENTICATION_REQUIRED'
+            ],
+            'http_status_codes' => [400, 401, 403, 404, 429, 500, 503],
+            'error_logging_enabled' => defined('WP_DEBUG') && WP_DEBUG,
+            'last_updated' => current_time('c')
+        );
+    }
+
+    /**
+     * Handle error statistics endpoint
+     * Step 4.1.8 - Error statistics endpoint handler
+     *
+     * @since 4.1.8
+     * @param WP_REST_Request $request Request object
+     * @return WP_REST_Response Error statistics response
+     */
+    public function handle_error_statistics($request) {
+        try {
+            $statistics = $this->get_error_statistics();
+
+            return $this->format_error_response(array(
+                'success' => true,
+                'data' => array(
+                    'error_infrastructure' => $statistics,
+                    'error_handling_methods' => [
+                        'create_api_error',
+                        'format_error_response',
+                        'handle_validation_errors',
+                        'handle_rate_limit_error',
+                        'handle_business_error'
+                    ],
+                    'step_info' => array(
+                        'current_step' => '4.1.8',
+                        'feature' => 'Error Handling Infrastructure',
+                        'status' => 'implemented'
+                    )
+                ),
+                'timestamp' => current_time('c')
+            ));
+        } catch (Exception $e) {
+            return $this->create_api_error(
+                'ERROR_STATISTICS_ERROR',
+                'Failed to retrieve error statistics: ' . $e->getMessage(),
+                array('exception' => get_class($e)),
+                500
+            );
+        }
     }
 
     /**
