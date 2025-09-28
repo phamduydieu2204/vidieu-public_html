@@ -36,7 +36,7 @@ class VD_API_Security {
     }
 
     public function get_current_step() {
-        return '3.5.3';
+        return '3.5.4';
     }
 
     public function get_authentication_methods() {
@@ -83,6 +83,155 @@ class VD_API_Security {
     }
 
     public function is_authentication_framework_ready() {
+        return true;
+    }
+
+    public function get_rate_limiting_config() {
+        return [
+            'license_key_limit' => [
+                'requests' => 60,
+                'window' => 3600
+            ],
+            'ip_limit' => [
+                'requests' => 10,
+                'window' => 60
+            ],
+            'storage_prefix' => 'vd_rate_limit_',
+            'enabled' => true
+        ];
+    }
+
+    public function get_rate_limiting_status() {
+        return [
+            'license_key_tracking' => true,
+            'ip_tracking' => true,
+            'storage_ready' => true,
+            'framework_ready' => true
+        ];
+    }
+
+    public function track_request($identifier, $limit_type = 'license_key') {
+        $config = $this->get_rate_limiting_config();
+        $prefix = $config['storage_prefix'];
+        $current_time = time();
+
+        $option_key = $prefix . $limit_type . '_' . md5($identifier);
+        $stored_data = get_option($option_key, [
+            'count' => 0,
+            'window_start' => $current_time,
+            'last_request' => $current_time
+        ]);
+
+        $limit_config = $config[$limit_type . '_limit'];
+        $window_duration = $limit_config['window'];
+
+        if (($current_time - $stored_data['window_start']) >= $window_duration) {
+            $stored_data = [
+                'count' => 1,
+                'window_start' => $current_time,
+                'last_request' => $current_time
+            ];
+        } else {
+            $stored_data['count']++;
+            $stored_data['last_request'] = $current_time;
+        }
+
+        update_option($option_key, $stored_data);
+
+        return 'tracked';
+    }
+
+    public function get_request_count($identifier, $limit_type = 'license_key') {
+        $config = $this->get_rate_limiting_config();
+        $prefix = $config['storage_prefix'];
+        $current_time = time();
+
+        $option_key = $prefix . $limit_type . '_' . md5($identifier);
+        $stored_data = get_option($option_key, [
+            'count' => 0,
+            'window_start' => $current_time,
+            'last_request' => $current_time
+        ]);
+
+        $limit_config = $config[$limit_type . '_limit'];
+        $window_duration = $limit_config['window'];
+
+        if (($current_time - $stored_data['window_start']) >= $window_duration) {
+            return 0;
+        }
+
+        return $stored_data['count'];
+    }
+
+    public function check_rate_limit($identifier, $limit_type = 'license_key') {
+        $config = $this->get_rate_limiting_config();
+        $current_count = $this->get_request_count($identifier, $limit_type);
+        $limit_config = $config[$limit_type . '_limit'];
+        $max_requests = $limit_config['requests'];
+
+        return [
+            'allowed' => ($current_count < $max_requests),
+            'current_count' => $current_count,
+            'limit' => $max_requests,
+            'window_seconds' => $limit_config['window'],
+            'status' => ($current_count < $max_requests) ? 'within_limit' : 'rate_limited'
+        ];
+    }
+
+    public function is_rate_limited($identifier, $limit_type = 'license_key') {
+        $check_result = $this->check_rate_limit($identifier, $limit_type);
+        return !$check_result['allowed'];
+    }
+
+    public function reset_rate_limits($identifier = null, $limit_type = null) {
+        $config = $this->get_rate_limiting_config();
+        $prefix = $config['storage_prefix'];
+
+        if ($identifier && $limit_type) {
+            $option_key = $prefix . $limit_type . '_' . md5($identifier);
+            delete_option($option_key);
+            return 'reset_single';
+        }
+
+        global $wpdb;
+        $like_pattern = $prefix . '%';
+        $wpdb->query($wpdb->prepare(
+            "DELETE FROM {$wpdb->options} WHERE option_name LIKE %s",
+            $like_pattern
+        ));
+
+        return 'reset_all';
+    }
+
+    public function get_rate_limit_stats($identifier, $limit_type = 'license_key') {
+        $config = $this->get_rate_limiting_config();
+        $prefix = $config['storage_prefix'];
+        $current_time = time();
+
+        $option_key = $prefix . $limit_type . '_' . md5($identifier);
+        $stored_data = get_option($option_key, [
+            'count' => 0,
+            'window_start' => $current_time,
+            'last_request' => $current_time
+        ]);
+
+        $limit_config = $config[$limit_type . '_limit'];
+        $window_duration = $limit_config['window'];
+        $time_remaining = max(0, $window_duration - ($current_time - $stored_data['window_start']));
+
+        return [
+            'identifier' => $identifier,
+            'limit_type' => $limit_type,
+            'current_count' => $this->get_request_count($identifier, $limit_type),
+            'max_requests' => $limit_config['requests'],
+            'window_duration' => $window_duration,
+            'time_remaining' => $time_remaining,
+            'last_request' => $stored_data['last_request'],
+            'rate_limited' => $this->is_rate_limited($identifier, $limit_type)
+        ];
+    }
+
+    public function is_rate_limiting_framework_ready() {
         return true;
     }
 }
