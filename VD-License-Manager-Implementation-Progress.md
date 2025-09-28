@@ -377,12 +377,56 @@ All database layer functionality implemented with full encryption and audit trai
 - [x] **Files**: `includes/class-vd-license-manager.php` (lines 143-147 added)
 - [x] **Result**: File existence check added safely - no file loading or execution
 
-**3.4.6.4 - Silent File Loading** ⏳ **PENDING**
-- [ ] Thêm require_once KHÔNG có logging
-- [ ] Load VD_Security_Audit file without any function calls
-- [ ] Test file loading không use custom functions
-- [ ] **Risk**: Thấp - File loading without any function calls
-- [ ] **Files**: `includes/class-vd-license-manager.php` (require only)
+**3.4.6.4 - Silent File Loading** 🚨 **REDESIGNED - ULTRA-SAFE MICRO-STEPS**
+⚠️ **CRITICAL ISSUE**: Step 3.4.6.4 caused fatal error - Complete redesign thành 6 atomic micro-steps
+
+**3.4.6.4a - Pre-Loading Environment Check** ⏳ **PENDING**
+- [ ] Verify memory và environment readiness cho large file loading (65KB)
+- [ ] Check PHP memory limits và available resources
+- [ ] Test WordPress loading lifecycle compatibility
+- [ ] **Risk**: Cực thấp - Environment verification only, no code changes
+- [ ] **Files**: Test script only (no main plugin modification)
+- [ ] **Testing**: Tự kiểm tra nội bộ
+
+**3.4.6.4b - Conditional Loading Declaration** ⏳ **PENDING**
+- [ ] Add empty conditional block inside file_exists() check
+- [ ] Prepare code structure cho safe file loading
+- [ ] Test conditional logic không crash plugin
+- [ ] **Risk**: Cực thấp - No file operations, chỉ code structure
+- [ ] **Files**: `includes/class-vd-license-manager.php` (add empty block)
+- [ ] **Testing**: Tự kiểm tra nội bộ
+
+**3.4.6.4c - Memory Management Setup** ⏳ **PENDING**
+- [ ] Add memory management checks trước file loading
+- [ ] Implement memory availability verification
+- [ ] Add PHP memory limit checks với native functions
+- [ ] **Risk**: Thấp - Native PHP memory functions only
+- [ ] **Files**: `includes/class-vd-license-manager.php` (memory checks)
+- [ ] **Testing**: **User verification required** - memory behavior
+
+**3.4.6.4d - Silent File Inclusion** ⏳ **PENDING**
+- [ ] Add require_once trong conditional với error suppression
+- [ ] Load VD_Security_Audit file với safety measures
+- [ ] Use @ operator cho silent error handling
+- [ ] **Risk**: Thấp - File loading với safety measures
+- [ ] **Files**: `includes/class-vd-license-manager.php` (silent require)
+- [ ] **Testing**: **User verification required** - file loading stability
+
+**3.4.6.4e - Post-Loading Verification** ⏳ **PENDING**
+- [ ] Verify class loaded successfully after require_once
+- [ ] Add class_exists('VD_Security_Audit') check
+- [ ] Test class availability không instantiate
+- [ ] **Risk**: Cực thấp - Verification only, no instantiation
+- [ ] **Files**: `includes/class-vd-license-manager.php` (class_exists check)
+- [ ] **Testing**: Tự kiểm tra nội bộ
+
+**3.4.6.4f - Error Recovery Mechanism** ⏳ **PENDING**
+- [ ] Add fallback handling nếu file loading fails
+- [ ] Implement graceful degradation strategy
+- [ ] Add error logging cho debugging purposes
+- [ ] **Risk**: Cực thấp - Error handling infrastructure
+- [ ] **Files**: `includes/class-vd-license-manager.php` (error handling)
+- [ ] **Testing**: **User verification required** - fallback behavior
 
 **3.4.6.5 - Basic Error Logging** ⏳ **PENDING**
 - [ ] Thêm WordPress native error_log() - KHÔNG dùng custom functions
@@ -447,18 +491,20 @@ All database layer functionality implemented with full encryption and audit trai
 - [ ] **Risk**: Trung bình - Foundation cho Sprint 4 API layer
 - [ ] **Files**: `includes/class-vd-api-security.php`, `includes/class-vd-request-validator.php`
 
-#### 📊 Micro-Step Tracking
-- **Total Steps**: 28 (3.1 ✅, 3.2 ✅, 3.3.1 ✅, 3.3.2 ✅, 3.3.3 ✅, 3.3.4 ✅, 3.3.5a ✅, 3.3.5b ✅, 3.3.5c ✅, 3.3.5d ✅, 3.3.5e ✅, 3.4.1 ✅, 3.4.2 ✅, 3.4.3 ✅, 3.4.4 ✅, 3.4.5 ✅, 3.4.6.1 ⏳, 3.4.6.2 ⏳, 3.4.6.3 ⏳, 3.4.6.4 ⏳, 3.4.6.5 ⏳, 3.4.6.6 ⏳, 3.4.6.7 ⏳, 3.4.6.8 ⏳, 3.4.6.9 ⏳, 3.4.6.10 ⏳, 3.4.6.11 ⏳, 3.4.6.12 ⏳, 3.5 ⏳)
-- **Completed**: 19/28 (67.9%)
-- **Current**: 3.4.6.4 - Silent File Loading (NEXT ATOMIC STEP)
+#### 📊 Micro-Step Tracking (UPDATED - Step 3.4.6.4 REDESIGNED)
+- **Total Steps**: 33 (3.1 ✅, 3.2 ✅, 3.3.1 ✅, 3.3.2 ✅, 3.3.3 ✅, 3.3.4 ✅, 3.3.5a ✅, 3.3.5b ✅, 3.3.5c ✅, 3.3.5d ✅, 3.3.5e ✅, 3.4.1 ✅, 3.4.2 ✅, 3.4.3 ✅, 3.4.4 ✅, 3.4.5 ✅, 3.4.6.1 ✅, 3.4.6.2 ✅, 3.4.6.3 ✅, 3.4.6.4a ⏳, 3.4.6.4b ⏳, 3.4.6.4c ⏳, 3.4.6.4d ⏳, 3.4.6.4e ⏳, 3.4.6.4f ⏳, 3.4.6.5 ⏳, 3.4.6.6 ⏳, 3.4.6.7 ⏳, 3.4.6.8 ⏳, 3.4.6.9 ⏳, 3.4.6.10 ⏳, 3.4.6.11 ⏳, 3.4.6.12 ⏳, 3.5 ⏳)
+- **Completed**: 19/33 (57.6%)
+- **Current**: 3.4.6.4a - Pre-Loading Environment Check (ULTRA-SAFE REDESIGN)
 - **Strategy**: ULTRA-SAFE-MICRO-STEP approach for Step 3.4 (6 micro-sub-steps) - **WORKING PERFECTLY**
 - **Previous Issue**: Step 3.4 monolithic implementation caused FATAL ERROR - **ROLLBACK COMPLETED**
 - **Solution**: Break Step 3.4 into ultra-safe increments (class-by-class, feature-by-feature approach) - **PROVEN SAFE & EFFECTIVE**
 - **✅ Success**: Steps 3.3.1-3.4.5 completed successfully - website stable, advanced security monitoring implemented
 - **🚀 Momentum**: Step 3.4.5 successful - Advanced security monitoring với real database operations, brute force detection, daily analysis, IP blocking
-- **🚨 Critical Issue**: Step 3.4.6.1 caused FATAL ERROR - Immediate rollback completed
-- **🔄 Redesign Strategy**: Complete redesign từ 6 → 12 atomic micro-steps với risk cực thấp
-- **🎯 Next**: Step 3.4.6.1 Environment Verification (redesigned - risk cực thấp)
+- **🚨 Critical Issue History**:
+  - Step 3.4.6.1 caused FATAL ERROR - Immediate rollback completed ✅ RESOLVED
+  - Step 3.4.6.4 caused FATAL ERROR - Immediate rollback completed ✅ RESOLVED
+- **🔄 Redesign Strategy**: Step 3.4.6.4 redesigned từ 1 → 6 atomic micro-steps với ultra-safe approach
+- **🎯 Next**: Step 3.4.6.4a - Pre-Loading Environment Check (redesigned - risk cực thấp)
 
 ### ⏳ Sprint 4: API Layer (Days 11-14) - **WAITING**
 
