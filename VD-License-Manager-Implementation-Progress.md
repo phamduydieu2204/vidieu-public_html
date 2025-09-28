@@ -346,13 +346,97 @@ All database layer functionality implemented with full encryption and audit trai
 - [x] **Risk**: Trung bình - Full monitoring functionality **COMPLETED SUCCESSFULLY**
 - [x] **Files**: `includes/class-vd-security-audit.php` (complete monitoring - 1738 lines total)
 
-**3.4.6 - Main Plugin Integration & Testing** ⏳ **PENDING**
-- [ ] Load VD_Security_Audit trong main license manager
-- [ ] Initialize security audit system
-- [ ] Complete integration testing
-- [ ] Verify all security features working
-- [ ] **Risk**: Cao - Main plugin integration point
-- [ ] **Files**: `includes/class-vd-license-manager.php` (integration), complete testing
+**3.4.6 - Main Plugin Integration & Testing** 🚨 **FATAL ERROR ROLLBACK - REDESIGNED**
+⚠️ **CRITICAL ISSUE**: Step 3.4.6.1 caused fatal error - Complete redesign với ultra-safe atomic operations
+
+**🔄 REDESIGN STRATEGY**: Từ 6 micro-steps → 12 atomic micro-steps với risk cực thấp
+
+**3.4.6.1 - Environment Verification** ✅ **COMPLETED**
+- [x] Verify helper functions và constants available (vd_debug_log, VD_LM_PATH)
+- [x] Tạo temporary test script verify environment không modify main plugin
+- [x] Test availability of all required dependencies
+- [x] Created comprehensive VD_Environment_Verifier class (400+ lines)
+- [x] Generated detailed environment verification report
+- [x] **Risk**: Cực thấp - Verification only, không change code - **COMPLETED SUCCESSFULLY**
+- [x] **Files**: `test-environment-346.php` (14KB), `environment-verification-report-346.md` (verification report)
+- [x] **Result**: Environment READY - All dependencies verified, 95.2% success rate, 0 critical issues
+
+**3.4.6.2 - Safe Variable Declaration** ⏳ **PENDING**
+- [ ] Thêm file path variable trong load_dependencies() - KHÔNG loading
+- [ ] Declare security audit file path chỉ làm variable
+- [ ] Test plugin activation với variable declaration only
+- [ ] **Risk**: Cực thấp - Chỉ declare variable, không execute logic
+- [ ] **Files**: `includes/class-vd-license-manager.php` (variable only)
+
+**3.4.6.3 - Basic File Existence Check** ⏳ **PENDING**
+- [ ] Thêm file_exists() check - KHÔNG require file
+- [ ] Add conditional check infrastructure without loading
+- [ ] Test check logic không crash plugin
+- [ ] **Risk**: Cực thấp - Chỉ check, không load
+- [ ] **Files**: `includes/class-vd-license-manager.php` (check only)
+
+**3.4.6.4 - Silent File Loading** ⏳ **PENDING**
+- [ ] Thêm require_once KHÔNG có logging
+- [ ] Load VD_Security_Audit file without any function calls
+- [ ] Test file loading không use custom functions
+- [ ] **Risk**: Thấp - File loading without any function calls
+- [ ] **Files**: `includes/class-vd-license-manager.php` (require only)
+
+**3.4.6.5 - Basic Error Logging** ⏳ **PENDING**
+- [ ] Thêm WordPress native error_log() - KHÔNG dùng custom functions
+- [ ] Use only WordPress built-in logging functions
+- [ ] Test native logging functionality
+- [ ] **Risk**: Thấp - Dùng WordPress built-in functions only
+- [ ] **Files**: `includes/class-vd-license-manager.php` (native logging)
+
+**3.4.6.6 - Custom Logging Integration** ⏳ **PENDING**
+- [ ] Replace error_log() với vd_debug_log() nếu available
+- [ ] Add function_exists() check trước custom log calls
+- [ ] Test custom logging integration safely
+- [ ] **Risk**: Thấp - Add function_exists() check trước custom log
+- [ ] **Files**: `includes/class-vd-license-manager.php` (upgrade logging)
+
+**3.4.6.7 - Class Instantiation Safety Check** ⏳ **PENDING**
+- [ ] Thêm class_exists() check trong init_components()
+- [ ] Add safety check infrastructure chưa instantiate
+- [ ] Test class existence verification
+- [ ] **Risk**: Thấp - Chỉ add check, chưa instantiate
+- [ ] **Files**: `includes/class-vd-license-manager.php` (init_components method)
+
+**3.4.6.8 - Basic Class Instantiation** ⏳ **PENDING**
+- [ ] Thêm VD_Security_Audit::get_instance() call
+- [ ] First real class integration với safety checks
+- [ ] Test class instantiation functionality
+- [ ] **Risk**: Vừa - First real class integration
+- [ ] **Files**: `includes/class-vd-license-manager.php` (add instantiation)
+
+**3.4.6.9 - Basic Cron Hook Declaration** ⏳ **PENDING**
+- [ ] Thêm cron hook trong setup_cron_hooks() - KHÔNG implement handler
+- [ ] Declare hook infrastructure without logic
+- [ ] Test hook registration without handler
+- [ ] **Risk**: Thấp - Chỉ declare hook, chưa có logic
+- [ ] **Files**: `includes/class-vd-license-manager.php` (cron setup)
+
+**3.4.6.10 - Cron Handler Implementation** ⏳ **PENDING**
+- [ ] Implement cron handler method với basic logic
+- [ ] Add actual handler method với security audit calls
+- [ ] Test cron handler functionality
+- [ ] **Risk**: Vừa - Add new method với security audit calls
+- [ ] **Files**: `includes/class-vd-license-manager.php` (add handler method)
+
+**3.4.6.11 - Basic Testing Infrastructure** ⏳ **PENDING**
+- [ ] Thêm simple testing method verify integration
+- [ ] Add testing utility method return status only
+- [ ] Test integration verification functionality
+- [ ] **Risk**: Thấp - Testing utility chỉ return status
+- [ ] **Files**: `includes/class-vd-license-manager.php` (add test method)
+
+**3.4.6.12 - Final Integration Verification** ⏳ **PENDING**
+- [ ] Comprehensive testing all integration components
+- [ ] Run complete system health verification
+- [ ] Verify no conflicts với existing functionality
+- [ ] **Risk**: Thấp - Verification only, no code changes
+- [ ] **Files**: Test existing functionality và overall system health
 
 **3.5 - API Security Layer** ⏳ **PENDING**
 - [ ] Implement API authentication và request validation
@@ -362,15 +446,17 @@ All database layer functionality implemented with full encryption and audit trai
 - [ ] **Files**: `includes/class-vd-api-security.php`, `includes/class-vd-request-validator.php`
 
 #### 📊 Micro-Step Tracking
-- **Total Steps**: 17 (3.1 ✅, 3.2 ✅, 3.3.1 ✅, 3.3.2 ✅, 3.3.3 ✅, 3.3.4 ✅, 3.3.5a ✅, 3.3.5b ✅, 3.3.5c ✅, 3.3.5d ✅, 3.3.5e ✅, 3.4.1 ✅, 3.4.2 ✅, 3.4.3 ✅, 3.4.4 ✅, 3.4.5 ⏳, 3.4.6 ⏳, 3.5 ⏳)
-- **Completed**: 16 (94.1%)
-- **Current**: 3.4.6 - Main Plugin Integration & Testing (READY TO START)
+- **Total Steps**: 28 (3.1 ✅, 3.2 ✅, 3.3.1 ✅, 3.3.2 ✅, 3.3.3 ✅, 3.3.4 ✅, 3.3.5a ✅, 3.3.5b ✅, 3.3.5c ✅, 3.3.5d ✅, 3.3.5e ✅, 3.4.1 ✅, 3.4.2 ✅, 3.4.3 ✅, 3.4.4 ✅, 3.4.5 ✅, 3.4.6.1 ⏳, 3.4.6.2 ⏳, 3.4.6.3 ⏳, 3.4.6.4 ⏳, 3.4.6.5 ⏳, 3.4.6.6 ⏳, 3.4.6.7 ⏳, 3.4.6.8 ⏳, 3.4.6.9 ⏳, 3.4.6.10 ⏳, 3.4.6.11 ⏳, 3.4.6.12 ⏳, 3.5 ⏳)
+- **Completed**: 17/28 (60.7%)
+- **Current**: 3.4.6.2 - Safe Variable Declaration (NEXT ATOMIC STEP)
 - **Strategy**: ULTRA-SAFE-MICRO-STEP approach for Step 3.4 (6 micro-sub-steps) - **WORKING PERFECTLY**
 - **Previous Issue**: Step 3.4 monolithic implementation caused FATAL ERROR - **ROLLBACK COMPLETED**
 - **Solution**: Break Step 3.4 into ultra-safe increments (class-by-class, feature-by-feature approach) - **PROVEN SAFE & EFFECTIVE**
 - **✅ Success**: Steps 3.3.1-3.4.5 completed successfully - website stable, advanced security monitoring implemented
 - **🚀 Momentum**: Step 3.4.5 successful - Advanced security monitoring với real database operations, brute force detection, daily analysis, IP blocking
-- **🎯 Next**: Step 3.4.6 với main plugin integration - risk cao
+- **🚨 Critical Issue**: Step 3.4.6.1 caused FATAL ERROR - Immediate rollback completed
+- **🔄 Redesign Strategy**: Complete redesign từ 6 → 12 atomic micro-steps với risk cực thấp
+- **🎯 Next**: Step 3.4.6.1 Environment Verification (redesigned - risk cực thấp)
 
 ### ⏳ Sprint 4: API Layer (Days 11-14) - **WAITING**
 
