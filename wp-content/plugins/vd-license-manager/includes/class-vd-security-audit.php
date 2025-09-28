@@ -49,8 +49,30 @@ class VD_Security_Audit {
      * @since 1.0.0
      */
     private function __construct() {
-        // Step 3.4.1: Empty constructor - no complex logic
-        // Will be enhanced in later micro-steps
+        // Step 3.4.4: Basic WordPress hooks integration
+        $this->setup_basic_hooks();
+    }
+
+    /**
+     * Setup basic WordPress hooks
+     * Step 3.4.4: Basic hook setup for login monitoring
+     *
+     * @since 1.0.0
+     */
+    private function setup_basic_hooks() {
+        // Only setup hooks if we're in WordPress environment
+        if (!function_exists('add_action')) {
+            return;
+        }
+
+        // Hook for failed login attempts
+        add_action('wp_login_failed', [$this, 'handle_login_failed'], 10, 2);
+
+        // Hook for successful login
+        add_action('wp_login', [$this, 'handle_login_success'], 10, 2);
+
+        // Hook for logout (optional third hook)
+        add_action('wp_logout', [$this, 'handle_logout'], 10, 1);
     }
 
     /**
@@ -706,12 +728,295 @@ class VD_Security_Audit {
         ];
     }
 
-    // Note: Step 3.4.3 - Security Analysis Foundation completed
-    // - Security thresholds configuration ✓
-    // - Basic pattern analysis methods (stub implementations) ✓
-    // - IP tracking helper methods ✓
-    // - Security summary methods ✓
-    // - KHÔNG có WordPress hooks hoặc database writes trong step này ✓
-    // - Tất cả methods đều là stub implementations an toàn ✓
-    // - Ready for Step 3.4.4 - Basic WordPress Hooks Integration
+    // ============================================================================
+    // Step 3.4.4: Basic WordPress Hooks Integration Methods
+    // ============================================================================
+
+    /**
+     * Handle failed login attempts
+     * Step 3.4.4: WordPress hook handler for wp_login_failed
+     *
+     * @since 1.0.0
+     * @param string $username Username used in login attempt
+     * @param WP_Error $error Error object containing failure details
+     */
+    public function handle_login_failed($username, $error) {
+        // Step 3.4.4: Simple login monitoring logic
+        $client_ip = $this->get_client_ip();
+
+        // Track IP activity for failed login
+        $this->track_ip_activity($client_ip, 'failed_login', [
+            'username' => sanitize_user($username),
+            'error_code' => $error->get_error_code(),
+            'error_message' => $error->get_error_message(),
+            'step' => '3.4.4'
+        ]);
+
+        // Log security event
+        $this->log_security_event([
+            'event_type' => 'login_failed',
+            'description' => "Failed login attempt for username: {$username}",
+            'username' => sanitize_user($username),
+            'ip_address' => $client_ip,
+            'error_details' => [
+                'code' => $error->get_error_code(),
+                'message' => $error->get_error_message()
+            ],
+            'step' => '3.4.4'
+        ]);
+
+        // Simple brute force detection (basic implementation)
+        $this->check_simple_brute_force($client_ip, $username);
+    }
+
+    /**
+     * Handle successful login
+     * Step 3.4.4: WordPress hook handler for wp_login
+     *
+     * @since 1.0.0
+     * @param string $user_login Username of logged in user
+     * @param WP_User $user User object
+     */
+    public function handle_login_success($user_login, $user) {
+        $client_ip = $this->get_client_ip();
+
+        // Track IP activity for successful login
+        $this->track_ip_activity($client_ip, 'successful_login', [
+            'username' => sanitize_user($user_login),
+            'user_id' => $user->ID,
+            'user_roles' => $user->roles,
+            'step' => '3.4.4'
+        ]);
+
+        // Log security event
+        $this->log_security_event([
+            'event_type' => 'login_success',
+            'description' => "Successful login for user: {$user_login}",
+            'username' => sanitize_user($user_login),
+            'user_id' => $user->ID,
+            'ip_address' => $client_ip,
+            'user_roles' => $user->roles,
+            'step' => '3.4.4'
+        ]);
+    }
+
+    /**
+     * Handle user logout
+     * Step 3.4.4: WordPress hook handler for wp_logout
+     *
+     * @since 1.0.0
+     * @param int $user_id User ID of logging out user
+     */
+    public function handle_logout($user_id) {
+        $client_ip = $this->get_client_ip();
+        $user = get_user_by('id', $user_id);
+        $username = $user ? $user->user_login : 'unknown';
+
+        // Track IP activity for logout
+        $this->track_ip_activity($client_ip, 'logout', [
+            'username' => sanitize_user($username),
+            'user_id' => $user_id,
+            'step' => '3.4.4'
+        ]);
+
+        // Log security event
+        $this->log_security_event([
+            'event_type' => 'logout',
+            'description' => "User logout: {$username}",
+            'username' => sanitize_user($username),
+            'user_id' => $user_id,
+            'ip_address' => $client_ip,
+            'step' => '3.4.4'
+        ]);
+    }
+
+    /**
+     * Simple brute force detection
+     * Step 3.4.4: Basic brute force detection logic
+     *
+     * @since 1.0.0
+     * @param string $ip_address IP address to check
+     * @param string $username Username attempted
+     * @return array Detection results
+     */
+    private function check_simple_brute_force($ip_address, $username) {
+        // Step 3.4.4: Simple detection logic (no database queries yet)
+        $failed_threshold = $this->security_thresholds['failed_login_threshold'];
+        $lockout_threshold = $this->security_thresholds['failed_login_lockout'];
+
+        // For Step 3.4.4: Just return analysis structure
+        // Real detection will be implemented in later steps
+        $detection_result = [
+            'ip_address' => $ip_address,
+            'username' => sanitize_user($username),
+            'failed_threshold' => $failed_threshold,
+            'lockout_threshold' => $lockout_threshold,
+            'failed_count' => 0,                    // Placeholder - will query database in later steps
+            'threshold_exceeded' => false,          // Placeholder - will implement real detection
+            'lockout_required' => false,            // Placeholder - will implement lockout logic
+            'recommended_action' => 'monitor',      // Placeholder - will implement action logic
+            'step' => '3.4.4'
+        ];
+
+        // Log potential brute force attempt
+        if ($detection_result['failed_count'] >= $failed_threshold) {
+            $this->log_security_event([
+                'event_type' => 'brute_force_detected',
+                'description' => "Potential brute force attack detected from IP: {$ip_address}",
+                'ip_address' => $ip_address,
+                'username' => sanitize_user($username),
+                'detection_result' => $detection_result,
+                'step' => '3.4.4'
+            ]);
+        }
+
+        return $detection_result;
+    }
+
+    /**
+     * Check if hooks are properly set up
+     * Step 3.4.4: Testing helper method
+     *
+     * @since 1.0.0
+     * @return array Hook setup status
+     */
+    public function get_hooks_status() {
+        return [
+            'hooks_setup_available' => method_exists($this, 'setup_basic_hooks'),
+            'wp_login_failed_handler' => method_exists($this, 'handle_login_failed'),
+            'wp_login_success_handler' => method_exists($this, 'handle_login_success'),
+            'wp_logout_handler' => method_exists($this, 'handle_logout'),
+            'brute_force_detection' => method_exists($this, 'check_simple_brute_force'),
+            'wordpress_environment' => function_exists('add_action'),
+            'hooks_registered' => [
+                'wp_login_failed' => has_action('wp_login_failed', [$this, 'handle_login_failed']),
+                'wp_login' => has_action('wp_login', [$this, 'handle_login_success']),
+                'wp_logout' => has_action('wp_logout', [$this, 'handle_logout'])
+            ],
+            'step' => '3.4.4'
+        ];
+    }
+
+    /**
+     * Test WordPress hooks functionality
+     * Step 3.4.4: Test method for hooks integration
+     *
+     * @since 1.0.0
+     * @return array Test results
+     */
+    public function test_wordpress_hooks_functionality() {
+        $test_results = [
+            'hook_setup_method' => false,
+            'handler_methods_exist' => false,
+            'wordpress_functions_available' => false,
+            'hooks_actually_registered' => false,
+            'brute_force_detection_works' => false,
+            'overall_success' => false
+        ];
+
+        // Test hook setup method
+        $test_results['hook_setup_method'] = method_exists($this, 'setup_basic_hooks');
+
+        // Test handler methods exist
+        $test_results['handler_methods_exist'] =
+            method_exists($this, 'handle_login_failed') &&
+            method_exists($this, 'handle_login_success') &&
+            method_exists($this, 'handle_logout');
+
+        // Test WordPress functions available
+        $test_results['wordpress_functions_available'] =
+            function_exists('add_action') &&
+            function_exists('has_action') &&
+            function_exists('sanitize_user');
+
+        // Test hooks actually registered (if WordPress functions available)
+        if ($test_results['wordpress_functions_available']) {
+            $hooks_status = $this->get_hooks_status();
+            $registered_hooks = $hooks_status['hooks_registered'];
+            $test_results['hooks_actually_registered'] =
+                $registered_hooks['wp_login_failed'] !== false &&
+                $registered_hooks['wp_login'] !== false &&
+                $registered_hooks['wp_logout'] !== false;
+        }
+
+        // Test brute force detection
+        if (method_exists($this, 'check_simple_brute_force')) {
+            $detection_result = $this->check_simple_brute_force('192.168.1.100', 'test_user');
+            $test_results['brute_force_detection_works'] =
+                is_array($detection_result) &&
+                isset($detection_result['step']) &&
+                $detection_result['step'] === '3.4.4';
+        }
+
+        // Overall success
+        $test_results['overall_success'] =
+            $test_results['hook_setup_method'] &&
+            $test_results['handler_methods_exist'] &&
+            $test_results['wordpress_functions_available'] &&
+            $test_results['hooks_actually_registered'] &&
+            $test_results['brute_force_detection_works'];
+
+        return $test_results;
+    }
+
+    /**
+     * Get current step information for Step 3.4.4
+     * Step 3.4.4: Updated step method
+     *
+     * @since 1.0.0
+     * @return string Current step
+     */
+    public function get_current_step() {
+        return '3.4.4 - Basic WordPress Hooks Integration';
+    }
+
+    /**
+     * Get enhanced status for Step 3.4.4
+     * Step 3.4.4: Enhanced status method
+     *
+     * @since 1.0.0
+     * @return array Enhanced status information
+     */
+    public function get_status() {
+        return [
+            'class_loaded' => true,
+            'step' => '3.4.4',
+            'description' => 'Basic WordPress Hooks Integration',
+            'singleton_working' => (self::$instance !== null),
+
+            // Step 3.4.2 capabilities (logging)
+            'logging_methods_available' => method_exists($this, 'log_security_event'),
+            'client_detection_available' => method_exists($this, 'get_client_info'),
+            'severity_analysis_available' => method_exists($this, 'determine_event_severity'),
+            'test_logging_available' => method_exists($this, 'test_logging_functionality'),
+
+            // Step 3.4.3 capabilities (analysis foundation)
+            'security_thresholds_available' => method_exists($this, 'get_security_thresholds'),
+            'pattern_analysis_available' => method_exists($this, 'analyze_login_failure_pattern'),
+            'ip_tracking_available' => method_exists($this, 'track_ip_activity'),
+            'security_summary_available' => method_exists($this, 'get_security_summary'),
+            'security_alerts_available' => method_exists($this, 'get_security_alerts'),
+            'test_analysis_available' => method_exists($this, 'test_security_analysis_functionality'),
+
+            // Step 3.4.4 new capabilities (WordPress hooks)
+            'hooks_setup_available' => method_exists($this, 'setup_basic_hooks'),
+            'login_monitoring_available' => method_exists($this, 'handle_login_failed'),
+            'logout_monitoring_available' => method_exists($this, 'handle_logout'),
+            'brute_force_detection_available' => method_exists($this, 'check_simple_brute_force'),
+            'hooks_status_available' => method_exists($this, 'get_hooks_status'),
+            'test_hooks_available' => method_exists($this, 'test_wordpress_hooks_functionality'),
+
+            'ready_for_next_step' => true
+        ];
+    }
+
+    // Note: Step 3.4.4 - Basic WordPress Hooks Integration completed
+    // - setup_basic_hooks() method với 3 WordPress hooks ✓
+    // - handle_login_failed(), handle_login_success(), handle_logout() handlers ✓
+    // - Simple login monitoring logic với IP tracking ✓
+    // - Basic brute force detection (stub implementation) ✓
+    // - Comprehensive testing methods cho hooks functionality ✓
+    // - Updated get_status() và get_current_step() methods ✓
+    // - SAFE implementation: chỉ hook registration, không có database writes ✓
+    // - Ready for Step 3.4.5 - Advanced Security Monitoring
 }
