@@ -195,6 +195,9 @@ class VD_License_Manager {
                     // Implement graceful degradation cho VD_Security_Audit failures
                     $this->handle_security_audit_fallback();
 
+                    // Step 3.4.6.5 - Test WordPress native logging
+                    $this->vd_log('Plugin Initialization', 'VD License Manager loaded successfully with security fallback', 'info');
+
                     // NOTE: VD_Security_Audit requires complete architectural redesign
                     // Core VD License Manager functionality remains fully operational
                 }
@@ -804,20 +807,54 @@ class VD_License_Manager {
     /**
      * Log VD_Security_Audit status messages
      * Part of Step 3.4.6.4f - Error Recovery Mechanism
+     * Enhanced in Step 3.4.6.5 - Basic Error Logging
      *
      * @since 3.4.6.4f
+     * @since 3.4.6.5 Enhanced với WordPress native logging priority
      * @param string $status Status type
      * @param string $message Status message
      * @return void
      */
     private function log_security_audit_status($status, $message) {
-        // Use WordPress debug log if available
-        if (function_exists('vd_debug_log')) {
-            vd_debug_log("Step 3.4.6.4f [{$status}]: {$message}");
-        } else {
-            // Fallback to WordPress error log
-            if (defined('WP_DEBUG') && WP_DEBUG) {
-                error_log("VD License Manager [Security Fallback] [{$status}]: {$message}");
+        // Step 3.4.6.5 - Prioritize WordPress native error logging
+        $this->vd_native_error_log("Security Audit", $status, $message);
+    }
+
+    /**
+     * WordPress native error logging implementation
+     * Step 3.4.6.5 - Basic Error Logging
+     *
+     * @since 3.4.6.5
+     * @param string $component Component name
+     * @param string $level Log level (info, warning, error, debug)
+     * @param string $message Log message
+     * @return void
+     */
+    private function vd_native_error_log($component, $level, $message) {
+        // Use only WordPress built-in logging functions
+        // Format: [VD License Manager] [Component] [Level]: Message
+        $formatted_message = sprintf(
+            '[VD License Manager] [%s] [%s]: %s',
+            $component,
+            strtoupper($level),
+            $message
+        );
+
+        // WordPress native error_log() - Primary logging method
+        if (defined('WP_DEBUG_LOG') && WP_DEBUG_LOG) {
+            // Use WordPress debug.log when debug logging enabled
+            error_log($formatted_message);
+        } elseif (defined('WP_DEBUG') && WP_DEBUG) {
+            // Use PHP error log when WordPress debug enabled
+            error_log($formatted_message);
+        }
+
+        // Additional WordPress-specific logging if available
+        if (function_exists('wp_debug_backtrace_summary')) {
+            // Log context information for debugging
+            $context = wp_debug_backtrace_summary(__CLASS__, 0, false);
+            if ($context && $level === 'error') {
+                error_log("[VD License Manager] [Context]: {$context}");
             }
         }
     }
@@ -843,5 +880,75 @@ class VD_License_Manager {
         }
 
         return isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : '127.0.0.1';
+    }
+
+    /**
+     * Generic WordPress native logging for all components
+     * Step 3.4.6.5 - Basic Error Logging
+     *
+     * @since 3.4.6.5
+     * @param string $component Component name (Security, Database, Encryption, etc.)
+     * @param string $message Log message
+     * @param string $level Log level (info, warning, error, debug) - default: info
+     * @return void
+     */
+    public function vd_log($component, $message, $level = 'info') {
+        $this->vd_native_error_log($component, $level, $message);
+    }
+
+    /**
+     * Test WordPress native logging functionality
+     * Step 3.4.6.5 - Basic Error Logging
+     *
+     * @since 3.4.6.5
+     * @return array Test results
+     */
+    public function test_native_logging() {
+        $results = array(
+            'wp_debug_defined' => defined('WP_DEBUG'),
+            'wp_debug_log_defined' => defined('WP_DEBUG_LOG'),
+            'wp_debug_value' => defined('WP_DEBUG') ? WP_DEBUG : false,
+            'wp_debug_log_value' => defined('WP_DEBUG_LOG') ? WP_DEBUG_LOG : false,
+            'error_log_function' => function_exists('error_log'),
+            'wp_debug_backtrace_function' => function_exists('wp_debug_backtrace_summary')
+        );
+
+        // Test logging functionality
+        $test_message = 'Step 3.4.6.5 - WordPress native logging test';
+        $this->vd_log('Testing', $test_message, 'info');
+
+        $results['test_logged'] = true;
+        $results['test_timestamp'] = current_time('mysql');
+
+        return $results;
+    }
+
+    /**
+     * Get logging configuration status
+     * Step 3.4.6.5 - Basic Error Logging
+     *
+     * @since 3.4.6.5
+     * @return array Logging configuration details
+     */
+    public function get_logging_config() {
+        return array(
+            'logging_method' => 'WordPress Native error_log()',
+            'primary_condition' => 'WP_DEBUG_LOG = true',
+            'secondary_condition' => 'WP_DEBUG = true',
+            'log_format' => '[VD License Manager] [Component] [Level]: Message',
+            'context_logging' => function_exists('wp_debug_backtrace_summary'),
+            'current_status' => $this->is_logging_enabled()
+        );
+    }
+
+    /**
+     * Check if logging is currently enabled
+     * Step 3.4.6.5 - Basic Error Logging
+     *
+     * @since 3.4.6.5
+     * @return bool True if logging is enabled
+     */
+    private function is_logging_enabled() {
+        return (defined('WP_DEBUG_LOG') && WP_DEBUG_LOG) || (defined('WP_DEBUG') && WP_DEBUG);
     }
 }
