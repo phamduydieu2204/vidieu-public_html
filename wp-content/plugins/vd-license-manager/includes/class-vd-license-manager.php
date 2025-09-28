@@ -165,26 +165,22 @@ class VD_License_Manager {
                 if ($memory_available >= $required_memory) {
                     // Memory sufficient for large file loading
 
-                    // Step 3.4.6.4d - Silent File Inclusion (DISABLED - class_exists() approach failed)
-                    // ISSUE: VD_Security_Audit loading causes fatal errors regardless of class_exists() check
-                    // ROOT CAUSE: Potential WordPress core/plugin conflicts với VD_Security_Audit class
-                    // DECISION: Disable Security Audit loading để maintain website stability
-                    /*
+                    // Step 3.4.6.4d - Silent File Inclusion (REFACTORED - Deferred Loading Pattern)
+                    // SOLUTION: VD_Security_Audit refactored with deferred loading to prevent early WordPress API calls
                     $security_audit_file = VD_LM_PATH . 'includes/class-vd-security-audit.php';
 
-                    // Multiple approaches tested:
-                    // 1. Direct require_once → Fatal error
-                    // 2. @ operator suppression → Still fatal error
-                    // 3. class_exists() check → Still fatal error
-                    // 4. file_exists() + class_exists() → Still fatal error
-
+                    // Safe file inclusion với deferred loading pattern
                     if (file_exists($security_audit_file) && !class_exists('VD_Security_Audit')) {
                         @require_once $security_audit_file;
-                    }
-                    */
 
-                    // NOTE: VD_Security_Audit features will be implemented differently in later steps
-                    // Core VD License Manager functionality remains fully operational
+                        // Deferred initialization: Schedule init after WordPress is fully loaded
+                        add_action('plugins_loaded', function() {
+                            if (class_exists('VD_Security_Audit')) {
+                                $security_audit = VD_Security_Audit::get_instance();
+                                $security_audit->init(); // Safe initialization after WordPress ready
+                            }
+                        }, 20); // Priority 20 ensures WordPress functions are available
+                    }
                 }
             }
         }

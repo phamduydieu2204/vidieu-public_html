@@ -31,6 +31,14 @@ class VD_Security_Audit {
     private static $instance = null;
 
     /**
+     * Flag to track if class has been initialized
+     *
+     * @since 1.0.0
+     * @var bool
+     */
+    private $initialized = false;
+
+    /**
      * Get single instance
      *
      * @since 1.0.0
@@ -45,11 +53,36 @@ class VD_Security_Audit {
 
     /**
      * Constructor - private to enforce singleton
+     * DEFERRED LOADING: No WordPress API calls in constructor
      *
      * @since 1.0.0
      */
     private function __construct() {
-        // Step 3.4.4: Basic WordPress hooks integration
+        // Deferred loading: Only initialize when WordPress is ready
+        // WordPress hooks will be setup via init() method after plugins_loaded
+    }
+
+    /**
+     * Initialize the security audit system
+     * DEFERRED LOADING: Called after WordPress is fully loaded
+     *
+     * @since 1.0.0
+     */
+    public function init() {
+        // Prevent double initialization
+        if ($this->initialized) {
+            return;
+        }
+
+        // Ensure WordPress functions are available
+        if (!function_exists('add_action') || !function_exists('get_option')) {
+            return;
+        }
+
+        // Mark as initialized
+        $this->initialized = true;
+
+        // Setup hooks now that WordPress is ready
         $this->setup_basic_hooks();
     }
 
@@ -61,11 +94,6 @@ class VD_Security_Audit {
      * @since 1.0.0
      */
     private function setup_basic_hooks() {
-        // Only setup hooks if we're in WordPress environment
-        if (!function_exists('add_action')) {
-            return;
-        }
-
         // Step 3.4.4: Basic login monitoring hooks
         add_action('wp_login_failed', [$this, 'handle_login_failed'], 10, 2);
         add_action('wp_login', [$this, 'handle_login_success'], 10, 2);
@@ -93,6 +121,27 @@ class VD_Security_Audit {
      */
     public function __wakeup() {
         throw new Exception("Cannot unserialize singleton");
+    }
+
+    /**
+     * Check if class is properly initialized before running methods
+     * SAFETY CHECK: Prevents WordPress API calls before WordPress is ready
+     *
+     * @since 1.0.0
+     * @return bool True if safe to proceed
+     */
+    private function is_safe_to_proceed() {
+        // Check if WordPress functions are available
+        if (!function_exists('get_option') || !function_exists('current_time')) {
+            return false;
+        }
+
+        // Check if we're in proper WordPress context
+        if (!defined('ABSPATH')) {
+            return false;
+        }
+
+        return true;
     }
 
     /**
@@ -745,6 +794,11 @@ class VD_Security_Audit {
      * @param WP_Error $error Error object containing failure details
      */
     public function handle_login_failed($username, $error) {
+        // SAFETY CHECK: Ensure WordPress is ready before proceeding
+        if (!$this->is_safe_to_proceed()) {
+            return;
+        }
+
         // Step 3.4.4: Simple login monitoring logic
         $client_ip = $this->get_client_ip();
 
@@ -786,6 +840,11 @@ class VD_Security_Audit {
      * @param WP_User $user User object
      */
     public function handle_login_success($user_login, $user) {
+        // SAFETY CHECK: Ensure WordPress is ready before proceeding
+        if (!$this->is_safe_to_proceed()) {
+            return;
+        }
+
         $client_ip = $this->get_client_ip();
 
         // Track IP activity for successful login
@@ -1120,6 +1179,11 @@ class VD_Security_Audit {
      * @return array Detection results
      */
     private function enhanced_brute_force_detection($ip_address, $username) {
+        // SAFETY CHECK: Ensure WordPress and database are ready
+        if (!$this->is_safe_to_proceed()) {
+            return false;
+        }
+
         global $wpdb;
 
         $failed_threshold = $this->security_thresholds['failed_login_threshold'];
@@ -1289,6 +1353,11 @@ class VD_Security_Audit {
      * @return array Analysis results
      */
     public function run_daily_security_analysis() {
+        // SAFETY CHECK: Ensure WordPress and database are ready
+        if (!$this->is_safe_to_proceed()) {
+            return false;
+        }
+
         global $wpdb;
 
         $audit_table = $wpdb->prefix . 'vd_audit_logs';
@@ -1375,6 +1444,11 @@ class VD_Security_Audit {
      * @return bool True if analysis was run
      */
     private function maybe_run_daily_security_analysis() {
+        // SAFETY CHECK: Ensure WordPress is ready before accessing options
+        if (!$this->is_safe_to_proceed()) {
+            return;
+        }
+
         $last_analysis = get_option('vd_last_security_analysis', '');
 
         if (empty($last_analysis)) {
@@ -1441,6 +1515,11 @@ class VD_Security_Audit {
      * @return bool True if blocked successfully
      */
     public function add_temporary_ip_block($ip_address, $reason, $duration_minutes) {
+        // SAFETY CHECK: Ensure WordPress is ready before accessing options
+        if (!$this->is_safe_to_proceed()) {
+            return false;
+        }
+
         $blocked_ips = get_option('vd_blocked_ips', []);
 
         $block_data = [
