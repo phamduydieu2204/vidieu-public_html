@@ -191,6 +191,10 @@ class VD_License_Manager {
                     }
                     */
 
+                    // Step 3.4.6.4f - Error Recovery Mechanism
+                    // Implement graceful degradation cho VD_Security_Audit failures
+                    $this->handle_security_audit_fallback();
+
                     // NOTE: VD_Security_Audit requires complete architectural redesign
                     // Core VD License Manager functionality remains fully operational
                 }
@@ -618,5 +622,226 @@ class VD_License_Manager {
             vd_debug_log('Step 3.4.6.4e: VD_Security_Audit verification failed: ' . $e->getMessage());
             return false;
         }
+    }
+
+    /**
+     * Handle VD_Security_Audit fallback mechanism
+     * Step 3.4.6.4f - Error Recovery Mechanism
+     *
+     * @since 3.4.6.4f
+     * @return void
+     */
+    private function handle_security_audit_fallback() {
+        // Check if VD_Security_Audit is available
+        if (class_exists('VD_Security_Audit')) {
+            // VD_Security_Audit loaded successfully
+            $this->log_security_audit_status('available', 'VD_Security_Audit class loaded and available');
+            return;
+        }
+
+        // VD_Security_Audit not available - implement fallback strategy
+        $this->log_security_audit_status('fallback', 'VD_Security_Audit not available - implementing fallback');
+
+        // Fallback Option 1: Use WordPress built-in security features
+        $this->setup_wordpress_security_fallback();
+
+        // Fallback Option 2: Basic security logging
+        $this->setup_basic_security_logging();
+
+        // Fallback Option 3: Minimal monitoring hooks
+        $this->setup_minimal_security_hooks();
+
+        $this->log_security_audit_status('fallback_complete', 'Security fallback mechanisms activated');
+    }
+
+    /**
+     * Setup WordPress built-in security fallback
+     * Part of Step 3.4.6.4f - Error Recovery Mechanism
+     *
+     * @since 3.4.6.4f
+     * @return void
+     */
+    private function setup_wordpress_security_fallback() {
+        // Enable basic WordPress security features
+        if (!defined('FORCE_SSL_ADMIN')) {
+            // Note: This would be set in wp-config.php for production
+            $this->log_security_audit_status('info', 'FORCE_SSL_ADMIN not defined - recommend enabling in wp-config.php');
+        }
+
+        // Basic login monitoring without VD_Security_Audit
+        add_action('wp_login_failed', array($this, 'fallback_login_failed_handler'));
+        add_action('wp_login', array($this, 'fallback_login_success_handler'), 10, 2);
+
+        $this->log_security_audit_status('info', 'WordPress security fallback activated');
+    }
+
+    /**
+     * Setup basic security logging fallback
+     * Part of Step 3.4.6.4f - Error Recovery Mechanism
+     *
+     * @since 3.4.6.4f
+     * @return void
+     */
+    private function setup_basic_security_logging() {
+        // Use WordPress options for basic security tracking
+        $security_option_key = 'vd_security_fallback_log';
+
+        // Initialize security log if not exists
+        if (!get_option($security_option_key)) {
+            $initial_log = array(
+                'activated' => current_time('mysql'),
+                'events' => array(),
+                'status' => 'fallback_mode'
+            );
+            update_option($security_option_key, $initial_log);
+        }
+
+        $this->log_security_audit_status('info', 'Basic security logging fallback activated');
+    }
+
+    /**
+     * Setup minimal security hooks fallback
+     * Part of Step 3.4.6.4f - Error Recovery Mechanism
+     *
+     * @since 3.4.6.4f
+     * @return void
+     */
+    private function setup_minimal_security_hooks() {
+        // Only essential security hooks without complex processing
+        add_action('admin_init', array($this, 'fallback_admin_security_check'));
+
+        $this->log_security_audit_status('info', 'Minimal security hooks fallback activated');
+    }
+
+    /**
+     * Fallback login failed handler
+     * Part of Step 3.4.6.4f - Error Recovery Mechanism
+     *
+     * @since 3.4.6.4f
+     * @param string $username Failed username
+     * @return void
+     */
+    public function fallback_login_failed_handler($username) {
+        $this->log_security_event('login_failed', array(
+            'username' => sanitize_user($username),
+            'ip' => $this->get_client_ip_fallback(),
+            'timestamp' => current_time('mysql')
+        ));
+    }
+
+    /**
+     * Fallback login success handler
+     * Part of Step 3.4.6.4f - Error Recovery Mechanism
+     *
+     * @since 3.4.6.4f
+     * @param string $user_login User login name
+     * @param WP_User $user User object
+     * @return void
+     */
+    public function fallback_login_success_handler($user_login, $user) {
+        $this->log_security_event('login_success', array(
+            'user_id' => $user->ID,
+            'username' => $user_login,
+            'ip' => $this->get_client_ip_fallback(),
+            'timestamp' => current_time('mysql')
+        ));
+    }
+
+    /**
+     * Fallback admin security check
+     * Part of Step 3.4.6.4f - Error Recovery Mechanism
+     *
+     * @since 3.4.6.4f
+     * @return void
+     */
+    public function fallback_admin_security_check() {
+        // Basic admin area protection without complex VD_Security_Audit logic
+        if (!current_user_can('manage_options')) {
+            return;
+        }
+
+        // Simple check for suspicious admin activity
+        $this->log_security_event('admin_access', array(
+            'user_id' => get_current_user_id(),
+            'page' => isset($_GET['page']) ? sanitize_text_field($_GET['page']) : '',
+            'ip' => $this->get_client_ip_fallback(),
+            'timestamp' => current_time('mysql')
+        ));
+    }
+
+    /**
+     * Log security events to fallback system
+     * Part of Step 3.4.6.4f - Error Recovery Mechanism
+     *
+     * @since 3.4.6.4f
+     * @param string $event_type Type of security event
+     * @param array $event_data Event data
+     * @return void
+     */
+    private function log_security_event($event_type, $event_data) {
+        $security_option_key = 'vd_security_fallback_log';
+        $log = get_option($security_option_key, array());
+
+        // Add new event to log
+        if (!isset($log['events'])) {
+            $log['events'] = array();
+        }
+
+        $log['events'][] = array(
+            'type' => $event_type,
+            'data' => $event_data,
+            'logged_at' => current_time('mysql')
+        );
+
+        // Keep only last 100 events to prevent bloat
+        if (count($log['events']) > 100) {
+            $log['events'] = array_slice($log['events'], -100);
+        }
+
+        update_option($security_option_key, $log);
+    }
+
+    /**
+     * Log VD_Security_Audit status messages
+     * Part of Step 3.4.6.4f - Error Recovery Mechanism
+     *
+     * @since 3.4.6.4f
+     * @param string $status Status type
+     * @param string $message Status message
+     * @return void
+     */
+    private function log_security_audit_status($status, $message) {
+        // Use WordPress debug log if available
+        if (function_exists('vd_debug_log')) {
+            vd_debug_log("Step 3.4.6.4f [{$status}]: {$message}");
+        } else {
+            // Fallback to WordPress error log
+            if (defined('WP_DEBUG') && WP_DEBUG) {
+                error_log("VD License Manager [Security Fallback] [{$status}]: {$message}");
+            }
+        }
+    }
+
+    /**
+     * Get client IP address fallback method
+     * Part of Step 3.4.6.4f - Error Recovery Mechanism
+     *
+     * @since 3.4.6.4f
+     * @return string Client IP address
+     */
+    private function get_client_ip_fallback() {
+        // Simple IP detection without complex VD_Security_Audit logic
+        $ip_keys = array('HTTP_X_FORWARDED_FOR', 'HTTP_X_REAL_IP', 'HTTP_CLIENT_IP', 'REMOTE_ADDR');
+
+        foreach ($ip_keys as $key) {
+            if (!empty($_SERVER[$key])) {
+                $ip = $_SERVER[$key];
+                if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE)) {
+                    return $ip;
+                }
+            }
+        }
+
+        return isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : '127.0.0.1';
     }
 }
