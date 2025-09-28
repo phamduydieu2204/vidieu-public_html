@@ -164,7 +164,16 @@ class VD_License_Manager {
                 // Memory safety check before proceeding to file loading
                 if ($memory_available >= $required_memory) {
                     // Memory sufficient for large file loading
-                    // Note: Ready for Step 3.4.6.4d - Silent File Inclusion
+
+                    // Step 3.4.6.4d - Silent File Inclusion (error suppression for stability)
+                    // Load VD_Security_Audit with silent error handling
+                    $security_audit_file = VD_LM_PATH . 'includes/class-vd-security-audit.php';
+
+                    // Silent file inclusion with error suppression
+                    if (file_exists($security_audit_file)) {
+                        @require_once $security_audit_file;
+                        // Note: @ operator provides silent error handling for file loading stability
+                    }
                 }
             }
         }
