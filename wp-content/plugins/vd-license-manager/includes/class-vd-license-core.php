@@ -195,9 +195,10 @@ class VD_License_Core {
         // Get total count
         $count_sql = "SELECT COUNT(*) FROM {$this->full_table_name} WHERE {$where_clause}";
         if (!empty($where_values)) {
-            $count_sql = $wpdb->prepare($count_sql, $where_values);
+            $total_count = $wpdb->get_var($wpdb->prepare($count_sql, $where_values));
+        } else {
+            $total_count = $wpdb->get_var($count_sql);
         }
-        $total_count = $wpdb->get_var($count_sql);
 
         // Get licenses
         $sql = "SELECT * FROM {$this->full_table_name}
