@@ -254,11 +254,78 @@ class VD_License_Manager {
     }
 
     /**
+     * Perform class instantiation safety checks
+     * Step 3.4.6.7 - Class Instantiation Safety Check
+     *
+     * @since 1.0.0
+     */
+    private function perform_class_safety_checks() {
+        // Define core classes that should be checked
+        $core_classes = [
+            'VD_Admin_Menu',
+            'VD_Migration_Manager',
+            'VD_Security_Manager',
+            'VD_Capability_Manager',
+            'VD_API_Controller',
+            'VD_License_Controller',
+            'VD_Provider_Manager',
+            'VD_LMfWC_Integration'
+        ];
+
+        $safety_results = [];
+        $critical_missing = [];
+
+        foreach ($core_classes as $class_name) {
+            $exists = class_exists($class_name);
+            $safety_results[$class_name] = $exists;
+
+            // Log safety check result
+            $this->vd_native_error_log(
+                'SAFETY_CHECK',
+                'info',
+                sprintf('Class %s existence check: %s', $class_name, $exists ? 'PASSED' : 'FAILED')
+            );
+
+            // Track critical missing classes (currently implemented ones)
+            if (!$exists && in_array($class_name, ['VD_Admin_Menu', 'VD_Migration_Manager', 'VD_Security_Manager', 'VD_Capability_Manager'])) {
+                $critical_missing[] = $class_name;
+            }
+        }
+
+        // Store safety check results for debugging
+        update_option('vd_class_safety_results', [
+            'timestamp' => current_time('timestamp'),
+            'results' => $safety_results,
+            'critical_missing' => $critical_missing,
+            'total_checked' => count($core_classes),
+            'passed' => count(array_filter($safety_results)),
+            'failed' => count($core_classes) - count(array_filter($safety_results))
+        ]);
+
+        // Log summary
+        $this->vd_native_error_log(
+            'SAFETY_CHECK',
+            'info',
+            sprintf('Safety check completed: %d/%d classes available, %d critical missing',
+                count(array_filter($safety_results)),
+                count($core_classes),
+                count($critical_missing)
+            )
+        );
+
+        // WARNING: Do not instantiate any classes here - this is purely a safety check
+        // Actual instantiation happens in init_components() with proper checks
+    }
+
+    /**
      * Initialize plugin components
      *
      * @since 1.0.0
      */
     private function init_components() {
+        // Step 3.4.6.7 - Class Instantiation Safety Check
+        $this->perform_class_safety_checks();
+
         // Initialize admin menu if in admin
         if (vd_is_admin() && class_exists('VD_Admin_Menu')) {
             $this->admin_menu = new VD_Admin_Menu();
@@ -1043,5 +1110,80 @@ class VD_License_Manager {
      */
     private function is_logging_enabled() {
         return (defined('WP_DEBUG_LOG') && WP_DEBUG_LOG) || (defined('WP_DEBUG') && WP_DEBUG);
+    }
+
+    /**
+     * Test class instantiation safety checks
+     * Step 3.4.6.7 - Class Instantiation Safety Check
+     *
+     * @since 3.4.6.7
+     * @return array Safety check test results
+     */
+    public function test_class_safety_checks() {
+        // Force re-run safety checks for testing
+        $this->perform_class_safety_checks();
+
+        // Get stored safety results
+        $safety_data = get_option('vd_class_safety_results', []);
+
+        $test_results = [
+            'safety_check_method' => 'perform_class_safety_checks',
+            'check_mechanism' => 'class_exists() without instantiation',
+            'storage_method' => 'WordPress options API',
+            'last_check_timestamp' => $safety_data['timestamp'] ?? 0,
+            'test_scenarios' => []
+        ];
+
+        // Test Scenario 1: Core class existence verification
+        $core_classes = ['VD_Admin_Menu', 'VD_Migration_Manager', 'VD_Security_Manager', 'VD_Capability_Manager'];
+        $existing_core_classes = 0;
+
+        foreach ($core_classes as $class_name) {
+            if (class_exists($class_name)) {
+                $existing_core_classes++;
+            }
+        }
+
+        $test_results['test_scenarios']['core_classes'] = [
+            'total' => count($core_classes),
+            'existing' => $existing_core_classes,
+            'missing' => count($core_classes) - $existing_core_classes
+        ];
+
+        // Test Scenario 2: Future classes preparation check
+        $future_classes = ['VD_API_Controller', 'VD_License_Controller', 'VD_Provider_Manager', 'VD_LMfWC_Integration'];
+        $future_existing = 0;
+
+        foreach ($future_classes as $class_name) {
+            if (class_exists($class_name)) {
+                $future_existing++;
+            }
+        }
+
+        $test_results['test_scenarios']['future_classes'] = [
+            'total' => count($future_classes),
+            'existing' => $future_existing,
+            'expected_missing' => count($future_classes) // These should not exist yet
+        ];
+
+        // Test Scenario 3: Safety data storage verification
+        $test_results['test_scenarios']['data_storage'] = [
+            'option_exists' => !empty($safety_data),
+            'required_fields' => ['timestamp', 'results', 'critical_missing', 'total_checked', 'passed', 'failed'],
+            'fields_present' => array_keys($safety_data)
+        ];
+
+        // Test Scenario 4: No instantiation verification
+        $test_results['test_scenarios']['no_instantiation'] = [
+            'verification_method' => 'Code review - no new statements in perform_class_safety_checks()',
+            'safety_principle' => 'Pure class_exists() checks only',
+            'instantiation_location' => 'init_components() method with proper guards'
+        ];
+
+        $test_results['test_completed'] = true;
+        $test_results['test_timestamp'] = current_time('mysql');
+        $test_results['safety_summary'] = $safety_data;
+
+        return $test_results;
     }
 }
