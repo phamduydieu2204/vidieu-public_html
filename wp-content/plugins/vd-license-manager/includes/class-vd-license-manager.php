@@ -2304,16 +2304,34 @@ class VD_License_Manager {
     // Helper methods for comprehensive verification (simplified implementations)
     private function verify_database_layer_complete() {
         global $wpdb;
-        $tables_expected = 11;
+        $tables_expected = 16;
         $tables_found = 0;
 
-        $table_names = ['vd_licenses', 'vd_license_assignments', 'vd_provider_accounts', 'vd_device_fingerprints', 'vd_license_usage_logs', 'vd_device_approval_queue', 'vd_system_config', 'vd_cache_data', 'vd_audit_logs', 'vd_providers', 'vd_migration_history'];
+        // Updated to match actual database state
+        $table_names = [
+            'vd_licenses', 'vd_license_assignments', 'vd_provider_accounts', 'vd_providers',
+            'vd_system_config', 'vd_cache_data', 'vd_audit_logs', 'vd_access_logs',
+            'vd_content_versions', 'vd_credential_audit', 'vd_device_requests',
+            'vd_page_sidebar_mappings', 'vd_product_field_sharing_config',
+            'vd_product_provider_mapping', 'vd_product_settings', 'vd_rate_limits'
+        ];
 
-        foreach ($table_names as $table) {
-            $table_name = $wpdb->prefix . $table;
-            if ($wpdb->get_var("SHOW TABLES LIKE '$table_name'") === $table_name) {
-                $tables_found++;
+        try {
+            foreach ($table_names as $table) {
+                $table_name = $wpdb->prefix . $table;
+                $table_exists = $wpdb->get_var($wpdb->prepare("SHOW TABLES LIKE %s", $table_name));
+                if ($table_exists === $table_name) {
+                    $tables_found++;
+                }
             }
+        } catch (Exception $e) {
+            return [
+                'status' => 'error',
+                'tables_expected' => $tables_expected,
+                'tables_found' => 0,
+                'completion_percentage' => 0,
+                'error' => 'Database query failed: ' . $e->getMessage()
+            ];
         }
 
         return [
