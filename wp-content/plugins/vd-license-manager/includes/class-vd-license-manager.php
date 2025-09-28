@@ -150,6 +150,22 @@ class VD_License_Manager {
             if (true) {
                 // Conditional block ready for memory management and file loading
                 // Note: Empty block - structure preparation only, no operations yet
+
+                // Step 3.4.6.4c - Memory Management Setup (large file loading safety)
+                // Verify memory availability for VD_Security_Audit (65KB file)
+                $memory_limit = ini_get('memory_limit');
+                $current_memory = memory_get_usage(true);
+                $target_file_size = 65142; // VD_Security_Audit file size in bytes
+
+                // Conservative memory requirement calculation (3x file size)
+                $required_memory = $target_file_size * 3;
+                $memory_available = $this->convert_memory_to_bytes($memory_limit) - $current_memory;
+
+                // Memory safety check before proceeding to file loading
+                if ($memory_available >= $required_memory) {
+                    // Memory sufficient for large file loading
+                    // Note: Ready for Step 3.4.6.4d - Silent File Inclusion
+                }
             }
         }
 
@@ -502,5 +518,36 @@ class VD_License_Manager {
      */
     public function get_admin_menu() {
         return $this->admin_menu;
+    }
+
+    /**
+     * Convert memory limit string to bytes (Step 3.4.6.4c helper)
+     *
+     * @since 3.4.6.4c
+     * @param string $memory_limit Memory limit string (e.g., '128M', '1G')
+     * @return int Memory limit in bytes
+     */
+    private function convert_memory_to_bytes($memory_limit) {
+        $memory_limit = trim($memory_limit);
+        if (empty($memory_limit)) {
+            return 0;
+        }
+
+        $last_char = strtolower($memory_limit[strlen($memory_limit) - 1]);
+        $numeric_value = (int) $memory_limit;
+
+        switch ($last_char) {
+            case 'g':
+                $numeric_value *= 1024 * 1024 * 1024;
+                break;
+            case 'm':
+                $numeric_value *= 1024 * 1024;
+                break;
+            case 'k':
+                $numeric_value *= 1024;
+                break;
+        }
+
+        return $numeric_value;
     }
 }

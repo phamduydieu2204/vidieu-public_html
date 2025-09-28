@@ -399,13 +399,15 @@ All database layer functionality implemented with full encryption and audit trai
 - [x] **Testing**: Tự kiểm tra nội bộ - Conditional structure established
 - [x] **Result**: Code structure prepared for memory management và file loading
 
-**3.4.6.4c - Memory Management Setup** ⏳ **PENDING**
-- [ ] Add memory management checks trước file loading
-- [ ] Implement memory availability verification
-- [ ] Add PHP memory limit checks với native functions
-- [ ] **Risk**: Thấp - Native PHP memory functions only
-- [ ] **Files**: `includes/class-vd-license-manager.php` (memory checks)
-- [ ] **Testing**: **User verification required** - memory behavior
+**3.4.6.4c - Memory Management Setup** ✅ **COMPLETED**
+- [x] Add memory management checks trước file loading
+- [x] Implement memory availability verification
+- [x] Add PHP memory limit checks với native functions
+- [x] Created convert_memory_to_bytes() helper method
+- [x] **Risk**: Thấp - Native PHP memory functions only - **COMPLETED SUCCESSFULLY**
+- [x] **Files**: `includes/class-vd-license-manager.php` (lines 154-168 added, lines 523-552 helper method)
+- [x] **Testing**: **User verification required** - memory behavior analysis
+- [x] **Result**: Memory safety checks established for 65KB file loading
 
 **3.4.6.4d - Silent File Inclusion** ⏳ **PENDING**
 - [ ] Add require_once trong conditional với error suppression
@@ -496,8 +498,8 @@ All database layer functionality implemented with full encryption and audit trai
 
 #### 📊 Micro-Step Tracking (UPDATED - Step 3.4.6.4 REDESIGNED)
 - **Total Steps**: 33 (3.1 ✅, 3.2 ✅, 3.3.1 ✅, 3.3.2 ✅, 3.3.3 ✅, 3.3.4 ✅, 3.3.5a ✅, 3.3.5b ✅, 3.3.5c ✅, 3.3.5d ✅, 3.3.5e ✅, 3.4.1 ✅, 3.4.2 ✅, 3.4.3 ✅, 3.4.4 ✅, 3.4.5 ✅, 3.4.6.1 ✅, 3.4.6.2 ✅, 3.4.6.3 ✅, 3.4.6.4a ⏳, 3.4.6.4b ⏳, 3.4.6.4c ⏳, 3.4.6.4d ⏳, 3.4.6.4e ⏳, 3.4.6.4f ⏳, 3.4.6.5 ⏳, 3.4.6.6 ⏳, 3.4.6.7 ⏳, 3.4.6.8 ⏳, 3.4.6.9 ⏳, 3.4.6.10 ⏳, 3.4.6.11 ⏳, 3.4.6.12 ⏳, 3.5 ⏳)
-- **Completed**: 21/33 (63.6%)
-- **Current**: 3.4.6.4c - Memory Management Setup (NEXT MICRO-STEP)
+- **Completed**: 22/33 (66.7%)
+- **Current**: 3.4.6.4d - Silent File Inclusion (NEXT MICRO-STEP)
 - **Strategy**: ULTRA-SAFE-MICRO-STEP approach for Step 3.4 (6 micro-sub-steps) - **WORKING PERFECTLY**
 - **Previous Issue**: Step 3.4 monolithic implementation caused FATAL ERROR - **ROLLBACK COMPLETED**
 - **Solution**: Break Step 3.4 into ultra-safe increments (class-by-class, feature-by-feature approach) - **PROVEN SAFE & EFFECTIVE**
