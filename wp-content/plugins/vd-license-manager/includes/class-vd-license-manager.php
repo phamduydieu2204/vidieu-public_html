@@ -202,7 +202,7 @@ class VD_License_Manager {
 
                     // Step 3.4.6.4f - Error Recovery Mechanism
                     // Implement graceful degradation cho VD_Security_Audit failures
-                    $should_log_init = !$this->security_fallback_initialized;
+                    $should_log_init = !get_option('vd_security_fallback_initialized', false);
                     $this->handle_security_audit_fallback();
 
                     // Step 3.4.6.5 - Reduced frequency logging (only once per session)
@@ -647,8 +647,8 @@ class VD_License_Manager {
      * @return void
      */
     private function handle_security_audit_fallback() {
-        // HOTFIX: Prevent multiple security fallback executions
-        if ($this->security_fallback_initialized) {
+        // EMERGENCY FIX: Use WordPress option for global state persistence
+        if (get_option('vd_security_fallback_initialized', false)) {
             return;
         }
 
@@ -656,7 +656,7 @@ class VD_License_Manager {
         if (class_exists('VD_Security_Audit')) {
             // VD_Security_Audit loaded successfully
             $this->log_security_audit_status('available', 'VD_Security_Audit class loaded and available');
-            $this->security_fallback_initialized = true;
+            update_option('vd_security_fallback_initialized', true);
             return;
         }
 
@@ -674,8 +674,8 @@ class VD_License_Manager {
 
         $this->log_security_audit_status('fallback_complete', 'Security fallback mechanisms activated');
 
-        // Mark as initialized to prevent re-execution
-        $this->security_fallback_initialized = true;
+        // Mark as initialized globally to prevent re-execution
+        update_option('vd_security_fallback_initialized', true);
     }
 
     /**
