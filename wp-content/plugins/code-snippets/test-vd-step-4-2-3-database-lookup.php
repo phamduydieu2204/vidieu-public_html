@@ -49,9 +49,9 @@ function vd_test_step_4_2_3_database_lookup() {
         $passed_tests++;
     }
 
-    // Test LMfWC table existence
+    // Test LMfWC table existence (corrected table name)
     $total_tests++;
-    $lmfwc_table = $wpdb->prefix . 'lmfwc_licenses';
+    $lmfwc_table = 'bz_lmfwc_licenses';
     $table_exists = $wpdb->get_var($wpdb->prepare(
         "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = %s AND table_name = %s",
         DB_NAME,

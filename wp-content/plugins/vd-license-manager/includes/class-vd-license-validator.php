@@ -480,8 +480,8 @@ class VD_License_Validator {
     private function lookup_license_from_database($license_key) {
         global $wpdb;
 
-        // LMfWC Integration: Query LMfWC database với proper table prefix
-        $lmfwc_table = $wpdb->prefix . 'lmfwc_licenses';
+        // LMfWC Integration: Query LMfWC database với proper table prefix (bz_ prefix)
+        $lmfwc_table = 'bz_lmfwc_licenses';
 
         // Check if LMfWC table exists
         if (!$this->table_exists($lmfwc_table)) {
@@ -764,7 +764,7 @@ class VD_License_Validator {
     private function get_lookup_debug_info($license_key) {
         global $wpdb;
 
-        $lmfwc_table = $wpdb->prefix . 'lmfwc_licenses';
+        $lmfwc_table = 'bz_lmfwc_licenses';
         $vd_table = $wpdb->prefix . 'vd_licenses';
 
         return array(
