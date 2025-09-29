@@ -2921,4 +2921,1026 @@ class VD_License_Validator {
 
         return $next_run;
     }
+
+    /**
+     * ============================================================================
+     * Step 4.2.4.4 - Status Change Notification System
+     * Implements comprehensive notification system for license status changes
+     * ============================================================================
+     */
+
+    /**
+     * Send status change notification
+     * Main entry point for notification system
+     *
+     * @since 4.2.4.4
+     * @param array $license License data
+     * @param string $old_status Previous status
+     * @param string $new_status New status
+     * @param array $context Change context and metadata
+     * @return array Notification result
+     */
+    public function send_status_change_notification($license, $old_status, $new_status, $context = array()) {
+        $start_time = microtime(true);
+
+        // Initialize notification context
+        $notification_context = array_merge(array(
+            'change_type' => 'status_change',
+            'triggered_by' => 'system',
+            'notification_enabled' => true,
+            'priority' => 'normal',
+            'retry_enabled' => true,
+            'queue_enabled' => true
+        ), $context);
+
+        $results = array(
+            'notifications_sent' => 0,
+            'notifications_queued' => 0,
+            'notifications_failed' => 0,
+            'execution_time_ms' => 0,
+            'notifications' => array(),
+            'errors' => array()
+        );
+
+        try {
+            // Check if notifications are enabled for this change
+            $notification_config = $this->get_notification_configuration($license, $old_status, $new_status, $notification_context);
+
+            if (!$notification_config['enabled']) {
+                $results['message'] = 'Notifications disabled for this status change';
+                return $results;
+            }
+
+            // Determine notification recipients and types
+            $notification_targets = $this->determine_notification_targets($license, $old_status, $new_status, $notification_config);
+
+            if (empty($notification_targets)) {
+                $results['message'] = 'No notification targets found';
+                return $results;
+            }
+
+            // Process each notification target
+            foreach ($notification_targets as $target) {
+                $notification_result = $this->process_single_notification($license, $old_status, $new_status, $target, $notification_context);
+
+                $results['notifications'][] = $notification_result;
+
+                if ($notification_result['success']) {
+                    if ($notification_result['queued']) {
+                        $results['notifications_queued']++;
+                    } else {
+                        $results['notifications_sent']++;
+                    }
+                } else {
+                    $results['notifications_failed']++;
+                    if (!empty($notification_result['error'])) {
+                        $results['errors'][] = $notification_result['error'];
+                    }
+                }
+            }
+
+            // Log notification completion
+            $this->log_notification_completion($license, $old_status, $new_status, $results, $notification_context);
+
+        } catch (Exception $e) {
+            $results['notifications_failed']++;
+            $results['errors'][] = array(
+                'type' => 'system_error',
+                'message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine()
+            );
+
+            $this->log_notification_error('send_status_change_notification', $e, $license, $notification_context);
+        }
+
+        $results['execution_time_ms'] = round((microtime(true) - $start_time) * 1000, 2);
+
+        return $results;
+    }
+
+    /**
+     * Get notification configuration for status change
+     *
+     * @since 4.2.4.4
+     * @param array $license License data
+     * @param string $old_status Previous status
+     * @param string $new_status New status
+     * @param array $context Notification context
+     * @return array Notification configuration
+     */
+    private function get_notification_configuration($license, $old_status, $new_status, $context) {
+        // Get global notification settings
+        $global_config = $this->get_global_notification_settings();
+
+        // Get product-specific settings if available
+        $product_config = array();
+        if (!empty($license['product_id'])) {
+            $product_config = $this->get_product_notification_settings($license['product_id']);
+        }
+
+        // Get license-specific settings if available
+        $license_config = $this->get_license_notification_settings($license['id']);
+
+        // Merge configurations (license > product > global)
+        $config = array_merge($global_config, $product_config, $license_config);
+
+        // Determine if this specific status change should trigger notifications
+        $transition_key = $old_status . '_to_' . $new_status;
+        $enabled = $config['enabled'] ?? true;
+
+        // Check status-specific rules
+        if (isset($config['status_rules'][$transition_key])) {
+            $rule = $config['status_rules'][$transition_key];
+            $enabled = $rule['enabled'] ?? $enabled;
+        }
+
+        // Check trigger conditions
+        $trigger_conditions = $this->evaluate_notification_triggers($license, $old_status, $new_status, $context, $config);
+
+        return array(
+            'enabled' => $enabled && $trigger_conditions['should_trigger'],
+            'priority' => $this->determine_notification_priority($old_status, $new_status, $context),
+            'channels' => $config['channels'] ?? array('email', 'admin'),
+            'templates' => $config['templates'] ?? array(),
+            'retry_config' => $config['retry'] ?? array(),
+            'queue_config' => $config['queue'] ?? array(),
+            'trigger_reason' => $trigger_conditions['reason']
+        );
+    }
+
+    /**
+     * Determine notification targets for status change
+     *
+     * @since 4.2.4.4
+     * @param array $license License data
+     * @param string $old_status Previous status
+     * @param string $new_status New status
+     * @param array $config Notification configuration
+     * @return array Notification targets
+     */
+    private function determine_notification_targets($license, $old_status, $new_status, $config) {
+        $targets = array();
+
+        // Admin notifications
+        if (in_array('admin', $config['channels'])) {
+            $admin_targets = $this->get_admin_notification_targets($license, $old_status, $new_status, $config);
+            $targets = array_merge($targets, $admin_targets);
+        }
+
+        // Customer notifications
+        if (in_array('email', $config['channels']) && !empty($license['customer_email'])) {
+            $customer_target = $this->get_customer_notification_target($license, $old_status, $new_status, $config);
+            if ($customer_target) {
+                $targets[] = $customer_target;
+            }
+        }
+
+        // Webhook notifications
+        if (in_array('webhook', $config['channels'])) {
+            $webhook_targets = $this->get_webhook_notification_targets($license, $old_status, $new_status, $config);
+            $targets = array_merge($targets, $webhook_targets);
+        }
+
+        // SMS notifications (if configured)
+        if (in_array('sms', $config['channels']) && !empty($license['customer_phone'])) {
+            $sms_target = $this->get_sms_notification_target($license, $old_status, $new_status, $config);
+            if ($sms_target) {
+                $targets[] = $sms_target;
+            }
+        }
+
+        return $targets;
+    }
+
+    /**
+     * Process a single notification
+     *
+     * @since 4.2.4.4
+     * @param array $license License data
+     * @param string $old_status Previous status
+     * @param string $new_status New status
+     * @param array $target Notification target
+     * @param array $context Notification context
+     * @return array Processing result
+     */
+    private function process_single_notification($license, $old_status, $new_status, $target, $context) {
+        try {
+            // Generate notification content
+            $content = $this->generate_notification_content($license, $old_status, $new_status, $target, $context);
+
+            if (!$content) {
+                return array(
+                    'success' => false,
+                    'target' => $target,
+                    'error' => array(
+                        'type' => 'content_generation_failed',
+                        'message' => 'Failed to generate notification content'
+                    )
+                );
+            }
+
+            // Check if should queue or send immediately
+            $should_queue = $this->should_queue_notification($target, $context);
+
+            if ($should_queue) {
+                $queue_result = $this->queue_notification($license, $old_status, $new_status, $target, $content, $context);
+
+                return array(
+                    'success' => $queue_result['success'],
+                    'queued' => true,
+                    'target' => $target,
+                    'queue_id' => $queue_result['queue_id'] ?? null,
+                    'error' => $queue_result['error'] ?? null
+                );
+            } else {
+                $send_result = $this->send_immediate_notification($target, $content, $context);
+
+                return array(
+                    'success' => $send_result['success'],
+                    'queued' => false,
+                    'target' => $target,
+                    'delivery_info' => $send_result['delivery_info'] ?? null,
+                    'error' => $send_result['error'] ?? null
+                );
+            }
+
+        } catch (Exception $e) {
+            return array(
+                'success' => false,
+                'queued' => false,
+                'target' => $target,
+                'error' => array(
+                    'type' => 'processing_error',
+                    'message' => $e->getMessage(),
+                    'file' => $e->getFile(),
+                    'line' => $e->getLine()
+                )
+            );
+        }
+    }
+
+    /**
+     * Generate notification content for target
+     *
+     * @since 4.2.4.4
+     * @param array $license License data
+     * @param string $old_status Previous status
+     * @param string $new_status New status
+     * @param array $target Notification target
+     * @param array $context Notification context
+     * @return array|null Generated content
+     */
+    private function generate_notification_content($license, $old_status, $new_status, $target, $context) {
+        try {
+            // Get template for this notification type
+            $template = $this->get_notification_template($old_status, $new_status, $target['type'], $target['recipient_type']);
+
+            if (!$template) {
+                return null;
+            }
+
+            // Prepare template variables
+            $template_vars = $this->prepare_template_variables($license, $old_status, $new_status, $target, $context);
+
+            // Generate content based on target type
+            switch ($target['type']) {
+                case 'email':
+                    return $this->generate_email_content($template, $template_vars, $target);
+
+                case 'admin_notice':
+                    return $this->generate_admin_notice_content($template, $template_vars, $target);
+
+                case 'webhook':
+                    return $this->generate_webhook_content($template, $template_vars, $target);
+
+                case 'sms':
+                    return $this->generate_sms_content($template, $template_vars, $target);
+
+                default:
+                    return null;
+            }
+
+        } catch (Exception $e) {
+            error_log('VD License Manager: Notification content generation failed: ' . $e->getMessage());
+            return null;
+        }
+    }
+
+    /**
+     * Get notification template for status change
+     *
+     * @since 4.2.4.4
+     * @param string $old_status Previous status
+     * @param string $new_status New status
+     * @param string $notification_type Type of notification (email, admin_notice, etc.)
+     * @param string $recipient_type Type of recipient (admin, customer)
+     * @return array|null Template data
+     */
+    private function get_notification_template($old_status, $new_status, $notification_type, $recipient_type) {
+        // Default templates for common status changes
+        $default_templates = array(
+            'active_to_expired' => array(
+                'email' => array(
+                    'customer' => array(
+                        'subject' => 'License đã hết hạn - {license_key}',
+                        'body' => 'License của bạn {license_key} đã hết hạn vào {expires_at}. Vui lòng gia hạn để tiếp tục sử dụng dịch vụ.'
+                    ),
+                    'admin' => array(
+                        'subject' => 'License hết hạn: {license_key}',
+                        'body' => 'License {license_key} (Customer: {customer_email}) đã hết hạn.'
+                    )
+                ),
+                'admin_notice' => array(
+                    'admin' => array(
+                        'message' => 'License {license_key} đã hết hạn',
+                        'type' => 'warning'
+                    )
+                )
+            ),
+            'active_to_suspended' => array(
+                'email' => array(
+                    'customer' => array(
+                        'subject' => 'License bị tạm khóa - {license_key}',
+                        'body' => 'License của bạn {license_key} đã bị tạm khóa. Lý do: {change_reason}. Vui lòng liên hệ hỗ trợ.'
+                    ),
+                    'admin' => array(
+                        'subject' => 'License bị tạm khóa: {license_key}',
+                        'body' => 'License {license_key} đã bị tạm khóa. Customer: {customer_email}'
+                    )
+                )
+            ),
+            'suspended_to_revoked' => array(
+                'email' => array(
+                    'customer' => array(
+                        'subject' => 'License bị thu hồi - {license_key}',
+                        'body' => 'License của bạn {license_key} đã bị thu hồi vĩnh viễn. Vui lòng liên hệ hỗ trợ nếu cần.'
+                    ),
+                    'admin' => array(
+                        'subject' => 'License bị thu hồi: {license_key}',
+                        'body' => 'License {license_key} đã bị thu hồi. Customer: {customer_email}'
+                    )
+                )
+            ),
+            'expired_to_suspended' => array(
+                'email' => array(
+                    'customer' => array(
+                        'subject' => 'License chuyển sang tạm khóa - {license_key}',
+                        'body' => 'License hết hạn {license_key} đã được chuyển sang trạng thái tạm khóa do không gia hạn.'
+                    )
+                )
+            )
+        );
+
+        $transition_key = $old_status . '_to_' . $new_status;
+
+        if (isset($default_templates[$transition_key][$notification_type][$recipient_type])) {
+            return $default_templates[$transition_key][$notification_type][$recipient_type];
+        }
+
+        // Fallback to generic template
+        return array(
+            'subject' => 'License status change: {license_key}',
+            'body' => 'License {license_key} status changed from {old_status} to {new_status}',
+            'message' => 'License {license_key}: {old_status} → {new_status}',
+            'type' => 'info'
+        );
+    }
+
+    /**
+     * Prepare template variables for content generation
+     *
+     * @since 4.2.4.4
+     * @param array $license License data
+     * @param string $old_status Previous status
+     * @param string $new_status New status
+     * @param array $target Notification target
+     * @param array $context Notification context
+     * @return array Template variables
+     */
+    private function prepare_template_variables($license, $old_status, $new_status, $target, $context) {
+        return array(
+            'license_key' => $license['license_key'] ?? 'N/A',
+            'license_id' => $license['id'] ?? 'N/A',
+            'old_status' => ucfirst($old_status),
+            'new_status' => ucfirst($new_status),
+            'change_reason' => $context['change_reason'] ?? 'System automatic update',
+            'customer_email' => $license['customer_email'] ?? 'N/A',
+            'customer_name' => $license['customer_name'] ?? 'N/A',
+            'product_name' => $license['product_name'] ?? 'N/A',
+            'expires_at' => $license['expires_at'] ?? 'N/A',
+            'change_timestamp' => current_time('mysql'),
+            'support_email' => get_option('admin_email', 'support@example.com'),
+            'site_name' => get_bloginfo('name'),
+            'site_url' => home_url()
+        );
+    }
+
+    /**
+     * Generate email notification content
+     *
+     * @since 4.2.4.4
+     * @param array $template Email template
+     * @param array $vars Template variables
+     * @param array $target Email target
+     * @return array Email content
+     */
+    private function generate_email_content($template, $vars, $target) {
+        $subject = $this->replace_template_variables($template['subject'], $vars);
+        $body = $this->replace_template_variables($template['body'], $vars);
+
+        // Add HTML wrapper if needed
+        if ($target['format'] === 'html') {
+            $body = $this->wrap_email_html($body, $subject, $vars);
+        }
+
+        return array(
+            'type' => 'email',
+            'recipient' => $target['recipient'],
+            'subject' => $subject,
+            'body' => $body,
+            'format' => $target['format'] ?? 'text',
+            'headers' => $target['headers'] ?? array()
+        );
+    }
+
+    /**
+     * Generate admin notice content
+     *
+     * @since 4.2.4.4
+     * @param array $template Notice template
+     * @param array $vars Template variables
+     * @param array $target Notice target
+     * @return array Notice content
+     */
+    private function generate_admin_notice_content($template, $vars, $target) {
+        $message = $this->replace_template_variables($template['message'], $vars);
+
+        return array(
+            'type' => 'admin_notice',
+            'message' => $message,
+            'notice_type' => $template['type'] ?? 'info',
+            'dismissible' => $target['dismissible'] ?? true,
+            'capability' => $target['capability'] ?? 'manage_options'
+        );
+    }
+
+    /**
+     * Replace template variables in content
+     *
+     * @since 4.2.4.4
+     * @param string $content Content with placeholders
+     * @param array $vars Variables to replace
+     * @return string Processed content
+     */
+    private function replace_template_variables($content, $vars) {
+        foreach ($vars as $key => $value) {
+            $content = str_replace('{' . $key . '}', $value, $content);
+        }
+        return $content;
+    }
+
+    /**
+     * Queue notification for later delivery
+     *
+     * @since 4.2.4.4
+     * @param array $license License data
+     * @param string $old_status Previous status
+     * @param string $new_status New status
+     * @param array $target Notification target
+     * @param array $content Notification content
+     * @param array $context Notification context
+     * @return array Queue result
+     */
+    private function queue_notification($license, $old_status, $new_status, $target, $content, $context) {
+        global $wpdb;
+
+        try {
+            $queue_data = array(
+                'notification_type' => $target['type'],
+                'recipient' => $target['recipient'],
+                'content' => json_encode($content),
+                'context' => json_encode(array(
+                    'license_id' => $license['id'],
+                    'old_status' => $old_status,
+                    'new_status' => $new_status,
+                    'change_context' => $context
+                )),
+                'priority' => $context['priority'] ?? 'normal',
+                'max_retries' => $context['retry_config']['max_attempts'] ?? 3,
+                'retry_count' => 0,
+                'status' => 'queued',
+                'scheduled_at' => current_time('mysql'),
+                'created_at' => current_time('mysql')
+            );
+
+            $result = $wpdb->insert(
+                $wpdb->prefix . 'vd_notification_queue',
+                $queue_data,
+                array('%s', '%s', '%s', '%s', '%s', '%d', '%d', '%s', '%s', '%s')
+            );
+
+            if ($result === false) {
+                throw new Exception('Failed to insert notification into queue: ' . $wpdb->last_error);
+            }
+
+            return array(
+                'success' => true,
+                'queue_id' => $wpdb->insert_id
+            );
+
+        } catch (Exception $e) {
+            return array(
+                'success' => false,
+                'error' => array(
+                    'type' => 'queue_error',
+                    'message' => $e->getMessage()
+                )
+            );
+        }
+    }
+
+    /**
+     * Send immediate notification
+     *
+     * @since 4.2.4.4
+     * @param array $target Notification target
+     * @param array $content Notification content
+     * @param array $context Notification context
+     * @return array Delivery result
+     */
+    private function send_immediate_notification($target, $content, $context) {
+        try {
+            switch ($target['type']) {
+                case 'email':
+                    return $this->send_email_notification($content, $context);
+
+                case 'admin_notice':
+                    return $this->send_admin_notice_notification($content, $context);
+
+                case 'webhook':
+                    return $this->send_webhook_notification($content, $context);
+
+                default:
+                    return array(
+                        'success' => false,
+                        'error' => array(
+                            'type' => 'unsupported_type',
+                            'message' => 'Unsupported notification type: ' . $target['type']
+                        )
+                    );
+            }
+
+        } catch (Exception $e) {
+            return array(
+                'success' => false,
+                'error' => array(
+                    'type' => 'delivery_error',
+                    'message' => $e->getMessage(),
+                    'file' => $e->getFile(),
+                    'line' => $e->getLine()
+                )
+            );
+        }
+    }
+
+    /**
+     * Send email notification
+     *
+     * @since 4.2.4.4
+     * @param array $content Email content
+     * @param array $context Notification context
+     * @return array Delivery result
+     */
+    private function send_email_notification($content, $context) {
+        $headers = array();
+
+        if ($content['format'] === 'html') {
+            $headers[] = 'Content-Type: text/html; charset=UTF-8';
+        }
+
+        // Add custom headers if provided
+        if (!empty($content['headers'])) {
+            $headers = array_merge($headers, $content['headers']);
+        }
+
+        $success = wp_mail(
+            $content['recipient'],
+            $content['subject'],
+            $content['body'],
+            $headers
+        );
+
+        return array(
+            'success' => $success,
+            'delivery_info' => array(
+                'method' => 'wp_mail',
+                'recipient' => $content['recipient'],
+                'subject' => $content['subject']
+            )
+        );
+    }
+
+    /**
+     * Send admin notice notification
+     *
+     * @since 4.2.4.4
+     * @param array $content Notice content
+     * @param array $context Notification context
+     * @return array Delivery result
+     */
+    private function send_admin_notice_notification($content, $context) {
+        // Store admin notice in WordPress transient for display
+        $notice_data = array(
+            'message' => $content['message'],
+            'type' => $content['notice_type'],
+            'dismissible' => $content['dismissible'],
+            'capability' => $content['capability'],
+            'timestamp' => time()
+        );
+
+        $notice_key = 'vd_license_notice_' . md5($content['message'] . time());
+        set_transient($notice_key, $notice_data, 24 * HOUR_IN_SECONDS);
+
+        // Add to notices list
+        $notices = get_transient('vd_license_admin_notices') ?: array();
+        $notices[] = $notice_key;
+        set_transient('vd_license_admin_notices', $notices, 24 * HOUR_IN_SECONDS);
+
+        return array(
+            'success' => true,
+            'delivery_info' => array(
+                'method' => 'admin_notice',
+                'notice_key' => $notice_key
+            )
+        );
+    }
+
+    /**
+     * Get admin notification targets
+     *
+     * @since 4.2.4.4
+     * @param array $license License data
+     * @param string $old_status Previous status
+     * @param string $new_status New status
+     * @param array $config Notification configuration
+     * @return array Admin targets
+     */
+    private function get_admin_notification_targets($license, $old_status, $new_status, $config) {
+        $targets = array();
+
+        // Email to admin
+        $admin_email = get_option('admin_email');
+        if ($admin_email) {
+            $targets[] = array(
+                'type' => 'email',
+                'recipient' => $admin_email,
+                'recipient_type' => 'admin',
+                'format' => 'html'
+            );
+        }
+
+        // Admin notice in WordPress dashboard
+        $targets[] = array(
+            'type' => 'admin_notice',
+            'recipient_type' => 'admin',
+            'dismissible' => true,
+            'capability' => 'manage_options'
+        );
+
+        return $targets;
+    }
+
+    /**
+     * Get customer notification target
+     *
+     * @since 4.2.4.4
+     * @param array $license License data
+     * @param string $old_status Previous status
+     * @param string $new_status New status
+     * @param array $config Notification configuration
+     * @return array|null Customer target
+     */
+    private function get_customer_notification_target($license, $old_status, $new_status, $config) {
+        if (empty($license['customer_email'])) {
+            return null;
+        }
+
+        return array(
+            'type' => 'email',
+            'recipient' => $license['customer_email'],
+            'recipient_type' => 'customer',
+            'format' => 'html'
+        );
+    }
+
+    /**
+     * Get global notification settings
+     *
+     * @since 4.2.4.4
+     * @return array Global settings
+     */
+    private function get_global_notification_settings() {
+        return array(
+            'enabled' => true,
+            'channels' => array('email', 'admin'),
+            'status_rules' => array(
+                'active_to_expired' => array('enabled' => true, 'priority' => 'high'),
+                'active_to_suspended' => array('enabled' => true, 'priority' => 'high'),
+                'suspended_to_revoked' => array('enabled' => true, 'priority' => 'normal'),
+                'expired_to_suspended' => array('enabled' => true, 'priority' => 'normal')
+            ),
+            'retry' => array(
+                'max_attempts' => 3,
+                'delay_minutes' => 15
+            ),
+            'queue' => array(
+                'enabled' => true,
+                'batch_size' => 50
+            )
+        );
+    }
+
+    /**
+     * Evaluate notification triggers
+     *
+     * @since 4.2.4.4
+     * @param array $license License data
+     * @param string $old_status Previous status
+     * @param string $new_status New status
+     * @param array $context Notification context
+     * @param array $config Notification configuration
+     * @return array Trigger evaluation result
+     */
+    private function evaluate_notification_triggers($license, $old_status, $new_status, $context, $config) {
+        // Always trigger for critical status changes
+        $critical_changes = array(
+            'active_to_suspended',
+            'active_to_revoked',
+            'suspended_to_revoked'
+        );
+
+        $transition_key = $old_status . '_to_' . $new_status;
+
+        if (in_array($transition_key, $critical_changes)) {
+            return array(
+                'should_trigger' => true,
+                'reason' => 'Critical status change detected'
+            );
+        }
+
+        // Check if triggered by automatic system
+        if ($context['triggered_by'] === 'system' && $context['change_type'] === 'automatic_update') {
+            return array(
+                'should_trigger' => true,
+                'reason' => 'Automatic system update'
+            );
+        }
+
+        // Default trigger behavior
+        return array(
+            'should_trigger' => true,
+            'reason' => 'Standard status change notification'
+        );
+    }
+
+    /**
+     * Determine notification priority
+     *
+     * @since 4.2.4.4
+     * @param string $old_status Previous status
+     * @param string $new_status New status
+     * @param array $context Notification context
+     * @return string Priority level
+     */
+    private function determine_notification_priority($old_status, $new_status, $context) {
+        // High priority for critical changes
+        $high_priority_changes = array(
+            'active_to_suspended',
+            'active_to_revoked',
+            'suspended_to_revoked'
+        );
+
+        $transition_key = $old_status . '_to_' . $new_status;
+
+        if (in_array($transition_key, $high_priority_changes)) {
+            return 'high';
+        }
+
+        // Normal priority for expiry
+        if ($new_status === 'expired') {
+            return 'normal';
+        }
+
+        return 'low';
+    }
+
+    /**
+     * Should queue notification instead of sending immediately
+     *
+     * @since 4.2.4.4
+     * @param array $target Notification target
+     * @param array $context Notification context
+     * @return bool Whether to queue
+     */
+    private function should_queue_notification($target, $context) {
+        // Always queue if queue is enabled and not high priority
+        if ($context['queue_enabled'] && $context['priority'] !== 'high') {
+            return true;
+        }
+
+        // Queue emails to avoid blocking request
+        if ($target['type'] === 'email') {
+            return true;
+        }
+
+        // Send admin notices immediately
+        if ($target['type'] === 'admin_notice') {
+            return false;
+        }
+
+        return false;
+    }
+
+    /**
+     * Log notification completion
+     *
+     * @since 4.2.4.4
+     * @param array $license License data
+     * @param string $old_status Previous status
+     * @param string $new_status New status
+     * @param array $results Notification results
+     * @param array $context Notification context
+     * @return void
+     */
+    private function log_notification_completion($license, $old_status, $new_status, $results, $context) {
+        if ($this->security_audit) {
+            $this->security_audit->log_security_event(array(
+                'event_type' => 'status_change_notification',
+                'license_id' => $license['id'],
+                'old_status' => $old_status,
+                'new_status' => $new_status,
+                'notifications_sent' => $results['notifications_sent'],
+                'notifications_queued' => $results['notifications_queued'],
+                'notifications_failed' => $results['notifications_failed'],
+                'execution_time_ms' => $results['execution_time_ms'],
+                'context' => json_encode($context),
+                'timestamp' => current_time('mysql')
+            ));
+        }
+    }
+
+    /**
+     * Log notification error
+     *
+     * @since 4.2.4.4
+     * @param string $function Function where error occurred
+     * @param Exception $exception Exception object
+     * @param array $license License data
+     * @param array $context Notification context
+     * @return void
+     */
+    private function log_notification_error($function, $exception, $license, $context) {
+        error_log(sprintf(
+            'VD License Manager Notification Error in %s: %s (License: %s, File: %s, Line: %d)',
+            $function,
+            $exception->getMessage(),
+            $license['id'] ?? 'unknown',
+            $exception->getFile(),
+            $exception->getLine()
+        ));
+
+        if ($this->security_audit) {
+            $this->security_audit->log_security_event(array(
+                'event_type' => 'notification_error',
+                'license_id' => $license['id'] ?? null,
+                'function' => $function,
+                'error_message' => $exception->getMessage(),
+                'error_file' => $exception->getFile(),
+                'error_line' => $exception->getLine(),
+                'context' => json_encode($context),
+                'timestamp' => current_time('mysql')
+            ));
+        }
+    }
+
+    /**
+     * Wrap email content in HTML template
+     *
+     * @since 4.2.4.4
+     * @param string $body Email body content
+     * @param string $subject Email subject
+     * @param array $vars Template variables
+     * @return string HTML wrapped content
+     */
+    private function wrap_email_html($body, $subject, $vars) {
+        $html = '<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>' . esc_html($subject) . '</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background: #f8f9fa; padding: 15px; border-bottom: 2px solid #007cba; }
+        .content { padding: 20px 0; }
+        .footer { margin-top: 30px; padding-top: 15px; border-top: 1px solid #ddd; font-size: 12px; color: #666; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h2>' . esc_html($vars['site_name']) . '</h2>
+        </div>
+        <div class="content">
+            ' . nl2br(esc_html($body)) . '
+        </div>
+        <div class="footer">
+            <p>Email này được gửi tự động từ ' . esc_html($vars['site_name']) . ' - ' . esc_html($vars['site_url']) . '</p>
+            <p>Nếu cần hỗ trợ, vui lòng liên hệ: ' . esc_html($vars['support_email']) . '</p>
+        </div>
+    </div>
+</body>
+</html>';
+
+        return $html;
+    }
+
+    /**
+     * Get product notification settings
+     *
+     * @since 4.2.4.4
+     * @param int $product_id Product ID
+     * @return array Product notification settings
+     */
+    private function get_product_notification_settings($product_id) {
+        // Placeholder for product-specific notification settings
+        // Could be stored in vd_product_settings table
+        return array();
+    }
+
+    /**
+     * Get license notification settings
+     *
+     * @since 4.2.4.4
+     * @param int $license_id License ID
+     * @return array License notification settings
+     */
+    private function get_license_notification_settings($license_id) {
+        // Placeholder for license-specific notification settings
+        // Could be stored in vd_license_settings table
+        return array();
+    }
+
+    /**
+     * Get webhook notification targets
+     *
+     * @since 4.2.4.4
+     * @param array $license License data
+     * @param string $old_status Previous status
+     * @param string $new_status New status
+     * @param array $config Notification configuration
+     * @return array Webhook targets
+     */
+    private function get_webhook_notification_targets($license, $old_status, $new_status, $config) {
+        // Placeholder for webhook configuration
+        // Could be configured in admin settings
+        return array();
+    }
+
+    /**
+     * Get SMS notification target
+     *
+     * @since 4.2.4.4
+     * @param array $license License data
+     * @param string $old_status Previous status
+     * @param string $new_status New status
+     * @param array $config Notification configuration
+     * @return array|null SMS target
+     */
+    private function get_sms_notification_target($license, $old_status, $new_status, $config) {
+        // Placeholder for SMS notification
+        // Would require SMS service integration
+        return null;
+    }
+
+    /**
+     * Send webhook notification
+     *
+     * @since 4.2.4.4
+     * @param array $content Webhook content
+     * @param array $context Notification context
+     * @return array Delivery result
+     */
+    private function send_webhook_notification($content, $context) {
+        // Placeholder for webhook delivery
+        // Would use wp_remote_post() to send webhook
+        return array(
+            'success' => false,
+            'error' => array(
+                'type' => 'not_implemented',
+                'message' => 'Webhook notifications not yet implemented'
+            )
+        );
+    }
 }
