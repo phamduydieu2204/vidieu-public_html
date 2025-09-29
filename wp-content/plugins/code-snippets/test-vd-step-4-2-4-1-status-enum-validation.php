@@ -27,7 +27,35 @@ class VD_Step_4_2_4_1_Test {
     private $success_count = 0;
 
     public function __construct() {
+        // Ensure VD License Manager is initialized
+        if (!class_exists('VD_License_Manager')) {
+            throw new Exception('VD License Manager plugin is not loaded or activated');
+        }
+
+        // Initialize VD License Manager if not already done
+        $manager = VD_License_Manager::get_instance();
+        if (!$manager) {
+            throw new Exception('Failed to get VD License Manager instance');
+        }
+
+        // Ensure License Validator is available
+        if (!class_exists('VD_License_Validator')) {
+            // Try to trigger initialization
+            $manager->init();
+
+            // Wait a moment for classes to load
+            usleep(100000); // 100ms
+
+            if (!class_exists('VD_License_Validator')) {
+                throw new Exception('VD_License_Validator class is not available. Please ensure VD License Manager plugin is properly installed and activated.');
+            }
+        }
+
         $this->validator = VD_License_Validator::get_instance();
+
+        if (!$this->validator) {
+            throw new Exception('Failed to get VD_License_Validator instance');
+        }
     }
 
     /**
@@ -379,8 +407,87 @@ class VD_Step_4_2_4_1_Test {
 
 // Auto-run tests if accessed directly
 if (isset($_GET['run_vd_4_2_4_1_tests']) || (defined('WP_CLI') && WP_CLI)) {
-    $test_runner = new VD_Step_4_2_4_1_Test();
-    $test_runner->run_all_tests();
+    try {
+        echo "<div style='background: #fff3cd; padding: 15px; margin: 20px 0; border-left: 4px solid #ffc107;'>";
+        echo "<h3>🔧 VD License Manager Test Initialization</h3>";
+        echo "<p>Checking plugin status and class availability...</p>";
+
+        // Check if VD License Manager is loaded
+        if (!class_exists('VD_License_Manager')) {
+            echo "<p style='color: red;'>❌ VD License Manager plugin is not loaded. Please ensure the plugin is activated.</p>";
+            echo "</div>";
+            return;
+        }
+
+        echo "<p style='color: green;'>✅ VD License Manager plugin is loaded</p>";
+
+        // Check if VD_License_Validator exists
+        if (!class_exists('VD_License_Validator')) {
+            echo "<p style='color: orange;'>⚠️ VD_License_Validator not found, trying to force load...</p>";
+
+            // Load required dependencies first
+            $plugin_dir = WP_PLUGIN_DIR . '/vd-license-manager/includes/';
+            $dependencies = array(
+                'class-vd-database-manager.php',
+                'class-vd-encryption-manager.php',
+                'class-vd-license-validator.php'
+            );
+
+            foreach ($dependencies as $dep_file) {
+                $dep_path = $plugin_dir . $dep_file;
+                if (file_exists($dep_path)) {
+                    require_once $dep_path;
+                    echo "<p style='color: green;'>✅ Loaded dependency: {$dep_file}</p>";
+                } else {
+                    echo "<p style='color: orange;'>⚠️ Optional dependency not found: {$dep_file}</p>";
+                }
+            }
+
+            if (!class_exists('VD_License_Validator')) {
+                echo "<p style='color: red;'>❌ VD_License_Validator class still not available after loading dependencies</p>";
+                echo "<p><strong>Debug info:</strong> Check for PHP syntax errors or missing dependencies.</p>";
+
+                // Try to load the functions file
+                $functions_file = WP_PLUGIN_DIR . '/vd-license-manager/includes/functions.php';
+                if (file_exists($functions_file)) {
+                    require_once $functions_file;
+                    echo "<p style='color: green;'>✅ Loaded functions.php</p>";
+                }
+
+                echo "</div>";
+                return;
+            }
+        }
+
+        echo "<p style='color: green;'>✅ VD_License_Validator class is available</p>";
+        echo "<p><strong>Proceeding with tests...</strong></p>";
+        echo "</div>";
+
+        $test_runner = new VD_Step_4_2_4_1_Test();
+        $test_runner->run_all_tests();
+
+    } catch (Exception $e) {
+        echo "<div style='background: #f8d7da; padding: 15px; margin: 20px 0; border-left: 4px solid #dc3545;'>";
+        echo "<h3>❌ Test Initialization Error</h3>";
+        echo "<p><strong>Error:</strong> " . htmlspecialchars($e->getMessage()) . "</p>";
+        echo "<p><strong>File:</strong> " . htmlspecialchars($e->getFile()) . "</p>";
+        echo "<p><strong>Line:</strong> " . $e->getLine() . "</p>";
+        echo "<h4>📋 Troubleshooting Steps:</h4>";
+        echo "<ol>";
+        echo "<li>Ensure VD License Manager plugin is activated</li>";
+        echo "<li>Check if all plugin files are present in wp-content/plugins/vd-license-manager/</li>";
+        echo "<li>Verify no PHP errors in debug.log</li>";
+        echo "<li>Try deactivating and reactivating the plugin</li>";
+        echo "</ol>";
+        echo "</div>";
+    } catch (Error $e) {
+        echo "<div style='background: #f8d7da; padding: 15px; margin: 20px 0; border-left: 4px solid #dc3545;'>";
+        echo "<h3>💥 Fatal Test Error</h3>";
+        echo "<p><strong>Error:</strong> " . htmlspecialchars($e->getMessage()) . "</p>";
+        echo "<p><strong>File:</strong> " . htmlspecialchars($e->getFile()) . "</p>";
+        echo "<p><strong>Line:</strong> " . $e->getLine() . "</p>";
+        echo "</div>";
+    }
 }
 
 // Admin notice for manual testing
