@@ -600,54 +600,466 @@ class VD_License_Validator {
     }
 
     /**
-     * Enhanced License Status Validation
-     * Step 4.2.3 - Comprehensive status checking
+     * Enhanced License Status Validation Framework
+     * Step 4.2.4.1 - Comprehensive status enum validation với transition rules
      *
      * @since 4.2.3
+     * @updated 4.2.4.1
      * @param array $license License data
-     * @return array Validation result
+     * @return array Validation result with comprehensive status analysis
      */
     private function validate_license_status($license) {
-        $mapped_status = $license['mapped_status'] ?? $this->map_lmfwc_status($license['status'] ?? null);
+        // Step 4.2.4.1: Enhanced status validation framework
+        $validation_result = $this->perform_status_enum_validation($license);
 
-        // Check suspended status
-        if ($mapped_status === 'suspended') {
-            return array(
-                'valid' => false,
-                'error' => 'License đã bị tạm khóa hoặc vô hiệu hóa',
-                'code' => 'license_suspended',
-                'original_status' => $license['status'] ?? null,
-                'mapped_status' => $mapped_status
-            );
+        // Legacy compatibility: maintain original method behavior
+        if (!$validation_result['valid']) {
+            return $validation_result;
         }
 
-        // Check inactive status
-        if ($mapped_status === 'inactive') {
+        return array(
+            'valid' => true,
+            'mapped_status' => $validation_result['status_info']['mapped_status'],
+            'original_status' => $validation_result['status_info']['original_status'],
+            'status_details' => $validation_result // Include detailed info for advanced usage
+        );
+    }
+
+    /**
+     * Step 4.2.4.1 - Status Enum Validation Framework
+     * Core comprehensive status validation với enum checking và transition rules
+     *
+     * @since 4.2.4.1
+     * @param array $license License data
+     * @return array Comprehensive validation result
+     */
+    private function perform_status_enum_validation($license) {
+        $debug_info = array();
+        $validation_start = microtime(true);
+
+        try {
+            // 1. Status Enum Definition và Validation
+            $status_info = $this->get_comprehensive_status_info($license);
+            $debug_info['status_info'] = $status_info;
+
+            // 2. Enum Validation
+            $enum_validation = $this->validate_status_enum($status_info['mapped_status']);
+            if (!$enum_validation['valid']) {
+                return $this->create_status_validation_error(
+                    'status_enum_invalid',
+                    $enum_validation['error'],
+                    $status_info,
+                    $debug_info
+                );
+            }
+
+            // 3. Status Transition Validation (if previous status exists)
+            if (isset($license['previous_status'])) {
+                $transition_validation = $this->validate_status_transition(
+                    $license['previous_status'],
+                    $status_info['mapped_status']
+                );
+                $debug_info['transition_validation'] = $transition_validation;
+            }
+
+            // 4. Status-specific Business Rules
+            $business_rules_result = $this->validate_status_business_rules($status_info);
+            if (!$business_rules_result['valid']) {
+                return $this->create_status_validation_error(
+                    $business_rules_result['code'],
+                    $business_rules_result['error'],
+                    $status_info,
+                    array_merge($debug_info, array('business_rules' => $business_rules_result))
+                );
+            }
+
+            // 5. Status Hierarchy Validation
+            $hierarchy_validation = $this->validate_status_hierarchy($status_info['mapped_status']);
+            $debug_info['hierarchy'] = $hierarchy_validation;
+
+            $validation_end = microtime(true);
+            $debug_info['validation_time_ms'] = round(($validation_end - $validation_start) * 1000, 2);
+
+            // Debug logging for successful validation
+            $this->log_status_validation_debug('status_validation_success', $status_info, $debug_info);
+
             return array(
-                'valid' => false,
-                'error' => 'License chưa được kích hoạt hoặc đã bị vô hiệu hóa',
-                'code' => 'license_inactive',
-                'original_status' => $license['status'] ?? null,
-                'mapped_status' => $mapped_status
+                'valid' => true,
+                'status_info' => $status_info,
+                'enum_validation' => $enum_validation,
+                'hierarchy' => $hierarchy_validation,
+                'debug_info' => $debug_info,
+                'validation_timestamp' => current_time('mysql')
+            );
+
+        } catch (Exception $e) {
+            $debug_info['exception'] = array(
+                'message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine()
+            );
+
+            $this->log_status_validation_debug('status_validation_exception', $status_info ?? array(), $debug_info);
+
+            return $this->create_status_validation_error(
+                'status_validation_exception',
+                'Lỗi hệ thống khi kiểm tra trạng thái license: ' . $e->getMessage(),
+                $status_info ?? array(),
+                $debug_info
             );
         }
+    }
 
-        // Check already expired status
-        if ($mapped_status === 'expired') {
+    /**
+     * Step 4.2.4.1 - Get comprehensive status information
+     * Comprehensive status mapping và analysis
+     *
+     * @since 4.2.4.1
+     * @param array $license License data
+     * @return array Comprehensive status information
+     */
+    private function get_comprehensive_status_info($license) {
+        $original_status = $license['status'] ?? null;
+        $mapped_status = $license['mapped_status'] ?? $this->map_lmfwc_status($original_status);
+
+        return array(
+            'original_status' => $original_status,
+            'mapped_status' => $mapped_status,
+            'status_source' => $license['lookup_source'] ?? 'lmfwc',
+            'status_mapping_applied' => ($original_status !== $mapped_status),
+            'license_id' => $license['id'] ?? null,
+            'product_id' => $license['product_id'] ?? null,
+            'status_updated_at' => $license['updated_at'] ?? null
+        );
+    }
+
+    /**
+     * Step 4.2.4.1 - Status Enum Validation
+     * Validate status against defined enums
+     *
+     * @since 4.2.4.1
+     * @param string $status Status to validate
+     * @return array Validation result
+     */
+    private function validate_status_enum($status) {
+        $valid_statuses = $this->get_valid_status_enums();
+
+        if (!in_array($status, $valid_statuses, true)) {
             return array(
                 'valid' => false,
-                'error' => 'License đã hết hạn',
-                'code' => 'license_expired',
-                'original_status' => $license['status'] ?? null,
-                'mapped_status' => $mapped_status
+                'error' => sprintf('Trạng thái "%s" không hợp lệ. Các trạng thái cho phép: %s',
+                    $status,
+                    implode(', ', $valid_statuses)
+                ),
+                'provided_status' => $status,
+                'valid_statuses' => $valid_statuses
             );
         }
 
         return array(
             'valid' => true,
-            'mapped_status' => $mapped_status,
-            'original_status' => $license['status'] ?? null
+            'status' => $status,
+            'status_description' => $this->get_status_description($status),
+            'status_category' => $this->get_status_category($status)
         );
+    }
+
+    /**
+     * Step 4.2.4.1 - Get valid status enums
+     * Define all valid license status enums
+     *
+     * @since 4.2.4.1
+     * @return array Valid status enums
+     */
+    private function get_valid_status_enums() {
+        return array(
+            'active',     // License is active and usable
+            'inactive',   // License exists but not activated
+            'suspended',  // License temporarily disabled
+            'expired',    // License has expired
+            'revoked',    // License permanently revoked
+            'pending'     // License pending activation (new in 4.2.4.1)
+        );
+    }
+
+    /**
+     * Step 4.2.4.1 - Status transition validation
+     * Validate if status transition is allowed
+     *
+     * @since 4.2.4.1
+     * @param string $from_status Previous status
+     * @param string $to_status New status
+     * @return array Transition validation result
+     */
+    private function validate_status_transition($from_status, $to_status) {
+        $allowed_transitions = $this->get_allowed_status_transitions();
+
+        if (!isset($allowed_transitions[$from_status])) {
+            return array(
+                'valid' => false,
+                'error' => sprintf('Không thể chuyển từ trạng thái không xác định: %s', $from_status),
+                'from_status' => $from_status,
+                'to_status' => $to_status
+            );
+        }
+
+        if (!in_array($to_status, $allowed_transitions[$from_status], true)) {
+            return array(
+                'valid' => false,
+                'error' => sprintf('Không thể chuyển từ "%s" sang "%s"', $from_status, $to_status),
+                'from_status' => $from_status,
+                'to_status' => $to_status,
+                'allowed_transitions' => $allowed_transitions[$from_status]
+            );
+        }
+
+        return array(
+            'valid' => true,
+            'from_status' => $from_status,
+            'to_status' => $to_status,
+            'transition_type' => $this->get_transition_type($from_status, $to_status)
+        );
+    }
+
+    /**
+     * Step 4.2.4.1 - Status business rules validation
+     * Apply business-specific validation rules
+     *
+     * @since 4.2.4.1
+     * @param array $status_info Status information
+     * @return array Business rules validation result
+     */
+    private function validate_status_business_rules($status_info) {
+        $mapped_status = $status_info['mapped_status'];
+
+        switch ($mapped_status) {
+            case 'suspended':
+                return array(
+                    'valid' => false,
+                    'error' => 'License đã bị tạm khóa hoặc vô hiệu hóa',
+                    'code' => 'license_suspended'
+                );
+
+            case 'inactive':
+                return array(
+                    'valid' => false,
+                    'error' => 'License chưa được kích hoạt hoặc đã bị vô hiệu hóa',
+                    'code' => 'license_inactive'
+                );
+
+            case 'expired':
+                return array(
+                    'valid' => false,
+                    'error' => 'License đã hết hạn',
+                    'code' => 'license_expired'
+                );
+
+            case 'revoked':
+                return array(
+                    'valid' => false,
+                    'error' => 'License đã bị thu hồi vĩnh viễn',
+                    'code' => 'license_revoked'
+                );
+
+            case 'pending':
+                return array(
+                    'valid' => false,
+                    'error' => 'License đang chờ kích hoạt',
+                    'code' => 'license_pending'
+                );
+
+            case 'active':
+                // Additional checks for active licenses
+                return $this->validate_active_license_rules($status_info);
+
+            default:
+                return array(
+                    'valid' => false,
+                    'error' => sprintf('Trạng thái license không được hỗ trợ: %s', $mapped_status),
+                    'code' => 'unsupported_status'
+                );
+        }
+    }
+
+    /**
+     * Step 4.2.4.1 - Active license business rules
+     * Specific rules for active licenses
+     *
+     * @since 4.2.4.1
+     * @param array $status_info Status information
+     * @return array Validation result
+     */
+    private function validate_active_license_rules($status_info) {
+        // Active licenses are generally valid, but may have warnings
+        return array(
+            'valid' => true,
+            'code' => 'license_active',
+            'warnings' => array() // Can be populated with non-blocking warnings
+        );
+    }
+
+    /**
+     * Step 4.2.4.1 - Get allowed status transitions
+     * Define allowed status transition matrix
+     *
+     * @since 4.2.4.1
+     * @return array Status transition matrix
+     */
+    private function get_allowed_status_transitions() {
+        return array(
+            'pending'   => array('active', 'inactive', 'expired'),
+            'inactive'  => array('active', 'suspended', 'expired'),
+            'active'    => array('suspended', 'expired', 'revoked', 'inactive'),
+            'suspended' => array('active', 'expired', 'revoked'),
+            'expired'   => array('active', 'revoked'), // Can be renewed
+            'revoked'   => array() // Terminal state - no transitions allowed
+        );
+    }
+
+    /**
+     * Step 4.2.4.1 - Get status description
+     * Human-readable status descriptions
+     *
+     * @since 4.2.4.1
+     * @param string $status Status enum
+     * @return string Status description
+     */
+    private function get_status_description($status) {
+        $descriptions = array(
+            'active'    => 'License đang hoạt động và có thể sử dụng',
+            'inactive'  => 'License tồn tại nhưng chưa được kích hoạt',
+            'suspended' => 'License tạm thời bị vô hiệu hóa',
+            'expired'   => 'License đã hết hạn sử dụng',
+            'revoked'   => 'License đã bị thu hồi vĩnh viễn',
+            'pending'   => 'License đang chờ được kích hoạt'
+        );
+
+        return $descriptions[$status] ?? 'Trạng thái không xác định';
+    }
+
+    /**
+     * Step 4.2.4.1 - Get status category
+     * Categorize status for business logic
+     *
+     * @since 4.2.4.1
+     * @param string $status Status enum
+     * @return string Status category
+     */
+    private function get_status_category($status) {
+        $categories = array(
+            'active'    => 'usable',
+            'inactive'  => 'unusable',
+            'suspended' => 'temporarily_unusable',
+            'expired'   => 'unusable',
+            'revoked'   => 'permanently_unusable',
+            'pending'   => 'unusable'
+        );
+
+        return $categories[$status] ?? 'unknown';
+    }
+
+    /**
+     * Step 4.2.4.1 - Status hierarchy validation
+     * Validate status priority and hierarchy
+     *
+     * @since 4.2.4.1
+     * @param string $status Status to validate
+     * @return array Hierarchy information
+     */
+    private function validate_status_hierarchy($status) {
+        $hierarchy = array(
+            'revoked'   => 1, // Highest priority - terminal
+            'expired'   => 2,
+            'suspended' => 3,
+            'inactive'  => 4,
+            'pending'   => 5,
+            'active'    => 6  // Lowest priority - default good state
+        );
+
+        return array(
+            'status' => $status,
+            'priority' => $hierarchy[$status] ?? 999,
+            'is_terminal' => ($status === 'revoked'),
+            'is_good_state' => ($status === 'active'),
+            'hierarchy_level' => array_search($hierarchy[$status] ?? 999, $hierarchy) + 1
+        );
+    }
+
+    /**
+     * Step 4.2.4.1 - Get transition type
+     * Categorize transition type for business logic
+     *
+     * @since 4.2.4.1
+     * @param string $from_status Source status
+     * @param string $to_status Target status
+     * @return string Transition type
+     */
+    private function get_transition_type($from_status, $to_status) {
+        $hierarchy = array(
+            'revoked' => 1, 'expired' => 2, 'suspended' => 3,
+            'inactive' => 4, 'pending' => 5, 'active' => 6
+        );
+
+        $from_priority = $hierarchy[$from_status] ?? 999;
+        $to_priority = $hierarchy[$to_status] ?? 999;
+
+        if ($to_priority > $from_priority) {
+            return 'upgrade'; // Moving to better state
+        } elseif ($to_priority < $from_priority) {
+            return 'downgrade'; // Moving to worse state
+        } else {
+            return 'lateral'; // Same level
+        }
+    }
+
+    /**
+     * Step 4.2.4.1 - Create status validation error
+     * Standardized error response creation
+     *
+     * @since 4.2.4.1
+     * @param string $code Error code
+     * @param string $message Error message
+     * @param array $status_info Status information
+     * @param array $debug_info Debug information
+     * @return array Error response
+     */
+    private function create_status_validation_error($code, $message, $status_info, $debug_info) {
+        return array(
+            'valid' => false,
+            'error' => $message,
+            'code' => $code,
+            'status_info' => $status_info,
+            'debug_info' => $debug_info,
+            'error_timestamp' => current_time('mysql')
+        );
+    }
+
+    /**
+     * Step 4.2.4.1 - Debug logging for status validation
+     * Enhanced logging với detailed information
+     *
+     * @since 4.2.4.1
+     * @param string $event_type Type of validation event
+     * @param array $status_info Status information
+     * @param array $debug_info Debug information
+     * @return void
+     */
+    private function log_status_validation_debug($event_type, $status_info, $debug_info) {
+        if (function_exists('vd_debug_log')) {
+            $log_data = array(
+                'event' => $event_type,
+                'status_info' => $status_info,
+                'validation_time' => $debug_info['validation_time_ms'] ?? 0,
+                'timestamp' => current_time('mysql')
+            );
+
+            vd_debug_log(sprintf(
+                '[VD License Validator 4.2.4.1] %s: %s (%.2fms)',
+                $event_type,
+                wp_json_encode($log_data, JSON_UNESCAPED_UNICODE),
+                $debug_info['validation_time_ms'] ?? 0
+            ));
+        }
     }
 
     /**

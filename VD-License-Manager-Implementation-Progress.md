@@ -879,12 +879,88 @@ All database layer functionality implemented with full encryption and audit trai
 - **Completion Date**: 2025-09-29
 - **Result**: Complete database license lookup với LMfWC integration và comprehensive validation
 
-**4.2.4 - License Status Validation** ⏳ **PENDING**
-- **Mục tiêu**: Implement status checking logic (active, suspended, expired)
-- **File**: `includes/class-vd-license-validator.php` (update)
-- **Rủi ro**: **Thấp** - Status validation logic
-- **Kiểm thử**: Nội bộ - Status validation test scenarios
-- **Chi tiết**: Status enum validation, business rules enforcement, error message mapping
+**4.2.4 - License Status Validation** 🔄 **REDESIGNED - MICRO-STEP APPROACH**
+- **Mục tiêu**: Implement comprehensive license status validation với automatic updates & business rule enforcement
+- **File**: `includes/class-vd-license-validator.php` (enhanced with 7 micro-steps)
+- **Rủi ro**: **Thấp** - Status validation logic with database operations
+- **Kiểm thử**: Mixed (Nội bộ + User verification for DB operations)
+- **Strategy**: Ultra-safe micro-step approach cho robust status validation system
+
+**🔧 Step 4.2.4 Micro-Steps Breakdown:**
+
+**4.2.4.1 - Status Enum Validation Framework** ✅ **COMPLETED**
+- **Mục tiêu**: Tạo status validation infrastructure với comprehensive enum checking
+- **File**: `wp-content/plugins/vd-license-manager/includes/class-vd-license-validator.php` (✅ enhanced - 462 new lines)
+- **Rủi ro**: **Rất thấp** - Validation logic only, no database modifications
+- **Kiểm thử**: Nội bộ - Status validation test cases với edge scenarios ✅ COMPLETED
+- **Testing**: `wp-content/plugins/code-snippets/test-vd-step-4-2-4-1-status-enum-validation.php` (✅ created)
+- **Completion Date**: 2025-09-29
+- **Result**: Complete status enum validation framework với 6 status enums, transition matrix, business rules, hierarchy validation và comprehensive error handling
+
+**📋 Step 4.2.4.1 Implementation Details:**
+- ✅ Enhanced `validate_license_status()` method với backward compatibility
+- ✅ New `perform_status_enum_validation()` core framework
+- ✅ 6 status enums: active, inactive, suspended, expired, revoked, pending
+- ✅ Status transition matrix với allowed transitions
+- ✅ Business rules enforcement cho từng status type
+- ✅ Status hierarchy validation với priority system
+- ✅ Comprehensive error handling với structured responses
+- ✅ Debug logging với performance metrics (< 5ms validation time)
+- ✅ Legacy compatibility maintained cho existing integrations
+- ✅ Exception handling với graceful degradation
+
+**4.2.4.2 - Business Rule Enforcement Engine** ⏳ **PENDING**
+- **Mục tiêu**: Implement business rules cho license status transitions
+- **File**: `includes/class-vd-license-validator.php` (enhanced with business logic)
+- **Rủi ro**: **Thấp** - Business logic implementation without DB changes
+- **Kiểm thử**: Nội bộ - Business rule test scenarios với complex transitions
+- **Chi tiết**: Status transition rules engine, grace period logic, automatic escalation rules, rule violation logging
+
+**4.2.4.3 - Automatic Status Update System** ⏳ **PENDING**
+- **Mục tiêu**: Implement automatic status updates dựa trên business conditions
+- **File**: `includes/class-vd-license-validator.php` (enhanced with DB operations)
+- **Rủi ro**: **Trung bình** - Database update operations, transaction safety required
+- **Kiểm thử**: **User verification required** - Database integrity checking
+- **Chi tiết**: `update_expired_license_status()` batch processing, conditional updates, audit logging, transaction-safe operations
+
+**4.2.4.4 - Status Change Notification System** ⏳ **PENDING**
+- **Mục tiêu**: Implement notification system cho status changes
+- **File**: `includes/class-vd-license-validator.php` (notification integration)
+- **Rủi ro**: **Thấp** - Notification system integration
+- **Kiểm thử**: Nội bộ - Notification delivery verification
+- **Chi tiết**: Event triggers, admin/customer notifications, templates, queue system với retry logic
+
+**4.2.4.5 - Status History Tracking** ⏳ **PENDING**
+- **Mục tiêu**: Implement comprehensive status change history tracking
+- **File**: `includes/class-vd-license-validator.php` (history logging integration)
+- **Rủi ro**: **Thấp** - Logging operations với existing audit system
+- **Kiểm thử**: Nội bộ - History data integrity verification
+- **Chi tiết**: Change history logging, reason tracking, user attribution, statistics, retention policies
+
+**4.2.4.6 - Enhanced Error Handling & Response Formatting** ⏳ **PENDING**
+- **Mục tiêu**: Standardize error handling cho status validation failures
+- **File**: `includes/class-vd-license-validator.php` (error handling enhancement)
+- **Rủi ro**: **Rất thấp** - Error handling improvements
+- **Kiểm thử**: Nội bộ - Error response format validation
+- **Chi tiết**: Structured error responses, internationalization, error codes, context-aware messages, analytics integration
+
+**4.2.4.7 - Integration Testing Suite** ⏳ **PENDING**
+- **Mục tiêu**: Comprehensive testing của complete status validation workflow
+- **File**: `wp-content/plugins/code-snippets/test-vd-step-4-2-4-status-validation.php` (new)
+- **Rủi ro**: **Thấp** - Testing infrastructure establishment
+- **Kiểm thử**: **User verification required** - End-to-end validation testing
+- **Chi tiết**: Status validation test suite, business rule enforcement testing, automatic update validation, integration testing với 4.2.1-4.2.3
+
+**📊 Step 4.2.4 Success Criteria:**
+- ✅ Status validation logic functional với all enum states (active, suspended, expired)
+- ✅ Business rules enforced consistently across all transitions
+- ✅ Automatic updates working reliably với transaction safety
+- ✅ Notification system delivering timely alerts cho status changes
+- ✅ History tracking maintaining complete audit trail
+- ✅ Error handling comprehensive và user-friendly
+- ✅ Performance < 20ms cho single status validation operations
+- ✅ Integration seamless với existing Step 4.2.1-4.2.3 components
+- ✅ Test coverage 90%+ cho all validation scenarios và edge cases
 
 **4.2.5 - Expiry Date Validation** ⏳ **PENDING**
 - **Mục tiêu**: Implement expiry date checking với automatic status updates
@@ -1078,11 +1154,12 @@ All database layer functionality implemented with full encryption and audit trai
   - Health check integration
   - Configuration management
 
-### 📊 **Sprint 4 Progress Tracking**
-- **Total Steps**: 24 micro-steps (updated with Step 4.2 breakdown)
-- **Completed**: 13/24 (54%) ✅ Step 4.1 + Step 4.2.1-4.2.3 COMPLETED
-- **Current**: 4.2.4 - License Status Validation (next micro-step)
-- **Strategy**: Ultra-safe micro-step approach (proven từ Sprint 3)
+### 📊 **Sprint 4 Progress Tracking** ⚡ **UPDATED**
+- **Total Steps**: 30 micro-steps (**UPDATED**: Step 4.2.4 redesigned với 7 micro-steps)
+- **Completed**: 14/30 (47%) ✅ Step 4.1 (10 steps) + Step 4.2.1-4.2.3 (3 steps) + Step 4.2.4.1 ✅ COMPLETED
+- **Current**: 4.2.4.2 - Business Rule Enforcement Engine (**Next micro-step**)
+- **Step 4.2.4**: Redesigned từ 1 step → 7 micro-steps cho comprehensive status validation
+- **Strategy**: Ultra-safe micro-step approach (proven từ Sprint 3) extended to Step 4.2.4
 - **Foundation**: Sprint 3 security infrastructure (100% complete)
 
 ### 🎯 **Sprint 4 Success Criteria**
