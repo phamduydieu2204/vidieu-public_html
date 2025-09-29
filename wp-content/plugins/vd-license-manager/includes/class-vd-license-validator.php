@@ -3943,4 +3943,105 @@ class VD_License_Validator {
             )
         );
     }
+
+    // ============================================================================
+    // STEP 4.2.4.5.1a - METHOD SIGNATURE DEFINITION
+    // ============================================================================
+
+    /**
+     * Track license status history change
+     *
+     * Records a status change event for a license with comprehensive context data.
+     * This method creates a history entry without immediate persistence, preparing
+     * for future storage implementation.
+     *
+     * @since 4.2.4.5.1a
+     * @param array $license License data array containing license information
+     * @param string $old_status Previous license status
+     * @param string $new_status New license status after change
+     * @param array $context Optional context data for the status change
+     * @return array Tracking result with success status and details
+     */
+    public function track_status_history($license, $old_status, $new_status, $context = array()) {
+        // Method signature implementation placeholder
+        // Future implementation will handle actual history tracking
+        return array(
+            'success' => false,
+            'message' => 'History tracking not yet implemented',
+            'method' => 'track_status_history',
+            'version' => '4.2.4.5.1a',
+            'parameters_received' => array(
+                'license_provided' => !empty($license),
+                'old_status' => $old_status,
+                'new_status' => $new_status,
+                'context_count' => count($context)
+            )
+        );
+    }
+
+    /**
+     * Retrieve license status history
+     *
+     * Fetches historical status changes for a specific license with optional
+     * filtering and pagination support. Prepares for future query implementation.
+     *
+     * @since 4.2.4.5.1a
+     * @param int $license_id License ID to retrieve history for
+     * @param array $options Optional query options (limit, offset, date_from, date_to, etc.)
+     * @return array History records array with metadata
+     */
+    public function get_status_history($license_id, $options = array()) {
+        // Method signature implementation placeholder
+        // Future implementation will handle history retrieval
+        return array(
+            'success' => false,
+            'message' => 'History retrieval not yet implemented',
+            'method' => 'get_status_history',
+            'version' => '4.2.4.5.1a',
+            'parameters_received' => array(
+                'license_id' => $license_id,
+                'options' => $options
+            ),
+            'data' => array(),
+            'total' => 0,
+            'pagination' => array(
+                'limit' => isset($options['limit']) ? $options['limit'] : 50,
+                'offset' => isset($options['offset']) ? $options['offset'] : 0
+            )
+        );
+    }
+
+    /**
+     * Get status change statistics
+     *
+     * Generates statistical data about license status changes including counts,
+     * trends, and aggregated metrics. Prepares for future analytics implementation.
+     *
+     * @since 4.2.4.5.1a
+     * @param array $options Optional statistics options (date_range, group_by, etc.)
+     * @return array Statistics data with counts and trends
+     */
+    public function get_status_statistics($options = array()) {
+        // Method signature implementation placeholder
+        // Future implementation will handle statistics generation
+        return array(
+            'success' => false,
+            'message' => 'Status statistics not yet implemented',
+            'method' => 'get_status_statistics',
+            'version' => '4.2.4.5.1a',
+            'parameters_received' => array(
+                'options' => $options
+            ),
+            'statistics' => array(
+                'total_changes' => 0,
+                'by_status' => array(),
+                'by_date' => array(),
+                'trends' => array()
+            ),
+            'metadata' => array(
+                'generated_at' => current_time('mysql'),
+                'query_time_ms' => 0
+            )
+        );
+    }
 }
