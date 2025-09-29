@@ -326,11 +326,13 @@ function vd_test_step_4_2_2_enhanced_validation() {
     );
 }
 
-// Auto-execute if accessed directly or called
-if (!function_exists('get_current_screen') || (function_exists('get_current_screen') && get_current_screen() !== null)) {
-    add_action('wp_loaded', function() {
-        if (current_user_can('manage_options')) {
-            vd_test_step_4_2_2_enhanced_validation();
-        }
+// Immediate execution for Code Snippets
+if (is_admin() && current_user_can('manage_options')) {
+    // Direct execution
+    vd_test_step_4_2_2_enhanced_validation();
+
+    // Also add to admin_notices for visibility
+    add_action('admin_notices', function() {
+        echo '<div class="notice notice-info"><p><strong>VD Step 4.2.2 Test:</strong> Test executed. Check output above or in debug.log</p></div>';
     });
 }
