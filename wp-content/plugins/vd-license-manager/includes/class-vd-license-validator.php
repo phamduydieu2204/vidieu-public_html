@@ -374,10 +374,12 @@ class VD_License_Validator {
     }
 
     /**
-     * Validate license expiry and status
-     * Implements validate_license_expiry() function from business logic
+     * Enhanced Database License Lookup với LMfWC Integration
+     * Step 4.2.3 - Database License Lookup
+     * Implements comprehensive license database lookup với LMfWC integration
      *
      * @since 4.2.1
+     * @updated 4.2.3
      * @param string $license_key License key to validate
      * @return array Validation result with license data
      */
@@ -390,91 +392,444 @@ class VD_License_Validator {
             return $this->validation_cache[$cache_key];
         }
 
-        // Input validation
-        if (!$this->validate_license_key_format($license_key)) {
+        // Input validation với enhanced format checking
+        $format_validation = $this->validate_license_key_format($license_key, true);
+        if (!$format_validation['valid']) {
             $result = array(
                 'valid' => false,
-                'error' => 'Invalid license key format',
-                'code' => 'invalid_format'
+                'error' => $format_validation['error_message'] ?? 'Invalid license key format',
+                'code' => $format_validation['error_code'] ?? 'invalid_format',
+                'format_details' => $format_validation
             );
             $this->validation_cache[$cache_key] = $result;
             return $result;
         }
 
-        // Get license from LMfWC database with proper table prefix
-        $table_name = $wpdb->prefix . 'lmfwc_licenses';
-        $license = $wpdb->get_row($wpdb->prepare(
-            "SELECT * FROM {$table_name} WHERE license_key = %s",
-            $license_key
-        ), ARRAY_A);
+        // Step 4.2.3: Enhanced Database License Lookup với LMfWC Integration
+        $license = $this->lookup_license_from_database($license_key);
 
         if (!$license) {
             $result = array(
                 'valid' => false,
-                'error' => 'License không tồn tại',
-                'code' => 'license_not_found'
+                'error' => 'License không tồn tại trong hệ thống',
+                'code' => 'license_not_found',
+                'lookup_details' => $this->get_lookup_debug_info($license_key)
             );
             $this->validation_cache[$cache_key] = $result;
             return $result;
         }
 
-        // Check status
-        if ($license['status'] === 'suspended') {
+        // Enhanced status validation với LMfWC status mapping
+        $status_validation = $this->validate_license_status($license);
+        if (!$status_validation['valid']) {
             $result = array(
                 'valid' => false,
-                'error' => 'License đã bị tạm khóa',
-                'code' => 'license_suspended'
+                'error' => $status_validation['error'],
+                'code' => $status_validation['code'],
+                'license' => $license,
+                'status_details' => $status_validation
             );
             $this->validation_cache[$cache_key] = $result;
             return $result;
         }
 
-        if ($license['status'] === 'expired') {
-            $result = array(
-                'valid' => false,
-                'error' => 'License đã hết hạn',
-                'code' => 'license_expired'
-            );
-            $this->validation_cache[$cache_key] = $result;
-            return $result;
-        }
-
-        // Check expiry date
-        if ($license['expires_at'] && strtotime($license['expires_at']) < time()) {
-            // Update status to expired
-            $wpdb->update(
-                $table_name,
-                array('status' => 'expired'),
-                array('id' => $license['id']),
-                array('%s'),
-                array('%d')
-            );
+        // Enhanced expiry validation với automatic status updates
+        $expiry_validation = $this->validate_license_expiry_date($license);
+        if (!$expiry_validation['valid']) {
+            // Auto-update expired license status
+            $this->update_expired_license_status($license);
 
             $result = array(
                 'valid' => false,
-                'error' => 'License đã hết hạn',
-                'code' => 'license_expired'
+                'error' => $expiry_validation['error'],
+                'code' => $expiry_validation['code'],
+                'license' => $license,
+                'expiry_details' => $expiry_validation
             );
             $this->validation_cache[$cache_key] = $result;
             return $result;
         }
 
-        // Check if expiring soon (warning)
-        $days_until_expiry = null;
-        if ($license['expires_at']) {
-            $days_until_expiry = ceil((strtotime($license['expires_at']) - time()) / (24 * 3600));
-        }
-
+        // License validation successful - prepare comprehensive result
         $result = array(
             'valid' => true,
             'license' => $license,
-            'days_until_expiry' => $days_until_expiry
+            'days_until_expiry' => $expiry_validation['days_until_expiry'],
+            'expiry_warning' => $expiry_validation['expiry_warning'],
+            'lookup_source' => $license['lookup_source'] ?? 'lmfwc',
+            'validation_timestamp' => current_time('mysql')
         );
 
-        // Cache result for performance
+        // Cache result for performance với TTL
         $this->validation_cache[$cache_key] = $result;
 
+        // Log successful validation for audit
+        $this->log_license_validation_success($license_key, $license);
+
         return $result;
+    }
+
+    /**
+     * Enhanced Database License Lookup
+     * Step 4.2.3 - Core database lookup functionality
+     *
+     * @since 4.2.3
+     * @param string $license_key License key to look up
+     * @return array|null License data or null if not found
+     */
+    private function lookup_license_from_database($license_key) {
+        global $wpdb;
+
+        // LMfWC Integration: Query LMfWC database với proper table prefix
+        $lmfwc_table = $wpdb->prefix . 'lmfwc_licenses';
+
+        // Check if LMfWC table exists
+        if (!$this->table_exists($lmfwc_table)) {
+            // Fallback to VD licenses table if exists
+            $vd_table = $wpdb->prefix . 'vd_licenses';
+            if ($this->table_exists($vd_table)) {
+                return $this->lookup_from_vd_licenses($license_key);
+            }
+            return null;
+        }
+
+        // Enhanced LMfWC query với comprehensive field selection
+        $license = $wpdb->get_row($wpdb->prepare(
+            "SELECT
+                id,
+                order_id,
+                product_id,
+                user_id,
+                license_key,
+                hash,
+                expires_at,
+                valid_for,
+                source,
+                status,
+                times_activated,
+                times_activated_max,
+                created_at,
+                created_by,
+                updated_at,
+                updated_by
+            FROM {$lmfwc_table}
+            WHERE license_key = %s
+            LIMIT 1",
+            $license_key
+        ), ARRAY_A);
+
+        if ($license) {
+            // Add lookup source information
+            $license['lookup_source'] = 'lmfwc';
+            $license['table_name'] = $lmfwc_table;
+
+            // Enhanced status mapping từ LMfWC status codes
+            $license['mapped_status'] = $this->map_lmfwc_status($license['status']);
+
+            // Add validation metadata
+            $license['lookup_timestamp'] = current_time('mysql');
+        }
+
+        return $license;
+    }
+
+    /**
+     * Fallback lookup from VD licenses table
+     * Step 4.2.3 - Fallback mechanism
+     *
+     * @since 4.2.3
+     * @param string $license_key License key to look up
+     * @return array|null License data or null if not found
+     */
+    private function lookup_from_vd_licenses($license_key) {
+        global $wpdb;
+
+        $vd_table = $wpdb->prefix . 'vd_licenses';
+
+        $license = $wpdb->get_row($wpdb->prepare(
+            "SELECT
+                id,
+                license_key,
+                product_id,
+                order_id,
+                user_id,
+                status,
+                max_devices,
+                expires_at,
+                created_at,
+                updated_at
+            FROM {$vd_table}
+            WHERE license_key = %s
+            LIMIT 1",
+            $license_key
+        ), ARRAY_A);
+
+        if ($license) {
+            $license['lookup_source'] = 'vd_internal';
+            $license['table_name'] = $vd_table;
+            $license['mapped_status'] = $license['status']; // Direct mapping
+            $license['lookup_timestamp'] = current_time('mysql');
+        }
+
+        return $license;
+    }
+
+    /**
+     * Map LMfWC status codes to VD status
+     * Step 4.2.3 - Status mapping integration
+     *
+     * @since 4.2.3
+     * @param mixed $lmfwc_status LMfWC status code
+     * @return string Mapped VD status
+     */
+    private function map_lmfwc_status($lmfwc_status) {
+        // LMfWC Status Code Mapping theo documentation
+        $status_mapping = array(
+            1 => 'active',      // SOLD/DELIVERED
+            2 => 'inactive',    // INACTIVE
+            3 => 'expired',     // EXPIRED
+            4 => 'suspended',   // DISABLED
+            'active' => 'active',
+            'inactive' => 'inactive',
+            'expired' => 'expired',
+            'disabled' => 'suspended',
+            'suspended' => 'suspended'
+        );
+
+        return $status_mapping[$lmfwc_status] ?? 'inactive';
+    }
+
+    /**
+     * Enhanced License Status Validation
+     * Step 4.2.3 - Comprehensive status checking
+     *
+     * @since 4.2.3
+     * @param array $license License data
+     * @return array Validation result
+     */
+    private function validate_license_status($license) {
+        $mapped_status = $license['mapped_status'] ?? $this->map_lmfwc_status($license['status'] ?? null);
+
+        // Check suspended status
+        if ($mapped_status === 'suspended') {
+            return array(
+                'valid' => false,
+                'error' => 'License đã bị tạm khóa hoặc vô hiệu hóa',
+                'code' => 'license_suspended',
+                'original_status' => $license['status'] ?? null,
+                'mapped_status' => $mapped_status
+            );
+        }
+
+        // Check inactive status
+        if ($mapped_status === 'inactive') {
+            return array(
+                'valid' => false,
+                'error' => 'License chưa được kích hoạt hoặc đã bị vô hiệu hóa',
+                'code' => 'license_inactive',
+                'original_status' => $license['status'] ?? null,
+                'mapped_status' => $mapped_status
+            );
+        }
+
+        // Check already expired status
+        if ($mapped_status === 'expired') {
+            return array(
+                'valid' => false,
+                'error' => 'License đã hết hạn',
+                'code' => 'license_expired',
+                'original_status' => $license['status'] ?? null,
+                'mapped_status' => $mapped_status
+            );
+        }
+
+        return array(
+            'valid' => true,
+            'mapped_status' => $mapped_status,
+            'original_status' => $license['status'] ?? null
+        );
+    }
+
+    /**
+     * Enhanced License Expiry Date Validation
+     * Step 4.2.3 - Comprehensive expiry checking
+     *
+     * @since 4.2.3
+     * @param array $license License data
+     * @return array Validation result
+     */
+    private function validate_license_expiry_date($license) {
+        $expires_at = $license['expires_at'] ?? null;
+
+        // Handle null expiry (lifetime license)
+        if (!$expires_at || $expires_at === '0000-00-00 00:00:00') {
+            return array(
+                'valid' => true,
+                'days_until_expiry' => null,
+                'expiry_warning' => false,
+                'is_lifetime' => true
+            );
+        }
+
+        $expiry_timestamp = strtotime($expires_at);
+        $current_timestamp = current_time('timestamp');
+
+        // Check if expired
+        if ($expiry_timestamp < $current_timestamp) {
+            return array(
+                'valid' => false,
+                'error' => 'License đã hết hạn vào ' . date('d/m/Y H:i', $expiry_timestamp),
+                'code' => 'license_expired',
+                'expires_at' => $expires_at,
+                'expired_since_days' => ceil(($current_timestamp - $expiry_timestamp) / (24 * 3600))
+            );
+        }
+
+        // Calculate days until expiry
+        $days_until_expiry = ceil(($expiry_timestamp - $current_timestamp) / (24 * 3600));
+
+        // Check for expiry warning (within 7 days)
+        $expiry_warning = $days_until_expiry <= 7;
+
+        return array(
+            'valid' => true,
+            'days_until_expiry' => $days_until_expiry,
+            'expiry_warning' => $expiry_warning,
+            'expires_at' => $expires_at,
+            'is_lifetime' => false
+        );
+    }
+
+    /**
+     * Update expired license status in database
+     * Step 4.2.3 - Automatic status maintenance
+     *
+     * @since 4.2.3
+     * @param array $license License data
+     * @return bool Update success
+     */
+    private function update_expired_license_status($license) {
+        global $wpdb;
+
+        if (!isset($license['id']) || !isset($license['table_name'])) {
+            return false;
+        }
+
+        // Update status to expired
+        $updated = $wpdb->update(
+            $license['table_name'],
+            array('status' => 'expired'),
+            array('id' => $license['id']),
+            array('%s'),
+            array('%d')
+        );
+
+        if ($updated) {
+            // Log the automatic status update
+            $this->log_automatic_status_update($license, 'expired');
+        }
+
+        return $updated !== false;
+    }
+
+    /**
+     * Check if database table exists
+     * Step 4.2.3 - Database validation utility
+     *
+     * @since 4.2.3
+     * @param string $table_name Table name to check
+     * @return bool Table exists
+     */
+    private function table_exists($table_name) {
+        global $wpdb;
+
+        $table_exists = $wpdb->get_var($wpdb->prepare(
+            "SELECT COUNT(*) FROM information_schema.tables
+             WHERE table_schema = %s AND table_name = %s",
+            DB_NAME,
+            $table_name
+        ));
+
+        return $table_exists > 0;
+    }
+
+    /**
+     * Get lookup debug information for troubleshooting
+     * Step 4.2.3 - Debug utilities
+     *
+     * @since 4.2.3
+     * @param string $license_key License key
+     * @return array Debug information
+     */
+    private function get_lookup_debug_info($license_key) {
+        global $wpdb;
+
+        $lmfwc_table = $wpdb->prefix . 'lmfwc_licenses';
+        $vd_table = $wpdb->prefix . 'vd_licenses';
+
+        return array(
+            'license_key' => $license_key,
+            'lmfwc_table_exists' => $this->table_exists($lmfwc_table),
+            'vd_table_exists' => $this->table_exists($vd_table),
+            'lmfwc_table_name' => $lmfwc_table,
+            'vd_table_name' => $vd_table,
+            'database_name' => DB_NAME,
+            'wpdb_prefix' => $wpdb->prefix
+        );
+    }
+
+    /**
+     * Log successful license validation for audit
+     * Step 4.2.3 - Audit logging integration
+     *
+     * @since 4.2.3
+     * @param string $license_key License key
+     * @param array $license License data
+     * @return void
+     */
+    private function log_license_validation_success($license_key, $license) {
+        if (function_exists('vd_debug_log')) {
+            vd_debug_log(sprintf(
+                '[VD License Validator] Successful validation: %s (ID: %s, Product: %s, Source: %s)',
+                $license_key,
+                $license['id'] ?? 'unknown',
+                $license['product_id'] ?? 'unknown',
+                $license['lookup_source'] ?? 'unknown'
+            ));
+        }
+
+        // Integration với audit logger nếu available
+        if ($this->security_audit && method_exists($this->security_audit, 'log_security_event')) {
+            $this->security_audit->log_security_event(
+                'license_validation_success',
+                array(
+                    'license_key' => substr($license_key, 0, 8) . '***', // Masked for security
+                    'product_id' => $license['product_id'] ?? null,
+                    'lookup_source' => $license['lookup_source'] ?? null
+                ),
+                'info'
+            );
+        }
+    }
+
+    /**
+     * Log automatic status update for audit
+     * Step 4.2.3 - Status update logging
+     *
+     * @since 4.2.3
+     * @param array $license License data
+     * @param string $new_status New status
+     * @return void
+     */
+    private function log_automatic_status_update($license, $new_status) {
+        if (function_exists('vd_debug_log')) {
+            vd_debug_log(sprintf(
+                '[VD License Validator] Auto-updated license status: ID %s to %s (was: %s)',
+                $license['id'],
+                $new_status,
+                $license['status'] ?? 'unknown'
+            ));
+        }
     }
 
     /**
