@@ -1063,6 +1063,635 @@ class VD_License_Validator {
     }
 
     /**
+     * Step 4.2.4.2 - Business Rule Enforcement Engine
+     * Advanced business rules cho license status transitions với grace periods
+     *
+     * @since 4.2.4.2
+     * @param array $license License data
+     * @param array $context Additional context (previous_status, transition_reason, etc.)
+     * @return array Business rule enforcement result
+     */
+    public function enforce_business_rules($license, $context = array()) {
+        $enforcement_start = microtime(true);
+        $debug_info = array(
+            'license_id' => $license['id'] ?? null,
+            'context' => $context
+        );
+
+        try {
+            // 1. Get current business rule configuration
+            $rule_config = $this->get_business_rule_configuration($license);
+            $debug_info['rule_config'] = $rule_config;
+
+            // 2. Status-specific business rule enforcement
+            $status_rules_result = $this->enforce_status_specific_rules($license, $rule_config, $context);
+            if (!$status_rules_result['valid']) {
+                return $this->create_business_rule_error(
+                    $status_rules_result['code'],
+                    $status_rules_result['error'],
+                    $license,
+                    array_merge($debug_info, $status_rules_result['debug_info'] ?? array())
+                );
+            }
+
+            // 3. Grace period enforcement (if applicable)
+            $grace_period_result = $this->enforce_grace_period_rules($license, $rule_config, $context);
+            $debug_info['grace_period'] = $grace_period_result;
+
+            // 4. Automatic escalation rules
+            $escalation_result = $this->enforce_escalation_rules($license, $rule_config, $context);
+            $debug_info['escalation'] = $escalation_result;
+
+            // 5. Transition validation rules
+            if (isset($context['from_status'], $context['to_status'])) {
+                $transition_result = $this->enforce_transition_rules(
+                    $context['from_status'],
+                    $context['to_status'],
+                    $license,
+                    $rule_config
+                );
+                $debug_info['transition_enforcement'] = $transition_result;
+
+                if (!$transition_result['allowed']) {
+                    return $this->create_business_rule_error(
+                        'transition_not_allowed',
+                        $transition_result['reason'],
+                        $license,
+                        $debug_info
+                    );
+                }
+            }
+
+            $enforcement_end = microtime(true);
+            $debug_info['enforcement_time_ms'] = round(($enforcement_end - $enforcement_start) * 1000, 2);
+
+            // Log successful business rule enforcement
+            $this->log_business_rule_event('business_rules_enforced', $license, $debug_info);
+
+            return array(
+                'valid' => true,
+                'rules_applied' => $status_rules_result['rules_applied'] ?? array(),
+                'grace_period' => $grace_period_result,
+                'escalation' => $escalation_result,
+                'debug_info' => $debug_info,
+                'enforcement_timestamp' => current_time('mysql')
+            );
+
+        } catch (Exception $e) {
+            $debug_info['exception'] = array(
+                'message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine()
+            );
+
+            $this->log_business_rule_event('business_rules_exception', $license, $debug_info);
+
+            return $this->create_business_rule_error(
+                'business_rules_exception',
+                'Lỗi hệ thống khi thực thi business rules: ' . $e->getMessage(),
+                $license,
+                $debug_info
+            );
+        }
+    }
+
+    /**
+     * Step 4.2.4.2 - Get business rule configuration
+     * Load configurable business rule parameters
+     *
+     * @since 4.2.4.2
+     * @param array $license License data
+     * @return array Business rule configuration
+     */
+    private function get_business_rule_configuration($license) {
+        // Default business rule configuration
+        $default_config = array(
+            'grace_periods' => array(
+                'expiry_warning_days' => 7,        // Warning before expiry
+                'status_downgrade_hours' => 24,    // Grace period before downgrade
+                'device_limit_hours' => 48,        // Grace period for device limit excess
+                'suspension_review_hours' => 72    // Review period for suspensions
+            ),
+            'escalation_rules' => array(
+                'auto_suspend_after_days' => 30,   // Auto-suspend expired licenses
+                'auto_revoke_after_days' => 90,    // Auto-revoke long-expired licenses
+                'warning_escalation_days' => 3,   // Escalate warnings
+                'max_violation_count' => 5        // Max violations before auto-action
+            ),
+            'transition_policies' => array(
+                'allow_expired_to_active' => false,      // Require manual renewal
+                'allow_revoked_transitions' => false,    // Revoked is terminal
+                'require_admin_approval' => array('revoked'), // Admin approval needed
+                'auto_downgrade_enabled' => true         // Allow automatic downgrades
+            ),
+            'notification_rules' => array(
+                'notify_on_escalation' => true,
+                'notify_on_grace_period' => true,
+                'notify_on_violation' => true,
+                'admin_notification_threshold' => 'high_risk'
+            )
+        );
+
+        // Get license-specific overrides (inheritance system)
+        $license_settings = $this->get_license_settings(
+            $license['id'] ?? 0,
+            $license['product_id'] ?? 0
+        );
+
+        // Merge configuration với inheritance
+        $merged_config = array_replace_recursive($default_config, $license_settings['business_rules'] ?? array());
+
+        return $merged_config;
+    }
+
+    /**
+     * Step 4.2.4.2 - Enforce status-specific business rules
+     * Apply rules specific to each license status
+     *
+     * @since 4.2.4.2
+     * @param array $license License data
+     * @param array $rule_config Business rule configuration
+     * @param array $context Additional context
+     * @return array Status rule enforcement result
+     */
+    private function enforce_status_specific_rules($license, $rule_config, $context) {
+        $current_status = $license['mapped_status'] ?? $license['status'] ?? 'inactive';
+        $rules_applied = array();
+
+        switch ($current_status) {
+            case 'active':
+                return $this->enforce_active_license_business_rules($license, $rule_config, $context);
+
+            case 'expired':
+                return $this->enforce_expired_license_business_rules($license, $rule_config, $context);
+
+            case 'suspended':
+                return $this->enforce_suspended_license_business_rules($license, $rule_config, $context);
+
+            case 'pending':
+                return $this->enforce_pending_license_business_rules($license, $rule_config, $context);
+
+            case 'revoked':
+                return $this->enforce_revoked_license_business_rules($license, $rule_config, $context);
+
+            case 'inactive':
+            default:
+                return $this->enforce_inactive_license_business_rules($license, $rule_config, $context);
+        }
+    }
+
+    /**
+     * Step 4.2.4.2 - Enforce grace period rules
+     * Handle grace periods cho various license scenarios
+     *
+     * @since 4.2.4.2
+     * @param array $license License data
+     * @param array $rule_config Business rule configuration
+     * @param array $context Additional context
+     * @return array Grace period enforcement result
+     */
+    private function enforce_grace_period_rules($license, $rule_config, $context) {
+        $grace_periods = $rule_config['grace_periods'] ?? array();
+        $current_status = $license['mapped_status'] ?? $license['status'] ?? 'inactive';
+
+        $grace_info = array(
+            'has_grace_period' => false,
+            'grace_type' => null,
+            'grace_remaining_hours' => 0,
+            'grace_expires_at' => null
+        );
+
+        // Check for expiry warning grace period
+        if (isset($license['expires_at']) && $license['expires_at']) {
+            $expiry_timestamp = strtotime($license['expires_at']);
+            $current_timestamp = current_time('timestamp');
+            $days_until_expiry = ceil(($expiry_timestamp - $current_timestamp) / (24 * 3600));
+
+            if ($days_until_expiry > 0 && $days_until_expiry <= ($grace_periods['expiry_warning_days'] ?? 7)) {
+                $grace_info['has_grace_period'] = true;
+                $grace_info['grace_type'] = 'expiry_warning';
+                $grace_info['grace_remaining_hours'] = $days_until_expiry * 24;
+                $grace_info['grace_expires_at'] = $license['expires_at'];
+            }
+        }
+
+        // Check for status downgrade grace period
+        if (isset($context['status_changed_at']) && in_array($current_status, array('suspended', 'expired'))) {
+            $status_change_timestamp = strtotime($context['status_changed_at']);
+            $grace_period_hours = $grace_periods['status_downgrade_hours'] ?? 24;
+            $grace_end_timestamp = $status_change_timestamp + ($grace_period_hours * 3600);
+
+            if (current_time('timestamp') < $grace_end_timestamp) {
+                $grace_info['has_grace_period'] = true;
+                $grace_info['grace_type'] = 'status_downgrade';
+                $grace_info['grace_remaining_hours'] = ceil(($grace_end_timestamp - current_time('timestamp')) / 3600);
+                $grace_info['grace_expires_at'] = date('Y-m-d H:i:s', $grace_end_timestamp);
+            }
+        }
+
+        return $grace_info;
+    }
+
+    /**
+     * Step 4.2.4.2 - Enforce escalation rules
+     * Automatic status escalation based on business rules
+     *
+     * @since 4.2.4.2
+     * @param array $license License data
+     * @param array $rule_config Business rule configuration
+     * @param array $context Additional context
+     * @return array Escalation enforcement result
+     */
+    private function enforce_escalation_rules($license, $rule_config, $context) {
+        $escalation_rules = $rule_config['escalation_rules'] ?? array();
+        $current_status = $license['mapped_status'] ?? $license['status'] ?? 'inactive';
+
+        $escalation_info = array(
+            'escalation_required' => false,
+            'escalation_type' => null,
+            'target_status' => null,
+            'escalation_reason' => null,
+            'auto_escalation_enabled' => true
+        );
+
+        // Check for auto-suspension of long-expired licenses
+        if ($current_status === 'expired' && isset($license['expires_at'])) {
+            $expiry_timestamp = strtotime($license['expires_at']);
+            $days_expired = ceil((current_time('timestamp') - $expiry_timestamp) / (24 * 3600));
+            $auto_suspend_days = $escalation_rules['auto_suspend_after_days'] ?? 30;
+
+            if ($days_expired >= $auto_suspend_days) {
+                $escalation_info['escalation_required'] = true;
+                $escalation_info['escalation_type'] = 'auto_suspension';
+                $escalation_info['target_status'] = 'suspended';
+                $escalation_info['escalation_reason'] = sprintf(
+                    'License expired %d days ago, auto-suspending per business rules',
+                    $days_expired
+                );
+            }
+        }
+
+        // Check for auto-revocation of long-suspended licenses
+        if ($current_status === 'suspended' && isset($context['status_changed_at'])) {
+            $suspension_timestamp = strtotime($context['status_changed_at']);
+            $days_suspended = ceil((current_time('timestamp') - $suspension_timestamp) / (24 * 3600));
+            $auto_revoke_days = $escalation_rules['auto_revoke_after_days'] ?? 90;
+
+            if ($days_suspended >= $auto_revoke_days) {
+                $escalation_info['escalation_required'] = true;
+                $escalation_info['escalation_type'] = 'auto_revocation';
+                $escalation_info['target_status'] = 'revoked';
+                $escalation_info['escalation_reason'] = sprintf(
+                    'License suspended for %d days, auto-revoking per business rules',
+                    $days_suspended
+                );
+            }
+        }
+
+        return $escalation_info;
+    }
+
+    /**
+     * Step 4.2.4.2 - Enforce transition rules
+     * Validate business rules for status transitions
+     *
+     * @since 4.2.4.2
+     * @param string $from_status Source status
+     * @param string $to_status Target status
+     * @param array $license License data
+     * @param array $rule_config Business rule configuration
+     * @return array Transition rule enforcement result
+     */
+    private function enforce_transition_rules($from_status, $to_status, $license, $rule_config) {
+        $transition_policies = $rule_config['transition_policies'] ?? array();
+
+        // Check if transition requires admin approval
+        if (in_array($to_status, $transition_policies['require_admin_approval'] ?? array())) {
+            if (!current_user_can('manage_options')) {
+                return array(
+                    'allowed' => false,
+                    'reason' => sprintf('Chuyển đổi sang trạng thái "%s" yêu cầu quyền admin', $to_status),
+                    'requires_admin' => true
+                );
+            }
+        }
+
+        // Check specific transition policies
+        switch ($to_status) {
+            case 'active':
+                if ($from_status === 'expired' && !($transition_policies['allow_expired_to_active'] ?? false)) {
+                    return array(
+                        'allowed' => false,
+                        'reason' => 'License hết hạn không thể tự động chuyển về active, cần renew thủ công',
+                        'requires_manual_renewal' => true
+                    );
+                }
+                break;
+
+            case 'revoked':
+                // Revoked transitions should be carefully controlled
+                if (!current_user_can('manage_options')) {
+                    return array(
+                        'allowed' => false,
+                        'reason' => 'Chỉ admin mới có thể revoke license',
+                        'requires_admin' => true
+                    );
+                }
+                break;
+        }
+
+        // Check if source status allows transitions
+        if ($from_status === 'revoked' && !($transition_policies['allow_revoked_transitions'] ?? false)) {
+            return array(
+                'allowed' => false,
+                'reason' => 'License đã bị revoke không thể chuyển đổi trạng thái',
+                'is_terminal_state' => true
+            );
+        }
+
+        return array(
+            'allowed' => true,
+            'transition_type' => $this->get_transition_type($from_status, $to_status),
+            'grace_period_applicable' => $this->is_grace_period_applicable($from_status, $to_status, $rule_config)
+        );
+    }
+
+    /**
+     * Step 4.2.4.2 - Active license business rules
+     * Business rules specific to active licenses
+     *
+     * @since 4.2.4.2
+     * @param array $license License data
+     * @param array $rule_config Business rule configuration
+     * @param array $context Additional context
+     * @return array Active license rule result
+     */
+    private function enforce_active_license_business_rules($license, $rule_config, $context) {
+        $rules_applied = array();
+
+        // Check expiry warning
+        if (isset($license['expires_at']) && $license['expires_at']) {
+            $expiry_timestamp = strtotime($license['expires_at']);
+            $warning_days = $rule_config['grace_periods']['expiry_warning_days'] ?? 7;
+            $days_until_expiry = ceil(($expiry_timestamp - current_time('timestamp')) / (24 * 3600));
+
+            if ($days_until_expiry <= $warning_days && $days_until_expiry > 0) {
+                $rules_applied[] = array(
+                    'rule' => 'expiry_warning',
+                    'status' => 'warning',
+                    'message' => sprintf('License sẽ hết hạn trong %d ngày', $days_until_expiry),
+                    'days_remaining' => $days_until_expiry
+                );
+            }
+        }
+
+        return array(
+            'valid' => true,
+            'rules_applied' => $rules_applied,
+            'status' => 'active_with_rules'
+        );
+    }
+
+    /**
+     * Step 4.2.4.2 - Expired license business rules
+     * Business rules for expired licenses với grace periods
+     *
+     * @since 4.2.4.2
+     * @param array $license License data
+     * @param array $rule_config Business rule configuration
+     * @param array $context Additional context
+     * @return array Expired license rule result
+     */
+    private function enforce_expired_license_business_rules($license, $rule_config, $context) {
+        // Expired licenses fail validation unless in grace period
+        $grace_period = $this->enforce_grace_period_rules($license, $rule_config, $context);
+
+        if ($grace_period['has_grace_period']) {
+            return array(
+                'valid' => true, // Allow access during grace period
+                'rules_applied' => array(array(
+                    'rule' => 'grace_period_access',
+                    'status' => 'grace_period',
+                    'message' => sprintf(
+                        'License hết hạn nhưng trong grace period (còn %d giờ)',
+                        $grace_period['grace_remaining_hours']
+                    ),
+                    'grace_expires_at' => $grace_period['grace_expires_at']
+                )),
+                'debug_info' => array('grace_period' => $grace_period)
+            );
+        }
+
+        return array(
+            'valid' => false,
+            'error' => 'License đã hết hạn và không trong grace period',
+            'code' => 'license_expired_no_grace',
+            'debug_info' => array('grace_period' => $grace_period)
+        );
+    }
+
+    /**
+     * Step 4.2.4.2 - Suspended license business rules
+     * Business rules for suspended licenses
+     *
+     * @since 4.2.4.2
+     * @param array $license License data
+     * @param array $rule_config Business rule configuration
+     * @param array $context Additional context
+     * @return array Suspended license rule result
+     */
+    private function enforce_suspended_license_business_rules($license, $rule_config, $context) {
+        // Check if suspension is under review (grace period)
+        $grace_period = $this->enforce_grace_period_rules($license, $rule_config, $context);
+
+        if ($grace_period['has_grace_period'] && $grace_period['grace_type'] === 'suspension_review') {
+            return array(
+                'valid' => false, // Still suspended but with review info
+                'error' => sprintf(
+                    'License bị suspended, đang trong thời gian review (còn %d giờ)',
+                    $grace_period['grace_remaining_hours']
+                ),
+                'code' => 'license_suspended_under_review',
+                'rules_applied' => array(array(
+                    'rule' => 'suspension_review_period',
+                    'status' => 'under_review',
+                    'review_expires_at' => $grace_period['grace_expires_at']
+                )),
+                'debug_info' => array('grace_period' => $grace_period)
+            );
+        }
+
+        return array(
+            'valid' => false,
+            'error' => 'License đã bị tạm khóa',
+            'code' => 'license_suspended',
+            'debug_info' => array('suspension_permanent' => true)
+        );
+    }
+
+    /**
+     * Step 4.2.4.2 - Pending license business rules
+     * Business rules for pending licenses
+     *
+     * @since 4.2.4.2
+     * @param array $license License data
+     * @param array $rule_config Business rule configuration
+     * @param array $context Additional context
+     * @return array Pending license rule result
+     */
+    private function enforce_pending_license_business_rules($license, $rule_config, $context) {
+        // Check if auto-activation is allowed
+        $created_at = $license['created_at'] ?? $license['updated_at'] ?? null;
+
+        if ($created_at) {
+            $pending_hours = ceil((current_time('timestamp') - strtotime($created_at)) / 3600);
+            $max_pending_hours = $rule_config['escalation_rules']['auto_activate_after_hours'] ?? 24;
+
+            if ($pending_hours >= $max_pending_hours) {
+                return array(
+                    'valid' => false,
+                    'error' => sprintf('License pending quá lâu (%d giờ), cần intervention', $pending_hours),
+                    'code' => 'license_pending_too_long',
+                    'escalation_required' => true,
+                    'suggested_action' => 'manual_activation_review'
+                );
+            }
+        }
+
+        return array(
+            'valid' => false,
+            'error' => 'License đang chờ kích hoạt',
+            'code' => 'license_pending'
+        );
+    }
+
+    /**
+     * Step 4.2.4.2 - Revoked license business rules
+     * Business rules for revoked licenses (terminal state)
+     *
+     * @since 4.2.4.2
+     * @param array $license License data
+     * @param array $rule_config Business rule configuration
+     * @param array $context Additional context
+     * @return array Revoked license rule result
+     */
+    private function enforce_revoked_license_business_rules($license, $rule_config, $context) {
+        return array(
+            'valid' => false,
+            'error' => 'License đã bị thu hồi vĩnh viễn',
+            'code' => 'license_revoked_permanent',
+            'is_terminal' => true,
+            'no_recovery_possible' => true
+        );
+    }
+
+    /**
+     * Step 4.2.4.2 - Inactive license business rules
+     * Business rules for inactive licenses
+     *
+     * @since 4.2.4.2
+     * @param array $license License data
+     * @param array $rule_config Business rule configuration
+     * @param array $context Additional context
+     * @return array Inactive license rule result
+     */
+    private function enforce_inactive_license_business_rules($license, $rule_config, $context) {
+        return array(
+            'valid' => false,
+            'error' => 'License chưa được kích hoạt',
+            'code' => 'license_inactive',
+            'activation_required' => true
+        );
+    }
+
+    /**
+     * Step 4.2.4.2 - Check if grace period is applicable
+     * Determine if grace period applies to status transition
+     *
+     * @since 4.2.4.2
+     * @param string $from_status Source status
+     * @param string $to_status Target status
+     * @param array $rule_config Business rule configuration
+     * @return bool True if grace period applicable
+     */
+    private function is_grace_period_applicable($from_status, $to_status, $rule_config) {
+        $grace_applicable_transitions = array(
+            'active' => array('suspended', 'expired'),
+            'suspended' => array('revoked'),
+            'expired' => array('revoked')
+        );
+
+        return isset($grace_applicable_transitions[$from_status]) &&
+               in_array($to_status, $grace_applicable_transitions[$from_status]);
+    }
+
+    /**
+     * Step 4.2.4.2 - Create business rule error
+     * Standardized business rule error response
+     *
+     * @since 4.2.4.2
+     * @param string $code Error code
+     * @param string $message Error message
+     * @param array $license License data
+     * @param array $debug_info Debug information
+     * @return array Business rule error response
+     */
+    private function create_business_rule_error($code, $message, $license, $debug_info) {
+        return array(
+            'valid' => false,
+            'error' => $message,
+            'code' => $code,
+            'license_id' => $license['id'] ?? null,
+            'current_status' => $license['mapped_status'] ?? $license['status'] ?? null,
+            'debug_info' => $debug_info,
+            'business_rule_timestamp' => current_time('mysql')
+        );
+    }
+
+    /**
+     * Step 4.2.4.2 - Log business rule events
+     * Enhanced logging for business rule enforcement
+     *
+     * @since 4.2.4.2
+     * @param string $event_type Type of business rule event
+     * @param array $license License data
+     * @param array $debug_info Debug information
+     * @return void
+     */
+    private function log_business_rule_event($event_type, $license, $debug_info) {
+        if (function_exists('vd_debug_log')) {
+            $log_data = array(
+                'event' => $event_type,
+                'license_id' => $license['id'] ?? null,
+                'product_id' => $license['product_id'] ?? null,
+                'status' => $license['mapped_status'] ?? $license['status'] ?? null,
+                'enforcement_time' => $debug_info['enforcement_time_ms'] ?? 0,
+                'timestamp' => current_time('mysql')
+            );
+
+            vd_debug_log(sprintf(
+                '[VD License Validator 4.2.4.2] %s: %s (%.2fms)',
+                $event_type,
+                wp_json_encode($log_data, JSON_UNESCAPED_UNICODE),
+                $debug_info['enforcement_time_ms'] ?? 0
+            ));
+        }
+
+        // Log to audit system if available
+        if ($this->security_audit && method_exists($this->security_audit, 'log_security_event')) {
+            $this->security_audit->log_security_event(
+                'business_rule_enforcement',
+                array(
+                    'event_type' => $event_type,
+                    'license_id' => $license['id'] ?? null,
+                    'status' => $license['mapped_status'] ?? $license['status'] ?? null
+                ),
+                'info'
+            );
+        }
+    }
+
+    /**
      * Enhanced License Expiry Date Validation
      * Step 4.2.3 - Comprehensive expiry checking
      *
