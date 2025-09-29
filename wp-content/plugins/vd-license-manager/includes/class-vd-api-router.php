@@ -321,16 +321,17 @@ class VD_API_Router {
 
             return rest_ensure_response($response_data);
         } catch (Exception $e) {
-            // Fallback minimal response
-            $fallback_data = array(
-                'success' => false,
-                'error' => 'Router info generation failed',
-                'message' => $e->getMessage(),
-                'timestamp' => current_time('c'),
-                'step' => '4.1.3'
+            return $this->create_api_error(
+                'ROUTER_INFO_ERROR',
+                'Router info generation failed: ' . $e->getMessage(),
+                array(
+                    'error_type' => 'processing_error',
+                    'step' => '4.1.8',
+                    'endpoint' => 'router_info',
+                    'exception' => get_class($e)
+                ),
+                500
             );
-
-            return rest_ensure_response($fallback_data);
         }
     }
 
@@ -512,7 +513,7 @@ class VD_API_Router {
             // Step 4.1.6 - Security validation
             $security_check = $this->validate_request_security($request);
             if (is_wp_error($security_check)) {
-                return $security_check;
+                return $this->format_error_response($security_check);
             }
 
             // Step 4.1.7 - Enhanced placeholder implementation with proper API format
@@ -571,21 +572,17 @@ class VD_API_Router {
 
             return rest_ensure_response($response_data);
         } catch (Exception $e) {
-            return rest_ensure_response(array(
-                'success' => false,
-                'error' => array(
-                    'code' => 'RESOLVE_INFO_ERROR',
-                    'message' => 'License resolve info request failed: ' . $e->getMessage(),
-                    'details' => array(
-                        'error_type' => 'processing_error',
-                        'step' => '4.1.7',
-                        'implementation' => 'placeholder'
-                    ),
-                    'retry_after' => null,
-                    'request_id' => 'req_' . uniqid()
+            return $this->create_api_error(
+                'RESOLVE_INFO_ERROR',
+                'License resolve info request failed: ' . $e->getMessage(),
+                array(
+                    'error_type' => 'processing_error',
+                    'step' => '4.1.8',
+                    'implementation' => 'placeholder',
+                    'exception' => get_class($e)
                 ),
-                'timestamp' => current_time('c')
-            ));
+                500
+            );
         }
     }
 
@@ -602,7 +599,7 @@ class VD_API_Router {
             // Step 4.1.6 - Security validation
             $security_check = $this->validate_request_security($request);
             if (is_wp_error($security_check)) {
-                return $security_check;
+                return $this->format_error_response($security_check);
             }
 
             // Step 4.1.7 - Enhanced placeholder implementation for cookie endpoint
@@ -663,21 +660,17 @@ class VD_API_Router {
 
             return rest_ensure_response($response_data);
         } catch (Exception $e) {
-            return rest_ensure_response(array(
-                'success' => false,
-                'error' => array(
-                    'code' => 'RESOLVE_COOKIE_ERROR',
-                    'message' => 'License resolve cookie request failed: ' . $e->getMessage(),
-                    'details' => array(
-                        'error_type' => 'processing_error',
-                        'step' => '4.1.7',
-                        'implementation' => 'placeholder'
-                    ),
-                    'retry_after' => null,
-                    'request_id' => 'req_' . uniqid()
+            return $this->create_api_error(
+                'RESOLVE_COOKIE_ERROR',
+                'License resolve cookie request failed: ' . $e->getMessage(),
+                array(
+                    'error_type' => 'processing_error',
+                    'step' => '4.1.8',
+                    'implementation' => 'placeholder',
+                    'exception' => get_class($e)
                 ),
-                'timestamp' => current_time('c')
-            ));
+                500
+            );
         }
     }
 
@@ -694,7 +687,7 @@ class VD_API_Router {
             // Step 4.1.6 - Security validation
             $security_check = $this->validate_request_security($request);
             if (is_wp_error($security_check)) {
-                return $security_check;
+                return $this->format_error_response($security_check);
             }
 
             // Step 4.1.7 - Enhanced placeholder implementation for device status
@@ -759,21 +752,17 @@ class VD_API_Router {
 
             return rest_ensure_response($response_data);
         } catch (Exception $e) {
-            return rest_ensure_response(array(
-                'success' => false,
-                'error' => array(
-                    'code' => 'DEVICE_STATUS_ERROR',
-                    'message' => 'Device status check failed: ' . $e->getMessage(),
-                    'details' => array(
-                        'error_type' => 'processing_error',
-                        'step' => '4.1.7',
-                        'implementation' => 'placeholder'
-                    ),
-                    'retry_after' => null,
-                    'request_id' => 'req_' . uniqid()
+            return $this->create_api_error(
+                'DEVICE_STATUS_ERROR',
+                'Device status check failed: ' . $e->getMessage(),
+                array(
+                    'error_type' => 'processing_error',
+                    'step' => '4.1.8',
+                    'implementation' => 'placeholder',
+                    'exception' => get_class($e)
                 ),
-                'timestamp' => current_time('c')
-            ));
+                500
+            );
         }
     }
 
@@ -799,13 +788,17 @@ class VD_API_Router {
 
             return rest_ensure_response($response_data);
         } catch (Exception $e) {
-            return rest_ensure_response(array(
-                'success' => false,
-                'error' => 'Security status retrieval failed',
-                'message' => $e->getMessage(),
-                'timestamp' => current_time('c'),
-                'step' => '4.1.6'
-            ));
+            return $this->create_api_error(
+                'SECURITY_STATUS_ERROR',
+                'Security status retrieval failed: ' . $e->getMessage(),
+                array(
+                    'error_type' => 'processing_error',
+                    'step' => '4.1.8',
+                    'endpoint' => 'security_status',
+                    'exception' => get_class($e)
+                ),
+                500
+            );
         }
     }
 
@@ -1424,7 +1417,7 @@ class VD_API_Router {
         try {
             $statistics = $this->get_error_statistics();
 
-            return $this->format_error_response(array(
+            $response_data = array(
                 'success' => true,
                 'data' => array(
                     'error_infrastructure' => $statistics,
@@ -1442,7 +1435,9 @@ class VD_API_Router {
                     )
                 ),
                 'timestamp' => current_time('c')
-            ));
+            );
+
+            return new WP_REST_Response($response_data, 200);
         } catch (Exception $e) {
             return $this->create_api_error(
                 'ERROR_STATISTICS_ERROR',
