@@ -379,6 +379,22 @@ class VD_API_Router {
             'callback' => array($this, 'handle_error_statistics'),
             'permission_callback' => '__return_true'
         ));
+
+        // Step 4.1.9 - Router diagnostics endpoint
+        register_rest_route($this->namespace, '/router-diagnostics', array(
+            'methods' => 'GET',
+            'callback' => array($this, 'handle_router_diagnostics'),
+            'permission_callback' => '__return_true',
+            'args' => array(
+                'detailed' => array(
+                    'description' => 'Return detailed diagnostic information',
+                    'type' => 'string',
+                    'enum' => array('true', 'false', '1', '0'),
+                    'default' => 'false',
+                    'sanitize_callback' => 'sanitize_text_field'
+                )
+            )
+        ));
     }
 
     /**
@@ -1468,5 +1484,365 @@ class VD_API_Router {
         } catch (Exception $e) {
             return 'REST API error: ' . $e->getMessage();
         }
+    }
+
+    /**
+     * Get router diagnostic information
+     * Step 4.1.9 - Router Status & Diagnostics
+     *
+     * @since 4.1.9
+     * @return array Comprehensive router diagnostic data
+     */
+    public function get_router_diagnostics() {
+        $start_time = microtime(true);
+
+        $diagnostics = array(
+            'router_info' => array(
+                'namespace' => $this->namespace,
+                'version' => $this->version,
+                'initialized' => $this->initialized,
+                'current_step' => '4.1.9',
+                'instance_id' => spl_object_hash($this),
+                'created_at' => current_time('c')
+            ),
+            'endpoints' => array(
+                'registered_count' => count($this->routes),
+                'available_routes' => $this->routes,
+                'rest_namespace_registered' => $this->is_namespace_registered(),
+                'endpoint_callbacks' => $this->get_endpoint_callback_info()
+            ),
+            'security' => array(
+                'security_manager_available' => !is_null($this->security_manager),
+                'security_manager_class' => $this->security_manager ? get_class($this->security_manager) : null,
+                'authentication_methods' => $this->get_authentication_method_diagnostics(),
+                'last_security_check' => $this->get_last_security_check_info()
+            ),
+            'performance' => array(
+                'memory_usage' => array(
+                    'current' => memory_get_usage(true),
+                    'peak' => memory_get_peak_usage(true),
+                    'formatted_current' => $this->format_bytes(memory_get_usage(true)),
+                    'formatted_peak' => $this->format_bytes(memory_get_peak_usage(true))
+                ),
+                'execution_time' => array(
+                    'router_load_time' => $this->get_router_load_time(),
+                    'diagnostic_generation_time' => microtime(true) - $start_time
+                ),
+                'database_queries' => $this->get_database_query_info()
+            ),
+            'system' => array(
+                'wordpress_version' => get_bloginfo('version'),
+                'php_version' => PHP_VERSION,
+                'server_software' => $_SERVER['SERVER_SOFTWARE'] ?? 'Unknown',
+                'timezone' => wp_timezone_string(),
+                'current_time' => current_time('c'),
+                'wp_debug' => defined('WP_DEBUG') && WP_DEBUG,
+                'wp_debug_log' => defined('WP_DEBUG_LOG') && WP_DEBUG_LOG
+            ),
+            'plugin_integration' => array(
+                'vd_license_manager_active' => function_exists('vd_license_manager_init'),
+                'rest_api_available' => function_exists('rest_get_server'),
+                'required_hooks_loaded' => $this->check_required_hooks(),
+                'class_dependencies' => $this->check_class_dependencies()
+            ),
+            'error_handling' => array(
+                'error_infrastructure_available' => method_exists($this, 'create_api_error'),
+                'error_statistics' => $this->get_error_statistics(),
+                'recent_errors' => $this->get_recent_error_summary()
+            ),
+            'metadata' => array(
+                'diagnostic_version' => '4.1.9',
+                'generated_at' => current_time('c'),
+                'generation_time_ms' => round((microtime(true) - $start_time) * 1000, 2),
+                'request_id' => 'diag_' . uniqid()
+            )
+        );
+
+        return $diagnostics;
+    }
+
+    /**
+     * Handle router diagnostics endpoint
+     * Step 4.1.9 - Router diagnostics endpoint handler
+     *
+     * @since 4.1.9
+     * @param WP_REST_Request $request Request object
+     * @return WP_REST_Response Router diagnostics response
+     */
+    public function handle_router_diagnostics($request) {
+        try {
+            // Check if detailed diagnostics are requested
+            $detailed = $request->get_param('detailed') === 'true' || $request->get_param('detailed') === '1';
+
+            $diagnostics = $this->get_router_diagnostics();
+
+            // Filter sensitive information if not detailed request
+            if (!$detailed) {
+                $diagnostics = $this->filter_sensitive_diagnostics($diagnostics);
+            }
+
+            $response_data = array(
+                'success' => true,
+                'data' => array(
+                    'router_diagnostics' => $diagnostics,
+                    'diagnostic_level' => $detailed ? 'detailed' : 'basic',
+                    'step_info' => array(
+                        'current_step' => '4.1.9',
+                        'feature' => 'Router Status & Diagnostics',
+                        'status' => 'implemented'
+                    )
+                ),
+                'timestamp' => current_time('c')
+            );
+
+            return new WP_REST_Response($response_data, 200);
+        } catch (Exception $e) {
+            return $this->create_api_error(
+                'ROUTER_DIAGNOSTICS_ERROR',
+                'Failed to retrieve router diagnostics: ' . $e->getMessage(),
+                array(
+                    'error_type' => 'diagnostics_error',
+                    'step' => '4.1.9',
+                    'exception' => get_class($e)
+                ),
+                500
+            );
+        }
+    }
+
+    /**
+     * Check if REST namespace is properly registered
+     * Step 4.1.9 - Namespace registration verification
+     *
+     * @since 4.1.9
+     * @return bool True if namespace is registered
+     */
+    private function is_namespace_registered() {
+        try {
+            $server = rest_get_server();
+            if (!$server) {
+                return false;
+            }
+
+            $routes = $server->get_routes();
+            foreach ($routes as $route => $handlers) {
+                if (strpos($route, '/' . $this->namespace . '/') === 0) {
+                    return true;
+                }
+            }
+            return false;
+        } catch (Exception $e) {
+            return false;
+        }
+    }
+
+    /**
+     * Get endpoint callback information for diagnostics
+     * Step 4.1.9 - Endpoint callback diagnostics
+     *
+     * @since 4.1.9
+     * @return array Endpoint callback information
+     */
+    private function get_endpoint_callback_info() {
+        $callback_info = array();
+
+        $endpoints = array(
+            'license/resolve-info' => 'handle_license_resolve_info',
+            'license/resolve-cookie' => 'handle_license_resolve_cookie',
+            'license/device-status' => 'handle_device_status',
+            'security-status' => 'handle_security_status',
+            'error-statistics' => 'handle_error_statistics',
+            'router-diagnostics' => 'handle_router_diagnostics'
+        );
+
+        foreach ($endpoints as $endpoint => $method) {
+            $callback_info[$endpoint] = array(
+                'method_exists' => method_exists($this, $method),
+                'callback_method' => $method,
+                'is_callable' => is_callable(array($this, $method))
+            );
+        }
+
+        return $callback_info;
+    }
+
+    /**
+     * Get authentication method diagnostics
+     * Step 4.1.9 - Authentication diagnostics
+     *
+     * @since 4.1.9
+     * @return array Authentication method diagnostic information
+     */
+    private function get_authentication_method_diagnostics() {
+        if (!$this->security_manager || !method_exists($this->security_manager, 'get_authentication_methods')) {
+            return array(
+                'available' => false,
+                'reason' => 'Security manager not available or method missing'
+            );
+        }
+
+        try {
+            $auth_methods = $this->security_manager->get_authentication_methods();
+            return array(
+                'available' => true,
+                'methods_count' => is_array($auth_methods) ? count($auth_methods) : 0,
+                'supported_methods' => is_array($auth_methods) ? array_keys($auth_methods) : []
+            );
+        } catch (Exception $e) {
+            return array(
+                'available' => false,
+                'error' => $e->getMessage()
+            );
+        }
+    }
+
+    /**
+     * Get last security check information
+     * Step 4.1.9 - Security check diagnostics
+     *
+     * @since 4.1.9
+     * @return array Last security check information
+     */
+    private function get_last_security_check_info() {
+        // This would normally track actual security checks
+        // For now, return diagnostic information
+        return array(
+            'fallback_mode' => is_null($this->security_manager),
+            'last_check_time' => 'N/A - Not implemented',
+            'check_status' => is_null($this->security_manager) ? 'fallback' : 'active'
+        );
+    }
+
+    /**
+     * Get router load time estimation
+     * Step 4.1.9 - Performance diagnostics
+     *
+     * @since 4.1.9
+     * @return float Estimated router load time
+     */
+    private function get_router_load_time() {
+        // This would normally track actual load time
+        // For now, return estimation based on initialization
+        return $this->initialized ? 0.001 : 0.0;
+    }
+
+    /**
+     * Get database query information for diagnostics
+     * Step 4.1.9 - Database diagnostics
+     *
+     * @since 4.1.9
+     * @return array Database query information
+     */
+    private function get_database_query_info() {
+        global $wpdb;
+
+        return array(
+            'total_queries' => $wpdb->num_queries ?? 0,
+            'database_version' => $wpdb->db_version() ?? 'Unknown',
+            'last_error' => $wpdb->last_error ?: 'None',
+            'queries_enabled' => defined('SAVEQUERIES') && SAVEQUERIES
+        );
+    }
+
+    /**
+     * Check required hooks for diagnostics
+     * Step 4.1.9 - Hook diagnostics
+     *
+     * @since 4.1.9
+     * @return array Required hooks status
+     */
+    private function check_required_hooks() {
+        $required_hooks = array(
+            'rest_api_init' => has_action('rest_api_init'),
+            'init' => has_action('init'),
+            'wp_loaded' => has_action('wp_loaded')
+        );
+
+        return $required_hooks;
+    }
+
+    /**
+     * Check class dependencies for diagnostics
+     * Step 4.1.9 - Dependency diagnostics
+     *
+     * @since 4.1.9
+     * @return array Class dependency status
+     */
+    private function check_class_dependencies() {
+        $dependencies = array(
+            'WP_REST_Request' => class_exists('WP_REST_Request'),
+            'WP_REST_Response' => class_exists('WP_REST_Response'),
+            'WP_Error' => class_exists('WP_Error'),
+            'VD_API_Security' => class_exists('VD_API_Security'),
+            'VD_License_Manager' => class_exists('VD_License_Manager')
+        );
+
+        return $dependencies;
+    }
+
+    /**
+     * Get recent error summary for diagnostics
+     * Step 4.1.9 - Error diagnostics
+     *
+     * @since 4.1.9
+     * @return array Recent error summary
+     */
+    private function get_recent_error_summary() {
+        // This would normally track actual errors
+        // For now, return basic error infrastructure status
+        return array(
+            'error_tracking_enabled' => defined('WP_DEBUG') && WP_DEBUG,
+            'recent_errors_count' => 0,
+            'last_error_time' => 'None',
+            'error_handling_version' => '4.1.8'
+        );
+    }
+
+    /**
+     * Filter sensitive information from diagnostics
+     * Step 4.1.9 - Diagnostic security filtering
+     *
+     * @since 4.1.9
+     * @param array $diagnostics Full diagnostics array
+     * @return array Filtered diagnostics array
+     */
+    private function filter_sensitive_diagnostics($diagnostics) {
+        // Remove sensitive server information
+        if (isset($diagnostics['system']['server_software'])) {
+            $diagnostics['system']['server_software'] = 'Hidden';
+        }
+
+        // Remove detailed memory information
+        if (isset($diagnostics['performance']['memory_usage'])) {
+            $diagnostics['performance']['memory_usage'] = array(
+                'status' => 'available',
+                'detailed_info' => 'hidden'
+            );
+        }
+
+        // Remove internal instance information
+        if (isset($diagnostics['router_info']['instance_id'])) {
+            unset($diagnostics['router_info']['instance_id']);
+        }
+
+        return $diagnostics;
+    }
+
+    /**
+     * Format bytes for human readable output
+     * Step 4.1.9 - Utility method for diagnostics
+     *
+     * @since 4.1.9
+     * @param int $bytes Number of bytes
+     * @return string Formatted byte string
+     */
+    private function format_bytes($bytes) {
+        $units = array('B', 'KB', 'MB', 'GB', 'TB');
+
+        for ($i = 0; $bytes > 1024 && $i < count($units) - 1; $i++) {
+            $bytes /= 1024;
+        }
+
+        return round($bytes, 2) . ' ' . $units[$i];
     }
 }
