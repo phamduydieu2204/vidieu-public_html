@@ -78,6 +78,15 @@ class VD_License_Manager {
     private $api_router = null;
 
     /**
+     * License Validator instance
+     * Step 4.2.1 - License Validator Class Foundation
+     *
+     * @since 4.2.1
+     * @var VD_License_Validator|null
+     */
+    private $license_validator = null;
+
+    /**
      * Get single instance of the plugin
      *
      * @since 1.0.0
@@ -180,6 +189,9 @@ class VD_License_Manager {
 
         // Step 4.1.2 - Load API Router class
         require_once VD_LM_PATH . 'includes/class-vd-api-router.php';
+
+        // Step 4.2.1 - Load License Validator class
+        require_once VD_LM_PATH . 'includes/class-vd-license-validator.php';
 
         // Step 3.4.6.2 - Safe Variable Declaration (security audit file path)
         $security_audit_file = VD_LM_PATH . 'includes/class-vd-security-audit.php';
@@ -510,6 +522,18 @@ class VD_License_Manager {
                 'API_ROUTER',
                 'info',
                 'API Router infrastructure và REST API hooks initialized successfully'
+            );
+        }
+
+        // Step 4.2.1 - Initialize License Validator
+        if (class_exists('VD_License_Validator')) {
+            $this->license_validator = VD_License_Validator::get_instance();
+            // Initialize validator with WordPress hooks
+            $this->license_validator->init();
+            $this->vd_native_error_log(
+                'LICENSE_VALIDATOR',
+                'info',
+                'License Validator initialized successfully with validation framework'
             );
         }
 

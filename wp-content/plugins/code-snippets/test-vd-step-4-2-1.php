@@ -29,6 +29,14 @@ function vd_test_step_4_2_1_foundation() {
 
     // Test 1: VD_License_Validator Class Existence
     echo "<h4>🔍 Test Suite 1: Class Foundation</h4>";
+
+    // Debug: Check file existence
+    $validator_file = WP_PLUGIN_DIR . '/vd-license-manager/includes/class-vd-license-validator.php';
+    echo "📁 File check: " . ($validator_file) . " - " . (file_exists($validator_file) ? "✅ EXISTS" : "❌ NOT FOUND") . "<br>";
+
+    // Debug: Check if VD License Manager is active
+    echo "🔌 Plugin check: VD License Manager - " . (class_exists('VD_License_Manager') ? "✅ ACTIVE" : "❌ INACTIVE") . "<br>";
+
     $total_tests++;
     if (class_exists('VD_License_Validator')) {
         echo "✅ VD_License_Validator class: EXISTS<br>";
@@ -36,7 +44,23 @@ function vd_test_step_4_2_1_foundation() {
         $test_results[] = "VD_License_Validator class loaded successfully";
     } else {
         echo "❌ VD_License_Validator class: NOT FOUND<br>";
-        $test_results[] = "VD_License_Validator class loading failed";
+        echo "🔧 Debug: Try manual loading...<br>";
+
+        // Try manual loading for debugging
+        if (file_exists($validator_file)) {
+            require_once $validator_file;
+            if (class_exists('VD_License_Validator')) {
+                echo "✅ Manual loading: SUCCESSFUL<br>";
+                $passed_tests++;
+                $test_results[] = "VD_License_Validator class loaded via manual require";
+            } else {
+                echo "❌ Manual loading: FAILED - Class still not found after require<br>";
+                $test_results[] = "VD_License_Validator class loading failed completely";
+            }
+        } else {
+            echo "❌ Manual loading: FAILED - File does not exist<br>";
+            $test_results[] = "VD_License_Validator file not found";
+        }
     }
 
     // Test 2: Singleton Pattern Implementation
