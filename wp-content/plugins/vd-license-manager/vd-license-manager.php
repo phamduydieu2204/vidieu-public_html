@@ -105,16 +105,54 @@ function vd_license_manager_deactivate() {
 
 /**
  * Initialize plugin
+ * Enhanced loading with error handling and debugging
  */
 function vd_license_manager_init() {
-    // Load core functions first
-    require_once VD_LM_PATH . 'includes/functions.php';
+    try {
+        // Load core functions first
+        $functions_file = VD_LM_PATH . 'includes/functions.php';
+        if (file_exists($functions_file)) {
+            require_once $functions_file;
+            error_log('[VD License Manager] Functions loaded successfully');
+        } else {
+            error_log('[VD License Manager] Missing functions.php file: ' . $functions_file);
+        }
 
-    // Load main plugin class
-    require_once VD_LM_PATH . 'includes/class-vd-license-manager.php';
+        // Load main plugin class
+        $manager_file = VD_LM_PATH . 'includes/class-vd-license-manager.php';
+        if (file_exists($manager_file)) {
+            require_once $manager_file;
+            error_log('[VD License Manager] Manager class file loaded');
+        } else {
+            error_log('[VD License Manager] Missing class-vd-license-manager.php file: ' . $manager_file);
+            return;
+        }
 
-    // Initialize
-    VD_License_Manager::get_instance()->init();
+        // Verify class exists before initializing
+        if (!class_exists('VD_License_Manager')) {
+            error_log('[VD License Manager] VD_License_Manager class not found after require');
+            // Try to debug what classes are available
+            $declared_classes = get_declared_classes();
+            $vd_classes = array_filter($declared_classes, function($class) {
+                return strpos($class, 'VD_') === 0;
+            });
+            error_log('[VD License Manager] Available VD classes: ' . implode(', ', $vd_classes));
+            return;
+        }
+
+        // Initialize
+        $manager = VD_License_Manager::get_instance();
+        if ($manager) {
+            $manager->init();
+            error_log('[VD License Manager] Plugin initialized successfully - VD_License_Manager loaded');
+        } else {
+            error_log('[VD License Manager] Failed to get VD_License_Manager instance');
+        }
+    } catch (Exception $e) {
+        error_log('[VD License Manager] Initialization error: ' . $e->getMessage());
+    } catch (Error $e) {
+        error_log('[VD License Manager] Fatal initialization error: ' . $e->getMessage());
+    }
 }
 
 /**
