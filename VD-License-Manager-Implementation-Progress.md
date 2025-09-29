@@ -823,16 +823,88 @@ All database layer functionality implemented with full encryption and audit trai
 
 📊 **Step 4.1 Progress**: 6/10 micro-steps (60%)
 
-**4.2 - License Validator Core** ⏳ **PENDING**
-- **Mục tiêu**: Implement license validation logic (Step 1 of 4-step process)
-- **Files**: `includes/class-vd-license-validator.php` (new)
-- **Risk**: Trung bình - Database operations, expiry logic
-- **Kiểm thử**: User verification required - license validation accuracy
-- **Chi tiết**:
-  - License key format validation
-  - Database lookup và status checking
-  - Expiry date validation
-  - License settings inheritance
+### 🔧 **Step 4.2 - License Validator Core** ⏳ **PENDING**
+
+**📂 Reference Documents Analyzed:**
+- ✅ VD-License-Manager-Business-Logic.md - validate_license_expiry() function definition
+- ✅ VD-License-Manager-Complete-Specifications.md - Database schema và business requirements
+- ✅ VD-License-Manager-API-Spec.md - Input validation schemas và error responses
+- ✅ VD-License-Manager-Implementation-Plan.md - Technical architecture patterns
+
+**Mục tiêu**: Implement Step 1 của 4-step license resolution process
+**Foundation**: Sử dụng completed Step 4.1 API Router infrastructure
+**Timeline**: 8 micro-steps
+**Risk Level**: Trung bình - Database operations và business logic validation
+
+### 🎯 **Step 4.2 Micro-Steps Breakdown:**
+
+**4.2.1 - License Validator Class Foundation** ✅ **COMPLETED**
+- **Mục tiêu**: Tạo VD_License_Validator class với singleton pattern và basic structure
+- **File**: `includes/class-vd-license-validator.php` (✅ created - 383 lines)
+- **Rủi ro**: **Thấp** - Basic class structure
+- **Kiểm thử**: Nội bộ - Class loading và method availability
+- **Chi tiết**: Class structure, constructor, singleton pattern, basic validation methods framework
+- **Completion Date**: 2025-09-29
+- **Result**: Complete license validator foundation với 3 core methods và caching system
+
+**4.2.2 - License Key Format Validation** ⏳ **PENDING**
+- **Mục tiêu**: Implement vd_validate_license_key() với format checking logic
+- **File**: `includes/class-vd-license-validator.php` (update)
+- **Rủi ro**: **Thấp** - Input validation logic
+- **Kiểm thử**: Nội bộ - Format validation test cases
+- **Chi tiết**: Key format regex, length validation, character set validation, checksum validation
+
+**4.2.3 - Database License Lookup** ⏳ **PENDING**
+- **Mục tiêu**: Implement license database lookup với LMfWC integration
+- **File**: `includes/class-vd-license-validator.php` (update)
+- **Rủi ro**: **Trung bình** - Database operations, LMfWC table structure
+- **Kiểm thử**: User verification required - Database connection và data accuracy
+- **Chi tiết**: LMfWC table queries, bz_ prefix handling, prepared statements, error handling
+
+**4.2.4 - License Status Validation** ⏳ **PENDING**
+- **Mục tiêu**: Implement status checking logic (active, suspended, expired)
+- **File**: `includes/class-vd-license-validator.php` (update)
+- **Rủi ro**: **Thấp** - Status validation logic
+- **Kiểm thử**: Nội bộ - Status validation test scenarios
+- **Chi tiết**: Status enum validation, business rules enforcement, error message mapping
+
+**4.2.5 - Expiry Date Validation** ⏳ **PENDING**
+- **Mục tiêu**: Implement expiry date checking với automatic status updates
+- **File**: `includes/class-vd-license-validator.php` (update)
+- **Rủi ro**: **Trung bình** - Date calculations, database updates
+- **Kiểm thử**: User verification required - Date calculation accuracy
+- **Chi tiết**: Date comparison logic, timezone handling, automatic expiry updates, warning calculations
+
+**4.2.6 - Settings Inheritance System** ⏳ **PENDING**
+- **Mục tiêu**: Implement get_license_settings() với priority system
+- **File**: `includes/class-vd-license-validator.php` (update)
+- **Rủi ro**: **Trung bình** - Complex inheritance logic, multiple table queries
+- **Kiểm thử**: User verification required - Settings priority accuracy
+- **Chi tiết**: License > Product > Global settings inheritance, database queries optimization, default values
+
+**4.2.7 - Validation Response Formatting** ⏳ **PENDING**
+- **Mục tiêu**: Implement standardized validation response format
+- **File**: `includes/class-vd-license-validator.php` (update)
+- **Rủi ro**: **Thấp** - Response formatting
+- **Kiểm thử**: Nội bộ - Response format compliance
+- **Chi tiết**: Success/error response structures, internationalization, warning data inclusion
+
+**4.2.8 - License Validator Integration Testing** ⏳ **PENDING**
+- **Mục tiêu**: Comprehensive testing của complete license validation workflow
+- **File**: `wp-content/plugins/code-snippets/test-vd-step-4-2-complete.php` (new)
+- **Rủi ro**: **Thấp** - Testing infrastructure
+- **Kiểm thử**: User verification required - End-to-end validation accuracy
+- **Chi tiết**: Full workflow testing, edge cases, performance validation, integration với Step 4.1
+
+### 📊 **Step 4.2 Success Criteria:**
+- ✅ validate_license_expiry() function hoàn toàn functional
+- ✅ All input validation working correctly
+- ✅ Database operations optimized và secure
+- ✅ Settings inheritance working theo business logic
+- ✅ Error handling comprehensive và user-friendly
+- ✅ Performance < 50ms cho license validation
+- ✅ Integration với Step 4.1 API Router successful
+- ✅ Test coverage 90%+ cho all validation scenarios
 
 **4.3 - Device Management Core** ⏳ **PENDING**
 - **Mục tiêu**: Implement device fingerprint validation và management (Step 3 of 4-step)
@@ -989,9 +1061,9 @@ All database layer functionality implemented with full encryption and audit trai
   - Configuration management
 
 ### 📊 **Sprint 4 Progress Tracking**
-- **Total Steps**: 16 micro-steps
-- **Completed**: 10/16 (62.5%) ✅ Step 4.1 COMPLETED
-- **Current**: 4.2 - License Resolution Logic (next phase)
+- **Total Steps**: 24 micro-steps (updated with Step 4.2 breakdown)
+- **Completed**: 11/24 (45.8%) ✅ Step 4.1 + Step 4.2.1 COMPLETED
+- **Current**: 4.2.2 - License Key Format Validation (next micro-step)
 - **Strategy**: Ultra-safe micro-step approach (proven từ Sprint 3)
 - **Foundation**: Sprint 3 security infrastructure (100% complete)
 
