@@ -2004,4 +2004,921 @@ class VD_License_Validator {
     public function is_ready() {
         return $this->initialized;
     }
+
+    /**
+     * ============================================================================
+     * Step 4.2.4.3 - Automatic Status Update System
+     * Implements comprehensive automatic license status updates with database safety
+     * ============================================================================
+     */
+
+    /**
+     * Update expired license statuses automatically
+     * Main entry point for automatic status updates
+     *
+     * @since 4.2.4.3
+     * @param array $options Update options and filters
+     * @return array Update results with detailed statistics
+     */
+    public function update_expired_license_statuses($options = array()) {
+        $start_time = microtime(true);
+
+        // Initialize default options
+        $default_options = array(
+            'batch_size' => 100,
+            'force_update' => false,
+            'dry_run' => false,
+            'status_filters' => array('active', 'pending'),
+            'grace_period_hours' => 72,
+            'escalation_enabled' => true,
+            'audit_enabled' => true
+        );
+
+        $options = array_merge($default_options, $options);
+
+        $results = array(
+            'total_processed' => 0,
+            'updated_count' => 0,
+            'skipped_count' => 0,
+            'error_count' => 0,
+            'batch_results' => array(),
+            'execution_time_ms' => 0,
+            'dry_run' => $options['dry_run'],
+            'errors' => array()
+        );
+
+        try {
+            // Validate update configuration
+            $validation_result = $this->validate_update_configuration($options);
+            if (!$validation_result['valid']) {
+                throw new Exception('Invalid update configuration: ' . $validation_result['error']);
+            }
+
+            // Get expired licenses in batches
+            $expired_licenses = $this->get_expired_licenses_for_update($options);
+
+            if (empty($expired_licenses)) {
+                $results['message'] = 'No expired licenses found for update';
+                return $results;
+            }
+
+            $results['total_processed'] = count($expired_licenses);
+
+            // Process in batches for performance
+            $batches = array_chunk($expired_licenses, $options['batch_size']);
+
+            foreach ($batches as $batch_index => $batch) {
+                $batch_result = $this->process_expired_license_batch($batch, $options);
+
+                $results['batch_results'][] = $batch_result;
+                $results['updated_count'] += $batch_result['updated_count'];
+                $results['skipped_count'] += $batch_result['skipped_count'];
+                $results['error_count'] += $batch_result['error_count'];
+
+                if (!empty($batch_result['errors'])) {
+                    $results['errors'] = array_merge($results['errors'], $batch_result['errors']);
+                }
+
+                // Log batch completion
+                if ($options['audit_enabled']) {
+                    $this->log_batch_update_completion($batch_index + 1, $batch_result, $options);
+                }
+            }
+
+            // Final validation of update results
+            $results['validation'] = $this->validate_update_results($results, $options);
+
+        } catch (Exception $e) {
+            $results['error_count']++;
+            $results['errors'][] = array(
+                'type' => 'system_error',
+                'message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine()
+            );
+
+            if ($options['audit_enabled']) {
+                $this->log_update_error('update_expired_license_statuses', $e, $options);
+            }
+        }
+
+        $results['execution_time_ms'] = round((microtime(true) - $start_time) * 1000, 2);
+
+        // Audit final results
+        if ($options['audit_enabled']) {
+            $this->audit_automatic_update_completion($results, $options);
+        }
+
+        return $results;
+    }
+
+    /**
+     * Get expired licenses that need status updates
+     *
+     * @since 4.2.4.3
+     * @param array $options Update options
+     * @return array Expired licenses ready for update
+     */
+    private function get_expired_licenses_for_update($options) {
+        global $wpdb;
+
+        $status_filters = $options['status_filters'];
+        $grace_period_hours = $options['grace_period_hours'];
+
+        // Build query for expired licenses
+        $placeholders = implode(',', array_fill(0, count($status_filters), '%s'));
+        $grace_cutoff = date('Y-m-d H:i:s', current_time('timestamp') - ($grace_period_hours * 3600));
+
+        $query = $wpdb->prepare("
+            SELECT
+                id,
+                license_key,
+                product_id,
+                status,
+                expires_at,
+                updated_at,
+                created_at,
+                last_status_change
+            FROM {$wpdb->prefix}vd_licenses
+            WHERE status IN ($placeholders)
+                AND expires_at IS NOT NULL
+                AND expires_at < %s
+                AND (last_status_change IS NULL OR last_status_change < %s)
+            ORDER BY expires_at ASC
+            LIMIT 1000
+        ", array_merge($status_filters, array($grace_cutoff, $grace_cutoff)));
+
+        return $wpdb->get_results($query, ARRAY_A);
+    }
+
+    /**
+     * Process a batch of expired licenses
+     *
+     * @since 4.2.4.3
+     * @param array $licenses Batch of licenses to process
+     * @param array $options Update options
+     * @return array Batch processing results
+     */
+    private function process_expired_license_batch($licenses, $options) {
+        global $wpdb;
+
+        $batch_results = array(
+            'updated_count' => 0,
+            'skipped_count' => 0,
+            'error_count' => 0,
+            'errors' => array(),
+            'updates' => array()
+        );
+
+        // Start transaction for batch safety
+        if (!$options['dry_run']) {
+            $wpdb->query('START TRANSACTION');
+        }
+
+        try {
+            foreach ($licenses as $license) {
+                $update_result = $this->process_single_expired_license($license, $options);
+
+                if ($update_result['success']) {
+                    $batch_results['updated_count']++;
+                    $batch_results['updates'][] = $update_result;
+                } elseif ($update_result['skipped']) {
+                    $batch_results['skipped_count']++;
+                } else {
+                    $batch_results['error_count']++;
+                    $batch_results['errors'][] = $update_result['error'];
+                }
+            }
+
+            // Commit transaction if all successful
+            if (!$options['dry_run'] && $batch_results['error_count'] === 0) {
+                $wpdb->query('COMMIT');
+            } elseif (!$options['dry_run']) {
+                $wpdb->query('ROLLBACK');
+                throw new Exception('Batch failed with ' . $batch_results['error_count'] . ' errors');
+            }
+
+        } catch (Exception $e) {
+            if (!$options['dry_run']) {
+                $wpdb->query('ROLLBACK');
+            }
+
+            $batch_results['error_count']++;
+            $batch_results['errors'][] = array(
+                'type' => 'batch_error',
+                'message' => $e->getMessage()
+            );
+        }
+
+        return $batch_results;
+    }
+
+    /**
+     * Process a single expired license update
+     *
+     * @since 4.2.4.3
+     * @param array $license License data
+     * @param array $options Update options
+     * @return array Single license update result
+     */
+    private function process_single_expired_license($license, $options) {
+        try {
+            // Determine target status based on business rules
+            $target_status_result = $this->determine_target_status_for_expired_license($license, $options);
+
+            if (!$target_status_result['should_update']) {
+                return array(
+                    'success' => false,
+                    'skipped' => true,
+                    'license_id' => $license['id'],
+                    'reason' => $target_status_result['skip_reason']
+                );
+            }
+
+            $new_status = $target_status_result['target_status'];
+
+            // Validate status transition
+            $transition_validation = $this->validate_automatic_status_transition(
+                $license['status'],
+                $new_status,
+                $license,
+                $options
+            );
+
+            if (!$transition_validation['valid']) {
+                return array(
+                    'success' => false,
+                    'skipped' => false,
+                    'license_id' => $license['id'],
+                    'error' => array(
+                        'type' => 'transition_invalid',
+                        'message' => $transition_validation['error']
+                    )
+                );
+            }
+
+            // Execute the status update
+            if (!$options['dry_run']) {
+                $update_result = $this->execute_automatic_status_update($license, $new_status, $options);
+
+                if (!$update_result['success']) {
+                    return array(
+                        'success' => false,
+                        'skipped' => false,
+                        'license_id' => $license['id'],
+                        'error' => $update_result['error']
+                    );
+                }
+            }
+
+            return array(
+                'success' => true,
+                'skipped' => false,
+                'license_id' => $license['id'],
+                'old_status' => $license['status'],
+                'new_status' => $new_status,
+                'update_reason' => $target_status_result['update_reason'],
+                'dry_run' => $options['dry_run']
+            );
+
+        } catch (Exception $e) {
+            return array(
+                'success' => false,
+                'skipped' => false,
+                'license_id' => $license['id'],
+                'error' => array(
+                    'type' => 'processing_error',
+                    'message' => $e->getMessage(),
+                    'file' => $e->getFile(),
+                    'line' => $e->getLine()
+                )
+            );
+        }
+    }
+
+    /**
+     * Determine target status for expired license
+     *
+     * @since 4.2.4.3
+     * @param array $license License data
+     * @param array $options Update options
+     * @return array Target status determination result
+     */
+    private function determine_target_status_for_expired_license($license, $options) {
+        $expires_at = strtotime($license['expires_at']);
+        $current_time = current_time('timestamp');
+        $days_expired = ceil(($current_time - $expires_at) / (24 * 3600));
+
+        // Check escalation rules if enabled
+        if ($options['escalation_enabled']) {
+            $escalation_config = $this->get_escalation_configuration($license);
+
+            // 30+ days expired -> revoked
+            if ($days_expired >= ($escalation_config['revoke_after_days'] ?? 30)) {
+                return array(
+                    'should_update' => true,
+                    'target_status' => 'revoked',
+                    'update_reason' => sprintf('Auto-revoked after %d days expired', $days_expired)
+                );
+            }
+
+            // 7+ days expired -> suspended
+            if ($days_expired >= ($escalation_config['suspend_after_days'] ?? 7)) {
+                return array(
+                    'should_update' => true,
+                    'target_status' => 'suspended',
+                    'update_reason' => sprintf('Auto-suspended after %d days expired', $days_expired)
+                );
+            }
+        }
+
+        // Default: just mark as expired
+        return array(
+            'should_update' => true,
+            'target_status' => 'expired',
+            'update_reason' => sprintf('Auto-expired after %d days past expiration', $days_expired)
+        );
+    }
+
+    /**
+     * Validate automatic status transition
+     *
+     * @since 4.2.4.3
+     * @param string $from_status Current status
+     * @param string $to_status Target status
+     * @param array $license License data
+     * @param array $options Update options
+     * @return array Transition validation result
+     */
+    private function validate_automatic_status_transition($from_status, $to_status, $license, $options) {
+        // Get allowed automatic transitions
+        $allowed_transitions = $this->get_allowed_automatic_transitions();
+
+        $transition_key = $from_status . '_to_' . $to_status;
+
+        if (!isset($allowed_transitions[$transition_key])) {
+            return array(
+                'valid' => false,
+                'error' => sprintf(
+                    'Automatic transition from %s to %s is not allowed',
+                    $from_status,
+                    $to_status
+                )
+            );
+        }
+
+        $transition_config = $allowed_transitions[$transition_key];
+
+        // Check additional constraints
+        if (!empty($transition_config['constraints'])) {
+            foreach ($transition_config['constraints'] as $constraint) {
+                $constraint_result = $this->validate_transition_constraint($constraint, $license, $options);
+
+                if (!$constraint_result['valid']) {
+                    return array(
+                        'valid' => false,
+                        'error' => $constraint_result['error']
+                    );
+                }
+            }
+        }
+
+        return array(
+            'valid' => true,
+            'transition_type' => $transition_config['type'] ?? 'automatic',
+            'requires_audit' => $transition_config['requires_audit'] ?? true
+        );
+    }
+
+    /**
+     * Execute automatic status update with database safety
+     *
+     * @since 4.2.4.3
+     * @param array $license License data
+     * @param string $new_status New status to set
+     * @param array $options Update options
+     * @return array Update execution result
+     */
+    private function execute_automatic_status_update($license, $new_status, $options) {
+        global $wpdb;
+
+        try {
+            $update_data = array(
+                'status' => $new_status,
+                'last_status_change' => current_time('mysql'),
+                'updated_at' => current_time('mysql')
+            );
+
+            $where = array('id' => $license['id']);
+            $where_format = array('%d');
+
+            // Optimistic locking - ensure status hasn't changed since we read it
+            if (!$options['force_update']) {
+                $where['status'] = $license['status'];
+                $where['updated_at'] = $license['updated_at'];
+                $where_format[] = '%s';
+                $where_format[] = '%s';
+            }
+
+            $result = $wpdb->update(
+                $wpdb->prefix . 'vd_licenses',
+                $update_data,
+                $where,
+                array('%s', '%s', '%s'),
+                $where_format
+            );
+
+            if ($result === false) {
+                throw new Exception('Database update failed: ' . $wpdb->last_error);
+            }
+
+            if ($result === 0) {
+                return array(
+                    'success' => false,
+                    'error' => array(
+                        'type' => 'no_rows_affected',
+                        'message' => 'License may have been modified by another process'
+                    )
+                );
+            }
+
+            // Log status change audit
+            if ($options['audit_enabled']) {
+                $this->log_automatic_status_change($license, $new_status, $options);
+            }
+
+            // Update related tables if needed
+            $this->update_related_tables_for_status_change($license['id'], $new_status, $options);
+
+            return array(
+                'success' => true,
+                'rows_affected' => $result,
+                'update_timestamp' => current_time('mysql')
+            );
+
+        } catch (Exception $e) {
+            return array(
+                'success' => false,
+                'error' => array(
+                    'type' => 'update_error',
+                    'message' => $e->getMessage(),
+                    'file' => $e->getFile(),
+                    'line' => $e->getLine()
+                )
+            );
+        }
+    }
+
+    /**
+     * Get allowed automatic transitions configuration
+     *
+     * @since 4.2.4.3
+     * @return array Allowed automatic transitions
+     */
+    private function get_allowed_automatic_transitions() {
+        return array(
+            'active_to_expired' => array(
+                'type' => 'expiration',
+                'requires_audit' => true,
+                'constraints' => array('must_be_past_expiry')
+            ),
+            'pending_to_expired' => array(
+                'type' => 'expiration',
+                'requires_audit' => true,
+                'constraints' => array('must_be_past_expiry')
+            ),
+            'expired_to_suspended' => array(
+                'type' => 'escalation',
+                'requires_audit' => true,
+                'constraints' => array('must_be_expired_for_days')
+            ),
+            'suspended_to_revoked' => array(
+                'type' => 'escalation',
+                'requires_audit' => true,
+                'constraints' => array('must_be_suspended_for_days')
+            ),
+            'expired_to_revoked' => array(
+                'type' => 'escalation',
+                'requires_audit' => true,
+                'constraints' => array('must_be_expired_for_days')
+            )
+        );
+    }
+
+    /**
+     * Get escalation configuration for license
+     *
+     * @since 4.2.4.3
+     * @param array $license License data
+     * @return array Escalation configuration
+     */
+    private function get_escalation_configuration($license) {
+        // Get product-specific or global escalation rules
+        $default_config = array(
+            'suspend_after_days' => 7,
+            'revoke_after_days' => 30,
+            'grace_period_hours' => 72,
+            'notification_enabled' => true
+        );
+
+        // Check for product-specific overrides
+        if (!empty($license['product_id'])) {
+            $product_config = $this->get_product_escalation_config($license['product_id']);
+            if ($product_config) {
+                return array_merge($default_config, $product_config);
+            }
+        }
+
+        return $default_config;
+    }
+
+    /**
+     * Get product-specific escalation configuration
+     *
+     * @since 4.2.4.3
+     * @param int $product_id Product ID
+     * @return array|null Product escalation config
+     */
+    private function get_product_escalation_config($product_id) {
+        global $wpdb;
+
+        $config = $wpdb->get_var($wpdb->prepare(
+            "SELECT escalation_config FROM {$wpdb->prefix}vd_products WHERE id = %d",
+            $product_id
+        ));
+
+        if ($config) {
+            $decoded = json_decode($config, true);
+            return is_array($decoded) ? $decoded : null;
+        }
+
+        return null;
+    }
+
+    /**
+     * Validate transition constraint
+     *
+     * @since 4.2.4.3
+     * @param string $constraint Constraint to validate
+     * @param array $license License data
+     * @param array $options Update options
+     * @return array Constraint validation result
+     */
+    private function validate_transition_constraint($constraint, $license, $options) {
+        switch ($constraint) {
+            case 'must_be_past_expiry':
+                if (strtotime($license['expires_at']) >= current_time('timestamp')) {
+                    return array(
+                        'valid' => false,
+                        'error' => 'License has not yet expired'
+                    );
+                }
+                break;
+
+            case 'must_be_expired_for_days':
+                $days_expired = ceil((current_time('timestamp') - strtotime($license['expires_at'])) / (24 * 3600));
+                $min_days = 7; // Default minimum days
+
+                if ($days_expired < $min_days) {
+                    return array(
+                        'valid' => false,
+                        'error' => sprintf('License must be expired for at least %d days', $min_days)
+                    );
+                }
+                break;
+
+            case 'must_be_suspended_for_days':
+                $last_change = strtotime($license['last_status_change'] ?? $license['updated_at']);
+                $days_suspended = ceil((current_time('timestamp') - $last_change) / (24 * 3600));
+                $min_days = 23; // Default minimum suspension days
+
+                if ($days_suspended < $min_days) {
+                    return array(
+                        'valid' => false,
+                        'error' => sprintf('License must be suspended for at least %d days', $min_days)
+                    );
+                }
+                break;
+        }
+
+        return array('valid' => true);
+    }
+
+    /**
+     * Update related tables when status changes
+     *
+     * @since 4.2.4.3
+     * @param int $license_id License ID
+     * @param string $new_status New status
+     * @param array $options Update options
+     * @return void
+     */
+    private function update_related_tables_for_status_change($license_id, $new_status, $options) {
+        global $wpdb;
+
+        try {
+            // Update license history
+            $wpdb->insert(
+                $wpdb->prefix . 'vd_license_history',
+                array(
+                    'license_id' => $license_id,
+                    'status' => $new_status,
+                    'change_type' => 'automatic_update',
+                    'change_reason' => 'system_automatic_status_update',
+                    'changed_at' => current_time('mysql'),
+                    'changed_by' => 'system'
+                ),
+                array('%d', '%s', '%s', '%s', '%s', '%s')
+            );
+
+            // Update product statistics if needed
+            if ($new_status === 'expired' || $new_status === 'revoked') {
+                $this->update_product_statistics_for_status_change($license_id, $new_status);
+            }
+
+        } catch (Exception $e) {
+            // Log error but don't fail the main update
+            error_log('VD License Manager: Failed to update related tables: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Update product statistics for status change
+     *
+     * @since 4.2.4.3
+     * @param int $license_id License ID
+     * @param string $new_status New status
+     * @return void
+     */
+    private function update_product_statistics_for_status_change($license_id, $new_status) {
+        global $wpdb;
+
+        // Get product ID for this license
+        $product_id = $wpdb->get_var($wpdb->prepare(
+            "SELECT product_id FROM {$wpdb->prefix}vd_licenses WHERE id = %d",
+            $license_id
+        ));
+
+        if (!$product_id) {
+            return;
+        }
+
+        // Update product stats table
+        $stat_key = $new_status . '_licenses_count';
+
+        $wpdb->query($wpdb->prepare(
+            "INSERT INTO {$wpdb->prefix}vd_product_stats (product_id, stat_key, stat_value, updated_at)
+             VALUES (%d, %s, 1, %s)
+             ON DUPLICATE KEY UPDATE
+             stat_value = stat_value + 1,
+             updated_at = %s",
+            $product_id,
+            $stat_key,
+            current_time('mysql'),
+            current_time('mysql')
+        ));
+    }
+
+    /**
+     * Validate update configuration
+     *
+     * @since 4.2.4.3
+     * @param array $options Update options
+     * @return array Validation result
+     */
+    private function validate_update_configuration($options) {
+        $errors = array();
+
+        // Validate batch size
+        if (!is_int($options['batch_size']) || $options['batch_size'] < 1 || $options['batch_size'] > 1000) {
+            $errors[] = 'batch_size must be integer between 1 and 1000';
+        }
+
+        // Validate grace period
+        if (!is_int($options['grace_period_hours']) || $options['grace_period_hours'] < 0) {
+            $errors[] = 'grace_period_hours must be non-negative integer';
+        }
+
+        // Validate status filters
+        if (!is_array($options['status_filters']) || empty($options['status_filters'])) {
+            $errors[] = 'status_filters must be non-empty array';
+        } else {
+            $valid_statuses = $this->get_valid_status_enums();
+            foreach ($options['status_filters'] as $status) {
+                if (!in_array($status, $valid_statuses)) {
+                    $errors[] = "Invalid status filter: {$status}";
+                }
+            }
+        }
+
+        if (!empty($errors)) {
+            return array(
+                'valid' => false,
+                'error' => implode('; ', $errors)
+            );
+        }
+
+        return array('valid' => true);
+    }
+
+    /**
+     * Validate update results
+     *
+     * @since 4.2.4.3
+     * @param array $results Update results
+     * @param array $options Update options
+     * @return array Validation result
+     */
+    private function validate_update_results($results, $options) {
+        $validation = array(
+            'valid' => true,
+            'warnings' => array(),
+            'performance_ok' => true
+        );
+
+        // Check performance
+        if ($results['execution_time_ms'] > 30000) { // 30 seconds
+            $validation['performance_ok'] = false;
+            $validation['warnings'][] = 'Update took longer than 30 seconds';
+        }
+
+        // Check error rate
+        $error_rate = $results['total_processed'] > 0
+            ? ($results['error_count'] / $results['total_processed']) * 100
+            : 0;
+
+        if ($error_rate > 10) { // 10% error rate
+            $validation['valid'] = false;
+            $validation['warnings'][] = sprintf('High error rate: %.1f%%', $error_rate);
+        }
+
+        return $validation;
+    }
+
+    /**
+     * Log automatic status change audit
+     *
+     * @since 4.2.4.3
+     * @param array $license License data
+     * @param string $new_status New status
+     * @param array $options Update options
+     * @return void
+     */
+    private function log_automatic_status_change($license, $new_status, $options) {
+        if ($this->security_audit) {
+            $this->security_audit->log_security_event(array(
+                'event_type' => 'automatic_status_update',
+                'license_id' => $license['id'],
+                'old_status' => $license['status'],
+                'new_status' => $new_status,
+                'update_reason' => 'automatic_expiry_processing',
+                'dry_run' => $options['dry_run'] ? 'yes' : 'no',
+                'timestamp' => current_time('mysql')
+            ));
+        }
+    }
+
+    /**
+     * Log batch update completion
+     *
+     * @since 4.2.4.3
+     * @param int $batch_number Batch number
+     * @param array $batch_result Batch processing result
+     * @param array $options Update options
+     * @return void
+     */
+    private function log_batch_update_completion($batch_number, $batch_result, $options) {
+        error_log(sprintf(
+            'VD License Manager: Batch %d completed - Updated: %d, Skipped: %d, Errors: %d',
+            $batch_number,
+            $batch_result['updated_count'],
+            $batch_result['skipped_count'],
+            $batch_result['error_count']
+        ));
+    }
+
+    /**
+     * Log update error
+     *
+     * @since 4.2.4.3
+     * @param string $function Function where error occurred
+     * @param Exception $exception Exception object
+     * @param array $options Update options
+     * @return void
+     */
+    private function log_update_error($function, $exception, $options) {
+        error_log(sprintf(
+            'VD License Manager Error in %s: %s (File: %s, Line: %d)',
+            $function,
+            $exception->getMessage(),
+            $exception->getFile(),
+            $exception->getLine()
+        ));
+
+        if ($this->security_audit) {
+            $this->security_audit->log_security_event(array(
+                'event_type' => 'automatic_update_error',
+                'function' => $function,
+                'error_message' => $exception->getMessage(),
+                'error_file' => $exception->getFile(),
+                'error_line' => $exception->getLine(),
+                'timestamp' => current_time('mysql')
+            ));
+        }
+    }
+
+    /**
+     * Audit automatic update completion
+     *
+     * @since 4.2.4.3
+     * @param array $results Final update results
+     * @param array $options Update options
+     * @return void
+     */
+    private function audit_automatic_update_completion($results, $options) {
+        if ($this->security_audit) {
+            $this->security_audit->log_security_event(array(
+                'event_type' => 'automatic_update_completed',
+                'total_processed' => $results['total_processed'],
+                'updated_count' => $results['updated_count'],
+                'skipped_count' => $results['skipped_count'],
+                'error_count' => $results['error_count'],
+                'execution_time_ms' => $results['execution_time_ms'],
+                'dry_run' => $results['dry_run'] ? 'yes' : 'no',
+                'timestamp' => current_time('mysql')
+            ));
+        }
+    }
+
+    /**
+     * Schedule automatic status updates
+     * Public method to set up WordPress cron job
+     *
+     * @since 4.2.4.3
+     * @param array $schedule_options Scheduling options
+     * @return array Scheduling result
+     */
+    public function schedule_automatic_updates($schedule_options = array()) {
+        $default_schedule = array(
+            'frequency' => 'daily',
+            'time' => '02:00',
+            'enabled' => true,
+            'batch_size' => 100,
+            'grace_period_hours' => 72
+        );
+
+        $schedule_options = array_merge($default_schedule, $schedule_options);
+
+        try {
+            // Remove existing scheduled event
+            wp_clear_scheduled_hook('vd_automatic_license_updates');
+
+            if ($schedule_options['enabled']) {
+                // Calculate next run time
+                $next_run = $this->calculate_next_run_time($schedule_options);
+
+                // Schedule new event
+                wp_schedule_event($next_run, $schedule_options['frequency'], 'vd_automatic_license_updates', array($schedule_options));
+
+                return array(
+                    'success' => true,
+                    'next_run' => date('Y-m-d H:i:s', $next_run),
+                    'frequency' => $schedule_options['frequency']
+                );
+            } else {
+                return array(
+                    'success' => true,
+                    'message' => 'Automatic updates disabled'
+                );
+            }
+
+        } catch (Exception $e) {
+            return array(
+                'success' => false,
+                'error' => $e->getMessage()
+            );
+        }
+    }
+
+    /**
+     * Calculate next run time for scheduled updates
+     *
+     * @since 4.2.4.3
+     * @param array $schedule_options Scheduling options
+     * @return int Unix timestamp of next run
+     */
+    private function calculate_next_run_time($schedule_options) {
+        $time_parts = explode(':', $schedule_options['time']);
+        $hour = (int)$time_parts[0];
+        $minute = isset($time_parts[1]) ? (int)$time_parts[1] : 0;
+
+        $next_run = mktime($hour, $minute, 0);
+
+        // If time has passed today, schedule for tomorrow
+        if ($next_run <= current_time('timestamp')) {
+            $next_run += 24 * 3600; // Add 24 hours
+        }
+
+        return $next_run;
+    }
 }
