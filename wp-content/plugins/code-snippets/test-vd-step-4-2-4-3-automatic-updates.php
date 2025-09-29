@@ -61,22 +61,25 @@ function vd_run_step_4243_test() {
         return;
     }
 
-    // Load VD_License_Validator if needed
-    if (!class_exists('VD_License_Validator')) {
-        $plugin_dir = WP_PLUGIN_DIR . '/vd-license-manager/includes/';
-        $dependencies = array(
-            'functions.php',
-            'class-vd-database-manager.php',
-            'class-vd-encryption-manager.php',
-            'class-vd-license-validator.php'
-        );
+    // Load VD_License_Validator and force reload to get latest methods
+    $plugin_dir = WP_PLUGIN_DIR . '/vd-license-manager/includes/';
+    $dependencies = array(
+        'functions.php',
+        'class-vd-database-manager.php',
+        'class-vd-encryption-manager.php',
+        'class-vd-license-validator.php'
+    );
 
-        foreach ($dependencies as $file) {
-            $file_path = $plugin_dir . $file;
-            if (file_exists($file_path)) {
-                require_once $file_path;
-            }
+    foreach ($dependencies as $file) {
+        $file_path = $plugin_dir . $file;
+        if (file_exists($file_path)) {
+            require_once $file_path;
         }
+    }
+
+    // Force reload the validator class to ensure we have latest methods
+    if (file_exists($plugin_dir . 'class-vd-license-validator.php')) {
+        include_once $plugin_dir . 'class-vd-license-validator.php';
     }
 
     if (!class_exists('VD_License_Validator')) {
@@ -88,6 +91,27 @@ function vd_run_step_4243_test() {
 
     echo '<div style="background: #d4edda; padding: 15px; border-left: 4px solid #28a745; margin: 10px 0;">';
     echo '<h3>✅ VD_License_Validator Available</h3>';
+
+    // Show class info for debugging
+    $reflection_debug = new ReflectionClass('VD_License_Validator');
+    $methods_count = count($reflection_debug->getMethods());
+    echo '<p>• Total methods: ' . $methods_count . '</p>';
+    echo '<p>• File: ' . $reflection_debug->getFileName() . '</p>';
+
+    // Check if our Step 4.2.4.3 methods exist
+    $step_4243_methods = array(
+        'update_expired_license_statuses',
+        'validate_update_configuration',
+        'get_expired_licenses_for_update',
+        'schedule_automatic_updates'
+    );
+
+    echo '<p>• Step 4.2.4.3 methods check:</p><ul>';
+    foreach ($step_4243_methods as $method) {
+        $exists = $reflection_debug->hasMethod($method);
+        echo '<li>' . $method . ': ' . ($exists ? '✅' : '❌') . '</li>';
+    }
+    echo '</ul>';
     echo '</div>';
 
     try {
@@ -102,34 +126,47 @@ function vd_run_step_4243_test() {
         echo '<h3>⚙️ Test 1: Update Configuration Validation</h3>';
 
         $reflection = new ReflectionClass($validator);
-        $config_method = $reflection->getMethod('validate_update_configuration');
-        $config_method->setAccessible(true);
 
-        // Test valid configuration
-        $valid_config = array(
-            'batch_size' => 50,
-            'grace_period_hours' => 72,
-            'status_filters' => array('active', 'pending'),
-            'escalation_enabled' => true,
-            'audit_enabled' => true
-        );
+        // Check if method exists first
+        if (!$reflection->hasMethod('validate_update_configuration')) {
+            echo '<p style="color: red;">❌ validate_update_configuration method not found</p>';
+            echo '<p>Available methods:</p><ul>';
+            foreach ($reflection->getMethods() as $method) {
+                if (strpos($method->getName(), 'validate') !== false) {
+                    echo '<li>' . $method->getName() . '</li>';
+                }
+            }
+            echo '</ul>';
+        } else {
+            $config_method = $reflection->getMethod('validate_update_configuration');
+            $config_method->setAccessible(true);
 
-        $validation_result = $config_method->invoke($validator, $valid_config);
-        echo '<p><strong>Valid Configuration Test:</strong></p>';
-        echo '<p>• Valid: ' . ($validation_result['valid'] ? 'Yes' : 'No') . '</p>';
+            // Test valid configuration
+            $valid_config = array(
+                'batch_size' => 50,
+                'grace_period_hours' => 72,
+                'status_filters' => array('active', 'pending'),
+                'escalation_enabled' => true,
+                'audit_enabled' => true
+            );
 
-        // Test invalid configuration
-        $invalid_config = array(
-            'batch_size' => 2000, // Too large
-            'grace_period_hours' => -5, // Negative
-            'status_filters' => array('invalid_status'),
-        );
+            $validation_result = $config_method->invoke($validator, $valid_config);
+            echo '<p><strong>Valid Configuration Test:</strong></p>';
+            echo '<p>• Valid: ' . ($validation_result['valid'] ? 'Yes' : 'No') . '</p>';
 
-        $invalid_result = $config_method->invoke($validator, $invalid_config);
-        echo '<p><strong>Invalid Configuration Test:</strong></p>';
-        echo '<p>• Valid: ' . ($invalid_result['valid'] ? 'Yes' : 'No') . '</p>';
-        if (!$invalid_result['valid']) {
-            echo '<p>• Error: ' . htmlspecialchars($invalid_result['error']) . '</p>';
+            // Test invalid configuration
+            $invalid_config = array(
+                'batch_size' => 2000, // Too large
+                'grace_period_hours' => -5, // Negative
+                'status_filters' => array('invalid_status'),
+            );
+
+            $invalid_result = $config_method->invoke($validator, $invalid_config);
+            echo '<p><strong>Invalid Configuration Test:</strong></p>';
+            echo '<p>• Valid: ' . ($invalid_result['valid'] ? 'Yes' : 'No') . '</p>';
+            if (!$invalid_result['valid']) {
+                echo '<p>• Error: ' . htmlspecialchars($invalid_result['error']) . '</p>';
+            }
         }
         echo '</div>';
 
