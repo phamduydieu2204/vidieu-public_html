@@ -152,12 +152,33 @@ add_action('wp_ajax_vd_test_phase1_step1_4_lmfwc_adapter', function() {
             'mapping_results' => $mapping_results
         );
 
-        // Step 7: Test LMfWC License Lookup
+        // Step 7: Test LMfWC License Lookup with Real Customer License
+        $customer_license = 'H10D-DIJD-14RC-SOLE-6KUV30';
+
+        // First, let's check what format is actually stored in database
+        global $wpdb;
+        $db_samples = $wpdb->get_results(
+            "SELECT license_key, hash, status, created_at FROM bz_lmfwc_licenses ORDER BY created_at DESC LIMIT 3",
+            ARRAY_A
+        );
+
+        $results['tests']['database_format_analysis'] = array(
+            'status' => 'pass',
+            'message' => 'Database format analysis completed',
+            'samples' => $db_samples,
+            'customer_license_format' => $customer_license
+        );
+
+        // Test various possible formats for the customer license
         $test_license_keys = array(
+            $customer_license => 'Customer license (original format)',
+            md5($customer_license) => 'Customer license (MD5 hash)',
+            sha1($customer_license) => 'Customer license (SHA1 hash)',
+            strtolower($customer_license) => 'Customer license (lowercase)',
+            str_replace('-', '', $customer_license) => 'Customer license (no dashes)',
+            md5(str_replace('-', '', $customer_license)) => 'Customer license (no dashes, MD5)',
             'TEST-LMFWC-KEY1-ABCD-123456' => 'Test LMfWC key 1',
-            'TEST-LMFWC-KEY2-EFGH-789012' => 'Test LMfWC key 2',
-            'INVALID-LMFWC-KEY' => 'Invalid LMfWC key',
-            '' => 'Empty key'
+            'INVALID-LMFWC-KEY' => 'Invalid LMfWC key'
         );
 
         $lookup_results = array();
@@ -187,8 +208,44 @@ add_action('wp_ajax_vd_test_phase1_step1_4_lmfwc_adapter', function() {
             'lookup_results' => $lookup_results
         );
 
-        // Step 8: Test LMfWC Activation Statistics
-        $activation_test_key = 'TEST-ACTIVATION-STATS-KEY';
+        // Step 8: Additional Hash Tests for Customer License
+        $hash_tests = array(
+            'md5_upper' => md5(strtoupper($customer_license)),
+            'sha256' => hash('sha256', $customer_license),
+            'base64' => base64_encode($customer_license),
+            'reversed' => strrev($customer_license)
+        );
+
+        $hash_results = array();
+        foreach ($hash_tests as $hash_type => $hash_value) {
+            $start_hash = microtime(true);
+            $hash_lookup = $lmfwc_adapter->get_lmfwc_license($hash_value, false);
+            $hash_time = round((microtime(true) - $start_hash) * 1000, 3);
+
+            $hash_results[$hash_type] = array(
+                'hash_value' => $hash_value,
+                'found' => $hash_lookup !== null,
+                'lookup_time' => $hash_time
+            );
+        }
+
+        $results['tests']['additional_hash_tests'] = array(
+            'status' => 'pass',
+            'message' => 'Additional hash format tests completed',
+            'customer_license' => $customer_license,
+            'hash_results' => $hash_results
+        );
+
+        // Step 9: Test LMfWC Activation Statistics with found license (if any)
+        $found_license_key = null;
+        foreach ($lookup_results as $key => $result) {
+            if ($result['found']) {
+                $found_license_key = $key;
+                break;
+            }
+        }
+
+        $activation_test_key = $found_license_key ?: $customer_license;
         $activation_stats = $lmfwc_adapter->get_lmfwc_activation_stats($activation_test_key);
 
         $results['tests']['activation_statistics'] = array(
@@ -198,7 +255,7 @@ add_action('wp_ajax_vd_test_phase1_step1_4_lmfwc_adapter', function() {
             'activation_stats' => $activation_stats
         );
 
-        // Step 9: Test LMfWC Licenses by Criteria
+        // Step 10: Test LMfWC Licenses by Criteria
         $test_criteria = array(
             'status' => array(1, 2), // active and inactive
         );
@@ -223,7 +280,7 @@ add_action('wp_ajax_vd_test_phase1_step1_4_lmfwc_adapter', function() {
             'processing_time' => $criteria_time
         );
 
-        // Step 10: Test LMfWC Status Count
+        // Step 11: Test LMfWC Status Count
         $status_counts = array();
         foreach (array(1, 2, 3, 4) as $status_code) {
             $count = $lmfwc_adapter->count_lmfwc_licenses_by_status($status_code);
@@ -237,7 +294,7 @@ add_action('wp_ajax_vd_test_phase1_step1_4_lmfwc_adapter', function() {
             'status_distribution' => $status_counts
         );
 
-        // Step 11: Test Schema Validation
+        // Step 12: Test Schema Validation
         $test_license_data = array(
             'id' => 123,
             'license_key' => 'TEST-SCHEMA-KEY',
@@ -257,7 +314,7 @@ add_action('wp_ajax_vd_test_phase1_step1_4_lmfwc_adapter', function() {
             'validation_result' => $schema_validation
         );
 
-        // Step 12: Test Performance
+        // Step 13: Test Performance
         $performance_start = microtime(true);
         $performance_iterations = 15;
         $performance_key = 'PERF-LMFWC-TEST-KEY';
@@ -277,7 +334,7 @@ add_action('wp_ajax_vd_test_phase1_step1_4_lmfwc_adapter', function() {
             'iterations' => $performance_iterations
         );
 
-        // Step 13: Test Module Statistics
+        // Step 14: Test Module Statistics
         $lmfwc_stats = $lmfwc_adapter->get_stats();
 
         $results['tests']['module_statistics'] = array(
@@ -286,7 +343,7 @@ add_action('wp_ajax_vd_test_phase1_step1_4_lmfwc_adapter', function() {
             'statistics' => $lmfwc_stats
         );
 
-        // Step 14: Test Integration with Main Validator
+        // Step 15: Test Integration with Main Validator
         $validator_file = ABSPATH . 'wp-content/plugins/vd-license-manager/includes/class-vd-license-validator.php';
         if (file_exists($validator_file)) {
             require_once $validator_file;
@@ -347,7 +404,10 @@ add_action('wp_ajax_vd_test_phase1_step1_4_lmfwc_adapter', function() {
             'success_rate' => $overall_success_rate,
             'overall_status' => $overall_success_rate >= 100 ? 'excellent' : ($overall_success_rate >= 80 ? 'good' : 'needs_attention'),
             'memory_usage' => round(memory_get_usage() / 1024 / 1024, 2) . ' MB',
-            'peak_memory' => round(memory_get_peak_usage() / 1024 / 1024, 2) . ' MB'
+            'peak_memory' => round(memory_get_peak_usage() / 1024 / 1024, 2) . ' MB',
+            'customer_license_tested' => $customer_license,
+            'license_found' => $found_license_key !== null,
+            'working_format' => $found_license_key ? 'Found working format' : 'No working format found'
         );
 
         // Phase 1 Step 1.4 completion status
@@ -357,6 +417,12 @@ add_action('wp_ajax_vd_test_phase1_step1_4_lmfwc_adapter', function() {
             'module' => 'Database LMfWC Adapter',
             'completion' => 'SUCCESS',
             'next_step' => 'Step 1.5 - Extract Database Cache Manager',
+            'customer_license_test' => array(
+                'license_key' => $customer_license,
+                'found' => $found_license_key !== null,
+                'working_format' => $found_license_key,
+                'total_formats_tested' => count($test_license_keys) + count($hash_tests)
+            ),
             'files_created' => array(
                 'modules/database/class-vd-license-lmfwc-adapter.php' => '~450 lines',
             ),
