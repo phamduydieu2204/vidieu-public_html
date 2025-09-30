@@ -80,6 +80,15 @@ class VD_License_Cache_Manager {
     );
 
     /**
+     * Key mapping for pattern invalidation
+     * Maps original identifiers to cache keys
+     *
+     * @since 1.5.0-rc.1
+     * @var array
+     */
+    private $key_mappings = array();
+
+    /**
      * Cache TTL (Time To Live) settings in seconds
      *
      * @since 1.5.0-rc.1
@@ -267,7 +276,12 @@ class VD_License_Cache_Manager {
      * @return string Generated cache key
      */
     private function generate_cache_key($type, $identifier) {
-        return "vd_cache_{$type}_" . md5($identifier);
+        $cache_key = "vd_cache_{$type}_" . md5($identifier);
+
+        // Store mapping for pattern invalidation
+        $this->key_mappings[$cache_key] = $identifier;
+
+        return $cache_key;
     }
 
     /**
@@ -395,6 +409,7 @@ class VD_License_Cache_Manager {
     public function clear_all_cache() {
         $this->clear_validation_cache();
         $this->clear_history_cache();
+        $this->key_mappings = array(); // Clear all key mappings
     }
 
     /**
@@ -411,6 +426,7 @@ class VD_License_Cache_Manager {
         foreach ($this->validation_cache as $key => $entry) {
             if (isset($entry['expires_at']) && $current_time >= $entry['expires_at']) {
                 unset($this->validation_cache[$key]);
+                unset($this->key_mappings[$key]);
                 $removed_count++;
             }
         }
@@ -419,6 +435,7 @@ class VD_License_Cache_Manager {
         foreach ($this->history_cache as $key => $entry) {
             if (isset($entry['expires_at']) && $current_time >= $entry['expires_at']) {
                 unset($this->history_cache[$key]);
+                unset($this->key_mappings[$key]);
                 $removed_count++;
             }
         }
@@ -503,6 +520,8 @@ class VD_License_Cache_Manager {
                 unset($this->history_cache[$entry['key']]);
             }
 
+            // Also remove key mapping
+            unset($this->key_mappings[$entry['key']]);
             $removed++;
         }
 
@@ -584,22 +603,49 @@ class VD_License_Cache_Manager {
     public function invalidate_cache_by_pattern($pattern) {
         $invalidated = 0;
 
-        foreach ($this->validation_cache as $key => $entry) {
-            if (fnmatch($pattern, $key)) {
-                unset($this->validation_cache[$key]);
+        // Check validation cache
+        foreach ($this->validation_cache as $cache_key => $entry) {
+            $match = false;
+
+            // Try pattern matching against cache key directly
+            if (fnmatch($pattern, $cache_key)) {
+                $match = true;
+            }
+            // Try pattern matching against original identifier
+            elseif (isset($this->key_mappings[$cache_key]) && fnmatch($pattern, $this->key_mappings[$cache_key])) {
+                $match = true;
+            }
+
+            if ($match) {
+                unset($this->validation_cache[$cache_key]);
+                unset($this->key_mappings[$cache_key]);
                 $invalidated++;
             }
         }
 
-        foreach ($this->history_cache as $key => $entry) {
-            if (fnmatch($pattern, $key)) {
-                unset($this->history_cache[$key]);
+        // Check history cache
+        foreach ($this->history_cache as $cache_key => $entry) {
+            $match = false;
+
+            // Try pattern matching against cache key directly
+            if (fnmatch($pattern, $cache_key)) {
+                $match = true;
+            }
+            // Try pattern matching against original identifier
+            elseif (isset($this->key_mappings[$cache_key]) && fnmatch($pattern, $this->key_mappings[$cache_key])) {
+                $match = true;
+            }
+
+            if ($match) {
+                unset($this->history_cache[$cache_key]);
+                unset($this->key_mappings[$cache_key]);
                 $invalidated++;
             }
         }
 
         if ($invalidated > 0) {
             $this->update_memory_usage();
+            $this->cache_stats['deletes'] += $invalidated;
         }
 
         return $invalidated;
