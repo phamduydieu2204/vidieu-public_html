@@ -4761,6 +4761,214 @@ class VD_License_Validator {
         );
     }
 
+    /**
+     * Create track status history return structure
+     *
+     * Step 4.2.4.5.1c: Return Structure Implementation
+     *
+     * Creates standardized return structure cho track_status_history method
+     * với proper success/error handling và response format consistency.
+     *
+     * @since 4.2.4.5.1c Return structure implementation
+     *
+     * @param bool $success Whether the operation was successful
+     * @param array $data Success data or error details
+     * @param string $message Optional message for the response
+     * @return array Standardized return structure cho track_status_history
+     *               Success: array('success' => true, 'data' => array, 'message' => string)
+     *               Error: array('success' => false, 'error' => string, 'code' => string)
+     *
+     * @throws Exception If invalid parameters provided
+     *
+     * @example
+     * ```php
+     * // Success response
+     * $result = $this->create_track_status_history_return_structure(true,
+     *     array('history_id' => 123, 'timestamp' => '2024-01-01 12:00:00'),
+     *     'History recorded successfully'
+     * );
+     *
+     * // Error response
+     * $result = $this->create_track_status_history_return_structure(false,
+     *     array('validation_errors' => array('Invalid license')),
+     *     'Parameter validation failed'
+     * );
+     * ```
+     *
+     * @see track_status_history() Method that uses this structure
+     * @see create_success_response() For success response format
+     * @see create_error_response() For error response format
+     *
+     * @todo Add response caching mechanism cho performance
+     * @todo Implement response compression cho large datasets
+     */
+    public function create_track_status_history_return_structure($success, $data = array(), $message = '') {
+        if ($success) {
+            return $this->create_success_response(
+                'track_status_history',
+                array_merge(array(
+                    'history_id' => isset($data['history_id']) ? $data['history_id'] : null,
+                    'timestamp' => isset($data['timestamp']) ? $data['timestamp'] : current_time('mysql'),
+                    'license_id' => isset($data['license_id']) ? $data['license_id'] : null,
+                    'old_status' => isset($data['old_status']) ? $data['old_status'] : '',
+                    'new_status' => isset($data['new_status']) ? $data['new_status'] : ''
+                ), $data),
+                array(
+                    'message' => $message ?: 'Status history tracked successfully',
+                    'framework_version' => '4.2.4.5.1c'
+                )
+            );
+        } else {
+            return $this->create_error_response(
+                'track_status_history',
+                $message ?: 'Failed to track status history',
+                isset($data['code']) ? $data['code'] : 'TRACK_HISTORY_FAILED',
+                $data
+            );
+        }
+    }
+
+    /**
+     * Create get status history return structure
+     *
+     * Step 4.2.4.5.1c: Return Structure Implementation
+     *
+     * Creates standardized return structure cho get_status_history method
+     * với pagination support và comprehensive data formatting.
+     *
+     * @since 4.2.4.5.1c Return structure implementation
+     *
+     * @param bool $success Whether the operation was successful
+     * @param array $data Success data including records và pagination
+     * @param string $message Optional message for the response
+     * @return array Standardized return structure cho get_status_history
+     *               Success: array('success' => true, 'data' => array, 'pagination' => array)
+     *               Error: array('success' => false, 'error' => string, 'code' => string)
+     *
+     * @throws Exception If invalid parameters provided
+     *
+     * @example
+     * ```php
+     * // Success response với records
+     * $result = $this->create_get_status_history_return_structure(true, array(
+     *     'history_records' => array(...),
+     *     'total_count' => 50,
+     *     'filtered_count' => 20
+     * ));
+     *
+     * // Error response
+     * $result = $this->create_get_status_history_return_structure(false,
+     *     array('license_not_found' => true),
+     *     'License not found'
+     * );
+     * ```
+     *
+     * @see get_status_history() Method that uses this structure
+     * @see create_pagination_structure() For pagination logic
+     * @see create_success_response() For success response format
+     *
+     * @todo Add advanced filtering options support
+     * @todo Implement export functionality trong response
+     */
+    public function create_get_status_history_return_structure($success, $data = array(), $message = '') {
+        if ($success) {
+            $pagination = isset($data['pagination']) ? $data['pagination'] : $this->create_pagination_structure(array(), 0);
+
+            return $this->create_success_response(
+                'get_status_history',
+                array(
+                    'history_records' => isset($data['history_records']) ? $data['history_records'] : array(),
+                    'total_count' => isset($data['total_count']) ? $data['total_count'] : 0,
+                    'filtered_count' => isset($data['filtered_count']) ? $data['filtered_count'] : 0,
+                    'pagination' => $pagination
+                ),
+                array(
+                    'message' => $message ?: 'History retrieved successfully',
+                    'framework_version' => '4.2.4.5.1c',
+                    'query_info' => isset($data['query_info']) ? $data['query_info'] : array()
+                )
+            );
+        } else {
+            return $this->create_error_response(
+                'get_status_history',
+                $message ?: 'Failed to retrieve status history',
+                isset($data['code']) ? $data['code'] : 'GET_HISTORY_FAILED',
+                $data
+            );
+        }
+    }
+
+    /**
+     * Create get status statistics return structure
+     *
+     * Step 4.2.4.5.1c: Return Structure Implementation
+     *
+     * Creates standardized return structure cho get_status_statistics method
+     * với comprehensive analytics data và metadata.
+     *
+     * @since 4.2.4.5.1c Return structure implementation
+     *
+     * @param bool $success Whether the operation was successful
+     * @param array $data Success data including statistics và metadata
+     * @param string $message Optional message for the response
+     * @return array Standardized return structure cho get_status_statistics
+     *               Success: array('success' => true, 'data' => array, 'metadata' => array)
+     *               Error: array('success' => false, 'error' => string, 'code' => string)
+     *
+     * @throws Exception If invalid parameters provided
+     *
+     * @example
+     * ```php
+     * // Success response với statistics
+     * $result = $this->create_get_status_statistics_return_structure(true, array(
+     *     'status_counts' => array('active' => 100, 'inactive' => 50),
+     *     'change_frequency' => array(...),
+     *     'trends' => array(...)
+     * ));
+     *
+     * // Error response
+     * $result = $this->create_get_status_statistics_return_structure(false,
+     *     array('insufficient_data' => true),
+     *     'Insufficient data for statistics'
+     * );
+     * ```
+     *
+     * @see get_status_statistics() Method that uses this structure
+     * @see create_statistics_structure() For statistics data formatting
+     * @see create_success_response() For success response format
+     *
+     * @todo Add advanced analytics algorithms support
+     * @todo Implement real-time statistics updates
+     */
+    public function create_get_status_statistics_return_structure($success, $data = array(), $message = '') {
+        if ($success) {
+            $statistics = isset($data['statistics']) ? $data['statistics'] : $this->create_statistics_structure($data);
+
+            return $this->create_success_response(
+                'get_status_statistics',
+                array(
+                    'status_counts' => isset($data['status_counts']) ? $data['status_counts'] : array(),
+                    'change_frequency' => isset($data['change_frequency']) ? $data['change_frequency'] : array(),
+                    'trends' => isset($data['trends']) ? $data['trends'] : array(),
+                    'statistics' => $statistics
+                ),
+                array(
+                    'message' => $message ?: 'Statistics generated successfully',
+                    'framework_version' => '4.2.4.5.1c',
+                    'generation_time_ms' => isset($data['generation_time_ms']) ? $data['generation_time_ms'] : 0,
+                    'data_sources' => isset($data['data_sources']) ? $data['data_sources'] : array('database')
+                )
+            );
+        } else {
+            return $this->create_error_response(
+                'get_status_statistics',
+                $message ?: 'Failed to generate statistics',
+                isset($data['code']) ? $data['code'] : 'STATISTICS_FAILED',
+                $data
+            );
+        }
+    }
+
     // Step 4.2.4.5.1d - History Property Access Methods
 
     /**
