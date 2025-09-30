@@ -123,6 +123,14 @@ class VD_License_Validator {
     private $pattern_validator = null;
 
     /**
+     * Checksum validator module instance
+     *
+     * @since 1.5.0-rc.1
+     * @var VD_License_Checksum_Validator|null
+     */
+    private $checksum_validator = null;
+
+    /**
      * License status enum values
      *
      * @since 4.2.1
@@ -191,7 +199,7 @@ class VD_License_Validator {
     }
 
     /**
-     * Initialize pattern validator module
+     * Initialize validator modules
      *
      * @since 1.5.0-rc.1
      * @return void
@@ -201,10 +209,16 @@ class VD_License_Validator {
         require_once plugin_dir_path(__FILE__) . 'class-vd-license-module-loader.php';
         require_once plugin_dir_path(__FILE__) . 'class-vd-license-dependency-container.php';
 
-        // Get pattern validator through dependency container
+        // Get validators through dependency container
         $container = VD_License_Dependency_Container::get_instance();
         $container->initialize();
         $this->pattern_validator = $container->get('format.pattern_validator');
+        $this->checksum_validator = $container->get('format.checksum_validator');
+
+        // Set pattern validator dependency for checksum validator
+        if ($this->checksum_validator && $this->pattern_validator) {
+            $this->checksum_validator->set_pattern_validator($this->pattern_validator);
+        }
     }
 
     /**
@@ -248,32 +262,20 @@ class VD_License_Validator {
     }
 
     /**
-     * Validate license key checksum (basic implementation)
-     * Step 4.2.2 - Enhanced validation with checksum
+     * Validate license key checksum using extracted module
+     * Refactored in Step 1.2 - Checksum validation now handled by dedicated module
      *
-     * @since 4.2.2
+     * @since 1.5.0-rc.1 (Refactored from 4.2.2)
      * @param string $license_key License key to validate
      * @return bool True if checksum is valid or not applicable
      */
     private function validate_license_checksum($license_key) {
-        // For now, implement basic validation
-        // Advanced checksum validation can be added later if needed
-
-        // Remove dashes for calculation
-        $clean_key = str_replace('-', '', $license_key);
-
-        // Basic checksum: sum of ASCII values should be divisible by a prime number
-        if (strlen($clean_key) >= 8) {
-            $checksum = 0;
-            for ($i = 0; $i < strlen($clean_key); $i++) {
-                $checksum += ord($clean_key[$i]);
-            }
-
-            // Simple validation: checksum should be reasonable
-            return $checksum > 0 && $checksum < 50000;
+        // Use the extracted checksum validator module
+        if (!$this->checksum_validator) {
+            $this->init_pattern_validator();
         }
 
-        return true; // Skip checksum for shorter keys
+        return $this->checksum_validator->validate_license_checksum($license_key, false);
     }
 
     /**

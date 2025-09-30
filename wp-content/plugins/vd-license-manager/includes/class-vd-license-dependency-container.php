@@ -322,7 +322,8 @@ class VD_License_Dependency_Container {
             // Preload core services
             $core_services = array(
                 'module_loader',
-                'format.pattern_validator'
+                'format.pattern_validator',
+                'format.checksum_validator'
             );
 
             foreach ($core_services as $service_id) {
