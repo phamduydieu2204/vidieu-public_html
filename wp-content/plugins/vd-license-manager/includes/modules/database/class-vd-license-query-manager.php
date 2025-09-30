@@ -202,47 +202,9 @@ class VD_License_Query_Manager {
 
         $this->update_table_access_stats($table_name);
 
-        // For LMfWC table, try encryption method first
-        if ($table_type === 'lmfwc' && has_filter('lmfwc_encrypt')) {
-            try {
-                $encrypted_key = apply_filters('lmfwc_encrypt', $license_key);
-
-                // Prepare SQL query with encrypted key
-                $fields = implode(', ', $config['fields']);
-                $sql = $this->wpdb->prepare(
-                    "SELECT {$fields} FROM {$table_name} WHERE {$config['license_key_field']} = %s LIMIT 1",
-                    $encrypted_key
-                );
-
-                $license = $this->wpdb->get_row($sql, ARRAY_A);
-
-                if ($license) {
-                    // Decrypt the license key for display
-                    if (has_filter('lmfwc_decrypt')) {
-                        $license['decrypted_license_key'] = apply_filters('lmfwc_decrypt', $license[$config['license_key_field']]);
-                    }
-
-                    // Add metadata
-                    $license['lookup_source'] = $table_type;
-                    $license['table_name'] = $table_name;
-                    $license['lookup_timestamp'] = current_time('mysql');
-                    $license['lookup_method'] = 'encryption';
-
-                    // Map status
-                    $license['mapped_status'] = $this->map_status($license[$config['status_field']], $table_type);
-
-                    // Add expiration check
-                    if (isset($license['expires_at']) && $license['expires_at']) {
-                        $license['is_expired'] = strtotime($license['expires_at']) < time();
-                    } else {
-                        $license['is_expired'] = false;
-                    }
-
-                    return $license;
-                }
-            } catch (Exception $e) {
-                error_log("VD Query Manager: Encryption lookup failed: " . $e->getMessage());
-            }
+        // For LMfWC table, use decryption scan method (encryption has random IV)
+        if ($table_type === 'lmfwc' && has_filter('lmfwc_decrypt')) {
+            return $this->lookup_lmfwc_by_decryption($license_key, $config);
         }
 
         // Fallback to direct lookup (for VD internal table or if encryption fails)
@@ -504,6 +466,202 @@ class VD_License_Query_Manager {
      */
     public function clear_cache() {
         $this->query_cache = array();
+    }
+
+    /**
+     * Lookup license from LMfWC table using decryption scan method
+     *
+     * @param string $license_key Plaintext license key to find
+     * @param array $config Table configuration
+     * @return array|null License data or null if not found
+     */
+    private function lookup_lmfwc_by_decryption($license_key, $config) {
+        $table_name = $config['table_name'];
+        $start_time = microtime(true);
+
+        try {
+            // First, try hash-based lookup if available (performance optimization)
+            $hash_result = $this->lookup_by_hash($license_key, $config);
+            if ($hash_result) {
+                return $hash_result;
+            }
+
+            // Fallback to decryption scan with optimized approach
+            $scan_limit = apply_filters('vd_lmfwc_scan_limit', 200); // Allow customization
+            $fields = implode(', ', $config['fields']);
+
+            // Get licenses in batches, starting with most recent
+            $sql = "SELECT {$fields} FROM {$table_name} ORDER BY id DESC LIMIT {$scan_limit}";
+            $licenses = $this->wpdb->get_results($sql, ARRAY_A);
+
+            $scan_count = 0;
+            $decrypt_errors = 0;
+
+            foreach ($licenses as $license_record) {
+                $scan_count++;
+
+                try {
+                    $decrypted_key = apply_filters('lmfwc_decrypt', $license_record[$config['license_key_field']]);
+
+                    if ($decrypted_key === $license_key) {
+                        // Found matching license
+                        $license_record['decrypted_license_key'] = $decrypted_key;
+                        $license_record['lookup_source'] = 'lmfwc';
+                        $license_record['table_name'] = $table_name;
+                        $license_record['lookup_timestamp'] = current_time('mysql');
+                        $license_record['lookup_method'] = 'decryption_scan';
+                        $license_record['scan_count'] = $scan_count;
+
+                        // Map status
+                        $license_record['mapped_status'] = $this->map_status($license_record[$config['status_field']], 'lmfwc');
+
+                        // Add expiration check
+                        if (isset($license_record['expires_at']) && $license_record['expires_at']) {
+                            $license_record['is_expired'] = strtotime($license_record['expires_at']) < time();
+                        } else {
+                            $license_record['is_expired'] = false;
+                        }
+
+                        // Update performance stats
+                        $lookup_time = (microtime(true) - $start_time) * 1000;
+                        $this->query_stats['decryption_scan_time'] += $lookup_time;
+                        $this->query_stats['decryption_scan_count'] = isset($this->query_stats['decryption_scan_count']) ?
+                            $this->query_stats['decryption_scan_count'] + 1 : 1;
+
+                        // Consider adding hash for future optimization
+                        $this->maybe_add_license_hash($license_record, $decrypted_key);
+
+                        return $license_record;
+                    }
+
+                } catch (Exception $e) {
+                    $decrypt_errors++;
+                    // Continue scanning other licenses
+                }
+            }
+
+            // Update stats for unsuccessful scan
+            $lookup_time = (microtime(true) - $start_time) * 1000;
+            $this->query_stats['decryption_scan_time'] += $lookup_time;
+            $this->query_stats['decryption_scan_count'] = isset($this->query_stats['decryption_scan_count']) ?
+                $this->query_stats['decryption_scan_count'] + 1 : 1;
+
+            // Log scan results for debugging
+            if (defined('VD_DEBUG') && VD_DEBUG) {
+                error_log("VD Query Manager: Decryption scan completed - {$scan_count} licenses scanned, {$decrypt_errors} errors, license '{$license_key}' not found");
+            }
+
+            return null;
+
+        } catch (Exception $e) {
+            error_log("VD Query Manager: Decryption scan failed: " . $e->getMessage());
+            return null;
+        }
+    }
+
+    /**
+     * Try hash-based lookup for performance optimization
+     *
+     * @param string $license_key Plaintext license key
+     * @param array $config Table configuration
+     * @return array|null License data or null if not found
+     */
+    private function lookup_by_hash($license_key, $config) {
+        $table_name = $config['table_name'];
+
+        // Check if hash column exists (performance optimization)
+        $hash_column = 'license_key_hash';
+        $columns = $this->wpdb->get_col("DESCRIBE {$table_name}");
+
+        if (!in_array($hash_column, $columns)) {
+            return null; // Hash column doesn't exist yet
+        }
+
+        try {
+            // Generate hash of the plaintext license key
+            $license_hash = hash('sha256', $license_key);
+
+            $fields = implode(', ', $config['fields']);
+            $sql = $this->wpdb->prepare(
+                "SELECT {$fields} FROM {$table_name} WHERE {$hash_column} = %s LIMIT 1",
+                $license_hash
+            );
+
+            $license = $this->wpdb->get_row($sql, ARRAY_A);
+
+            if ($license) {
+                // Verify by decrypting (double-check for hash collisions)
+                $decrypted_key = apply_filters('lmfwc_decrypt', $license[$config['license_key_field']]);
+
+                if ($decrypted_key === $license_key) {
+                    $license['decrypted_license_key'] = $decrypted_key;
+                    $license['lookup_source'] = 'lmfwc';
+                    $license['table_name'] = $table_name;
+                    $license['lookup_timestamp'] = current_time('mysql');
+                    $license['lookup_method'] = 'hash_optimized';
+
+                    // Map status
+                    $license['mapped_status'] = $this->map_status($license[$config['status_field']], 'lmfwc');
+
+                    // Add expiration check
+                    if (isset($license['expires_at']) && $license['expires_at']) {
+                        $license['is_expired'] = strtotime($license['expires_at']) < time();
+                    } else {
+                        $license['is_expired'] = false;
+                    }
+
+                    return $license;
+                }
+            }
+
+        } catch (Exception $e) {
+            error_log("VD Query Manager: Hash lookup failed: " . $e->getMessage());
+        }
+
+        return null;
+    }
+
+    /**
+     * Add hash for future optimization if conditions are met
+     *
+     * @param array $license_record License record
+     * @param string $plaintext_key Plaintext license key
+     * @return void
+     */
+    private function maybe_add_license_hash($license_record, $plaintext_key) {
+        // Only add hash if we have permission and table supports it
+        if (!apply_filters('vd_enable_license_hash_optimization', false)) {
+            return;
+        }
+
+        $table_name = $license_record['table_name'];
+        $hash_column = 'license_key_hash';
+
+        // Check if hash column exists
+        $columns = $this->wpdb->get_col("DESCRIBE {$table_name}");
+        if (!in_array($hash_column, $columns)) {
+            return; // Can't add hash without column
+        }
+
+        try {
+            $license_hash = hash('sha256', $plaintext_key);
+            $license_id = $license_record['id'];
+
+            $this->wpdb->update(
+                $table_name,
+                array($hash_column => $license_hash),
+                array('id' => $license_id),
+                array('%s'),
+                array('%d')
+            );
+
+            if (defined('VD_DEBUG') && VD_DEBUG) {
+                error_log("VD Query Manager: Added hash for license ID {$license_id}");
+            }
+
+        } catch (Exception $e) {
+            error_log("VD Query Manager: Failed to add license hash: " . $e->getMessage());
+        }
     }
 
     /**
