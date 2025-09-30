@@ -21,10 +21,16 @@ add_action('admin_init', function() {
             }
             echo "<p>✅ VD_License_Validator class exists</p>";
 
-            // Step 2: Try to create instance
-            echo "<h3>2. Instance Creation Test</h3>";
-            $validator = new VD_License_Validator();
-            echo "<p>✅ VD_License_Validator instance created successfully</p>";
+            // Step 2: Try to get singleton instance (class uses singleton pattern)
+            echo "<h3>2. Singleton Instance Test</h3>";
+            if (!method_exists('VD_License_Validator', 'get_instance')) {
+                echo "<p>❌ VD_License_Validator::get_instance() method not found</p>";
+                echo "<p><strong>Note:</strong> Class uses singleton pattern</p>";
+                exit;
+            }
+
+            $validator = VD_License_Validator::get_instance();
+            echo "<p>✅ VD_License_Validator singleton instance retrieved successfully</p>";
 
             // Step 3: Check specific method existence
             echo "<h3>3. Method Existence Check</h3>";

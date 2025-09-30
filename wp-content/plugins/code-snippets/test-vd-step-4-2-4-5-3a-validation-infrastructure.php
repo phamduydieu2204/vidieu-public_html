@@ -19,13 +19,14 @@ add_action('admin_init', function() {
                 exit;
             }
 
-            // Check if we can create instance safely
-            if (!is_callable(array('VD_License_Validator', '__construct'))) {
-                echo "<p>❌ VD_License_Validator constructor not callable</p>";
+            // Check if we can get singleton instance (class uses singleton pattern)
+            if (!method_exists('VD_License_Validator', 'get_instance')) {
+                echo "<p>❌ VD_License_Validator::get_instance() method not found</p>";
+                echo "<p><strong>Note:</strong> Class uses singleton pattern, cannot use 'new' operator</p>";
                 exit;
             }
 
-            $validator = new VD_License_Validator();
+            $validator = VD_License_Validator::get_instance();
 
             // Verify instance was created successfully
             if (!is_object($validator)) {
@@ -33,7 +34,7 @@ add_action('admin_init', function() {
                 exit;
             }
 
-            echo "<p>✅ VD_License_Validator instance created successfully</p>";
+            echo "<p>✅ VD_License_Validator singleton instance retrieved successfully</p>";
 
             // Test 1: Method existence verification
             echo "<h3>📋 Test 1: Method Existence Verification</h3>";
