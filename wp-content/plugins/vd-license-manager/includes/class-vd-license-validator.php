@@ -8966,7 +8966,11 @@ class VD_License_Validator {
     private function analyze_validation_errors($accumulated_errors) {
         $analysis = array(
             'total_errors' => count($accumulated_errors),
-            'error_categories' => array(),
+            'error_categories' => array(
+                'context' => 0,
+                'status' => 0,
+                'general' => 0
+            ),
             'severity_distribution' => array(),
             'common_issues' => array()
         );

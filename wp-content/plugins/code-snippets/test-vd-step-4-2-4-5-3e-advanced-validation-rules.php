@@ -108,7 +108,7 @@ add_action('admin_init', function() {
                 'license_key' => 'VD-TEST-' . time(),
                 'product_id' => 1,
                 'user_id' => get_current_user_id(),
-                'status' => 'active',
+                'status' => 'pending',
                 'created_at' => date('Y-m-d H:i:s', strtotime('-30 days')),
                 'expires_at' => date('Y-m-d H:i:s', strtotime('+365 days')),
                 'activation_limit' => 3,
