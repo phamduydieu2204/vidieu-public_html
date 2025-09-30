@@ -913,6 +913,20 @@ git reset --hard [commit-hash-before-refactor]
   - Test snippet: `test-phase1-step1-pattern-validator.php`
 - **Test URL:** `/wp-admin/admin-ajax.php?action=vd_test_phase1_step1_pattern_validator`
 - **Dependencies:** None (standalone infrastructure)
+- **Test Results:** 87.5% success rate (7/8 tests passed)
+
+#### **Step 1.1 Cleanup (COMPLETED ✅)**
+- **Original Code Removed:**
+  - `private $license_key_pattern` property (1 line)
+  - `validate_license_key_format()` method logic (131 lines)
+  - Alternative patterns array logic (6 lines)
+  - Total removed: ~138 lines of duplicated code
+- **Module Integration:**
+  - Added `init_pattern_validator()` method (8 lines)
+  - Modified constructor to load pattern validator
+  - Refactored `validate_license_key_format()` to use module (6 lines)
+- **Files Modified:**
+  - `class-vd-license-validator.php`: Cleaned up pattern validation code
 - **Status:** Ready for Step 1.2
 
 ### Week 3-4: Core Logic (Phase 2)

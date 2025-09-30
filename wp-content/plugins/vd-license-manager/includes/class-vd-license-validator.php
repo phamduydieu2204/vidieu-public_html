@@ -115,12 +115,12 @@ class VD_License_Validator {
     private $history_cache = array();
 
     /**
-     * License key format regex pattern
+     * Pattern validator module instance
      *
-     * @since 4.2.1
-     * @var string
+     * @since 1.5.0-rc.1
+     * @var VD_License_Pattern_Validator|null
      */
-    private $license_key_pattern = '/^[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{6}$/';
+    private $pattern_validator = null;
 
     /**
      * License status enum values
@@ -150,6 +150,9 @@ class VD_License_Validator {
         if (class_exists('VD_Security_Audit')) {
             $this->security_audit = VD_Security_Audit::get_instance();
         }
+
+        // Initialize pattern validator module
+        $this->init_pattern_validator();
 
         $this->initialized = true;
     }
@@ -188,6 +191,23 @@ class VD_License_Validator {
     }
 
     /**
+     * Initialize pattern validator module
+     *
+     * @since 1.5.0-rc.1
+     * @return void
+     */
+    private function init_pattern_validator() {
+        // Load module loader
+        require_once plugin_dir_path(__FILE__) . 'class-vd-license-module-loader.php';
+        require_once plugin_dir_path(__FILE__) . 'class-vd-license-dependency-container.php';
+
+        // Get pattern validator through dependency container
+        $container = VD_License_Dependency_Container::get_instance();
+        $container->initialize();
+        $this->pattern_validator = $container->get('format.pattern_validator');
+    }
+
+    /**
      * Initialize validator with WordPress hooks
      *
      * @since 4.2.1
@@ -210,137 +230,21 @@ class VD_License_Validator {
     }
 
     /**
-     * Validate license key format with comprehensive validation
-     * Implements enhanced vd_validate_license_key() function
-     * Step 4.2.2 - Enhanced License Key Format Validation
+     * Validate license key format using extracted module
+     * Refactored in Step 1.1 - Pattern validation now handled by dedicated module
      *
-     * @since 4.2.1
-     * @updated 4.2.2
+     * @since 1.5.0-rc.1 (Refactored from 4.2.1)
      * @param string $license_key License key to validate
      * @param bool $detailed Whether to return detailed validation results
      * @return bool|array True/false for simple validation, array for detailed
      */
     public function validate_license_key_format($license_key, $detailed = false) {
-        $validation_result = array(
-            'valid' => false,
-            'error_code' => null,
-            'error_message' => null,
-            'format_checks' => array()
-        );
-
-        // Input type validation
-        if (!is_string($license_key)) {
-            $validation_result['error_code'] = 'invalid_type';
-            $validation_result['error_message'] = 'License key must be a string';
-            $validation_result['format_checks']['type_check'] = false;
-            return $detailed ? $validation_result : false;
-        }
-        $validation_result['format_checks']['type_check'] = true;
-
-        // Input sanitization
-        $original_key = $license_key;
-        $license_key = sanitize_text_field(trim($license_key));
-
-        // Check if sanitization changed the key (potential security issue)
-        if ($original_key !== $license_key) {
-            $validation_result['error_code'] = 'sanitization_changed';
-            $validation_result['error_message'] = 'License key contains invalid characters';
-            $validation_result['format_checks']['sanitization_check'] = false;
-            return $detailed ? $validation_result : false;
-        }
-        $validation_result['format_checks']['sanitization_check'] = true;
-
-        // Check empty
-        if (empty($license_key)) {
-            $validation_result['error_code'] = 'empty';
-            $validation_result['error_message'] = 'License key cannot be empty';
-            $validation_result['format_checks']['empty_check'] = false;
-            return $detailed ? $validation_result : false;
-        }
-        $validation_result['format_checks']['empty_check'] = true;
-
-        // Check minimum length
-        if (strlen($license_key) < 8) {
-            $validation_result['error_code'] = 'too_short';
-            $validation_result['error_message'] = 'License key too short (minimum 8 characters)';
-            $validation_result['format_checks']['min_length_check'] = false;
-            return $detailed ? $validation_result : false;
-        }
-        $validation_result['format_checks']['min_length_check'] = true;
-
-        // Check maximum length
-        if (strlen($license_key) > 32) {
-            $validation_result['error_code'] = 'too_long';
-            $validation_result['error_message'] = 'License key too long (maximum 32 characters)';
-            $validation_result['format_checks']['max_length_check'] = false;
-            return $detailed ? $validation_result : false;
-        }
-        $validation_result['format_checks']['max_length_check'] = true;
-
-        // Check standard VD format (XXXX-XXXX-XXXX-XXXX-XXXXXX pattern)
-        $standard_pattern_match = preg_match($this->license_key_pattern, $license_key);
-        $validation_result['format_checks']['standard_pattern'] = $standard_pattern_match;
-
-        // Check alternative LMfWC compatible formats
-        $alternative_patterns = array(
-            'lmfwc_standard' => '/^[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}$/', // 20 chars
-            'lmfwc_extended' => '/^[A-Z0-9]{8}-[A-Z0-9]{8}-[A-Z0-9]{8}$/', // 26 chars with different dash placement
-            'legacy_format' => '/^[A-Z0-9\-]{8,32}$/' // Business logic compatible format
-        );
-
-        $alternative_match = false;
-        foreach ($alternative_patterns as $pattern_name => $pattern) {
-            if (preg_match($pattern, $license_key)) {
-                $validation_result['format_checks'][$pattern_name] = true;
-                $alternative_match = true;
-                break;
-            } else {
-                $validation_result['format_checks'][$pattern_name] = false;
-            }
+        // Use the extracted pattern validator module
+        if (!$this->pattern_validator) {
+            $this->init_pattern_validator();
         }
 
-        // Overall format validation
-        if (!$standard_pattern_match && !$alternative_match) {
-            $validation_result['error_code'] = 'invalid_format';
-            $validation_result['error_message'] = 'License key format is invalid. Expected format: XXXX-XXXX-XXXX-XXXX-XXXXXX';
-            $validation_result['format_checks']['overall_format'] = false;
-            return $detailed ? $validation_result : false;
-        }
-        $validation_result['format_checks']['overall_format'] = true;
-
-        // Character set validation
-        if (!preg_match('/^[A-Z0-9\-]+$/', $license_key)) {
-            $validation_result['error_code'] = 'invalid_characters';
-            $validation_result['error_message'] = 'License key contains invalid characters. Only A-Z, 0-9, and hyphens allowed';
-            $validation_result['format_checks']['character_set'] = false;
-            return $detailed ? $validation_result : false;
-        }
-        $validation_result['format_checks']['character_set'] = true;
-
-        // Dash placement validation for standard format
-        if ($standard_pattern_match) {
-            $parts = explode('-', $license_key);
-            if (count($parts) !== 5 ||
-                strlen($parts[0]) !== 4 || strlen($parts[1]) !== 4 ||
-                strlen($parts[2]) !== 4 || strlen($parts[3]) !== 4 ||
-                strlen($parts[4]) !== 6) {
-                $validation_result['error_code'] = 'invalid_dash_placement';
-                $validation_result['error_message'] = 'Invalid dash placement in license key';
-                $validation_result['format_checks']['dash_placement'] = false;
-                return $detailed ? $validation_result : false;
-            }
-            $validation_result['format_checks']['dash_placement'] = true;
-        } else {
-            $validation_result['format_checks']['dash_placement'] = true; // Skip for alternative formats
-        }
-
-        // Basic checksum validation (if applicable)
-        $validation_result['format_checks']['checksum'] = $this->validate_license_checksum($license_key);
-
-        // All validations passed
-        $validation_result['valid'] = true;
-
-        return $detailed ? $validation_result : true;
+        return $this->pattern_validator->validate_license_key_format($license_key, $detailed);
     }
 
     /**
