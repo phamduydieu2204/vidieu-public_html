@@ -323,7 +323,8 @@ class VD_License_Dependency_Container {
             $core_services = array(
                 'module_loader',
                 'format.pattern_validator',
-                'format.checksum_validator'
+                'format.checksum_validator',
+                'database.query_manager'
             );
 
             foreach ($core_services as $service_id) {

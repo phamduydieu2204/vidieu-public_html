@@ -131,6 +131,14 @@ class VD_License_Validator {
     private $checksum_validator = null;
 
     /**
+     * Database query manager module instance
+     *
+     * @since 1.5.0-rc.1
+     * @var VD_License_Query_Manager|null
+     */
+    private $query_manager = null;
+
+    /**
      * License status enum values
      *
      * @since 4.2.1
@@ -209,11 +217,12 @@ class VD_License_Validator {
         require_once plugin_dir_path(__FILE__) . 'class-vd-license-module-loader.php';
         require_once plugin_dir_path(__FILE__) . 'class-vd-license-dependency-container.php';
 
-        // Get validators through dependency container
+        // Get validators and managers through dependency container
         $container = VD_License_Dependency_Container::get_instance();
         $container->initialize();
         $this->pattern_validator = $container->get('format.pattern_validator');
         $this->checksum_validator = $container->get('format.checksum_validator');
+        $this->query_manager = $container->get('database.query_manager');
 
         // Set pattern validator dependency for checksum validator
         if ($this->checksum_validator && $this->pattern_validator) {
@@ -429,64 +438,20 @@ class VD_License_Validator {
      * Enhanced Database License Lookup
      * Step 4.2.3 - Core database lookup functionality
      *
-     * @since 4.2.3
+     * Lookup license from database using extracted module
+     * Refactored in Step 1.3 - Database lookup now handled by dedicated module
+     *
+     * @since 1.5.0-rc.1 (Refactored from 4.2.3)
      * @param string $license_key License key to look up
      * @return array|null License data or null if not found
      */
     private function lookup_license_from_database($license_key) {
-        global $wpdb;
-
-        // LMfWC Integration: Query LMfWC database với proper table prefix (bz_ prefix)
-        $lmfwc_table = 'bz_lmfwc_licenses';
-
-        // Check if LMfWC table exists
-        if (!$this->table_exists($lmfwc_table)) {
-            // Fallback to VD licenses table if exists
-            $vd_table = $wpdb->prefix . 'vd_licenses';
-            if ($this->table_exists($vd_table)) {
-                return $this->lookup_from_vd_licenses($license_key);
-            }
-            return null;
+        // Use the extracted query manager module
+        if (!$this->query_manager) {
+            $this->init_pattern_validator();
         }
 
-        // Enhanced LMfWC query với comprehensive field selection
-        $license = $wpdb->get_row($wpdb->prepare(
-            "SELECT
-                id,
-                order_id,
-                product_id,
-                user_id,
-                license_key,
-                hash,
-                expires_at,
-                valid_for,
-                source,
-                status,
-                times_activated,
-                times_activated_max,
-                created_at,
-                created_by,
-                updated_at,
-                updated_by
-            FROM {$lmfwc_table}
-            WHERE license_key = %s
-            LIMIT 1",
-            $license_key
-        ), ARRAY_A);
-
-        if ($license) {
-            // Add lookup source information
-            $license['lookup_source'] = 'lmfwc';
-            $license['table_name'] = $lmfwc_table;
-
-            // Enhanced status mapping từ LMfWC status codes
-            $license['mapped_status'] = $this->map_lmfwc_status($license['status']);
-
-            // Add validation metadata
-            $license['lookup_timestamp'] = current_time('mysql');
-        }
-
-        return $license;
+        return $this->query_manager->lookup_license($license_key, true);
     }
 
     /**
