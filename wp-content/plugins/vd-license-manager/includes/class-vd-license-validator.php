@@ -6186,7 +6186,7 @@ class VD_License_Validator {
      * @since 4.2.4.5.3d (Enhanced from 4.2.4.5.3b)
      * @return array Comprehensive user context data
      */
-    private function detect_user_context() {
+    public function detect_user_context() {
         $start_time = microtime(true);
 
         $user_context = array(
@@ -7821,6 +7821,11 @@ class VD_License_Validator {
      * @return int Estimated session duration
      */
     private function estimate_anonymous_session_duration() {
+        // Ensure session is started
+        if (session_status() === PHP_SESSION_NONE) {
+            @session_start();
+        }
+
         if (!isset($_SESSION['vd_session_start'])) {
             $_SESSION['vd_session_start'] = time();
             return 0;
@@ -7835,6 +7840,11 @@ class VD_License_Validator {
      * @return int Page views count
      */
     private function get_anonymous_page_views() {
+        // Ensure session is started
+        if (session_status() === PHP_SESSION_NONE) {
+            @session_start();
+        }
+
         if (!isset($_SESSION['vd_page_views'])) {
             $_SESSION['vd_page_views'] = 1;
         } else {
@@ -7880,6 +7890,11 @@ class VD_License_Validator {
      * @return string Landing page URL
      */
     private function get_landing_page() {
+        // Ensure session is started
+        if (session_status() === PHP_SESSION_NONE) {
+            @session_start();
+        }
+
         if (!isset($_SESSION['vd_landing_page'])) {
             $_SESSION['vd_landing_page'] = $_SERVER['REQUEST_URI'] ?? '';
         }
@@ -7893,6 +7908,11 @@ class VD_License_Validator {
      * @return array Visited pages
      */
     private function get_visited_pages_anonymous() {
+        // Ensure session is started
+        if (session_status() === PHP_SESSION_NONE) {
+            @session_start();
+        }
+
         if (!isset($_SESSION['vd_visited_pages'])) {
             $_SESSION['vd_visited_pages'] = array();
         }
