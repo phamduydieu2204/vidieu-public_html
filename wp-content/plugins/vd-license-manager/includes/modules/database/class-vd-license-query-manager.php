@@ -156,7 +156,7 @@ class VD_License_Query_Manager {
                 $this->query_stats['cache_misses']++;
             }
 
-            // Try LMfWC table first
+            // Try LMfWC table first with encryption support
             $license = $this->lookup_from_table($license_key, 'lmfwc');
 
             if (!$license) {
@@ -202,7 +202,50 @@ class VD_License_Query_Manager {
 
         $this->update_table_access_stats($table_name);
 
-        // Prepare SQL query
+        // For LMfWC table, try encryption method first
+        if ($table_type === 'lmfwc' && has_filter('lmfwc_encrypt')) {
+            try {
+                $encrypted_key = apply_filters('lmfwc_encrypt', $license_key);
+
+                // Prepare SQL query with encrypted key
+                $fields = implode(', ', $config['fields']);
+                $sql = $this->wpdb->prepare(
+                    "SELECT {$fields} FROM {$table_name} WHERE {$config['license_key_field']} = %s LIMIT 1",
+                    $encrypted_key
+                );
+
+                $license = $this->wpdb->get_row($sql, ARRAY_A);
+
+                if ($license) {
+                    // Decrypt the license key for display
+                    if (has_filter('lmfwc_decrypt')) {
+                        $license['decrypted_license_key'] = apply_filters('lmfwc_decrypt', $license[$config['license_key_field']]);
+                    }
+
+                    // Add metadata
+                    $license['lookup_source'] = $table_type;
+                    $license['table_name'] = $table_name;
+                    $license['lookup_timestamp'] = current_time('mysql');
+                    $license['lookup_method'] = 'encryption';
+
+                    // Map status
+                    $license['mapped_status'] = $this->map_status($license[$config['status_field']], $table_type);
+
+                    // Add expiration check
+                    if (isset($license['expires_at']) && $license['expires_at']) {
+                        $license['is_expired'] = strtotime($license['expires_at']) < time();
+                    } else {
+                        $license['is_expired'] = false;
+                    }
+
+                    return $license;
+                }
+            } catch (Exception $e) {
+                error_log("VD Query Manager: Encryption lookup failed: " . $e->getMessage());
+            }
+        }
+
+        // Fallback to direct lookup (for VD internal table or if encryption fails)
         $fields = implode(', ', $config['fields']);
         $sql = $this->wpdb->prepare(
             "SELECT {$fields} FROM {$table_name} WHERE {$config['license_key_field']} = %s LIMIT 1",
@@ -216,6 +259,7 @@ class VD_License_Query_Manager {
             $license['lookup_source'] = $table_type;
             $license['table_name'] = $table_name;
             $license['lookup_timestamp'] = current_time('mysql');
+            $license['lookup_method'] = 'direct';
 
             // Map status
             $license['mapped_status'] = $this->map_status($license[$config['status_field']], $table_type);
