@@ -34,41 +34,112 @@ add_action('admin_init', function() {
     $start_time = microtime(true);
 
     try {
-        // Initialize components
+        // Initialize components with better error handling
         echo '<h2>📋 Phase 1: Component Initialization</h2>';
 
+        // Debug class loading
+        echo '<h3>🔍 Debug: Class Loading Status</h3>';
+        echo 'VD_License_Manager class exists: ' . (class_exists('VD_License_Manager') ? 'YES' : 'NO') . '<br>';
+
+        if (class_exists('VD_License_Validator')) {
+            echo 'VD_License_Validator class exists: YES<br>';
+        } else {
+            echo 'VD_License_Validator class exists: NO<br>';
+        }
+
+        // Check if plugin is loaded
+        if (function_exists('is_plugin_active') && is_plugin_active('vd-license-manager/vd-license-manager.php')) {
+            echo 'VD License Manager plugin is active: YES<br>';
+        } else {
+            echo 'VD License Manager plugin is active: NO or unknown<br>';
+        }
+
+        // Try to load manually if needed
         if (!class_exists('VD_License_Manager')) {
-            throw new Exception('VD_License_Manager class not found');
+            $plugin_file = WP_PLUGIN_DIR . '/vd-license-manager/vd-license-manager.php';
+            if (file_exists($plugin_file)) {
+                echo 'Plugin file exists, attempting to load...<br>';
+                include_once $plugin_file;
+            } else {
+                echo 'Plugin file not found at: ' . $plugin_file . '<br>';
+            }
         }
 
-        $license_manager = VD_License_Manager::get_instance();
-        if (!$license_manager) {
-            throw new Exception('Failed to get VD_License_Manager instance');
+        if (!class_exists('VD_License_Manager')) {
+            echo '<div style="background: #f8d7da; color: #721c24; padding: 15px; border-radius: 5px;">';
+            echo '<strong>❌ VD_License_Manager Class Loading Failed</strong><br>';
+            echo 'The VD_License_Manager class could not be loaded. This might indicate:<br>';
+            echo '• Plugin not properly activated<br>';
+            echo '• Class autoloading issues<br>';
+            echo '• Plugin file path problems<br>';
+            echo '<br><strong>Available Classes:</strong><br>';
+            $classes = get_declared_classes();
+            $vd_classes = array_filter($classes, function($class) {
+                return strpos($class, 'VD_') === 0;
+            });
+            if (empty($vd_classes)) {
+                echo 'No VD_* classes found<br>';
+            } else {
+                foreach ($vd_classes as $class) {
+                    echo "• $class<br>";
+                }
+            }
+            echo '</div>';
+
+            // Don't throw exception, continue with limited testing
+            $test_results['class_loading'] = false;
+            echo '<br><strong>Proceeding with limited testing...</strong><br>';
+
+        } else {
+            echo "✅ VD_License_Manager class found<br>";
+            $test_results['class_loading'] = true;
         }
 
-        $validator = $license_manager->get_validator();
-        if (!$validator || !is_object($validator)) {
-            throw new Exception('Failed to get license validator');
+        // Continue with testing if class is available
+        if (class_exists('VD_License_Manager')) {
+            $license_manager = VD_License_Manager::get_instance();
+            if (!$license_manager) {
+                echo "❌ Failed to get VD_License_Manager instance<br>";
+                $test_results['instance_creation'] = false;
+            } else {
+                echo "✅ VD_License_Manager instance loaded<br>";
+                $test_results['instance_creation'] = true;
+
+                $validator = $license_manager->get_validator();
+                if (!$validator || !is_object($validator)) {
+                    echo "❌ Failed to get license validator<br>";
+                    $test_results['validator_access'] = false;
+                } else {
+                    echo "✅ License validator loaded<br>";
+                    $test_results['validator_access'] = true;
+                }
+            }
+        } else {
+            echo "⚠️ Skipping further tests due to class loading issues<br>";
+            $test_results['instance_creation'] = false;
+            $test_results['validator_access'] = false;
         }
 
-        echo "✅ VD_License_Manager instance loaded<br>";
-        echo "✅ License validator loaded<br>";
-        $test_results['component_init'] = true;
+        $test_results['component_init'] = ($test_results['class_loading'] && isset($test_results['validator_access']) && $test_results['validator_access']);
 
         // Test method existence
         echo '<h2>🔍 Phase 2: Method Existence Verification</h2>';
 
-        $required_methods = array(
-            'track_status_history' => 'Track license status history change',
-            'get_status_history' => 'Retrieve license status history',
-            'get_status_statistics' => 'Get status change statistics'
-        );
+        if (!isset($validator) || !$validator) {
+            echo "❌ Cannot test methods - validator not available<br>";
+            $test_results['method_existence'] = false;
+        } else {
+            $required_methods = array(
+                'track_status_history' => 'Track license status history change',
+                'get_status_history' => 'Retrieve license status history',
+                'get_status_statistics' => 'Get status change statistics'
+            );
 
-        $missing_methods = array();
-        $method_visibility = array();
+            $missing_methods = array();
+            $method_visibility = array();
 
-        foreach ($required_methods as $method => $description) {
-            if (method_exists($validator, $method)) {
+            foreach ($required_methods as $method => $description) {
+                if (method_exists($validator, $method)) {
                 echo "✅ Method '$method' exists - $description<br>";
 
                 // Check method visibility
