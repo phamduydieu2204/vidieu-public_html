@@ -3963,19 +3963,33 @@ class VD_License_Validator {
      * @return array Tracking result with success status and details
      */
     public function track_status_history($license, $old_status, $new_status, $context = array()) {
+        // Step 4.2.4.5.1b - Basic Parameter Validation Structure
+        $validation_result = $this->validate_track_status_history_parameters($license, $old_status, $new_status, $context);
+        if (!$validation_result['valid']) {
+            return array(
+                'success' => false,
+                'message' => 'Parameter validation failed',
+                'method' => 'track_status_history',
+                'version' => '4.2.4.5.1b',
+                'validation_errors' => $validation_result['errors'],
+                'error_code' => 'VALIDATION_FAILED'
+            );
+        }
+
         // Method signature implementation placeholder
         // Future implementation will handle actual history tracking
         return array(
             'success' => false,
             'message' => 'History tracking not yet implemented',
             'method' => 'track_status_history',
-            'version' => '4.2.4.5.1a',
+            'version' => '4.2.4.5.1b',
             'parameters_received' => array(
                 'license_provided' => !empty($license),
                 'old_status' => $old_status,
                 'new_status' => $new_status,
                 'context_count' => count($context)
-            )
+            ),
+            'validation_passed' => true
         );
     }
 
@@ -3991,13 +4005,26 @@ class VD_License_Validator {
      * @return array History records array with metadata
      */
     public function get_status_history($license_id, $options = array()) {
+        // Step 4.2.4.5.1b - Basic Parameter Validation Structure
+        $validation_result = $this->validate_get_status_history_parameters($license_id, $options);
+        if (!$validation_result['valid']) {
+            return array(
+                'success' => false,
+                'message' => 'Parameter validation failed',
+                'method' => 'get_status_history',
+                'version' => '4.2.4.5.1b',
+                'validation_errors' => $validation_result['errors'],
+                'error_code' => 'VALIDATION_FAILED'
+            );
+        }
+
         // Method signature implementation placeholder
         // Future implementation will handle history retrieval
         return array(
             'success' => false,
             'message' => 'History retrieval not yet implemented',
             'method' => 'get_status_history',
-            'version' => '4.2.4.5.1a',
+            'version' => '4.2.4.5.1b',
             'parameters_received' => array(
                 'license_id' => $license_id,
                 'options' => $options
@@ -4007,7 +4034,8 @@ class VD_License_Validator {
             'pagination' => array(
                 'limit' => isset($options['limit']) ? $options['limit'] : 50,
                 'offset' => isset($options['offset']) ? $options['offset'] : 0
-            )
+            ),
+            'validation_passed' => true
         );
     }
 
@@ -4022,13 +4050,26 @@ class VD_License_Validator {
      * @return array Statistics data with counts and trends
      */
     public function get_status_statistics($options = array()) {
+        // Step 4.2.4.5.1b - Basic Parameter Validation Structure
+        $validation_result = $this->validate_get_status_statistics_parameters($options);
+        if (!$validation_result['valid']) {
+            return array(
+                'success' => false,
+                'message' => 'Parameter validation failed',
+                'method' => 'get_status_statistics',
+                'version' => '4.2.4.5.1b',
+                'validation_errors' => $validation_result['errors'],
+                'error_code' => 'VALIDATION_FAILED'
+            );
+        }
+
         // Method signature implementation placeholder
         // Future implementation will handle statistics generation
         return array(
             'success' => false,
             'message' => 'Status statistics not yet implemented',
             'method' => 'get_status_statistics',
-            'version' => '4.2.4.5.1a',
+            'version' => '4.2.4.5.1b',
             'parameters_received' => array(
                 'options' => $options
             ),
@@ -4041,7 +4082,183 @@ class VD_License_Validator {
             'metadata' => array(
                 'generated_at' => current_time('mysql'),
                 'query_time_ms' => 0
-            )
+            ),
+            'validation_passed' => true
+        );
+    }
+
+    // Step 4.2.4.5.1b - Basic Parameter Validation Framework Methods
+
+    /**
+     * Validate parameters for track_status_history method
+     *
+     * @since 4.2.4.5.1b
+     * @param mixed $license License data to validate
+     * @param string $old_status Old status to validate
+     * @param string $new_status New status to validate
+     * @param array $context Context data to validate
+     * @return array Validation result with valid flag and errors
+     */
+    private function validate_track_status_history_parameters($license, $old_status, $new_status, $context) {
+        $errors = array();
+
+        // Parameter existence checking
+        if (empty($license)) {
+            $errors[] = 'License parameter is required and cannot be empty';
+        }
+
+        if (empty($old_status)) {
+            $errors[] = 'Old status parameter is required and cannot be empty';
+        }
+
+        if (empty($new_status)) {
+            $errors[] = 'New status parameter is required and cannot be empty';
+        }
+
+        // Type validation framework
+        if (!is_string($old_status) && !empty($old_status)) {
+            $errors[] = 'Old status must be a string';
+        }
+
+        if (!is_string($new_status) && !empty($new_status)) {
+            $errors[] = 'New status must be a string';
+        }
+
+        if (!is_array($context)) {
+            $errors[] = 'Context must be an array';
+        }
+
+        // Sanitization prep - length checks
+        if (is_string($old_status) && strlen($old_status) > 50) {
+            $errors[] = 'Old status cannot exceed 50 characters';
+        }
+
+        if (is_string($new_status) && strlen($new_status) > 50) {
+            $errors[] = 'New status cannot exceed 50 characters';
+        }
+
+        return array(
+            'valid' => empty($errors),
+            'errors' => $errors,
+            'validated_at' => current_time('mysql')
+        );
+    }
+
+    /**
+     * Validate parameters for get_status_history method
+     *
+     * @since 4.2.4.5.1b
+     * @param mixed $license_id License ID to validate
+     * @param array $options Options array to validate
+     * @return array Validation result with valid flag and errors
+     */
+    private function validate_get_status_history_parameters($license_id, $options) {
+        $errors = array();
+
+        // Parameter existence checking
+        if (empty($license_id) && $license_id !== 0) {
+            $errors[] = 'License ID parameter is required';
+        }
+
+        // Type validation framework
+        if (!is_numeric($license_id)) {
+            $errors[] = 'License ID must be numeric';
+        }
+
+        if (!is_array($options)) {
+            $errors[] = 'Options must be an array';
+        }
+
+        // Validate specific option types if provided
+        if (is_array($options)) {
+            if (isset($options['limit']) && (!is_numeric($options['limit']) || $options['limit'] < 1 || $options['limit'] > 1000)) {
+                $errors[] = 'Limit must be a number between 1 and 1000';
+            }
+
+            if (isset($options['offset']) && (!is_numeric($options['offset']) || $options['offset'] < 0)) {
+                $errors[] = 'Offset must be a non-negative number';
+            }
+        }
+
+        return array(
+            'valid' => empty($errors),
+            'errors' => $errors,
+            'validated_at' => current_time('mysql')
+        );
+    }
+
+    /**
+     * Validate parameters for get_status_statistics method
+     *
+     * @since 4.2.4.5.1b
+     * @param array $options Options array to validate
+     * @return array Validation result with valid flag and errors
+     */
+    private function validate_get_status_statistics_parameters($options) {
+        $errors = array();
+
+        // Type validation framework
+        if (!is_array($options)) {
+            $errors[] = 'Options must be an array';
+        }
+
+        // Validate specific option types if provided
+        if (is_array($options)) {
+            $allowed_group_by = array('status', 'date', 'month', 'year');
+            if (isset($options['group_by']) && !in_array($options['group_by'], $allowed_group_by)) {
+                $errors[] = 'Group by must be one of: ' . implode(', ', $allowed_group_by);
+            }
+
+            if (isset($options['date_from']) && !empty($options['date_from']) && !$this->is_valid_date($options['date_from'])) {
+                $errors[] = 'Date from must be a valid date format (Y-m-d)';
+            }
+
+            if (isset($options['date_to']) && !empty($options['date_to']) && !$this->is_valid_date($options['date_to'])) {
+                $errors[] = 'Date to must be a valid date format (Y-m-d)';
+            }
+        }
+
+        return array(
+            'valid' => empty($errors),
+            'errors' => $errors,
+            'validated_at' => current_time('mysql')
+        );
+    }
+
+    /**
+     * Helper method to validate date format
+     *
+     * @since 4.2.4.5.1b
+     * @param string $date Date string to validate
+     * @return bool True if valid date format
+     */
+    private function is_valid_date($date) {
+        $d = DateTime::createFromFormat('Y-m-d', $date);
+        return $d && $d->format('Y-m-d') === $date;
+    }
+
+    /**
+     * Get validation framework status
+     *
+     * @since 4.2.4.5.1b
+     * @return array Status information about validation framework
+     */
+    public function get_validation_status() {
+        return array(
+            'framework_version' => '4.2.4.5.1b',
+            'validation_methods' => array(
+                'track_status_history' => 'validate_track_status_history_parameters',
+                'get_status_history' => 'validate_get_status_history_parameters',
+                'get_status_statistics' => 'validate_get_status_statistics_parameters'
+            ),
+            'features' => array(
+                'parameter_existence_checking' => true,
+                'type_validation' => true,
+                'length_validation' => true,
+                'date_validation' => true,
+                'error_structure' => true
+            ),
+            'ready_for_next_step' => true
         );
     }
 }
