@@ -1033,12 +1033,22 @@ All database layer functionality implemented with full encryption and audit trai
 - [x] **Testing**: `wp-content/plugins/code-snippets/test-vd-step-4-2-4-5-1b-parameter-validation.php` (comprehensive validation testing)
 - [x] **Result**: Complete parameter validation infrastructure với comprehensive error handling
 
-**4.2.4.5.1c - Return Structure Definition** ⏳ **PENDING**
-- **Mục tiêu**: Define standardized return structures cho consistency
-- **File**: `includes/class-vd-license-validator.php` (return structure)
-- **Rủi ro**: **Thấp** - Data structure definition only
-- **Kiểm thử**: Nội bộ - Return structure format validation
-- **Chi tiết**: Success/error format, history record format, statistics format, error messages, metadata fields
+**4.2.4.5.1c - Return Structure Definition** ✅ **COMPLETED**
+- [x] Define standardized return structures cho consistency
+- [x] Added create_success_response() method với standard success format
+- [x] Added create_error_response() method với standard error format
+- [x] Added create_history_record_structure() method cho history records
+- [x] Added create_statistics_structure() method cho statistics data
+- [x] Added create_pagination_structure() method với comprehensive pagination
+- [x] Updated track_status_history() để sử dụng standardized structures
+- [x] Updated get_status_history() với success response structure và pagination
+- [x] Updated get_status_statistics() với statistics structure framework
+- [x] Added get_return_structure_info() public method cho framework monitoring
+- [x] API specification compatibility maintained (success/error/timestamp format)
+- [x] **Risk**: Thấp → **COMPLETED** ✅ Return structure framework fully implemented
+- [x] **Files**: `includes/class-vd-license-validator.php` (200+ lines return structure framework added)
+- [x] **Testing**: `wp-content/plugins/code-snippets/test-vd-step-4-2-4-5-1c-return-structures.php` (comprehensive structure testing)
+- [x] **Result**: Complete standardized return structure framework với API compatibility
 
 **4.2.4.5.1d - Basic Property Initialization** ⏳ **PENDING**
 - **Mục tiêu**: Add class properties để support future history storage
@@ -1350,9 +1360,9 @@ All database layer functionality implemented with full encryption and audit trai
 
 ### 📊 **Sprint 4 Progress Tracking** ⚡ **UPDATED**
 - **Total Steps**: 43 micro-steps (**UPDATED**: Step 4.2.4.5.1 redesigned từ 1 step → 6 micro-steps)
-- **Completed**: 19/43 (44.2%) ✅ Step 4.1 (10 steps) + Step 4.2.1-4.2.3 (3 steps) + Step 4.2.4.1-4.2.4.4 (4 steps) + Step 4.2.4.5.1a-1b ✅ COMPLETED
-- **Current**: 4.2.4.5.1c - Return Structure Definition (**Next micro-step**)
-- **Step 4.2.4.5.1b**: ✅ **COMPLETED** - Basic Parameter Validation Structure với comprehensive validation framework
+- **Completed**: 20/43 (46.5%) ✅ Step 4.1 (10 steps) + Step 4.2.1-4.2.3 (3 steps) + Step 4.2.4.1-4.2.4.4 (4 steps) + Step 4.2.4.5.1a-1c ✅ COMPLETED
+- **Current**: 4.2.4.5.1d - Basic Property Initialization (**Next micro-step**)
+- **Step 4.2.4.5.1c**: ✅ **COMPLETED** - Return Structure Definition với standardized API-compatible structures
 - **Strategy**: Ultra-safe micro-step approach với infrastructure-first methodology
 - **Foundation**: Sprint 3 security infrastructure (100% complete) + Step 4.2.4.1-4.2.4.5.1a method signatures
 

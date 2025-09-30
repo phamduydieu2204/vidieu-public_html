@@ -3966,30 +3966,32 @@ class VD_License_Validator {
         // Step 4.2.4.5.1b - Basic Parameter Validation Structure
         $validation_result = $this->validate_track_status_history_parameters($license, $old_status, $new_status, $context);
         if (!$validation_result['valid']) {
-            return array(
-                'success' => false,
-                'message' => 'Parameter validation failed',
-                'method' => 'track_status_history',
-                'version' => '4.2.4.5.1b',
-                'validation_errors' => $validation_result['errors'],
-                'error_code' => 'VALIDATION_FAILED'
+            // Step 4.2.4.5.1c - Use standardized error response structure
+            return $this->create_error_response(
+                'track_status_history',
+                'Parameter validation failed',
+                'VALIDATION_FAILED',
+                array('validation_errors' => $validation_result['errors'])
             );
         }
 
         // Method signature implementation placeholder
         // Future implementation will handle actual history tracking
-        return array(
-            'success' => false,
-            'message' => 'History tracking not yet implemented',
-            'method' => 'track_status_history',
-            'version' => '4.2.4.5.1b',
-            'parameters_received' => array(
-                'license_provided' => !empty($license),
-                'old_status' => $old_status,
-                'new_status' => $new_status,
-                'context_count' => count($context)
-            ),
-            'validation_passed' => true
+        // Step 4.2.4.5.1c - Use standardized error response structure for "not implemented"
+        return $this->create_error_response(
+            'track_status_history',
+            'History tracking not yet implemented',
+            'NOT_IMPLEMENTED',
+            array(
+                'parameters_received' => array(
+                    'license_provided' => !empty($license),
+                    'old_status' => $old_status,
+                    'new_status' => $new_status,
+                    'context_count' => count($context)
+                ),
+                'validation_passed' => true,
+                'framework_version' => '4.2.4.5.1c'
+            )
         );
     }
 
@@ -4008,34 +4010,37 @@ class VD_License_Validator {
         // Step 4.2.4.5.1b - Basic Parameter Validation Structure
         $validation_result = $this->validate_get_status_history_parameters($license_id, $options);
         if (!$validation_result['valid']) {
-            return array(
-                'success' => false,
-                'message' => 'Parameter validation failed',
-                'method' => 'get_status_history',
-                'version' => '4.2.4.5.1b',
-                'validation_errors' => $validation_result['errors'],
-                'error_code' => 'VALIDATION_FAILED'
+            // Step 4.2.4.5.1c - Use standardized error response structure
+            return $this->create_error_response(
+                'get_status_history',
+                'Parameter validation failed',
+                'VALIDATION_FAILED',
+                array('validation_errors' => $validation_result['errors'])
             );
         }
 
         // Method signature implementation placeholder
         // Future implementation will handle history retrieval
-        return array(
-            'success' => false,
-            'message' => 'History retrieval not yet implemented',
-            'method' => 'get_status_history',
-            'version' => '4.2.4.5.1b',
-            'parameters_received' => array(
-                'license_id' => $license_id,
-                'options' => $options
+        // Step 4.2.4.5.1c - Use standardized success response structure for "not implemented" data
+        $pagination = $this->create_pagination_structure($options, 0);
+        $sample_records = array(); // Empty for now
+
+        return $this->create_success_response(
+            'get_status_history',
+            array(
+                'records' => $sample_records,
+                'pagination' => $pagination,
+                'query_info' => array(
+                    'license_id' => $license_id,
+                    'total_found' => 0,
+                    'filters_applied' => $options
+                )
             ),
-            'data' => array(),
-            'total' => 0,
-            'pagination' => array(
-                'limit' => isset($options['limit']) ? $options['limit'] : 50,
-                'offset' => isset($options['offset']) ? $options['offset'] : 0
-            ),
-            'validation_passed' => true
+            array(
+                'implementation_status' => 'not_implemented',
+                'validation_passed' => true,
+                'framework_version' => '4.2.4.5.1c'
+            )
         );
     }
 
@@ -4053,37 +4058,32 @@ class VD_License_Validator {
         // Step 4.2.4.5.1b - Basic Parameter Validation Structure
         $validation_result = $this->validate_get_status_statistics_parameters($options);
         if (!$validation_result['valid']) {
-            return array(
-                'success' => false,
-                'message' => 'Parameter validation failed',
-                'method' => 'get_status_statistics',
-                'version' => '4.2.4.5.1b',
-                'validation_errors' => $validation_result['errors'],
-                'error_code' => 'VALIDATION_FAILED'
+            // Step 4.2.4.5.1c - Use standardized error response structure
+            return $this->create_error_response(
+                'get_status_statistics',
+                'Parameter validation failed',
+                'VALIDATION_FAILED',
+                array('validation_errors' => $validation_result['errors'])
             );
         }
 
         // Method signature implementation placeholder
         // Future implementation will handle statistics generation
-        return array(
-            'success' => false,
-            'message' => 'Status statistics not yet implemented',
-            'method' => 'get_status_statistics',
-            'version' => '4.2.4.5.1b',
-            'parameters_received' => array(
-                'options' => $options
+        // Step 4.2.4.5.1c - Use standardized success response structure for statistics
+        $sample_stats = array(); // Empty statistics for now
+        $statistics_structure = $this->create_statistics_structure($sample_stats, $options);
+
+        return $this->create_success_response(
+            'get_status_statistics',
+            array(
+                'statistics' => $statistics_structure
             ),
-            'statistics' => array(
-                'total_changes' => 0,
-                'by_status' => array(),
-                'by_date' => array(),
-                'trends' => array()
-            ),
-            'metadata' => array(
-                'generated_at' => current_time('mysql'),
+            array(
+                'implementation_status' => 'not_implemented',
+                'validation_passed' => true,
+                'framework_version' => '4.2.4.5.1c',
                 'query_time_ms' => 0
-            ),
-            'validation_passed' => true
+            )
         );
     }
 
@@ -4257,6 +4257,190 @@ class VD_License_Validator {
                 'length_validation' => true,
                 'date_validation' => true,
                 'error_structure' => true
+            ),
+            'ready_for_next_step' => true
+        );
+    }
+
+    // Step 4.2.4.5.1c - Standardized Return Structure Definition Methods
+
+    /**
+     * Create standardized success response structure
+     *
+     * @since 4.2.4.5.1c
+     * @param string $method Method name that generated the response
+     * @param mixed $data Success data to include
+     * @param array $metadata Optional metadata to include
+     * @return array Standardized success response structure
+     */
+    private function create_success_response($method, $data = null, $metadata = array()) {
+        $response = array(
+            'success' => true,
+            'method' => $method,
+            'version' => '4.2.4.5.1c',
+            'timestamp' => current_time('mysql')
+        );
+
+        if ($data !== null) {
+            $response['data'] = $data;
+        }
+
+        if (!empty($metadata)) {
+            $response['metadata'] = array_merge(array(
+                'generated_at' => current_time('mysql'),
+                'response_time_ms' => 0
+            ), $metadata);
+        }
+
+        return $response;
+    }
+
+    /**
+     * Create standardized error response structure
+     *
+     * @since 4.2.4.5.1c
+     * @param string $method Method name that generated the error
+     * @param string $message Human-readable error message
+     * @param string $error_code Machine-readable error code
+     * @param array $details Optional error details
+     * @return array Standardized error response structure
+     */
+    private function create_error_response($method, $message, $error_code = 'GENERAL_ERROR', $details = array()) {
+        $response = array(
+            'success' => false,
+            'method' => $method,
+            'version' => '4.2.4.5.1c',
+            'error' => $message,
+            'error_code' => $error_code,
+            'timestamp' => current_time('mysql')
+        );
+
+        if (!empty($details)) {
+            $response['error_details'] = $details;
+        }
+
+        return $response;
+    }
+
+    /**
+     * Create standardized history record structure
+     *
+     * @since 4.2.4.5.1c
+     * @param array $record_data Raw history record data
+     * @return array Standardized history record structure
+     */
+    private function create_history_record_structure($record_data = array()) {
+        return array(
+            'id' => isset($record_data['id']) ? $record_data['id'] : 0,
+            'license_id' => isset($record_data['license_id']) ? $record_data['license_id'] : 0,
+            'old_status' => isset($record_data['old_status']) ? $record_data['old_status'] : '',
+            'new_status' => isset($record_data['new_status']) ? $record_data['new_status'] : '',
+            'changed_at' => isset($record_data['changed_at']) ? $record_data['changed_at'] : current_time('mysql'),
+            'changed_by' => isset($record_data['changed_by']) ? $record_data['changed_by'] : 'system',
+            'reason' => isset($record_data['reason']) ? $record_data['reason'] : '',
+            'context' => isset($record_data['context']) ? $record_data['context'] : array(),
+            'metadata' => array(
+                'ip_address' => isset($record_data['ip_address']) ? $record_data['ip_address'] : '',
+                'user_agent' => isset($record_data['user_agent']) ? $record_data['user_agent'] : '',
+                'source' => isset($record_data['source']) ? $record_data['source'] : 'manual'
+            )
+        );
+    }
+
+    /**
+     * Create standardized statistics structure
+     *
+     * @since 4.2.4.5.1c
+     * @param array $stats_data Raw statistics data
+     * @param array $options Query options used
+     * @return array Standardized statistics structure
+     */
+    private function create_statistics_structure($stats_data = array(), $options = array()) {
+        return array(
+            'summary' => array(
+                'total_changes' => isset($stats_data['total_changes']) ? $stats_data['total_changes'] : 0,
+                'date_range' => array(
+                    'from' => isset($options['date_from']) ? $options['date_from'] : '',
+                    'to' => isset($options['date_to']) ? $options['date_to'] : ''
+                ),
+                'group_by' => isset($options['group_by']) ? $options['group_by'] : 'status'
+            ),
+            'breakdown' => array(
+                'by_status' => isset($stats_data['by_status']) ? $stats_data['by_status'] : array(),
+                'by_date' => isset($stats_data['by_date']) ? $stats_data['by_date'] : array(),
+                'by_month' => isset($stats_data['by_month']) ? $stats_data['by_month'] : array(),
+                'by_year' => isset($stats_data['by_year']) ? $stats_data['by_year'] : array()
+            ),
+            'trends' => array(
+                'most_common_change' => isset($stats_data['most_common_change']) ? $stats_data['most_common_change'] : '',
+                'peak_activity_day' => isset($stats_data['peak_activity_day']) ? $stats_data['peak_activity_day'] : '',
+                'average_changes_per_day' => isset($stats_data['avg_per_day']) ? $stats_data['avg_per_day'] : 0
+            ),
+            'metadata' => array(
+                'query_executed_at' => current_time('mysql'),
+                'options_used' => $options,
+                'data_source' => 'vd_license_history',
+                'calculation_method' => 'aggregated'
+            )
+        );
+    }
+
+    /**
+     * Create standardized pagination structure
+     *
+     * @since 4.2.4.5.1c
+     * @param array $options Query options (limit, offset)
+     * @param int $total_records Total number of records available
+     * @return array Standardized pagination structure
+     */
+    private function create_pagination_structure($options = array(), $total_records = 0) {
+        $limit = isset($options['limit']) ? (int) $options['limit'] : 50;
+        $offset = isset($options['offset']) ? (int) $options['offset'] : 0;
+
+        $total_pages = $limit > 0 ? ceil($total_records / $limit) : 1;
+        $current_page = $limit > 0 ? floor($offset / $limit) + 1 : 1;
+
+        return array(
+            'total_records' => $total_records,
+            'limit' => $limit,
+            'offset' => $offset,
+            'current_page' => $current_page,
+            'total_pages' => $total_pages,
+            'has_next_page' => ($offset + $limit) < $total_records,
+            'has_previous_page' => $offset > 0,
+            'next_offset' => ($offset + $limit) < $total_records ? ($offset + $limit) : null,
+            'previous_offset' => $offset > 0 ? max(0, $offset - $limit) : null
+        );
+    }
+
+    /**
+     * Get available return structure formats
+     *
+     * @since 4.2.4.5.1c
+     * @return array Available return structure information
+     */
+    public function get_return_structure_info() {
+        return array(
+            'framework_version' => '4.2.4.5.1c',
+            'available_structures' => array(
+                'success_response' => 'create_success_response',
+                'error_response' => 'create_error_response',
+                'history_record' => 'create_history_record_structure',
+                'statistics' => 'create_statistics_structure',
+                'pagination' => 'create_pagination_structure'
+            ),
+            'standard_fields' => array(
+                'success_response' => array('success', 'method', 'version', 'timestamp', 'data', 'metadata'),
+                'error_response' => array('success', 'method', 'version', 'error', 'error_code', 'timestamp', 'error_details'),
+                'history_record' => array('id', 'license_id', 'old_status', 'new_status', 'changed_at', 'changed_by', 'reason', 'context', 'metadata'),
+                'statistics' => array('summary', 'breakdown', 'trends', 'metadata'),
+                'pagination' => array('total_records', 'limit', 'offset', 'current_page', 'total_pages', 'has_next_page', 'has_previous_page')
+            ),
+            'api_compatibility' => array(
+                'follows_vd_api_spec' => true,
+                'response_format' => 'standard',
+                'error_handling' => 'consistent',
+                'metadata_included' => true
             ),
             'ready_for_next_step' => true
         );
