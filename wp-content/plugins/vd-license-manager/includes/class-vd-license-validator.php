@@ -8531,4 +8531,482 @@ class VD_License_Validator {
             )
         );
     }
+
+    // ==========================================
+    // Step 4.2.4.5.3e - Helper Methods for Advanced Validation
+    // ==========================================
+
+    /**
+     * Validate user context requirements for enhanced validation
+     *
+     * @since 4.2.4.5.3e
+     * @param array $license License data
+     * @param array $user_context User context data
+     * @return array Validation result
+     */
+    private function validate_user_context_requirements($license, $user_context) {
+        $validation_errors = array();
+
+        // Basic user context validation
+        if (empty($user_context['user_id'])) {
+            $validation_errors[] = 'User context missing user_id';
+        }
+
+        if (empty($user_context['is_logged_in'])) {
+            $validation_errors[] = 'User context missing login status';
+        }
+
+        // User role validation for license operations
+        if (!empty($user_context['user_roles']) && is_array($user_context['user_roles'])) {
+            $allowed_roles = array('administrator', 'editor', 'author', 'subscriber');
+            $user_roles = $user_context['user_roles'];
+            $valid_roles = array_intersect($user_roles, $allowed_roles);
+
+            if (empty($valid_roles)) {
+                $validation_errors[] = 'User does not have valid roles for license operations';
+            }
+        }
+
+        // Security context validation
+        if (!empty($user_context['security_context'])) {
+            $security_validation = $this->validate_user_security_context($user_context['security_context']);
+            if (!$security_validation['valid']) {
+                $validation_errors = array_merge($validation_errors, $security_validation['errors']);
+            }
+        }
+
+        return array(
+            'valid' => empty($validation_errors),
+            'errors' => $validation_errors
+        );
+    }
+
+    /**
+     * Validate IP context requirements for enhanced validation
+     *
+     * @since 4.2.4.5.3e
+     * @param array $license License data
+     * @param array $ip_context IP context data
+     * @return array Validation result
+     */
+    private function validate_ip_context_requirements($license, $ip_context) {
+        $validation_errors = array();
+
+        // Basic IP context validation
+        if (empty($ip_context['ip_address'])) {
+            $validation_errors[] = 'IP context missing ip_address';
+        }
+
+        if (empty($ip_context['ip_source'])) {
+            $validation_errors[] = 'IP context missing ip_source';
+        }
+
+        // IP address format validation
+        if (!empty($ip_context['ip_address'])) {
+            $ip_validation = $this->validate_ip_address($ip_context['ip_address']);
+            if (!$ip_validation['valid']) {
+                $validation_errors[] = 'Invalid IP address format in context';
+            }
+        }
+
+        // Security analysis validation
+        if (!empty($ip_context['security_analysis'])) {
+            $security_analysis = $ip_context['security_analysis'];
+            if (!empty($security_analysis['risk_level'])) {
+                $allowed_risk_levels = array('low', 'medium', 'high', 'critical');
+                if (!in_array($security_analysis['risk_level'], $allowed_risk_levels)) {
+                    $validation_errors[] = 'Invalid security risk level in IP context';
+                }
+            }
+        }
+
+        return array(
+            'valid' => empty($validation_errors),
+            'errors' => $validation_errors
+        );
+    }
+
+    /**
+     * Validate user security context
+     *
+     * @since 4.2.4.5.3e
+     * @param array $security_context Security context data
+     * @return array Validation result
+     */
+    private function validate_user_security_context($security_context) {
+        $validation_errors = array();
+
+        // Login method validation
+        if (!empty($security_context['login_method'])) {
+            $allowed_methods = array('wordpress_native', 'oauth', 'ldap', 'custom');
+            if (!in_array($security_context['login_method'], $allowed_methods)) {
+                $validation_errors[] = 'Invalid login method in security context';
+            }
+        }
+
+        // Session security validation
+        if (!empty($security_context['session_security'])) {
+            $allowed_levels = array('low', 'medium', 'high');
+            if (!in_array($security_context['session_security'], $allowed_levels)) {
+                $validation_errors[] = 'Invalid session security level';
+            }
+        }
+
+        return array(
+            'valid' => empty($validation_errors),
+            'errors' => $validation_errors
+        );
+    }
+
+    /**
+     * Load dynamic validation rules based on license characteristics
+     *
+     * @since 4.2.4.5.3e
+     * @param int $license_id License ID
+     * @param int $product_id Product ID
+     * @return array Dynamic rules
+     */
+    private function load_dynamic_validation_rules($license_id, $product_id) {
+        // Mock dynamic rules - would be loaded from database in real implementation
+        return array(
+            array(
+                'rule_id' => 'dynamic_rule_1',
+                'condition' => 'license_age > 30',
+                'action' => 'require_renewal_notice',
+                'severity' => 'warning'
+            ),
+            array(
+                'rule_id' => 'dynamic_rule_2',
+                'condition' => 'activation_count >= activation_limit',
+                'action' => 'block_new_activations',
+                'severity' => 'error'
+            )
+        );
+    }
+
+    /**
+     * Get state-dependent validation rules
+     *
+     * @since 4.2.4.5.3e
+     * @param string $current_status Current license status
+     * @param string $target_status Target license status
+     * @return array State rules
+     */
+    private function get_state_dependent_rules($current_status, $target_status) {
+        $state_rules = array();
+
+        // Status transition rules
+        if ($current_status === 'pending' && $target_status === 'active') {
+            $state_rules[] = array(
+                'rule_id' => 'pending_to_active',
+                'condition' => 'payment_verified',
+                'message' => 'Payment must be verified before activation',
+                'severity' => 'error'
+            );
+        }
+
+        if ($current_status === 'active' && $target_status === 'suspended') {
+            $state_rules[] = array(
+                'rule_id' => 'active_to_suspended',
+                'condition' => 'violation_logged',
+                'message' => 'Suspension requires documented violation',
+                'severity' => 'warning'
+            );
+        }
+
+        return $state_rules;
+    }
+
+    /**
+     * Execute conditional rule
+     *
+     * @since 4.2.4.5.3e
+     * @param array $license License data
+     * @param array $context Validation context
+     * @param array $rule Rule to execute
+     * @return array Rule execution result
+     */
+    private function execute_conditional_rule($license, $context, $rule) {
+        // Mock rule execution - would contain actual business logic
+        return array(
+            'rule_id' => $rule['rule_id'],
+            'executed' => true,
+            'result' => 'passed',
+            'message' => 'Rule validation passed',
+            'severity' => 'info'
+        );
+    }
+
+    /**
+     * Validate business state machine
+     *
+     * @since 4.2.4.5.3e
+     * @param array $license License data
+     * @param string $target_status Target status
+     * @param array $context Validation context
+     * @return array Validation result
+     */
+    private function validate_business_state_machine($license, $target_status, $context) {
+        $validation_errors = array();
+
+        // Valid status transitions
+        $valid_transitions = array(
+            'pending' => array('active', 'cancelled'),
+            'active' => array('suspended', 'expired', 'cancelled'),
+            'suspended' => array('active', 'cancelled'),
+            'expired' => array('renewed', 'cancelled'),
+            'cancelled' => array() // Terminal state
+        );
+
+        $current_status = $license['status'] ?? '';
+
+        if (!isset($valid_transitions[$current_status])) {
+            $validation_errors[] = "Unknown current status: {$current_status}";
+        } elseif (!in_array($target_status, $valid_transitions[$current_status])) {
+            $validation_errors[] = "Invalid status transition: {$current_status} → {$target_status}";
+        }
+
+        return array(
+            'valid' => empty($validation_errors),
+            'errors' => $validation_errors
+        );
+    }
+
+    /**
+     * Validate temporal business rules
+     *
+     * @since 4.2.4.5.3e
+     * @param array $license License data
+     * @param array $context Validation context
+     * @return array Validation result
+     */
+    private function validate_temporal_business_rules($license, $context) {
+        $validation_errors = array();
+        $validation_warnings = array();
+
+        // Check license expiration
+        if (!empty($license['expires_at'])) {
+            $expiry_time = strtotime($license['expires_at']);
+            $current_time = current_time('timestamp');
+
+            if ($expiry_time < $current_time) {
+                $validation_errors[] = 'License has expired';
+            } elseif ($expiry_time < ($current_time + (7 * 24 * 60 * 60))) {
+                $validation_warnings[] = 'License expires within 7 days';
+            }
+        }
+
+        // Check activation frequency
+        if (!empty($license['last_checked'])) {
+            $last_check = strtotime($license['last_checked']);
+            $current_time = current_time('timestamp');
+
+            if (($current_time - $last_check) < 300) { // 5 minutes
+                $validation_warnings[] = 'Frequent license checks detected';
+            }
+        }
+
+        return array(
+            'valid' => empty($validation_errors),
+            'errors' => $validation_errors,
+            'warnings' => $validation_warnings
+        );
+    }
+
+    /**
+     * Validate user license consistency
+     *
+     * @since 4.2.4.5.3e
+     * @param array $license License data
+     * @param int $user_id User ID
+     * @param array $context Validation context
+     * @return array Validation result
+     */
+    private function validate_user_license_consistency($license, $user_id, $context) {
+        $validation_errors = array();
+
+        // Check if license belongs to user
+        if (!empty($license['user_id']) && $license['user_id'] != $user_id) {
+            $validation_errors[] = 'License does not belong to the specified user';
+        }
+
+        // Mock additional user license checks
+        // In real implementation, would check against database
+
+        return array(
+            'valid' => empty($validation_errors),
+            'errors' => $validation_errors
+        );
+    }
+
+    /**
+     * Validate product-level constraints
+     *
+     * @since 4.2.4.5.3e
+     * @param array $license License data
+     * @param array $context Validation context
+     * @return array Validation result
+     */
+    private function validate_product_level_constraints($license, $context) {
+        $validation_errors = array();
+
+        // Check activation limits
+        if (!empty($license['activation_limit']) && !empty($license['activation_count'])) {
+            if ($license['activation_count'] >= $license['activation_limit']) {
+                $validation_errors[] = 'License activation limit reached';
+            }
+        }
+
+        return array(
+            'valid' => empty($validation_errors),
+            'errors' => $validation_errors
+        );
+    }
+
+    /**
+     * Validate global license limits
+     *
+     * @since 4.2.4.5.3e
+     * @param array $license License data
+     * @param array $context Validation context
+     * @return array Validation result
+     */
+    private function validate_global_license_limits($license, $context) {
+        // Mock global limits validation
+        return array(
+            'valid' => true,
+            'errors' => array()
+        );
+    }
+
+    /**
+     * Validate business policies
+     *
+     * @since 4.2.4.5.3e
+     * @param array $license License data
+     * @param array $context Validation context
+     * @return array Validation result
+     */
+    private function validate_business_policies($license, $context) {
+        // Mock business policy validation
+        return array(
+            'valid' => true,
+            'errors' => array()
+        );
+    }
+
+    /**
+     * Validate regulatory requirements
+     *
+     * @since 4.2.4.5.3e
+     * @param array $license License data
+     * @param array $context Validation context
+     * @return array Validation result
+     */
+    private function validate_regulatory_requirements($license, $context) {
+        // Mock regulatory validation
+        return array(
+            'valid' => true,
+            'errors' => array()
+        );
+    }
+
+    /**
+     * Validate security compliance
+     *
+     * @since 4.2.4.5.3e
+     * @param array $license License data
+     * @param array $security_context Security context
+     * @return array Validation result
+     */
+    private function validate_security_compliance($license, $security_context) {
+        // Mock security compliance validation
+        return array(
+            'valid' => true,
+            'errors' => array()
+        );
+    }
+
+    /**
+     * Count total validation checks in pipeline
+     *
+     * @since 4.2.4.5.3e
+     * @param array $validation_pipeline Pipeline results
+     * @return int Total check count
+     */
+    private function count_total_validation_checks($validation_pipeline) {
+        $total_checks = 0;
+        foreach ($validation_pipeline as $stage => $result) {
+            $total_checks += count($result) - 2; // Exclude 'valid' and 'errors'
+        }
+        return $total_checks;
+    }
+
+    /**
+     * Calculate validation completeness percentage
+     *
+     * @since 4.2.4.5.3e
+     * @param array $validation_pipeline Pipeline results
+     * @return string Completeness percentage
+     */
+    private function calculate_validation_completeness($validation_pipeline) {
+        $total_stages = 5;
+        $completed_stages = count($validation_pipeline);
+        $percentage = ($completed_stages / $total_stages) * 100;
+        return round($percentage, 1) . '%';
+    }
+
+    /**
+     * Analyze validation errors
+     *
+     * @since 4.2.4.5.3e
+     * @param array $accumulated_errors All validation errors
+     * @return array Error analysis
+     */
+    private function analyze_validation_errors($accumulated_errors) {
+        $analysis = array(
+            'total_errors' => count($accumulated_errors),
+            'error_categories' => array(),
+            'severity_distribution' => array(),
+            'common_issues' => array()
+        );
+
+        // Basic error categorization
+        foreach ($accumulated_errors as $error) {
+            if (strpos($error, 'context') !== false) {
+                $analysis['error_categories']['context']++;
+            } elseif (strpos($error, 'status') !== false) {
+                $analysis['error_categories']['status']++;
+            } else {
+                $analysis['error_categories']['general']++;
+            }
+        }
+
+        return $analysis;
+    }
+
+    /**
+     * Generate validation recommendations
+     *
+     * @since 4.2.4.5.3e
+     * @param array $license License data
+     * @param array $validation_pipeline Pipeline results
+     * @param array $accumulated_errors All validation errors
+     * @return array Recommendations
+     */
+    private function generate_validation_recommendations($license, $validation_pipeline, $accumulated_errors) {
+        $recommendations = array();
+
+        if (!empty($accumulated_errors)) {
+            $recommendations[] = 'Review and fix validation errors before proceeding';
+        }
+
+        if (count($validation_pipeline) < 5) {
+            $recommendations[] = 'Complete all validation pipeline stages';
+        }
+
+        $recommendations[] = 'Regular validation monitoring recommended';
+
+        return $recommendations;
+    }
 }
