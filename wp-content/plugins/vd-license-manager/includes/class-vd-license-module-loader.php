@@ -114,10 +114,10 @@ class VD_License_Module_Loader {
                 'priority' => 4
             ),
             'database.cache_manager' => array(
-                'file' => 'database/class-vd-license-db-cache.php',
-                'class' => 'VD_License_DB_Cache',
+                'file' => 'database/class-vd-license-cache-manager.php',
+                'class' => 'VD_License_Cache_Manager',
                 'namespace' => 'VD\\LicenseManager\\Database',
-                'dependencies' => array('database.query_manager'),
+                'dependencies' => array(),
                 'priority' => 5
             ),
 

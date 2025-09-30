@@ -328,7 +328,8 @@ class VD_License_Dependency_Container {
                 'format.pattern_validator',
                 'format.checksum_validator',
                 'database.query_manager',
-                'database.lmfwc_adapter'
+                'database.lmfwc_adapter',
+                'database.cache_manager'
             );
 
             foreach ($core_services as $service_id) {
