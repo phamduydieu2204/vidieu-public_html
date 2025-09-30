@@ -64,6 +64,56 @@ class VD_License_Validator {
      */
     private $initialized = false;
 
+    // Step 4.2.4.5.1d - Basic Property Initialization for History Storage
+
+    /**
+     * History storage configuration
+     *
+     * @since 4.2.4.5.1d
+     * @var array
+     */
+    private $history_storage = array();
+
+    /**
+     * History tracking configuration settings
+     *
+     * @since 4.2.4.5.1d
+     * @var array
+     */
+    private $history_config = array();
+
+    /**
+     * History tracking enabled status
+     *
+     * @since 4.2.4.5.1d
+     * @var bool
+     */
+    private $history_enabled = false;
+
+    /**
+     * History database table name
+     *
+     * @since 4.2.4.5.1d
+     * @var string
+     */
+    private $history_table = '';
+
+    /**
+     * History retention settings
+     *
+     * @since 4.2.4.5.1d
+     * @var array
+     */
+    private $history_retention = array();
+
+    /**
+     * History validation cache
+     *
+     * @since 4.2.4.5.1d
+     * @var array
+     */
+    private $history_cache = array();
+
     /**
      * License key format regex pattern
      *
@@ -4441,6 +4491,105 @@ class VD_License_Validator {
                 'response_format' => 'standard',
                 'error_handling' => 'consistent',
                 'metadata_included' => true
+            ),
+            'ready_for_next_step' => true
+        );
+    }
+
+    // Step 4.2.4.5.1d - History Property Access Methods
+
+    /**
+     * Get history storage configuration
+     *
+     * @since 4.2.4.5.1d
+     * @return array History storage configuration array
+     */
+    public function get_history_storage_config() {
+        return $this->history_storage;
+    }
+
+    /**
+     * Get history tracking configuration
+     *
+     * @since 4.2.4.5.1d
+     * @return array History configuration settings
+     */
+    public function get_history_config() {
+        return $this->history_config;
+    }
+
+    /**
+     * Check if history tracking is enabled
+     *
+     * @since 4.2.4.5.1d
+     * @return bool True if history tracking is enabled
+     */
+    public function is_history_enabled() {
+        return $this->history_enabled;
+    }
+
+    /**
+     * Get history database table name
+     *
+     * @since 4.2.4.5.1d
+     * @return string History table name
+     */
+    public function get_history_table_name() {
+        return $this->history_table;
+    }
+
+    /**
+     * Get history retention settings
+     *
+     * @since 4.2.4.5.1d
+     * @return array History retention configuration
+     */
+    public function get_history_retention_settings() {
+        return $this->history_retention;
+    }
+
+    /**
+     * Get history property initialization status
+     *
+     * @since 4.2.4.5.1d
+     * @return array Property initialization status and information
+     */
+    public function get_history_property_status() {
+        return array(
+            'framework_version' => '4.2.4.5.1d',
+            'properties_initialized' => array(
+                'history_storage' => isset($this->history_storage),
+                'history_config' => isset($this->history_config),
+                'history_enabled' => isset($this->history_enabled),
+                'history_table' => isset($this->history_table),
+                'history_retention' => isset($this->history_retention),
+                'history_cache' => isset($this->history_cache)
+            ),
+            'property_types' => array(
+                'history_storage' => gettype($this->history_storage),
+                'history_config' => gettype($this->history_config),
+                'history_enabled' => gettype($this->history_enabled),
+                'history_table' => gettype($this->history_table),
+                'history_retention' => gettype($this->history_retention),
+                'history_cache' => gettype($this->history_cache)
+            ),
+            'property_values' => array(
+                'history_storage_count' => count($this->history_storage),
+                'history_config_count' => count($this->history_config),
+                'history_enabled_status' => $this->history_enabled,
+                'history_table_length' => strlen($this->history_table),
+                'history_retention_count' => count($this->history_retention),
+                'history_cache_count' => count($this->history_cache)
+            ),
+            'visibility' => array(
+                'all_properties_private' => true,
+                'access_via_getters_only' => true,
+                'safe_initialization' => true
+            ),
+            'database_integration' => array(
+                'table_reference' => 'vd_license_assignment_history',
+                'storage_ready' => false,
+                'implementation_pending' => true
             ),
             'ready_for_next_step' => true
         );
