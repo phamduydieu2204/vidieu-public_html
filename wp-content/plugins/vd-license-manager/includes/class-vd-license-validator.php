@@ -4076,24 +4076,75 @@ class VD_License_Validator {
             );
         }
 
-        // Method signature implementation placeholder
-        // Future implementation will handle actual history tracking
-        // Step 4.2.4.5.1c - Use standardized error response structure for "not implemented"
-        return $this->create_error_response(
-            'track_status_history',
-            'History tracking not yet implemented',
-            'NOT_IMPLEMENTED',
-            array(
-                'parameters_received' => array(
-                    'license_provided' => !empty($license),
+        // Step 4.2.4.5.2 - Temporary History Storage (Memory-Based) Implementation
+        try {
+            // Generate unique history record ID
+            $history_id = 'VD_HIST_' . time() . '_' . wp_rand(1000, 9999);
+
+            // Create history record structure
+            $history_record = array(
+                'id' => $history_id,
+                'license_id' => isset($license['id']) ? $license['id'] : (isset($license['key']) ? $license['key'] : 'unknown'),
+                'license_key' => isset($license['key']) ? $license['key'] : '',
+                'product_id' => isset($license['product_id']) ? $license['product_id'] : null,
+                'customer_id' => isset($license['customer_id']) ? $license['customer_id'] : null,
+                'old_status' => $old_status,
+                'new_status' => $new_status,
+                'changed_at' => current_time('mysql'),
+                'changed_by' => get_current_user_id(),
+                'change_reason' => isset($context['reason']) ? $context['reason'] : 'Status change',
+                'context' => $context,
+                'metadata' => array(
+                    'user_ip' => isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : 'unknown',
+                    'user_agent' => isset($_SERVER['HTTP_USER_AGENT']) ? $_SERVER['HTTP_USER_AGENT'] : 'unknown',
+                    'framework_version' => '4.2.4.5.2',
+                    'storage_type' => 'memory'
+                )
+            );
+
+            // Store in memory (class property history_storage array)
+            if (!is_array($this->history_storage)) {
+                $this->history_storage = array();
+            }
+
+            // Add to memory storage với history_id làm key
+            $this->history_storage[$history_id] = $history_record;
+
+            // Update history configuration
+            $this->history_config['last_record_id'] = $history_id;
+            $this->history_config['total_records'] = count($this->history_storage);
+            $this->history_config['last_updated'] = current_time('mysql');
+
+            // Enable history tracking
+            $this->history_enabled = true;
+
+            // Step 4.2.4.5.1c - Use standardized success response structure
+            return $this->create_track_status_history_return_structure(
+                true,
+                array(
+                    'history_id' => $history_id,
+                    'timestamp' => $history_record['changed_at'],
+                    'license_id' => $history_record['license_id'],
                     'old_status' => $old_status,
                     'new_status' => $new_status,
-                    'context_count' => count($context)
+                    'storage_type' => 'memory',
+                    'total_records' => count($this->history_storage)
                 ),
-                'validation_passed' => true,
-                'framework_version' => '4.2.4.5.1c'
-            )
-        );
+                'Status history tracked successfully in memory storage'
+            );
+
+        } catch (Exception $e) {
+            // Step 4.2.4.5.1c - Use standardized error response structure
+            return $this->create_error_response(
+                'track_status_history',
+                'Failed to track status history: ' . $e->getMessage(),
+                'TRACKING_FAILED',
+                array(
+                    'error_details' => $e->getMessage(),
+                    'framework_version' => '4.2.4.5.2'
+                )
+            );
+        }
     }
 
     /**
@@ -4212,29 +4263,101 @@ class VD_License_Validator {
             );
         }
 
-        // Method signature implementation placeholder
-        // Future implementation will handle history retrieval
-        // Step 4.2.4.5.1c - Use standardized success response structure for "not implemented" data
-        $pagination = $this->create_pagination_structure($options, 0);
-        $sample_records = array(); // Empty for now
+        // Step 4.2.4.5.2 - Temporary History Storage (Memory-Based) Implementation
+        try {
+            // Initialize history storage if not already done
+            if (!is_array($this->history_storage)) {
+                $this->history_storage = array();
+            }
 
-        return $this->create_success_response(
-            'get_status_history',
-            array(
-                'records' => $sample_records,
-                'pagination' => $pagination,
-                'query_info' => array(
-                    'license_id' => $license_id,
-                    'total_found' => 0,
-                    'filters_applied' => $options
+            // Filter records by license_id from memory storage
+            $filtered_records = array();
+            foreach ($this->history_storage as $record_id => $record) {
+                // Check if record matches license_id (support both ID and key)
+                $matches_license = false;
+                if (is_numeric($license_id) && isset($record['license_id']) && $record['license_id'] == $license_id) {
+                    $matches_license = true;
+                } elseif (is_string($license_id) && isset($record['license_key']) && $record['license_key'] === $license_id) {
+                    $matches_license = true;
+                } elseif (isset($record['license_id']) && $record['license_id'] === $license_id) {
+                    $matches_license = true;
+                }
+
+                if ($matches_license) {
+                    // Apply additional filters if provided
+                    $include_record = true;
+
+                    // Date filtering
+                    if (isset($options['date_from']) && !empty($options['date_from'])) {
+                        if (strtotime($record['changed_at']) < strtotime($options['date_from'])) {
+                            $include_record = false;
+                        }
+                    }
+
+                    if (isset($options['date_to']) && !empty($options['date_to'])) {
+                        if (strtotime($record['changed_at']) > strtotime($options['date_to'])) {
+                            $include_record = false;
+                        }
+                    }
+
+                    // Status filtering
+                    if (isset($options['status_filter']) && !empty($options['status_filter'])) {
+                        if ($record['old_status'] !== $options['status_filter'] && $record['new_status'] !== $options['status_filter']) {
+                            $include_record = false;
+                        }
+                    }
+
+                    if ($include_record) {
+                        $filtered_records[] = $record;
+                    }
+                }
+            }
+
+            // Sort records by changed_at (newest first)
+            usort($filtered_records, function($a, $b) {
+                return strtotime($b['changed_at']) - strtotime($a['changed_at']);
+            });
+
+            // Apply pagination
+            $limit = isset($options['limit']) ? intval($options['limit']) : 20;
+            $offset = isset($options['offset']) ? intval($options['offset']) : 0;
+            $total_records = count($filtered_records);
+
+            $paginated_records = array_slice($filtered_records, $offset, $limit);
+
+            // Create pagination structure
+            $pagination = $this->create_pagination_structure($options, $total_records);
+
+            // Step 4.2.4.5.1c - Use standardized success response structure
+            return $this->create_get_status_history_return_structure(
+                true,
+                array(
+                    'history_records' => $paginated_records,
+                    'total_count' => $total_records,
+                    'filtered_count' => count($paginated_records),
+                    'pagination' => $pagination,
+                    'query_info' => array(
+                        'license_id' => $license_id,
+                        'storage_type' => 'memory',
+                        'total_memory_records' => count($this->history_storage),
+                        'filters_applied' => $options
+                    )
+                ),
+                'History retrieved successfully from memory storage'
+            );
+
+        } catch (Exception $e) {
+            // Step 4.2.4.5.1c - Use standardized error response structure
+            return $this->create_error_response(
+                'get_status_history',
+                'Failed to retrieve status history: ' . $e->getMessage(),
+                'RETRIEVAL_FAILED',
+                array(
+                    'error_details' => $e->getMessage(),
+                    'framework_version' => '4.2.4.5.2'
                 )
-            ),
-            array(
-                'implementation_status' => 'not_implemented',
-                'validation_passed' => true,
-                'framework_version' => '4.2.4.5.1c'
-            )
-        );
+            );
+        }
     }
 
     /**
@@ -4382,24 +4505,152 @@ class VD_License_Validator {
             );
         }
 
-        // Method signature implementation placeholder
-        // Future implementation will handle statistics generation
-        // Step 4.2.4.5.1c - Use standardized success response structure for statistics
-        $sample_stats = array(); // Empty statistics for now
-        $statistics_structure = $this->create_statistics_structure($sample_stats, $options);
+        // Step 4.2.4.5.2 - Temporary History Storage (Memory-Based) Implementation
+        try {
+            $start_time = microtime(true);
 
-        return $this->create_success_response(
-            'get_status_statistics',
-            array(
-                'statistics' => $statistics_structure
-            ),
-            array(
-                'implementation_status' => 'not_implemented',
-                'validation_passed' => true,
-                'framework_version' => '4.2.4.5.1c',
-                'query_time_ms' => 0
-            )
-        );
+            // Initialize history storage if not already done
+            if (!is_array($this->history_storage)) {
+                $this->history_storage = array();
+            }
+
+            // Generate statistics from memory storage
+            $total_records = count($this->history_storage);
+            $status_counts = array();
+            $change_frequency = array();
+            $trends = array();
+            $by_date = array();
+            $by_month = array();
+            $by_user = array();
+
+            // Apply date filtering if provided
+            $filtered_records = $this->history_storage;
+            if (isset($options['date_from']) || isset($options['date_to'])) {
+                $filtered_records = array();
+                foreach ($this->history_storage as $record_id => $record) {
+                    $include = true;
+
+                    if (isset($options['date_from']) && !empty($options['date_from'])) {
+                        if (strtotime($record['changed_at']) < strtotime($options['date_from'])) {
+                            $include = false;
+                        }
+                    }
+
+                    if (isset($options['date_to']) && !empty($options['date_to'])) {
+                        if (strtotime($record['changed_at']) > strtotime($options['date_to'])) {
+                            $include = false;
+                        }
+                    }
+
+                    if ($include) {
+                        $filtered_records[$record_id] = $record;
+                    }
+                }
+            }
+
+            // Calculate statistics from filtered records
+            foreach ($filtered_records as $record) {
+                // Status counts
+                $change_key = $record['old_status'] . '_to_' . $record['new_status'];
+                if (!isset($status_counts[$change_key])) {
+                    $status_counts[$change_key] = 0;
+                }
+                $status_counts[$change_key]++;
+
+                // By date counts
+                $date_key = date('Y-m-d', strtotime($record['changed_at']));
+                if (!isset($by_date[$date_key])) {
+                    $by_date[$date_key] = 0;
+                }
+                $by_date[$date_key]++;
+
+                // By month counts
+                $month_key = date('Y-m', strtotime($record['changed_at']));
+                if (!isset($by_month[$month_key])) {
+                    $by_month[$month_key] = 0;
+                }
+                $by_month[$month_key]++;
+
+                // By user counts
+                $user_id = $record['changed_by'];
+                if (!isset($by_user[$user_id])) {
+                    $by_user[$user_id] = 0;
+                }
+                $by_user[$user_id]++;
+            }
+
+            // Calculate trends
+            $most_common_change = '';
+            $max_count = 0;
+            foreach ($status_counts as $change => $count) {
+                if ($count > $max_count) {
+                    $max_count = $count;
+                    $most_common_change = $change;
+                }
+            }
+
+            $peak_activity_day = '';
+            $max_daily_count = 0;
+            foreach ($by_date as $date => $count) {
+                if ($count > $max_daily_count) {
+                    $max_daily_count = $count;
+                    $peak_activity_day = $date;
+                }
+            }
+
+            $average_changes_per_day = count($by_date) > 0 ? count($filtered_records) / count($by_date) : 0;
+
+            // Create comprehensive statistics structure
+            $statistics_data = array(
+                'status_counts' => $status_counts,
+                'change_frequency' => array(
+                    'total_changes' => count($filtered_records),
+                    'unique_change_types' => count($status_counts),
+                    'most_common_change' => $most_common_change,
+                    'most_common_count' => $max_count
+                ),
+                'trends' => array(
+                    'most_common_change' => $most_common_change,
+                    'peak_activity_day' => $peak_activity_day,
+                    'average_changes_per_day' => round($average_changes_per_day, 2),
+                    'trend_direction' => 'stable', // Memory storage doesn't have enough historical data for trends
+                    'growth_rate' => 0.0,
+                    'total_days_with_activity' => count($by_date)
+                ),
+                'breakdown' => array(
+                    'by_date' => $by_date,
+                    'by_month' => $by_month,
+                    'by_user' => $by_user
+                )
+            );
+
+            $execution_time = round((microtime(true) - $start_time) * 1000, 2);
+
+            // Step 4.2.4.5.1c - Use standardized success response structure
+            return $this->create_get_status_statistics_return_structure(
+                true,
+                array_merge($statistics_data, array(
+                    'generation_time_ms' => $execution_time,
+                    'data_sources' => array('memory_storage'),
+                    'storage_type' => 'memory',
+                    'total_memory_records' => $total_records,
+                    'filtered_records_count' => count($filtered_records)
+                )),
+                'Statistics generated successfully from memory storage'
+            );
+
+        } catch (Exception $e) {
+            // Step 4.2.4.5.1c - Use standardized error response structure
+            return $this->create_error_response(
+                'get_status_statistics',
+                'Failed to generate statistics: ' . $e->getMessage(),
+                'STATISTICS_FAILED',
+                array(
+                    'error_details' => $e->getMessage(),
+                    'framework_version' => '4.2.4.5.2'
+                )
+            );
+        }
     }
 
     // Step 4.2.4.5.1b - Basic Parameter Validation Framework Methods
