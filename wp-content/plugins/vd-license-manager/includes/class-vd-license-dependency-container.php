@@ -107,7 +107,10 @@ class VD_License_Dependency_Container {
         });
 
         $this->register('database.lmfwc_adapter', function($container) {
-            return $container->get('module_loader')->load_module('database.lmfwc_adapter');
+            $adapter = $container->get('module_loader')->load_module('database.lmfwc_adapter');
+            $query_manager = $container->get('database.query_manager');
+            $adapter->set_query_manager($query_manager);
+            return $adapter;
         });
 
         $this->register('database.cache_manager', function($container) {
@@ -324,7 +327,8 @@ class VD_License_Dependency_Container {
                 'module_loader',
                 'format.pattern_validator',
                 'format.checksum_validator',
-                'database.query_manager'
+                'database.query_manager',
+                'database.lmfwc_adapter'
             );
 
             foreach ($core_services as $service_id) {
