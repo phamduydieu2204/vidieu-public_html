@@ -458,66 +458,33 @@ class VD_License_Validator {
      * Fallback lookup from VD licenses table
      * Step 4.2.3 - Fallback mechanism
      *
+     * @deprecated 1.5.0-rc.1 Moved to Database Query Manager module
      * @since 4.2.3
      * @param string $license_key License key to look up
      * @return array|null License data or null if not found
      */
     private function lookup_from_vd_licenses($license_key) {
-        global $wpdb;
-
-        $vd_table = $wpdb->prefix . 'vd_licenses';
-
-        $license = $wpdb->get_row($wpdb->prepare(
-            "SELECT
-                id,
-                license_key,
-                product_id,
-                order_id,
-                user_id,
-                status,
-                max_devices,
-                expires_at,
-                created_at,
-                updated_at
-            FROM {$vd_table}
-            WHERE license_key = %s
-            LIMIT 1",
-            $license_key
-        ), ARRAY_A);
-
-        if ($license) {
-            $license['lookup_source'] = 'vd_internal';
-            $license['table_name'] = $vd_table;
-            $license['mapped_status'] = $license['status']; // Direct mapping
-            $license['lookup_timestamp'] = current_time('mysql');
-        }
-
-        return $license;
+        // CLEANUP: This method is deprecated - logic moved to Database Query Manager
+        // Use query manager for all database operations
+        return $this->query_manager ? $this->query_manager->lookup_license($license_key, true) : null;
     }
 
     /**
      * Map LMfWC status codes to VD status
      * Step 4.2.3 - Status mapping integration
      *
+     * @deprecated 1.5.0-rc.1 Moved to LMfWC Adapter module
      * @since 4.2.3
      * @param mixed $lmfwc_status LMfWC status code
      * @return string Mapped VD status
      */
     private function map_lmfwc_status($lmfwc_status) {
-        // LMfWC Status Code Mapping theo documentation
-        $status_mapping = array(
-            1 => 'active',      // SOLD/DELIVERED
-            2 => 'inactive',    // INACTIVE
-            3 => 'expired',     // EXPIRED
-            4 => 'suspended',   // DISABLED
-            'active' => 'active',
-            'inactive' => 'inactive',
-            'expired' => 'expired',
-            'disabled' => 'suspended',
-            'suspended' => 'suspended'
-        );
+        // CLEANUP: This method is deprecated - logic moved to LMfWC Adapter module
+        // Status mapping is now handled by the LMfWC Adapter
+        $container = VD_License_Dependency_Container::get_instance();
+        $lmfwc_adapter = $container->get('database.lmfwc_adapter');
 
-        return $status_mapping[$lmfwc_status] ?? 'inactive';
+        return $lmfwc_adapter ? $lmfwc_adapter->map_lmfwc_status($lmfwc_status) : 'inactive';
     }
 
     /**
