@@ -48,10 +48,10 @@ if (is_admin() && isset($_GET['vd_debug_step_4_2_4_5_1a']) && $_GET['vd_debug_st
     if (class_exists('VD_License_Validator')) {
         echo "<p>✅ VD_License_Validator class available</p>";
 
-        // Try to create instance
+        // Try to get singleton instance
         try {
-            $validator = new VD_License_Validator();
-            echo "<p>✅ Validator instance created</p>";
+            $validator = VD_License_Validator::get_instance();
+            echo "<p>✅ Validator instance obtained via get_instance()</p>";
 
             // Check if new methods exist
             $methods = ['track_status_history', 'get_status_history', 'get_status_statistics'];
