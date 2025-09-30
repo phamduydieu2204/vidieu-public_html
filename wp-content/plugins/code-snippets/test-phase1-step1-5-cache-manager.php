@@ -74,7 +74,7 @@ add_action('wp_ajax_vd_test_phase1_step1_5_cache_manager', function() {
         }
         require_once $cache_manager_file;
 
-        if (!class_exists('VD\\LicenseManager\\Database\\VD_License_Cache_Manager')) {
+        if (!class_exists('VD_License_Cache_Manager')) {
             throw new Exception('VD_License_Cache_Manager class not found');
         }
 

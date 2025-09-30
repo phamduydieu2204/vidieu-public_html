@@ -1,7 +1,5 @@
 <?php
 
-namespace VD\LicenseManager\Database;
-
 if (!defined('ABSPATH')) {
     exit;
 }
