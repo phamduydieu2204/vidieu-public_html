@@ -246,7 +246,7 @@ add_action('wp_ajax_vd_test_phase1_step1_3_query_manager', function() {
                 $validator = VD_License_Validator::get_instance();
 
                 // Test a simple validation that uses database lookup
-                $test_validation = $validator->validate_license_key('TEST-INTEGRATION-KEY', array('detailed' => true));
+                $test_validation = $validator->validate_license_key_format('TEST-INTEGRATION-KEY', true);
 
                 $results['tests']['main_validator_integration'] = array(
                     'status' => 'pass',
