@@ -49,12 +49,12 @@ class VD_License_Validator {
     private $security_audit = null;
 
     /**
-     * Validation cache for performance
+     * Cache manager module instance
      *
-     * @since 4.2.1
-     * @var array
+     * @since 1.5.0-rc.1
+     * @var VD_License_Cache_Manager|null
      */
-    private $validation_cache = array();
+    private $cache_manager = null;
 
     /**
      * Validation initialization status
@@ -106,13 +106,6 @@ class VD_License_Validator {
      */
     private $history_retention = array();
 
-    /**
-     * History validation cache
-     *
-     * @since 4.2.4.5.1d
-     * @var array
-     */
-    private $history_cache = array();
 
     /**
      * Pattern validator module instance
@@ -223,6 +216,7 @@ class VD_License_Validator {
         $this->pattern_validator = $container->get('format.pattern_validator');
         $this->checksum_validator = $container->get('format.checksum_validator');
         $this->query_manager = $container->get('database.query_manager');
+        $this->cache_manager = $container->get('database.cache_manager');
 
         // Set pattern validator dependency for checksum validator
         if ($this->checksum_validator && $this->pattern_validator) {
@@ -352,9 +346,11 @@ class VD_License_Validator {
         global $wpdb;
 
         // Check cache first for performance
-        $cache_key = 'vd_license_validation_' . md5($license_key);
-        if (isset($this->validation_cache[$cache_key])) {
-            return $this->validation_cache[$cache_key];
+        if ($this->cache_manager) {
+            $cached_result = $this->cache_manager->get_validation_cache($license_key);
+            if ($cached_result !== null) {
+                return $cached_result;
+            }
         }
 
         // Input validation với enhanced format checking
@@ -366,7 +362,9 @@ class VD_License_Validator {
                 'code' => $format_validation['error_code'] ?? 'invalid_format',
                 'format_details' => $format_validation
             );
-            $this->validation_cache[$cache_key] = $result;
+            if ($this->cache_manager) {
+                $this->cache_manager->set_validation_cache($license_key, $result);
+            }
             return $result;
         }
 
@@ -380,7 +378,9 @@ class VD_License_Validator {
                 'code' => 'license_not_found',
                 'lookup_details' => $this->get_lookup_debug_info($license_key)
             );
-            $this->validation_cache[$cache_key] = $result;
+            if ($this->cache_manager) {
+                $this->cache_manager->set_validation_cache($license_key, $result);
+            }
             return $result;
         }
 
@@ -394,7 +394,9 @@ class VD_License_Validator {
                 'license' => $license,
                 'status_details' => $status_validation
             );
-            $this->validation_cache[$cache_key] = $result;
+            if ($this->cache_manager) {
+                $this->cache_manager->set_validation_cache($license_key, $result);
+            }
             return $result;
         }
 
@@ -426,7 +428,9 @@ class VD_License_Validator {
         );
 
         // Cache result for performance với TTL
-        $this->validation_cache[$cache_key] = $result;
+        if ($this->cache_manager) {
+            $this->cache_manager->set_validation_cache($license_key, $result);
+        }
 
         // Log successful validation for audit
         $this->log_license_validation_success($license_key, $license);
@@ -1773,10 +1777,12 @@ class VD_License_Validator {
     public function get_license_settings($license_id, $product_id) {
         global $wpdb;
 
-        // Cache key for settings
-        $cache_key = "vd_license_settings_{$license_id}_{$product_id}";
-        if (isset($this->validation_cache[$cache_key])) {
-            return $this->validation_cache[$cache_key];
+        // Check cache for settings
+        if ($this->cache_manager) {
+            $cached_settings = $this->cache_manager->get_settings_cache($license_id, $product_id);
+            if ($cached_settings !== null) {
+                return $cached_settings;
+            }
         }
 
         // 1. Try license-specific override first
@@ -1823,7 +1829,9 @@ class VD_License_Validator {
         );
 
         // Cache result
-        $this->validation_cache[$cache_key] = $effective_settings;
+        if ($this->cache_manager) {
+            $this->cache_manager->set_settings_cache($license_id, $product_id, $effective_settings);
+        }
 
         return $effective_settings;
     }
@@ -1864,7 +1872,9 @@ class VD_License_Validator {
      * @return void
      */
     public function clear_cache() {
-        $this->validation_cache = array();
+        if ($this->cache_manager) {
+            $this->cache_manager->clear_all_cache();
+        }
     }
 
     /**
@@ -1876,7 +1886,7 @@ class VD_License_Validator {
     public function get_validation_stats() {
         return array(
             'initialized' => $this->initialized,
-            'cache_entries' => count($this->validation_cache),
+            'cache_entries' => $this->cache_manager ? $this->cache_manager->get_cache_stats()['validation_entries'] : 0,
             'database_manager_loaded' => $this->database_manager !== null,
             'encryption_manager_loaded' => $this->encryption_manager !== null,
             'security_audit_loaded' => $this->security_audit !== null
@@ -5125,7 +5135,7 @@ class VD_License_Validator {
                 'history_enabled' => isset($this->history_enabled),
                 'history_table' => isset($this->history_table),
                 'history_retention' => isset($this->history_retention),
-                'history_cache' => isset($this->history_cache)
+                'cache_manager' => isset($this->cache_manager)
             ),
             'property_types' => array(
                 'history_storage' => gettype($this->history_storage),
@@ -5133,7 +5143,7 @@ class VD_License_Validator {
                 'history_enabled' => gettype($this->history_enabled),
                 'history_table' => gettype($this->history_table),
                 'history_retention' => gettype($this->history_retention),
-                'history_cache' => gettype($this->history_cache)
+                'cache_manager' => gettype($this->cache_manager)
             ),
             'property_values' => array(
                 'history_storage_count' => count($this->history_storage),
@@ -5141,7 +5151,7 @@ class VD_License_Validator {
                 'history_enabled_status' => $this->history_enabled,
                 'history_table_length' => strlen($this->history_table),
                 'history_retention_count' => count($this->history_retention),
-                'history_cache_count' => count($this->history_cache)
+                'cache_manager_stats' => $this->cache_manager ? $this->cache_manager->get_cache_stats() : null
             ),
             'visibility' => array(
                 'all_properties_private' => true,
