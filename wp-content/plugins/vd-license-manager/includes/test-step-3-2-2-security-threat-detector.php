@@ -45,34 +45,34 @@ function vd_test_step_3_2_2_security_threat_detector_handler() {
         );
 
         // Test 1: IP Address Validation and Analysis
-        $results['tests']['ip_validation'] = test_ip_validation($threat_detector);
+        $results['tests']['ip_validation'] = test_threat_detector_ip_validation($threat_detector);
 
         // Test 2: Suspicious Activity Detection
-        $results['tests']['suspicious_activity'] = test_suspicious_activity_detection($threat_detector);
+        $results['tests']['suspicious_activity'] = test_threat_detector_suspicious_activity($threat_detector);
 
         // Test 3: IP Pattern Analysis
-        $results['tests']['ip_pattern_analysis'] = test_ip_pattern_analysis($threat_detector);
+        $results['tests']['ip_pattern_analysis'] = test_threat_detector_ip_pattern_analysis($threat_detector);
 
         // Test 4: Fraud Detection
-        $results['tests']['fraud_detection'] = test_fraud_detection($threat_detector);
+        $results['tests']['fraud_detection'] = test_threat_detector_fraud_detection($threat_detector);
 
         // Test 5: Device Fingerprinting
-        $results['tests']['device_fingerprinting'] = test_device_fingerprinting($threat_detector);
+        $results['tests']['device_fingerprinting'] = test_threat_detector_device_fingerprinting($threat_detector);
 
         // Test 6: Threat Configuration Management
-        $results['tests']['configuration'] = test_configuration_management($threat_detector);
+        $results['tests']['configuration'] = test_threat_detector_configuration_management($threat_detector);
 
         // Test 7: Threat Statistics
-        $results['tests']['threat_statistics'] = test_threat_statistics($threat_detector);
+        $results['tests']['threat_statistics'] = test_threat_detector_statistics($threat_detector);
 
         // Test 8: Blacklist Detection
-        $results['tests']['blacklist_detection'] = test_blacklist_detection($threat_detector);
+        $results['tests']['blacklist_detection'] = test_threat_detector_blacklist_detection($threat_detector);
 
         // Test 9: Rate Limiting Detection
-        $results['tests']['rate_limiting'] = test_rate_limiting_detection($threat_detector);
+        $results['tests']['rate_limiting'] = test_threat_detector_rate_limiting_detection($threat_detector);
 
         // Test 10: Integration with Event Logger
-        $results['tests']['event_integration'] = test_event_logger_integration($threat_detector);
+        $results['tests']['event_integration'] = test_threat_detector_event_logger_integration($threat_detector);
 
         // Calculate summary
         $total_tests = count($results['tests']);
@@ -109,7 +109,7 @@ function vd_test_step_3_2_2_security_threat_detector_handler() {
 /**
  * Test 1: IP Address Validation and Analysis
  */
-function test_ip_validation($threat_detector) {
+function test_threat_detector_ip_validation($threat_detector) {
     $test = array(
         'name' => 'IP Address Validation and Analysis',
         'success' => false,
@@ -162,7 +162,7 @@ function test_ip_validation($threat_detector) {
 /**
  * Test 2: Suspicious Activity Detection
  */
-function test_suspicious_activity_detection($threat_detector) {
+function test_threat_detector_suspicious_activity($threat_detector) {
     $test = array(
         'name' => 'Suspicious Activity Detection',
         'success' => false,
@@ -204,7 +204,7 @@ function test_suspicious_activity_detection($threat_detector) {
 /**
  * Test 3: IP Pattern Analysis
  */
-function test_ip_pattern_analysis($threat_detector) {
+function test_threat_detector_ip_pattern_analysis($threat_detector) {
     $test = array(
         'name' => 'IP Pattern Analysis',
         'success' => false,
@@ -256,7 +256,7 @@ function test_ip_pattern_analysis($threat_detector) {
 /**
  * Test 4: Fraud Detection
  */
-function test_fraud_detection($threat_detector) {
+function test_threat_detector_fraud_detection($threat_detector) {
     $test = array(
         'name' => 'Fraud Detection',
         'success' => false,
@@ -318,7 +318,7 @@ function test_fraud_detection($threat_detector) {
 /**
  * Test 5: Device Fingerprinting
  */
-function test_device_fingerprinting($threat_detector) {
+function test_threat_detector_device_fingerprinting($threat_detector) {
     $test = array(
         'name' => 'Device Fingerprinting',
         'success' => false,
@@ -369,7 +369,7 @@ function test_device_fingerprinting($threat_detector) {
 /**
  * Test 6: Configuration Management
  */
-function test_configuration_management($threat_detector) {
+function test_threat_detector_configuration_management($threat_detector) {
     $test = array(
         'name' => 'Threat Configuration Management',
         'success' => false,
@@ -417,7 +417,7 @@ function test_configuration_management($threat_detector) {
 /**
  * Test 7: Threat Statistics
  */
-function test_threat_statistics($threat_detector) {
+function test_threat_detector_statistics($threat_detector) {
     $test = array(
         'name' => 'Threat Statistics',
         'success' => false,
@@ -463,7 +463,7 @@ function test_threat_statistics($threat_detector) {
 /**
  * Test 8: Blacklist Detection
  */
-function test_blacklist_detection($threat_detector) {
+function test_threat_detector_blacklist_detection($threat_detector) {
     $test = array(
         'name' => 'Blacklist Detection',
         'success' => false,
@@ -509,7 +509,7 @@ function test_blacklist_detection($threat_detector) {
 /**
  * Test 9: Rate Limiting Detection
  */
-function test_rate_limiting_detection($threat_detector) {
+function test_threat_detector_rate_limiting_detection($threat_detector) {
     $test = array(
         'name' => 'Rate Limiting Detection',
         'success' => false,
@@ -543,7 +543,7 @@ function test_rate_limiting_detection($threat_detector) {
 /**
  * Test 10: Integration with Event Logger
  */
-function test_event_logger_integration($threat_detector) {
+function test_threat_detector_event_logger_integration($threat_detector) {
     $test = array(
         'name' => 'Event Logger Integration',
         'success' => false,
