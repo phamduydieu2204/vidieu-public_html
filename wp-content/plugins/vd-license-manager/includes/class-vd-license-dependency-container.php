@@ -145,6 +145,16 @@ class VD_License_Dependency_Container {
             }
             return $status_business;
         });
+
+        // Register rule modules
+        $this->register('rules.activation', function($container) {
+            $activation_rules = $container->get('module_loader')->load_module('rules.activation');
+            $status_business = $container->get('status.business');
+            if ($activation_rules && $status_business) {
+                $activation_rules->set_status_business($status_business);
+            }
+            return $activation_rules;
+        });
     }
 
     /**
@@ -348,7 +358,8 @@ class VD_License_Dependency_Container {
                 'database.cache_manager',
                 'status.enum',
                 'status.transition',
-                'status.business'
+                'status.business',
+                'rules.activation'
             );
 
             foreach ($core_services as $service_id) {

@@ -142,6 +142,15 @@ class VD_License_Module_Loader {
                 'namespace' => 'VD\\LicenseManager\\Status',
                 'dependencies' => array('status.transition', 'status.enum'),
                 'priority' => 8
+            ),
+
+            // Rule modules
+            'rules.activation' => array(
+                'file' => 'rules/class-vd-license-rule-activation.php',
+                'class' => 'VD_License_Rule_Activation',
+                'namespace' => 'VD\\LicenseManager\\Rules',
+                'dependencies' => array('status.business'),
+                'priority' => 9
             )
         );
 
