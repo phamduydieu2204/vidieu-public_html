@@ -164,6 +164,46 @@ class VD_License_Validator {
     private $activation_rules = null;
 
     /**
+     * Expiry core module instance
+     *
+     * @since 1.5.0-rc.2
+     * @var VD_License_Rule_Expiry_Core|null
+     */
+    private $expiry_core = null;
+
+    /**
+     * Expiry automation module instance
+     *
+     * @since 1.5.0-rc.2
+     * @var VD_License_Rule_Expiry_Automation|null
+     */
+    private $expiry_automation = null;
+
+    /**
+     * Expiry escalation module instance
+     *
+     * @since 1.5.0-rc.2
+     * @var VD_License_Rule_Expiry_Escalation|null
+     */
+    private $expiry_escalation = null;
+
+    /**
+     * Constraint validation module instance
+     *
+     * @since 1.5.0-rc.2
+     * @var VD_License_Rule_Constraint_Validation|null
+     */
+    private $constraint_validation = null;
+
+    /**
+     * Usage rules module instance
+     *
+     * @since 1.5.0-rc.2
+     * @var VD_License_Rule_Usage|null
+     */
+    private $usage_rules = null;
+
+    /**
      * Private constructor to enforce singleton pattern
      *
      * @since 4.2.1
@@ -245,6 +285,13 @@ class VD_License_Validator {
         $this->status_transition = $container->get('status.transition');
         $this->status_business = $container->get('status.business');
         $this->activation_rules = $container->get('rules.activation');
+
+        // Phase 2.2 modules integration
+        $this->expiry_core = $container->get('rules.expiry_core');
+        $this->expiry_automation = $container->get('rules.expiry_automation');
+        $this->expiry_escalation = $container->get('rules.expiry_escalation');
+        $this->constraint_validation = $container->get('rules.constraint_validation');
+        $this->usage_rules = $container->get('rules.usage');
 
         // Set pattern validator dependency for checksum validator
         if ($this->checksum_validator && $this->pattern_validator) {
@@ -939,7 +986,21 @@ class VD_License_Validator {
      */
     public function enforce_business_rules($license, $context = array()) {
         if ($this->status_business) {
-            return $this->status_business->enforce_business_rules($license, $context);
+            $business_result = $this->status_business->enforce_business_rules($license, $context);
+
+            // Add usage validation if module available
+            if ($this->usage_rules) {
+                $usage_result = $this->usage_rules->validate_api_rate_limits($license, $context);
+                if (!$usage_result['valid']) {
+                    return $usage_result;
+                }
+                // Merge usage data into business result
+                if (isset($usage_result['usage_data'])) {
+                    $business_result['usage_data'] = $usage_result['usage_data'];
+                }
+            }
+
+            return $business_result;
         }
 
         // Fallback if module not available
@@ -984,6 +1045,11 @@ class VD_License_Validator {
      * @return array Validation result
      */
     private function validate_license_expiry_date($license) {
+        // Delegate to expiry core module if available
+        if ($this->expiry_core) {
+            return $this->expiry_core->validate_license_expiry_date($license);
+        }
+
         $expires_at = $license['expires_at'] ?? null;
 
         // Handle null expiry (lifetime license)
@@ -1240,6 +1306,11 @@ class VD_License_Validator {
      * @return array Update results with detailed statistics
      */
     public function update_expired_license_statuses($options = array()) {
+        // Delegate to expiry automation module if available
+        if ($this->expiry_automation) {
+            return $this->expiry_automation->update_expired_license_statuses($options);
+        }
+
         $start_time = microtime(true);
 
         // Initialize default options
@@ -2003,6 +2074,11 @@ class VD_License_Validator {
      * @return array Scheduling result
      */
     public function schedule_automatic_updates($schedule_options = array()) {
+        // Delegate to expiry automation module if available
+        if ($this->expiry_automation) {
+            return $this->expiry_automation->schedule_automatic_updates($schedule_options);
+        }
+
         $default_schedule = array(
             'frequency' => 'daily',
             'time' => '02:00',
@@ -2085,6 +2161,11 @@ class VD_License_Validator {
      * @return array Notification result
      */
     public function send_status_change_notification($license, $old_status, $new_status, $context = array()) {
+        // Delegate to expiry escalation module if available
+        if ($this->expiry_escalation) {
+            return $this->expiry_escalation->send_status_change_notification($license, $old_status, $new_status, $context);
+        }
+
         $start_time = microtime(true);
 
         // Initialize notification context
@@ -6599,6 +6680,11 @@ class VD_License_Validator {
      * @return array Comprehensive validation result
      */
     public function apply_advanced_validation_rules($license, $context = array()) {
+        // Delegate to constraint validation module if available
+        if ($this->constraint_validation) {
+            return $this->constraint_validation->perform_conditional_state_validation($license, $context);
+        }
+
         $start_time = microtime(true);
 
         // Initialize validation pipeline
