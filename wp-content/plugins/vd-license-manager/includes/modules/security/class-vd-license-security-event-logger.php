@@ -144,7 +144,7 @@ class VD_License_Security_Event_Logger {
             'metadata_sanitization' => true,
             'timezone' => get_option('timezone_string', 'UTC'),
             'date_format' => 'Y-m-d H:i:s',
-            'enabled_severities' => array('INFO', 'WARNING', 'ERROR', 'CRITICAL', 'ALERT', 'EMERGENCY'),
+            'enabled_severities' => array('DEBUG', 'INFO', 'NOTICE', 'WARNING', 'ERROR', 'CRITICAL', 'ALERT', 'EMERGENCY'),
             'enabled_categories' => self::EVENT_CATEGORIES
         );
     }
