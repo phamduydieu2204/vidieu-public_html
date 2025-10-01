@@ -200,6 +200,15 @@ class VD_License_Module_Loader {
                 'namespace' => 'VD\\LicenseManager\\Security',
                 'dependencies' => array(),
                 'priority' => 15
+            ),
+
+            // Step 3.2.1: Security Event Core Logger Module
+            'security.event_logger' => array(
+                'file' => 'security/class-vd-license-security-event-logger.php',
+                'class' => 'VD\\LicenseManager\\Security\\Event\\VD_License_Security_Event_Logger',
+                'namespace' => 'VD\\LicenseManager\\Security\\Event',
+                'dependencies' => array('security.validator'),
+                'priority' => 16
             )
         );
 

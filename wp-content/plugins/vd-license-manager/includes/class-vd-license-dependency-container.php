@@ -222,6 +222,16 @@ class VD_License_Dependency_Container {
         $this->register('security.validator', function($container) {
             return $container->get('module_loader')->load_module('security.validator');
         });
+
+        // Step 3.2.1: Register Security Event Core Logger module
+        $this->register('security.event_logger', function($container) {
+            $event_logger = $container->get('module_loader')->load_module('security.event_logger');
+            $security_validator = $container->get('security.validator');
+            if ($event_logger && $security_validator) {
+                $event_logger->set_security_validator($security_validator);
+            }
+            return $event_logger;
+        });
     }
 
     /**
