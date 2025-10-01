@@ -153,8 +153,8 @@ function vd_license_manager_init() {
         if (is_admin() || wp_doing_ajax()) {
             $test_files = array(
                 VD_LM_PATH . 'includes/test-step-3-2-1-security-event-logger.php',
-                // VD_LM_PATH . 'includes/test-step-3-2-2-security-threat-detector.php', // DISABLED DUE TO ERROR
-                // VD_LM_PATH . 'includes/test-step-3-2-2-simple.php', // DISABLED DUE TO ERROR
+                VD_LM_PATH . 'includes/test-step-3-2-2-security-threat-detector.php',
+                VD_LM_PATH . 'includes/test-step-3-2-2-simple.php',
                 VD_LM_PATH . 'includes/test-step-3-2-2-minimal.php',
                 VD_LM_PATH . 'includes/test-step-3-2-2-methods.php',
                 VD_LM_PATH . 'includes/debug-step-3-2-1.php',
