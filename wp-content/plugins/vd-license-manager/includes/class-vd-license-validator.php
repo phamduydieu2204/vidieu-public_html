@@ -140,6 +140,14 @@ class VD_License_Validator {
     private $status_enum = null;
 
     /**
+     * Status transition module instance
+     *
+     * @since 1.5.0-rc.1
+     * @var VD_License_Status_Transition|null
+     */
+    private $status_transition = null;
+
+    /**
      * Private constructor to enforce singleton pattern
      *
      * @since 4.2.1
@@ -218,6 +226,7 @@ class VD_License_Validator {
         $this->query_manager = $container->get('database.query_manager');
         $this->cache_manager = $container->get('database.cache_manager');
         $this->status_enum = $container->get('status.enum');
+        $this->status_transition = $container->get('status.transition');
 
         // Set pattern validator dependency for checksum validator
         if ($this->checksum_validator && $this->pattern_validator) {
@@ -1228,56 +1237,15 @@ class VD_License_Validator {
      * @return array Transition rule enforcement result
      */
     private function enforce_transition_rules($from_status, $to_status, $license, $rule_config) {
-        $transition_policies = $rule_config['transition_policies'] ?? array();
-
-        // Check if transition requires admin approval
-        if (in_array($to_status, $transition_policies['require_admin_approval'] ?? array())) {
-            if (!current_user_can('manage_options')) {
-                return array(
-                    'allowed' => false,
-                    'reason' => sprintf('Chuyển đổi sang trạng thái "%s" yêu cầu quyền admin', $to_status),
-                    'requires_admin' => true
-                );
-            }
+        if ($this->status_transition) {
+            return $this->status_transition->enforce_transition_rules($from_status, $to_status, $license, $rule_config);
         }
 
-        // Check specific transition policies
-        switch ($to_status) {
-            case 'active':
-                if ($from_status === 'expired' && !($transition_policies['allow_expired_to_active'] ?? false)) {
-                    return array(
-                        'allowed' => false,
-                        'reason' => 'License hết hạn không thể tự động chuyển về active, cần renew thủ công',
-                        'requires_manual_renewal' => true
-                    );
-                }
-                break;
-
-            case 'revoked':
-                // Revoked transitions should be carefully controlled
-                if (!current_user_can('manage_options')) {
-                    return array(
-                        'allowed' => false,
-                        'reason' => 'Chỉ admin mới có thể revoke license',
-                        'requires_admin' => true
-                    );
-                }
-                break;
-        }
-
-        // Check if source status allows transitions
-        if ($from_status === 'revoked' && !($transition_policies['allow_revoked_transitions'] ?? false)) {
-            return array(
-                'allowed' => false,
-                'reason' => 'License đã bị revoke không thể chuyển đổi trạng thái',
-                'is_terminal_state' => true
-            );
-        }
-
+        // Fallback if module not available
         return array(
-            'allowed' => true,
-            'transition_type' => $this->get_transition_type($from_status, $to_status),
-            'grace_period_applicable' => $this->is_grace_period_applicable($from_status, $to_status, $rule_config)
+            'allowed' => false,
+            'reason' => 'Status transition module not initialized',
+            'error_code' => 'module_not_available'
         );
     }
 
@@ -2222,42 +2190,15 @@ class VD_License_Validator {
      * @return array Transition validation result
      */
     private function validate_automatic_status_transition($from_status, $to_status, $license, $options) {
-        // Get allowed automatic transitions
-        $allowed_transitions = $this->get_allowed_automatic_transitions();
-
-        $transition_key = $from_status . '_to_' . $to_status;
-
-        if (!isset($allowed_transitions[$transition_key])) {
-            return array(
-                'valid' => false,
-                'error' => sprintf(
-                    'Automatic transition from %s to %s is not allowed',
-                    $from_status,
-                    $to_status
-                )
-            );
+        if ($this->status_transition) {
+            return $this->status_transition->validate_automatic_status_transition($from_status, $to_status, $license, $options);
         }
 
-        $transition_config = $allowed_transitions[$transition_key];
-
-        // Check additional constraints
-        if (!empty($transition_config['constraints'])) {
-            foreach ($transition_config['constraints'] as $constraint) {
-                $constraint_result = $this->validate_transition_constraint($constraint, $license, $options);
-
-                if (!$constraint_result['valid']) {
-                    return array(
-                        'valid' => false,
-                        'error' => $constraint_result['error']
-                    );
-                }
-            }
-        }
-
+        // Fallback if module not available
         return array(
-            'valid' => true,
-            'transition_type' => $transition_config['type'] ?? 'automatic',
-            'requires_audit' => $transition_config['requires_audit'] ?? true
+            'valid' => false,
+            'error' => 'Status transition module not initialized',
+            'error_code' => 'module_not_available'
         );
     }
 
@@ -2347,33 +2288,12 @@ class VD_License_Validator {
      * @return array Allowed automatic transitions
      */
     private function get_allowed_automatic_transitions() {
-        return array(
-            'active_to_expired' => array(
-                'type' => 'expiration',
-                'requires_audit' => true,
-                'constraints' => array('must_be_past_expiry')
-            ),
-            'pending_to_expired' => array(
-                'type' => 'expiration',
-                'requires_audit' => true,
-                'constraints' => array('must_be_past_expiry')
-            ),
-            'expired_to_suspended' => array(
-                'type' => 'escalation',
-                'requires_audit' => true,
-                'constraints' => array('must_be_expired_for_days')
-            ),
-            'suspended_to_revoked' => array(
-                'type' => 'escalation',
-                'requires_audit' => true,
-                'constraints' => array('must_be_suspended_for_days')
-            ),
-            'expired_to_revoked' => array(
-                'type' => 'escalation',
-                'requires_audit' => true,
-                'constraints' => array('must_be_expired_for_days')
-            )
-        );
+        if ($this->status_transition) {
+            return $this->status_transition->get_allowed_automatic_transitions();
+        }
+
+        // Fallback if module not available
+        return array();
     }
 
     /**
@@ -2436,43 +2356,16 @@ class VD_License_Validator {
      * @return array Constraint validation result
      */
     private function validate_transition_constraint($constraint, $license, $options) {
-        switch ($constraint) {
-            case 'must_be_past_expiry':
-                if (strtotime($license['expires_at']) >= current_time('timestamp')) {
-                    return array(
-                        'valid' => false,
-                        'error' => 'License has not yet expired'
-                    );
-                }
-                break;
-
-            case 'must_be_expired_for_days':
-                $days_expired = ceil((current_time('timestamp') - strtotime($license['expires_at'])) / (24 * 3600));
-                $min_days = 7; // Default minimum days
-
-                if ($days_expired < $min_days) {
-                    return array(
-                        'valid' => false,
-                        'error' => sprintf('License must be expired for at least %d days', $min_days)
-                    );
-                }
-                break;
-
-            case 'must_be_suspended_for_days':
-                $last_change = strtotime($license['last_status_change'] ?? $license['updated_at']);
-                $days_suspended = ceil((current_time('timestamp') - $last_change) / (24 * 3600));
-                $min_days = 23; // Default minimum suspension days
-
-                if ($days_suspended < $min_days) {
-                    return array(
-                        'valid' => false,
-                        'error' => sprintf('License must be suspended for at least %d days', $min_days)
-                    );
-                }
-                break;
+        if ($this->status_transition) {
+            return $this->status_transition->validate_transition_constraint($constraint, $license, $options);
         }
 
-        return array('valid' => true);
+        // Fallback if module not available
+        return array(
+            'valid' => false,
+            'error' => 'Status transition module not initialized',
+            'error_code' => 'module_not_available'
+        );
     }
 
     /**
