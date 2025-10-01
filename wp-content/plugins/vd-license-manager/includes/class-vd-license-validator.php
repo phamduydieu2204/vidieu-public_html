@@ -859,32 +859,6 @@ class VD_License_Validator {
         );
     }
 
-    /**
-     * Step 4.2.4.1 - Get transition type
-     * Categorize transition type for business logic
-     *
-     * @since 4.2.4.1
-     * @param string $from_status Source status
-     * @param string $to_status Target status
-     * @return string Transition type
-     */
-    private function get_transition_type($from_status, $to_status) {
-        $hierarchy = array(
-            'revoked' => 1, 'expired' => 2, 'suspended' => 3,
-            'inactive' => 4, 'pending' => 5, 'active' => 6
-        );
-
-        $from_priority = $hierarchy[$from_status] ?? 999;
-        $to_priority = $hierarchy[$to_status] ?? 999;
-
-        if ($to_priority > $from_priority) {
-            return 'upgrade'; // Moving to better state
-        } elseif ($to_priority < $from_priority) {
-            return 'downgrade'; // Moving to worse state
-        } else {
-            return 'lateral'; // Same level
-        }
-    }
 
     /**
      * Step 4.2.4.1 - Create status validation error
@@ -1437,26 +1411,6 @@ class VD_License_Validator {
         );
     }
 
-    /**
-     * Step 4.2.4.2 - Check if grace period is applicable
-     * Determine if grace period applies to status transition
-     *
-     * @since 4.2.4.2
-     * @param string $from_status Source status
-     * @param string $to_status Target status
-     * @param array $rule_config Business rule configuration
-     * @return bool True if grace period applicable
-     */
-    private function is_grace_period_applicable($from_status, $to_status, $rule_config) {
-        $grace_applicable_transitions = array(
-            'active' => array('suspended', 'expired'),
-            'suspended' => array('revoked'),
-            'expired' => array('revoked')
-        );
-
-        return isset($grace_applicable_transitions[$from_status]) &&
-               in_array($to_status, $grace_applicable_transitions[$from_status]);
-    }
 
     /**
      * Step 4.2.4.2 - Create business rule error
