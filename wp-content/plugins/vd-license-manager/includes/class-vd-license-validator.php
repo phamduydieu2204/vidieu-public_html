@@ -132,12 +132,12 @@ class VD_License_Validator {
     private $query_manager = null;
 
     /**
-     * License status enum values
+     * Status enum module instance
      *
-     * @since 4.2.1
-     * @var array
+     * @since 1.5.0-rc.1
+     * @var VD_License_Status_Enum|null
      */
-    private $valid_statuses = array('active', 'suspended', 'expired');
+    private $status_enum = null;
 
     /**
      * Private constructor to enforce singleton pattern
@@ -217,6 +217,7 @@ class VD_License_Validator {
         $this->checksum_validator = $container->get('format.checksum_validator');
         $this->query_manager = $container->get('database.query_manager');
         $this->cache_manager = $container->get('database.cache_manager');
+        $this->status_enum = $container->get('status.enum');
 
         // Set pattern validator dependency for checksum validator
         if ($this->checksum_validator && $this->pattern_validator) {
@@ -518,7 +519,7 @@ class VD_License_Validator {
     }
 
     /**
-     * Step 4.2.4.1 - Status Enum Validation Framework
+     * Step 4.2.4.1 - Status Enum Validation Framework (delegated to status enum module)
      * Core comprehensive status validation với enum checking và transition rules
      *
      * @since 4.2.4.1
@@ -526,6 +527,11 @@ class VD_License_Validator {
      * @return array Comprehensive validation result
      */
     private function perform_status_enum_validation($license) {
+        if ($this->status_enum) {
+            return $this->status_enum->perform_status_enum_validation($license);
+        }
+
+        // Fallback implementation
         $debug_info = array();
         $validation_start = microtime(true);
 
@@ -627,51 +633,39 @@ class VD_License_Validator {
 
     /**
      * Step 4.2.4.1 - Status Enum Validation
-     * Validate status against defined enums
+     * Validate status against defined enums (delegated to status enum module)
      *
      * @since 4.2.4.1
      * @param string $status Status to validate
      * @return array Validation result
      */
     private function validate_status_enum($status) {
-        $valid_statuses = $this->get_valid_status_enums();
-
-        if (!in_array($status, $valid_statuses, true)) {
-            return array(
-                'valid' => false,
-                'error' => sprintf('Trạng thái "%s" không hợp lệ. Các trạng thái cho phép: %s',
-                    $status,
-                    implode(', ', $valid_statuses)
-                ),
-                'provided_status' => $status,
-                'valid_statuses' => $valid_statuses
-            );
+        if ($this->status_enum) {
+            return $this->status_enum->validate_status_enum($status);
         }
 
+        // Fallback if module not available
         return array(
-            'valid' => true,
-            'status' => $status,
-            'status_description' => $this->get_status_description($status),
-            'status_category' => $this->get_status_category($status)
+            'valid' => false,
+            'error' => 'Status enum module not initialized',
+            'error_code' => 'module_not_available'
         );
     }
 
     /**
-     * Step 4.2.4.1 - Get valid status enums
+     * Step 4.2.4.1 - Get valid status enums (delegated to status enum module)
      * Define all valid license status enums
      *
      * @since 4.2.4.1
      * @return array Valid status enums
      */
     private function get_valid_status_enums() {
-        return array(
-            'active',     // License is active and usable
-            'inactive',   // License exists but not activated
-            'suspended',  // License temporarily disabled
-            'expired',    // License has expired
-            'revoked',    // License permanently revoked
-            'pending'     // License pending activation (new in 4.2.4.1)
-        );
+        if ($this->status_enum) {
+            return $this->status_enum->get_valid_status_enums();
+        }
+
+        // Fallback if module not available
+        return array('active', 'inactive', 'suspended', 'expired', 'revoked', 'pending');
     }
 
     /**
@@ -684,32 +678,15 @@ class VD_License_Validator {
      * @return array Transition validation result
      */
     private function validate_status_transition($from_status, $to_status) {
-        $allowed_transitions = $this->get_allowed_status_transitions();
-
-        if (!isset($allowed_transitions[$from_status])) {
-            return array(
-                'valid' => false,
-                'error' => sprintf('Không thể chuyển từ trạng thái không xác định: %s', $from_status),
-                'from_status' => $from_status,
-                'to_status' => $to_status
-            );
+        if ($this->status_enum) {
+            return $this->status_enum->validate_status_transition($from_status, $to_status);
         }
 
-        if (!in_array($to_status, $allowed_transitions[$from_status], true)) {
-            return array(
-                'valid' => false,
-                'error' => sprintf('Không thể chuyển từ "%s" sang "%s"', $from_status, $to_status),
-                'from_status' => $from_status,
-                'to_status' => $to_status,
-                'allowed_transitions' => $allowed_transitions[$from_status]
-            );
-        }
-
+        // Fallback if module not available
         return array(
-            'valid' => true,
-            'from_status' => $from_status,
-            'to_status' => $to_status,
-            'transition_type' => $this->get_transition_type($from_status, $to_status)
+            'valid' => false,
+            'error' => 'Status enum module not initialized',
+            'error_code' => 'module_not_available'
         );
     }
 
@@ -798,14 +775,18 @@ class VD_License_Validator {
      * @return array Status transition matrix
      */
     private function get_allowed_status_transitions() {
-        return array(
-            'pending'   => array('active', 'inactive', 'expired'),
-            'inactive'  => array('active', 'suspended', 'expired'),
-            'active'    => array('suspended', 'expired', 'revoked', 'inactive'),
-            'suspended' => array('active', 'expired', 'revoked'),
-            'expired'   => array('active', 'revoked'), // Can be renewed
-            'revoked'   => array() // Terminal state - no transitions allowed
-        );
+        if ($this->status_enum) {
+            // Return all possible transitions for a specific status
+            $all_statuses = $this->status_enum->get_valid_status_enums();
+            $transitions = array();
+            foreach ($all_statuses as $status) {
+                $transitions[$status] = $this->status_enum->get_allowed_transitions($status);
+            }
+            return $transitions;
+        }
+
+        // Fallback if module not available
+        return array();
     }
 
     /**
@@ -817,16 +798,12 @@ class VD_License_Validator {
      * @return string Status description
      */
     private function get_status_description($status) {
-        $descriptions = array(
-            'active'    => 'License đang hoạt động và có thể sử dụng',
-            'inactive'  => 'License tồn tại nhưng chưa được kích hoạt',
-            'suspended' => 'License tạm thời bị vô hiệu hóa',
-            'expired'   => 'License đã hết hạn sử dụng',
-            'revoked'   => 'License đã bị thu hồi vĩnh viễn',
-            'pending'   => 'License đang chờ được kích hoạt'
-        );
+        if ($this->status_enum) {
+            return $this->status_enum->get_status_description($status);
+        }
 
-        return $descriptions[$status] ?? 'Trạng thái không xác định';
+        // Fallback if module not available
+        return 'Trạng thái không xác định';
     }
 
     /**
@@ -838,16 +815,12 @@ class VD_License_Validator {
      * @return string Status category
      */
     private function get_status_category($status) {
-        $categories = array(
-            'active'    => 'usable',
-            'inactive'  => 'unusable',
-            'suspended' => 'temporarily_unusable',
-            'expired'   => 'unusable',
-            'revoked'   => 'permanently_unusable',
-            'pending'   => 'unusable'
-        );
+        if ($this->status_enum) {
+            return $this->status_enum->get_status_category($status);
+        }
 
-        return $categories[$status] ?? 'unknown';
+        // Fallback if module not available
+        return 'unknown';
     }
 
     /**
