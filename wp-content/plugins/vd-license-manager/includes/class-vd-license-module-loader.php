@@ -167,6 +167,14 @@ class VD_License_Module_Loader {
                 'namespace' => 'VD\\LicenseManager\\Rules',
                 'dependencies' => array('rules.expiry_core', 'status.business'),
                 'priority' => 11
+            ),
+            // Step 2.2.3: Expiry Escalation Module
+            'rules.expiry_escalation' => array(
+                'file' => 'rules/class-vd-license-rule-expiry-escalation.php',
+                'class' => 'VD_License_Rule_Expiry_Escalation',
+                'namespace' => 'VD\\LicenseManager\\Rules',
+                'dependencies' => array('rules.expiry_automation', 'rules.expiry_core'),
+                'priority' => 12
             )
         );
 
