@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/9.5/phpunit.xsd"
+         bootstrap="tests/bootstrap.php"
+         colors="true"
+         convertErrorsToExceptions="true"
+         convertNoticesToExceptions="true"
+         convertWarningsToExceptions="true"
+         processIsolation="false"
+         stopOnFailure="false"
+         verbose="true">
+
+    <testsuites>
+        <testsuite name="VD License Manager Phase 2 Tests">
+            <directory>./tests/</directory>
+        </testsuite>
+
+        <!-- Phase 2 Test Suites -->
+        <testsuite name="Step 2.1 - Activation Rules">
+            <directory>./tests/step-2-1-activation-rules/</directory>
+        </testsuite>
+
+        <testsuite name="Step 2.2.1 - Expiry Core">
+            <directory>./tests/step-2-2-1-expiry-core/</directory>
+        </testsuite>
+
+        <testsuite name="Step 2.2.2 - Expiry Automation">
+            <directory>./tests/step-2-2-2-expiry-automation/</directory>
+        </testsuite>
+
+        <testsuite name="Step 2.2.3 - Expiry Escalation">
+            <directory>./tests/step-2-2-3-expiry-escalation/</directory>
+        </testsuite>
+
+        <testsuite name="Step 2.2.4 - Constraint Validation">
+            <directory>./tests/step-2-2-4-constraint-validation/</directory>
+        </testsuite>
+
+        <testsuite name="Step 2.2.5 - Usage Rules">
+            <directory>./tests/step-2-2-5-usage-rules/</directory>
+        </testsuite>
+    </testsuites>
+
+    <coverage>
+        <include>
+            <directory suffix=".php">./includes/modules/</directory>
+        </include>
+        <exclude>
+            <directory>./tests/</directory>
+            <directory>./vendor/</directory>
+        </exclude>
+        <report>
+            <text outputFile="coverage.txt"/>
+            <html outputDirectory="coverage-html"/>
+        </report>
+    </coverage>
+
+    <php>
+        <env name="WP_TESTS_DOMAIN" value="example.org"/>
+        <env name="WP_TESTS_EMAIL" value="admin@example.org"/>
+        <env name="WP_TESTS_TITLE" value="Test Blog"/>
+        <env name="WP_PHP_BINARY" value="php"/>
+        <env name="WP_TESTS_FORCE_KNOWN_BUGS" value="true"/>
+
+        <!-- VD License Manager specific settings -->
+        <env name="VD_TEST_MODE" value="true"/>
+        <env name="VD_DEBUG" value="true"/>
+        <const name="VD_TESTING" value="true"/>
+    </php>
+
+    <logging>
+        <log type="junit" target="test-results.xml"/>
+        <log type="coverage-text" target="php://stdout" showUncoveredFiles="false"/>
+    </logging>
+</phpunit>
