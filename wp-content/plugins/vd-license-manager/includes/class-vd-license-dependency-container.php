@@ -132,7 +132,18 @@ class VD_License_Dependency_Container {
         });
 
         $this->register('status.business', function($container) {
-            return $container->get('module_loader')->load_module('status.business');
+            $status_business = $container->get('module_loader')->load_module('status.business');
+            $status_enum = $container->get('status.enum');
+            $status_transition = $container->get('status.transition');
+            if ($status_business) {
+                if ($status_enum) {
+                    $status_business->set_status_enum($status_enum);
+                }
+                if ($status_transition) {
+                    $status_business->set_status_transition($status_transition);
+                }
+            }
+            return $status_business;
         });
     }
 
@@ -334,7 +345,10 @@ class VD_License_Dependency_Container {
                 'format.checksum_validator',
                 'database.query_manager',
                 'database.lmfwc_adapter',
-                'database.cache_manager'
+                'database.cache_manager',
+                'status.enum',
+                'status.transition',
+                'status.business'
             );
 
             foreach ($core_services as $service_id) {
