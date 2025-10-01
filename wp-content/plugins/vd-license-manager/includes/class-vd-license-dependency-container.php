@@ -233,7 +233,8 @@ class VD_License_Dependency_Container {
             return $event_logger;
         });
 
-        // Step 3.2.2: Register Security Threat Detector module
+        // Step 3.2.2: Register Security Threat Detector module (TEMPORARILY DISABLED)
+        /*
         $this->register('security.threat_detector', function($container) {
             $threat_detector = $container->get('module_loader')->load_module('security.threat_detector');
             $security_validator = $container->get('security.validator');
@@ -249,6 +250,7 @@ class VD_License_Dependency_Container {
             }
             return $threat_detector;
         });
+        */
     }
 
     /**

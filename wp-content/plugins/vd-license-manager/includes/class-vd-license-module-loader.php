@@ -211,7 +211,8 @@ class VD_License_Module_Loader {
                 'priority' => 16
             ),
 
-            // Step 3.2.2: Security Threat Detector Module
+            // Step 3.2.2: Security Threat Detector Module (TEMPORARILY DISABLED)
+            /*
             'security.threat_detector' => array(
                 'file' => 'security/class-vd-license-security-threat-detector.php',
                 'class' => 'VD\\LicenseManager\\Security\\Detection\\VD_License_Security_Threat_Detector',
@@ -219,6 +220,7 @@ class VD_License_Module_Loader {
                 'dependencies' => array('security.validator', 'security.event_logger'),
                 'priority' => 17
             )
+            */
         );
 
         $this->stats['total_modules'] = count($this->modules);
