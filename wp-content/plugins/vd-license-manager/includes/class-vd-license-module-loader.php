@@ -151,6 +151,14 @@ class VD_License_Module_Loader {
                 'namespace' => 'VD\\LicenseManager\\Rules',
                 'dependencies' => array('status.business'),
                 'priority' => 9
+            ),
+            // Step 2.2.1: Expiry Core Module
+            'rules.expiry_core' => array(
+                'file' => 'rules/class-vd-license-rule-expiry-core.php',
+                'class' => 'VD_License_Rule_Expiry_Core',
+                'namespace' => 'VD\\LicenseManager\\Rules',
+                'dependencies' => array('status.business'),
+                'priority' => 10
             )
         );
 

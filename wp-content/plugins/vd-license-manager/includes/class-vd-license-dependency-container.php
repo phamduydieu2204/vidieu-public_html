@@ -155,6 +155,16 @@ class VD_License_Dependency_Container {
             }
             return $activation_rules;
         });
+
+        // Step 2.2.1: Register Expiry Core module
+        $this->register('rules.expiry_core', function($container) {
+            $expiry_core = $container->get('module_loader')->load_module('rules.expiry_core');
+            $status_business = $container->get('status.business');
+            if ($expiry_core && $status_business) {
+                $expiry_core->set_status_business($status_business);
+            }
+            return $expiry_core;
+        });
     }
 
     /**
@@ -359,7 +369,8 @@ class VD_License_Dependency_Container {
                 'status.enum',
                 'status.transition',
                 'status.business',
-                'rules.activation'
+                'rules.activation',
+                'rules.expiry_core'
             );
 
             foreach ($core_services as $service_id) {

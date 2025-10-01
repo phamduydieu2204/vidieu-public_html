@@ -1425,14 +1425,69 @@ git reset --hard [commit-hash-before-refactor]
   - Reduced memory footprint significantly
 - **Status:** ✅ Cleanup completed successfully
 
+#### **Step 2.2.1: Expiry Core Module (COMPLETED ✅)**
+- **Objective:** Extract core expiry validation and basic status update logic from main validator
+- **Module Created:** `modules/rules/class-vd-license-rule-expiry-core.php` (485 lines)
+- **PSR-4 Namespace:** `VD\LicenseManager\Rules`
+- **Main Features:**
+  - **Core Expiry Validation:** `validate_license_expiry_date()` - comprehensive expiry date validation
+  - **Status Update Logic:** `update_expired_license_status()` - automatic status updates for expired licenses
+  - **Warning Threshold Management:** `get_expiry_warning_threshold()` - configurable warning thresholds
+  - **Lifetime License Detection:** `is_lifetime_license()` - lifetime license identification
+  - **Expiry Analysis:** `get_expiry_analysis()` - comprehensive expiry analysis with recommendations
+  - **Days Calculation:** `calculate_days_until_expiry()` - precise expiry countdown calculation
+- **Key Capabilities:**
+  - Comprehensive expiry date validation with null handling for lifetime licenses
+  - Configurable warning thresholds (per license, product, or global default)
+  - Database status updates with business rule validation integration
+  - Table existence validation for safety
+  - Automatic audit logging for status changes
+  - Statistics tracking for validations, warnings, and updates
+  - Error handling with detailed debug information
+- **Dependencies:**
+  - **Status Business:** For business rule integration and status transition validation
+  - Proper dependency injection through container
+- **Integration:**
+  - Registered in dependency container as `rules.expiry_core`
+  - Module loader priority 10 (after status.business)
+  - Full dependency injection with Status Business Logic module
+- **Files Modified:**
+  - `class-vd-license-dependency-container.php`: Added rules.expiry_core service registration
+  - `class-vd-license-module-loader.php`: Added expiry core module definition
+- **Testing:**
+  - AJAX test endpoint: `/wp-admin/admin-ajax.php?action=vd_test_step_2_2_1`
+  - Test suite: 8 comprehensive test categories covering:
+    - Module loading and dependency injection
+    - Basic expiry validation (valid, expired, lifetime)
+    - Warning threshold configuration (license, product, global)
+    - Days until expiry calculation accuracy
+    - Lifetime license detection
+    - Status update functionality with business rules
+    - Expiry analysis with recommendations
+    - Module statistics and performance tracking
+- **PSR-4 Compliance:**
+  - Proper namespace structure: `VD\LicenseManager\Rules`
+  - WordPress Coding Standards compliance
+  - Autoload compatible with module loader
+  - Type hints and proper documentation
+- **Achievements:**
+  - Focused expiry core module with 485 lines of specialized functionality
+  - Basic expiry validation and status management extracted from main validator
+  - Foundation for Step 2.2.2 (Expiry Automation) and Step 2.2.3 (Expiry Escalation)
+  - Complete separation of core expiry concerns from validator
+  - Audit logging and statistics tracking for expiry operations
+- **Status:** ✅ Implementation completed successfully
+
 ### Week 3-4: Core Logic (Phase 2)
 - [x] Status Enum Validator (520 lines) ✅
 - [x] Status Transition Manager (590 lines) ✅
 - [x] Status Business Logic (726 lines) ✅ **Step 1.8 COMPLETED**
 - [x] Activation Rules (652 lines) ✅ **Step 2.1 COMPLETED**
-- [ ] Expiry Rules (450 lines)
-- [ ] Usage Rules (450 lines)
-- [ ] Compliance Rules (450 lines)
+- [x] **Step 2.2.1: Expiry Core Module (485 lines) ✅ COMPLETED**
+- [ ] Step 2.2.2: Expiry Automation Module (450 lines)
+- [ ] Step 2.2.3: Expiry Escalation Module (300 lines)
+- [ ] Step 2.2.4: Constraint Validation Module (200 lines)
+- [ ] Step 2.2.5: Usage Rules Module (400 lines)
 - [ ] Unit tests for Phase 2 modules (70 tests)
 - [ ] Integration testing (Phase 1 + 2)
 - [ ] **Release:** v1.5.0-rc.2
