@@ -156,6 +156,7 @@ function vd_license_manager_init() {
                 // VD_LM_PATH . 'includes/test-step-3-2-2-security-threat-detector.php', // DISABLED DUE TO ERROR
                 // VD_LM_PATH . 'includes/test-step-3-2-2-simple.php', // DISABLED DUE TO ERROR
                 VD_LM_PATH . 'includes/test-step-3-2-2-minimal.php',
+                VD_LM_PATH . 'includes/test-step-3-2-2-methods.php',
                 VD_LM_PATH . 'includes/debug-step-3-2-1.php',
                 VD_LM_PATH . 'includes/debug-step-3-2-2.php'
             );
