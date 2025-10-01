@@ -68,6 +68,11 @@ function vd_render_current_modules_test_page() {
                 'name' => 'Step 2.2.4 - Constraint Validation',
                 'class' => 'VD_License_Rule_Constraint_Validation',
                 'key_method' => 'perform_conditional_state_validation'
+            ),
+            'rules.usage' => array(
+                'name' => 'Step 2.2.5 - Usage Rules',
+                'class' => 'VD_License_Rule_Usage',
+                'key_method' => 'validate_api_rate_limits'
             )
         );
 
@@ -149,10 +154,13 @@ function vd_render_current_modules_test_page() {
         echo '<li><strong>Step 2.2.2:</strong> Expiry Automation (685 lines) - Batch processing, scheduling, automation</li>';
         echo '<li><strong>Step 2.2.3:</strong> Expiry Escalation (871 lines) - Notifications, escalation policies, warnings</li>';
         echo '<li><strong>Step 2.2.4:</strong> Constraint Validation (671 lines) - Multi-layered constraint validation</li>';
+        echo '<li><strong>Step 2.2.5:</strong> Usage Rules (573 lines) - Rate limiting, quota management, usage analytics</li>';
         echo '</ul>';
-        echo '<h3>⏳ Next Step:</h3>';
+        echo '<h3>🎉 Phase 2.2 COMPLETED!</h3>';
         echo '<ul>';
-        echo '<li><strong>Step 2.2.5:</strong> Usage Rules Module (400 lines) - Usage pattern validation and limits</li>';
+        echo '<li><strong>Next Phase:</strong> Unit tests for Phase 2 modules (70 tests)</li>';
+        echo '<li><strong>Integration:</strong> Full Phase 1 + 2 integration testing</li>';
+        echo '<li><strong>Release:</strong> v1.5.0-rc.2</li>';
         echo '</ul>';
         echo '</div>';
 
@@ -176,7 +184,7 @@ add_action('admin_notices', function() {
         echo '<div class="notice notice-info">';
         echo '<p><strong>VD License Manager:</strong> ';
         echo '<a href="' . esc_url($test_url) . '" target="_blank">🧪 Test All Current Modules</a>';
-        echo ' | Current Status: 5 modules implemented and ready for testing';
+        echo ' | Current Status: 6 modules implemented - Phase 2.2 COMPLETED! 🎉';
         echo '</p>';
         echo '</div>';
     }

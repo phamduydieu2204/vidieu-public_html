@@ -183,6 +183,14 @@ class VD_License_Module_Loader {
                 'namespace' => 'VD\\LicenseManager\\Rules',
                 'dependencies' => array('status.business'),
                 'priority' => 13
+            ),
+            // Step 2.2.5: Usage Rules Module
+            'rules.usage' => array(
+                'file' => 'rules/class-vd-license-rule-usage.php',
+                'class' => 'VD_License_Rule_Usage',
+                'namespace' => 'VD\\LicenseManager\\Rules',
+                'dependencies' => array('rules.activation'),
+                'priority' => 14
             )
         );
 

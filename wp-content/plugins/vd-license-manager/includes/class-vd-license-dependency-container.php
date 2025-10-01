@@ -207,6 +207,16 @@ class VD_License_Dependency_Container {
             }
             return $constraint_validation;
         });
+
+        // Step 2.2.5: Register Usage Rules module
+        $this->register('rules.usage', function($container) {
+            $usage_rules = $container->get('module_loader')->load_module('rules.usage');
+            $activation_rules = $container->get('rules.activation');
+            if ($usage_rules && $activation_rules) {
+                $usage_rules->set_activation_rules($activation_rules);
+            }
+            return $usage_rules;
+        });
     }
 
     /**
@@ -415,7 +425,8 @@ class VD_License_Dependency_Container {
                 'rules.expiry_core',
                 'rules.expiry_automation',
                 'rules.expiry_escalation',
-                'rules.constraint_validation'
+                'rules.constraint_validation',
+                'rules.usage'
             );
 
             foreach ($core_services as $service_id) {
