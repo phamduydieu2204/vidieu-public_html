@@ -82,12 +82,13 @@ class VD_License_Status_Transition {
     public function enforce_transition_rules($from_status, $to_status, $license, $rule_config = array()) {
         $transition_policies = isset($rule_config['transition_policies']) ? $rule_config['transition_policies'] : array();
 
-        // Business rule: active -> revoked requires admin approval
-        if ($from_status === 'active' && $to_status === 'revoked') {
+        // Check if transition requires admin approval
+        if (isset($transition_policies['require_admin_approval']) &&
+            in_array($to_status, $transition_policies['require_admin_approval'])) {
             if (!current_user_can('manage_options')) {
                 return array(
                     'allowed' => false,
-                    'reason' => 'Chỉ admin mới có thể revoke license',
+                    'reason' => sprintf('Chuyển đổi sang trạng thái "%s" yêu cầu quyền admin', $to_status),
                     'requires_admin' => true
                 );
             }
