@@ -96,7 +96,7 @@ function vd_debug_step_3_2_2_handler() {
                 );
 
                 // Check if class exists after include
-                if (class_exists('VD\LicenseManager\Security\Detection\VD_License_Security_Threat_Detector')) {
+                if (class_exists('VD\\LicenseManager\\Security\\Detection\\VD_License_Security_Threat_Detector')) {
                     $debug_info['manual_include']['class_exists'] = true;
                 } else {
                     $debug_info['manual_include']['class_exists'] = false;
