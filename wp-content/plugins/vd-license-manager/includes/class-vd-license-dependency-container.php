@@ -165,6 +165,22 @@ class VD_License_Dependency_Container {
             }
             return $expiry_core;
         });
+
+        // Step 2.2.2: Register Expiry Automation module
+        $this->register('rules.expiry_automation', function($container) {
+            $expiry_automation = $container->get('module_loader')->load_module('rules.expiry_automation');
+            $expiry_core = $container->get('rules.expiry_core');
+            $status_business = $container->get('status.business');
+            if ($expiry_automation) {
+                if ($expiry_core) {
+                    $expiry_automation->set_expiry_core($expiry_core);
+                }
+                if ($status_business) {
+                    $expiry_automation->set_status_business($status_business);
+                }
+            }
+            return $expiry_automation;
+        });
     }
 
     /**
@@ -370,7 +386,8 @@ class VD_License_Dependency_Container {
                 'status.transition',
                 'status.business',
                 'rules.activation',
-                'rules.expiry_core'
+                'rules.expiry_core',
+                'rules.expiry_automation'
             );
 
             foreach ($core_services as $service_id) {

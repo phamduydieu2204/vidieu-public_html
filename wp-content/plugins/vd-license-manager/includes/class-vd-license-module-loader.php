@@ -159,6 +159,14 @@ class VD_License_Module_Loader {
                 'namespace' => 'VD\\LicenseManager\\Rules',
                 'dependencies' => array('status.business'),
                 'priority' => 10
+            ),
+            // Step 2.2.2: Expiry Automation Module
+            'rules.expiry_automation' => array(
+                'file' => 'rules/class-vd-license-rule-expiry-automation.php',
+                'class' => 'VD_License_Rule_Expiry_Automation',
+                'namespace' => 'VD\\LicenseManager\\Rules',
+                'dependencies' => array('rules.expiry_core', 'status.business'),
+                'priority' => 11
             )
         );
 

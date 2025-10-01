@@ -1478,13 +1478,75 @@ git reset --hard [commit-hash-before-refactor]
   - Audit logging and statistics tracking for expiry operations
 - **Status:** ✅ Implementation completed successfully
 
+#### **Step 2.2.2: Expiry Automation Module (COMPLETED ✅)**
+- **Objective:** Extract automated expiry processing, batch operations, and scheduling logic from main validator
+- **Module Created:** `modules/rules/class-vd-license-rule-expiry-automation.php` (685 lines)
+- **PSR-4 Namespace:** `VD\LicenseManager\Rules`
+- **Main Features:**
+  - **Batch Processing:** `update_expired_license_statuses()` - main entry point for automated batch status updates
+  - **Single License Processing:** `process_single_expired_license()` - individual license processing with error handling
+  - **Escalation Logic:** `determine_target_status_for_expired_license()` - intelligent status escalation based on days expired
+  - **Database Operations:** `execute_automatic_status_update()` - safe database updates with optimistic locking
+  - **Scheduling System:** `schedule_automatic_updates()` - WordPress cron integration for automated runs
+  - **Configuration Management:** `get_escalation_configuration()` - product-specific and global escalation rules
+  - **Query Operations:** `get_expired_licenses_for_update()` - multi-table license retrieval with safety checks
+  - **Statistics Tracking:** Comprehensive performance and operation statistics
+- **Key Capabilities:**
+  - Batch processing with configurable size and transaction safety
+  - Intelligent escalation: expired → suspended (7+ days) → revoked (30+ days)
+  - WordPress cron integration with custom schedules (hourly, twice daily, weekly)
+  - Multi-table support (VD internal + LMfWC compatibility)
+  - Optimistic locking to prevent concurrent modification conflicts
+  - Comprehensive audit logging and error tracking
+  - Dry-run mode for safe testing and validation
+  - Product-specific escalation configuration overrides
+  - Performance monitoring and execution time tracking
+- **Dependencies:**
+  - **Expiry Core:** For basic expiry validation and status updates
+  - **Status Business:** For business rule validation and status transitions
+  - Proper dependency injection through container
+- **Integration:**
+  - Registered in dependency container as `rules.expiry_automation`
+  - Module loader priority 11 (after rules.expiry_core and status.business)
+  - Full dependency injection with both required modules
+  - WordPress hooks integration for cron scheduling
+- **Files Modified:**
+  - `class-vd-license-dependency-container.php`: Added rules.expiry_automation service registration with dual dependency injection
+  - `class-vd-license-module-loader.php`: Added expiry automation module definition with proper dependencies
+- **Testing:**
+  - AJAX test endpoint: `/wp-admin/admin-ajax.php?action=vd_test_step_2_2_2`
+  - Test suite: 9 comprehensive test categories covering:
+    - Module loading and dependency injection validation
+    - Configuration validation and escalation rules
+    - Escalation logic testing (recently/long/very long expired scenarios)
+    - Batch processing functionality and safety
+    - Scheduling system and WordPress cron integration
+    - Status update operations with dry-run validation
+    - Error handling and safety mechanisms
+    - Integration with dependency modules
+    - Statistics tracking and performance monitoring
+- **WordPress Integration:**
+  - Custom cron schedules: vd_hourly, vd_twice_daily, vd_weekly
+  - Scheduled execution callback: `execute_scheduled_update()`
+  - Hook integration: `vd_automatic_license_updates`
+  - Admin options integration for global configuration
+- **Achievements:**
+  - Comprehensive automation module with 685 lines of specialized functionality
+  - Complete separation of automation concerns from main validator
+  - Production-ready scheduling and batch processing system
+  - Advanced escalation logic with configurable thresholds
+  - Safety mechanisms: dry-run, optimistic locking, transaction support
+  - Extensive error handling and audit logging
+  - Foundation for Step 2.2.3 (Expiry Escalation) enhancement
+- **Status:** ✅ Implementation completed successfully
+
 ### Week 3-4: Core Logic (Phase 2)
 - [x] Status Enum Validator (520 lines) ✅
 - [x] Status Transition Manager (590 lines) ✅
 - [x] Status Business Logic (726 lines) ✅ **Step 1.8 COMPLETED**
 - [x] Activation Rules (652 lines) ✅ **Step 2.1 COMPLETED**
 - [x] **Step 2.2.1: Expiry Core Module (485 lines) ✅ COMPLETED**
-- [ ] Step 2.2.2: Expiry Automation Module (450 lines)
+- [x] **Step 2.2.2: Expiry Automation Module (685 lines) ✅ COMPLETED**
 - [ ] Step 2.2.3: Expiry Escalation Module (300 lines)
 - [ ] Step 2.2.4: Constraint Validation Module (200 lines)
 - [ ] Step 2.2.5: Usage Rules Module (400 lines)
