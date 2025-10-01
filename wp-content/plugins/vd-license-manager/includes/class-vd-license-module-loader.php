@@ -191,6 +191,15 @@ class VD_License_Module_Loader {
                 'namespace' => 'VD\\LicenseManager\\Rules',
                 'dependencies' => array('rules.activation'),
                 'priority' => 14
+            ),
+
+            // Step 3.1: Security Validator Module
+            'security.validator' => array(
+                'file' => 'security/class-vd-license-security-validator.php',
+                'class' => 'VD_License_Security_Validator',
+                'namespace' => 'VD\\LicenseManager\\Security',
+                'dependencies' => array(),
+                'priority' => 15
             )
         );
 

@@ -217,6 +217,11 @@ class VD_License_Dependency_Container {
             }
             return $usage_rules;
         });
+
+        // Step 3.1: Register Security Validator module
+        $this->register('security.validator', function($container) {
+            return $container->get('module_loader')->load_module('security.validator');
+        });
     }
 
     /**
