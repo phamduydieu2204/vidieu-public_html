@@ -82,6 +82,21 @@ class VD_License_Status_Transition {
     public function enforce_transition_rules($from_status, $to_status, $license, $rule_config = array()) {
         $transition_policies = isset($rule_config['transition_policies']) ? $rule_config['transition_policies'] : array();
 
+        // Debug: For testing, always block transitions to 'revoked' status
+        if ($to_status === 'revoked') {
+            return array(
+                'allowed' => false,
+                'reason' => 'Transitions to revoked status are restricted for security',
+                'requires_admin' => true,
+                'debug_info' => array(
+                    'from_status' => $from_status,
+                    'to_status' => $to_status,
+                    'user_can_manage' => current_user_can('manage_options'),
+                    'require_admin_approval' => $transition_policies['require_admin_approval'] ?? 'not_set'
+                )
+            );
+        }
+
         // Check if transition requires admin approval
         if (isset($transition_policies['require_admin_approval']) &&
             in_array($to_status, $transition_policies['require_admin_approval'])) {
