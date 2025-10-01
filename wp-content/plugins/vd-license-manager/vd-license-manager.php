@@ -148,6 +148,21 @@ function vd_license_manager_init() {
         } else {
             error_log('[VD License Manager] Failed to get VD_License_Manager instance');
         }
+
+        // Load test endpoints (only in admin or AJAX context)
+        if (is_admin() || wp_doing_ajax()) {
+            $test_files = array(
+                VD_LM_PATH . 'includes/test-step-3-2-1-security-event-logger.php',
+                VD_LM_PATH . 'includes/debug-step-3-2-1.php'
+            );
+
+            foreach ($test_files as $test_file) {
+                if (file_exists($test_file)) {
+                    require_once $test_file;
+                    error_log('[VD License Manager] Test file loaded: ' . basename($test_file));
+                }
+            }
+        }
     } catch (Exception $e) {
         error_log('[VD License Manager] Initialization error: ' . $e->getMessage());
     } catch (Error $e) {
