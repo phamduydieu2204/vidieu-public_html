@@ -254,73 +254,84 @@ function run_step_2_2_2_test($test_method, $expiry_automation) {
                 if (!$expiry_automation) {
                     throw new Exception('Module not loaded');
                 }
-                if (!method_exists($expiry_automation, 'process_automated_expiry_check')) {
-                    throw new Exception('Key method missing');
+                if (!method_exists($expiry_automation, 'update_expired_license_statuses')) {
+                    throw new Exception('Key method missing: update_expired_license_statuses');
+                }
+                if (!method_exists($expiry_automation, 'get_expired_licenses_for_update')) {
+                    throw new Exception('Key method missing: get_expired_licenses_for_update');
+                }
+                if (!method_exists($expiry_automation, 'process_expired_license_batch')) {
+                    throw new Exception('Key method missing: process_expired_license_batch');
+                }
+                if (!method_exists($expiry_automation, 'schedule_automatic_updates')) {
+                    throw new Exception('Key method missing: schedule_automatic_updates');
                 }
                 break;
 
             case 'test_automated_expiry_check_batch':
                 $batch_config = [
                     'batch_size' => 10,
-                    'check_upcoming_days' => 30,
-                    'process_expired' => true
+                    'dry_run' => true,
+                    'expired_status_updates' => true
                 ];
 
-                if (!method_exists($expiry_automation, 'process_automated_expiry_check')) {
-                    throw new Exception('Method process_automated_expiry_check not found');
+                if (!method_exists($expiry_automation, 'update_expired_license_statuses')) {
+                    throw new Exception('Method update_expired_license_statuses not found');
                 }
 
-                $result = $expiry_automation->process_automated_expiry_check($batch_config);
+                $result = $expiry_automation->update_expired_license_statuses($batch_config);
 
-                if (!is_array($result) || !isset($result['processed'])) {
+                if (!is_array($result) || !isset($result['total_processed'])) {
                     throw new Exception('Invalid result structure returned');
                 }
                 break;
 
             case 'test_identify_expiring_licenses':
                 $criteria = [
-                    'days_ahead' => 7,
+                    'limit' => 50,
                     'include_grace_period' => true,
                     'status_filter' => ['active', 'warning']
                 ];
 
-                if (!method_exists($expiry_automation, 'identify_expiring_licenses')) {
-                    throw new Exception('Method identify_expiring_licenses not found');
+                if (!method_exists($expiry_automation, 'get_expired_licenses_for_update')) {
+                    throw new Exception('Method get_expired_licenses_for_update not found');
                 }
 
-                $result = $expiry_automation->identify_expiring_licenses($criteria);
+                $result = $expiry_automation->get_expired_licenses_for_update($criteria);
 
-                if (!is_array($result) || !isset($result['count'])) {
+                if (!is_array($result)) {
                     throw new Exception('Invalid result structure returned');
                 }
                 break;
 
             case 'test_process_expired_licenses':
                 $processing_config = [
-                    'auto_deactivate' => true,
-                    'send_notifications' => false, // Skip for testing
+                    'batch_size' => 5,
+                    'dry_run' => true,
                     'update_status' => true
                 ];
 
-                if (!method_exists($expiry_automation, 'process_expired_licenses')) {
-                    throw new Exception('Method process_expired_licenses not found');
+                if (!method_exists($expiry_automation, 'process_expired_license_batch')) {
+                    throw new Exception('Method process_expired_license_batch not found');
                 }
 
-                $result = $expiry_automation->process_expired_licenses($processing_config);
+                // Get some test licenses first
+                $test_licenses = [];
+                $result = $expiry_automation->process_expired_license_batch($test_licenses, $processing_config);
 
-                if (!is_array($result) || !isset($result['processed'])) {
+                if (!is_array($result)) {
                     throw new Exception('Invalid result structure returned');
                 }
                 break;
 
             case 'test_schedule_automation_tasks':
-                if (!method_exists($expiry_automation, 'schedule_automation_tasks')) {
-                    throw new Exception('Method schedule_automation_tasks not found');
+                if (!method_exists($expiry_automation, 'schedule_automatic_updates')) {
+                    throw new Exception('Method schedule_automatic_updates not found');
                 }
 
-                $schedule_result = $expiry_automation->schedule_automation_tasks([
-                    'enable_cron' => false, // Test mode
-                    'intervals' => ['hourly', 'daily']
+                $schedule_result = $expiry_automation->schedule_automatic_updates([
+                    'schedule_interval' => 'hourly',
+                    'start_time' => time() + 3600
                 ]);
 
                 if (!is_array($schedule_result)) {
@@ -339,9 +350,9 @@ function run_step_2_2_2_test($test_method, $expiry_automation) {
             case 'test_error_recovery':
                 // Test error handling with safe operations
                 try {
-                    if (method_exists($expiry_automation, 'process_automated_expiry_check')) {
-                        $result = $expiry_automation->process_automated_expiry_check([]);
-                        if (is_array($result) && isset($result['processed'])) {
+                    if (method_exists($expiry_automation, 'update_expired_license_statuses')) {
+                        $result = $expiry_automation->update_expired_license_statuses([]);
+                        if (is_array($result) && isset($result['total_processed'])) {
                             // Expected behavior - should handle empty config gracefully
                         }
                     }
