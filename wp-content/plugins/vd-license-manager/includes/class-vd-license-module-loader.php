@@ -175,6 +175,14 @@ class VD_License_Module_Loader {
                 'namespace' => 'VD\\LicenseManager\\Rules',
                 'dependencies' => array('rules.expiry_automation', 'rules.expiry_core'),
                 'priority' => 12
+            ),
+            // Step 2.2.4: Constraint Validation Module
+            'rules.constraint_validation' => array(
+                'file' => 'rules/class-vd-license-rule-constraint-validation.php',
+                'class' => 'VD_License_Rule_Constraint_Validation',
+                'namespace' => 'VD\\LicenseManager\\Rules',
+                'dependencies' => array('status.business'),
+                'priority' => 13
             )
         );
 

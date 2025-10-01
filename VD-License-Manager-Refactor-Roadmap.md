@@ -1584,6 +1584,57 @@ git reset --hard [commit-hash-before-refactor]
   - Completes the expiry management trilogy (Core → Automation → Escalation)
 - **Status:** ✅ Implementation completed successfully
 
+#### **Step 2.2.4: Constraint Validation Module (COMPLETED ✅)**
+- **Objective:** Extract comprehensive constraint validation logic including temporal, state, and compliance validation
+- **Module Created:** `modules/rules/class-vd-license-rule-constraint-validation.php` (671 lines)
+- **PSR-4 Namespace:** `VD\LicenseManager\Rules`
+- **Main Features:**
+  - **Conditional State Validation:** `perform_conditional_state_validation()` - main orchestrator for all constraint types
+  - **Temporal Business Rules:** `validate_temporal_business_rules()` - time-based constraint validation (expiry, frequency)
+  - **State Machine Validation:** `validate_business_state_machine()` - transition rules and state consistency
+  - **Compliance Checking:** `check_compliance_requirements()` - business policy, regulatory, and security compliance
+  - **Conditional Rules Engine:** `execute_conditional_rule()` - dynamic rule execution based on license characteristics
+  - **Usage Limits Validation:** `validate_global_license_limits()` - activation/device count and usage pattern validation
+- **Key Functions Extracted:**
+  - Multi-layered constraint validation with configurable policies
+  - License expiry validation with 7-day warning threshold
+  - Activation frequency monitoring (5-minute threshold by default)
+  - Business state machine with valid transition rules (pending→active, active→expired, etc.)
+  - Comprehensive compliance framework (business policies, regulatory, security)
+  - Dynamic conditional rule loading per product/license type
+  - Usage pattern analysis and limit enforcement
+- **Constraint Types Handled:**
+  - **Time-Based:** License expiration, activation frequency, warning thresholds
+  - **State Transition:** Valid transitions, terminal states, state consistency
+  - **Usage-Based:** Activation counts, device limits, global usage patterns
+  - **Condition-Based:** Dynamic rules, context-dependent validation
+  - **Compliance-Based:** Business policies, regulatory requirements, security standards
+- **Dependencies:**
+  - `VD_License_Status_Business` (Step 1.8)
+- **Configuration System:**
+  - Default constraint policies with product/license overrides
+  - Configurable warning thresholds and validation rules
+  - Strict mode support for enhanced validation
+  - Valid state transition matrix with terminal state handling
+- **Statistics Tracking:**
+  - Constraint validation counts and violation tracking
+  - Performance metrics per constraint type
+  - Execution time monitoring
+  - Compliance scoring system
+- **WordPress Integration:**
+  - Admin page test: `/wp-admin/admin.php?page=vd-test-step-2-2-4`
+  - Comprehensive 12-test validation suite
+  - Options-based configuration storage
+- **Achievements:**
+  - Comprehensive constraint validation module with 671 lines of specialized functionality
+  - Complete separation of constraint concerns from main validator
+  - Multi-layered validation architecture with configurable policies
+  - Production-ready constraint enforcement with detailed reporting
+  - Flexible rule engine supporting dynamic constraints
+  - Comprehensive compliance framework
+  - Foundation for advanced license management policies
+- **Status:** ✅ Implementation completed successfully
+
 ### Week 3-4: Core Logic (Phase 2)
 - [x] Status Enum Validator (520 lines) ✅
 - [x] Status Transition Manager (590 lines) ✅
@@ -1592,7 +1643,7 @@ git reset --hard [commit-hash-before-refactor]
 - [x] **Step 2.2.1: Expiry Core Module (485 lines) ✅ COMPLETED**
 - [x] **Step 2.2.2: Expiry Automation Module (685 lines) ✅ COMPLETED**
 - [x] **Step 2.2.3: Expiry Escalation Module (871 lines) ✅ COMPLETED**
-- [ ] Step 2.2.4: Constraint Validation Module (200 lines)
+- [x] **Step 2.2.4: Constraint Validation Module (671 lines) ✅ COMPLETED**
 - [ ] Step 2.2.5: Usage Rules Module (400 lines)
 - [ ] Unit tests for Phase 2 modules (70 tests)
 - [ ] Integration testing (Phase 1 + 2)

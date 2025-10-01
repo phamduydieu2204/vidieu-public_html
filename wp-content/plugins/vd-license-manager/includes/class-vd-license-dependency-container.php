@@ -197,6 +197,16 @@ class VD_License_Dependency_Container {
             }
             return $expiry_escalation;
         });
+
+        // Step 2.2.4: Register Constraint Validation module
+        $this->register('rules.constraint_validation', function($container) {
+            $constraint_validation = $container->get('module_loader')->load_module('rules.constraint_validation');
+            $status_business = $container->get('status.business');
+            if ($constraint_validation && $status_business) {
+                $constraint_validation->set_status_business($status_business);
+            }
+            return $constraint_validation;
+        });
     }
 
     /**
@@ -404,7 +414,8 @@ class VD_License_Dependency_Container {
                 'rules.activation',
                 'rules.expiry_core',
                 'rules.expiry_automation',
-                'rules.expiry_escalation'
+                'rules.expiry_escalation',
+                'rules.constraint_validation'
             );
 
             foreach ($core_services as $service_id) {
