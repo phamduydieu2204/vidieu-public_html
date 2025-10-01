@@ -232,6 +232,23 @@ class VD_License_Dependency_Container {
             }
             return $event_logger;
         });
+
+        // Step 3.2.2: Register Security Threat Detector module
+        $this->register('security.threat_detector', function($container) {
+            $threat_detector = $container->get('module_loader')->load_module('security.threat_detector');
+            $security_validator = $container->get('security.validator');
+            $event_logger = $container->get('security.event_logger');
+
+            if ($threat_detector) {
+                if ($security_validator) {
+                    $threat_detector->set_security_validator($security_validator);
+                }
+                if ($event_logger) {
+                    $threat_detector->set_event_logger($event_logger);
+                }
+            }
+            return $threat_detector;
+        });
     }
 
     /**

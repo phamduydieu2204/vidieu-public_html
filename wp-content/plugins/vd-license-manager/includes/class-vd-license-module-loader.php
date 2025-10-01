@@ -209,6 +209,15 @@ class VD_License_Module_Loader {
                 'namespace' => 'VD\\LicenseManager\\Security\\Event',
                 'dependencies' => array('security.validator'),
                 'priority' => 16
+            ),
+
+            // Step 3.2.2: Security Threat Detector Module
+            'security.threat_detector' => array(
+                'file' => 'security/class-vd-license-security-threat-detector.php',
+                'class' => 'VD\\LicenseManager\\Security\\Detection\\VD_License_Security_Threat_Detector',
+                'namespace' => 'VD\\LicenseManager\\Security\\Detection',
+                'dependencies' => array('security.validator', 'security.event_logger'),
+                'priority' => 17
             )
         );
 
