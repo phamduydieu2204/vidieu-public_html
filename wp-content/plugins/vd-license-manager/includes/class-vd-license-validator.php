@@ -1311,14 +1311,135 @@ class VD_License_Validator {
             return $this->expiry_automation->update_expired_license_statuses($options);
         }
 
-        // Fallback if module not available
-        return array(
-            'valid' => false,
-            'error' => 'Expiry Automation module not available',
-            'code' => 'module_not_available'
+        $start_time = microtime(true);
+
+        // Initialize default options
+        $default_options = array(
+            'batch_size' => 100,
+            'force_update' => false,
+            'dry_run' => false,
+            'status_filters' => array('active', 'pending'),
+            'grace_period_hours' => 72,
+            'escalation_enabled' => true,
+            'audit_enabled' => true
         );
+
+        $options = array_merge($default_options, $options);
+
+        $results = array(
+            'total_processed' => 0,
+            'updated_count' => 0,
+            'skipped_count' => 0,
+            'error_count' => 0,
+            'batch_results' => array(),
+            'execution_time_ms' => 0,
+            'dry_run' => $options['dry_run'],
+            'errors' => array()
+        );
+
+        try {
+            // Validate update configuration
+            $validation_result = $this->validate_update_configuration($options);
+            if (!$validation_result['valid']) {
+                throw new Exception('Invalid update configuration: ' . $validation_result['error']);
+            }
+
+            // Get expired licenses in batches
+            $expired_licenses = $this->get_expired_licenses_for_update($options);
+
+            if (empty($expired_licenses)) {
+                $results['message'] = 'No expired licenses found for update';
+                return $results;
+            }
+
+            $results['total_processed'] = count($expired_licenses);
+
+            // Process in batches for performance
+            $batches = array_chunk($expired_licenses, $options['batch_size']);
+
+            foreach ($batches as $batch_index => $batch) {
+                $batch_result = $this->process_expired_license_batch($batch, $options);
+
+                $results['batch_results'][] = $batch_result;
+                $results['updated_count'] += $batch_result['updated_count'];
+                $results['skipped_count'] += $batch_result['skipped_count'];
+                $results['error_count'] += $batch_result['error_count'];
+
+                if (!empty($batch_result['errors'])) {
+                    $results['errors'] = array_merge($results['errors'], $batch_result['errors']);
+                }
+
+                // Log batch completion
+                if ($options['audit_enabled']) {
+                    $this->log_batch_update_completion($batch_index + 1, $batch_result, $options);
+                }
+            }
+
+            // Final validation of update results
+            $results['validation'] = $this->validate_update_results($results, $options);
+
+        } catch (Exception $e) {
+            $results['error_count']++;
+            $results['errors'][] = array(
+                'type' => 'system_error',
+                'message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine()
+            );
+
+            if ($options['audit_enabled']) {
+                $this->log_update_error('update_expired_license_statuses', $e, $options);
+            }
+        }
+
+        $results['execution_time_ms'] = round((microtime(true) - $start_time) * 1000, 2);
+
+        // Audit final results
+        if ($options['audit_enabled']) {
+            $this->audit_automatic_update_completion($results, $options);
+        }
+
+        return $results;
     }
 
+    /**
+     * Get expired licenses that need status updates
+     *
+     * @since 4.2.4.3
+     * @param array $options Update options
+     * @return array Expired licenses ready for update
+     */
+    private function get_expired_licenses_for_update($options) {
+        global $wpdb;
+
+        $status_filters = $options['status_filters'];
+        $grace_period_hours = $options['grace_period_hours'];
+
+        // Build query for expired licenses
+        $placeholders = implode(',', array_fill(0, count($status_filters), '%s'));
+        $grace_cutoff = date('Y-m-d H:i:s', current_time('timestamp') - ($grace_period_hours * 3600));
+
+        $query = $wpdb->prepare("
+            SELECT
+                id,
+                license_key,
+                product_id,
+                status,
+                expires_at,
+                updated_at,
+                created_at,
+                last_status_change
+            FROM {$wpdb->prefix}vd_licenses
+            WHERE status IN ($placeholders)
+                AND expires_at IS NOT NULL
+                AND expires_at < %s
+                AND (last_status_change IS NULL OR last_status_change < %s)
+            ORDER BY expires_at ASC
+            LIMIT 1000
+        ", array_merge($status_filters, array($grace_cutoff, $grace_cutoff)));
+
+        return $wpdb->get_results($query, ARRAY_A);
+    }
 
     /**
      * Process a batch of expired licenses
@@ -1958,12 +2079,23 @@ class VD_License_Validator {
             return $this->expiry_automation->schedule_automatic_updates($schedule_options);
         }
 
-        // Fallback if module not available
-        return array(
-            'valid' => false,
-            'error' => 'Expiry Automation module not available',
-            'code' => 'module_not_available'
+        $default_schedule = array(
+            'frequency' => 'daily',
+            'time' => '02:00',
+            'enabled' => true,
+            'batch_size' => 100,
+            'grace_period_hours' => 72
         );
+
+        $schedule_options = array_merge($default_schedule, $schedule_options);
+
+        try {
+            // Remove existing scheduled event
+            wp_clear_scheduled_hook('vd_automatic_license_updates');
+
+            if ($schedule_options['enabled']) {
+                // Calculate next run time
+                $next_run = $this->calculate_next_run_time($schedule_options);
 
                 // Schedule new event
                 wp_schedule_event($next_run, $schedule_options['frequency'], 'vd_automatic_license_updates', array($schedule_options));
@@ -2034,13 +2166,38 @@ class VD_License_Validator {
             return $this->expiry_escalation->send_status_change_notification($license, $old_status, $new_status, $context);
         }
 
-        // Fallback if module not available
-        return array(
-            'valid' => false,
-            'error' => 'Expiry Escalation module not available',
-            'code' => 'module_not_available'
+        $start_time = microtime(true);
+
+        // Initialize notification context
+        $notification_context = array_merge(array(
+            'change_type' => 'status_change',
+            'triggered_by' => 'system',
+            'notification_enabled' => true,
+            'priority' => 'normal',
+            'retry_enabled' => true,
+            'queue_enabled' => true
+        ), $context);
+
+        $results = array(
+            'notifications_sent' => 0,
+            'notifications_queued' => 0,
+            'notifications_failed' => 0,
+            'execution_time_ms' => 0,
+            'notifications' => array(),
+            'errors' => array()
         );
-    }
+
+        try {
+            // Check if notifications are enabled for this change
+            $notification_config = $this->get_notification_configuration($license, $old_status, $new_status, $notification_context);
+
+            if (!$notification_config['enabled']) {
+                $results['message'] = 'Notifications disabled for this status change';
+                return $results;
+            }
+
+            // Determine notification recipients and types
+            $notification_targets = $this->determine_notification_targets($license, $old_status, $new_status, $notification_config);
 
             if (empty($notification_targets)) {
                 $results['message'] = 'No notification targets found';
