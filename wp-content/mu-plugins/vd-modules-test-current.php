@@ -52,7 +52,7 @@ function vd_render_current_modules_test_page() {
             'rules.expiry_core' => array(
                 'name' => 'Step 2.2.1 - Expiry Core',
                 'class' => 'VD_License_Rule_Expiry_Core',
-                'key_method' => 'validate_license_expiry'
+                'key_method' => 'validate_license_expiry_date'
             ),
             'rules.expiry_automation' => array(
                 'name' => 'Step 2.2.2 - Expiry Automation',
