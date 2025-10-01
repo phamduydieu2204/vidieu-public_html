@@ -123,7 +123,12 @@ class VD_License_Dependency_Container {
         });
 
         $this->register('status.transition', function($container) {
-            return $container->get('module_loader')->load_module('status.transition');
+            $status_transition = $container->get('module_loader')->load_module('status.transition');
+            $status_enum = $container->get('status.enum');
+            if ($status_transition && $status_enum) {
+                $status_transition->set_status_enum($status_enum);
+            }
+            return $status_transition;
         });
 
         $this->register('status.business', function($container) {
