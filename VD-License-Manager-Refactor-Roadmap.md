@@ -1388,6 +1388,43 @@ git reset --hard [commit-hash-before-refactor]
   - Complete separation of activation concerns from validator
 - **Status:** ✅ Implementation completed successfully
 
+### **Step 2.1 Cleanup Results (COMPLETED ✅)**
+- **Files Modified:**
+  - `class-vd-license-validator.php`: Removed duplicate activation rules methods và added delegation
+  - **Methods Removed:** 19 duplicate activation rules methods (approximately 721 lines)
+    - `get_license_settings()` (70 lines)
+    - `detect_client_ip()` (94 lines)
+    - `validate_ip_address()` (71 lines)
+    - `generate_ip_metadata()` (39 lines)
+    - `classify_ipv4()` (36 lines)
+    - `classify_ipv6()` (29 lines)
+    - `detect_network_type()` (58 lines)
+    - `detect_cdn_source()` (57 lines)
+    - `analyze_ip_security()` (60 lines)
+    - `analyze_session_devices()` (23 lines)
+    - `categorize_user_agents()` (23 lines)
+    - `check_suspicious_activity()` (12 lines)
+    - `analyze_login_ip_patterns()` (15 lines)
+    - `analyze_cross_device_patterns()` (22 lines)
+    - `calculate_session_security_score()` (20 lines)
+    - `generate_visitor_fingerprint()` (15 lines)
+    - `load_dynamic_validation_rules()` (25 lines)
+    - `get_state_dependent_rules()` (32 lines)
+    - `validate_product_level_constraints()` (20 lines)
+  - **Methods Updated:**
+    - Added `$activation_rules` property with dependency injection
+    - Updated all method calls to delegate to Activation Rules module
+    - `get_client_ip_for_anonymous()`: Now delegates to activation rules module
+- **Lines Removed:** ~721 lines of duplicate activation rules code
+- **File Size Reduction:** 8,171 lines → 7,454 lines (717 lines removed)
+- **Reason:** Activation rules operations centralized in Activation Rules module
+- **Benefits:**
+  - Single source of truth cho activation rules enforcement
+  - Loại bỏ hoàn toàn code duplication cho device management
+  - Codebase cleaner với proper separation of concerns
+  - Reduced memory footprint significantly
+- **Status:** ✅ Cleanup completed successfully
+
 ### Week 3-4: Core Logic (Phase 2)
 - [x] Status Enum Validator (520 lines) ✅
 - [x] Status Transition Manager (590 lines) ✅

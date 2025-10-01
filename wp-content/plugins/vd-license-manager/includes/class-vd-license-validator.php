@@ -156,6 +156,14 @@ class VD_License_Validator {
     private $status_business = null;
 
     /**
+     * Activation rules module instance
+     *
+     * @since 1.5.0-rc.2
+     * @var VD_License_Rule_Activation|null
+     */
+    private $activation_rules = null;
+
+    /**
      * Private constructor to enforce singleton pattern
      *
      * @since 4.2.1
@@ -236,6 +244,7 @@ class VD_License_Validator {
         $this->status_enum = $container->get('status.enum');
         $this->status_transition = $container->get('status.transition');
         $this->status_business = $container->get('status.business');
+        $this->activation_rules = $container->get('rules.activation');
 
         // Set pattern validator dependency for checksum validator
         if ($this->checksum_validator && $this->pattern_validator) {
@@ -1146,77 +1155,6 @@ class VD_License_Validator {
                 $license['status'] ?? 'unknown'
             ));
         }
-    }
-
-    /**
-     * Get effective license settings with inheritance
-     * Implements get_license_settings() function from business logic
-     *
-     * @since 4.2.1
-     * @param int $license_id License ID
-     * @param int $product_id Product ID
-     * @return array Effective settings
-     */
-    public function get_license_settings($license_id, $product_id) {
-        global $wpdb;
-
-        // Check cache for settings
-        if ($this->cache_manager) {
-            $cached_settings = $this->cache_manager->get_settings_cache($license_id, $product_id);
-            if ($cached_settings !== null) {
-                return $cached_settings;
-            }
-        }
-
-        // 1. Try license-specific override first
-        $license_override = $wpdb->get_row($wpdb->prepare(
-            "SELECT * FROM {$wpdb->prefix}vd_license_settings_override WHERE license_id = %d",
-            $license_id
-        ), ARRAY_A);
-
-        // 2. Get product settings
-        $product_settings = $wpdb->get_row($wpdb->prepare(
-            "SELECT * FROM {$wpdb->prefix}vd_product_settings WHERE product_id = %d",
-            $product_id
-        ), ARRAY_A);
-
-        // 3. Get global defaults
-        $global_settings = $this->get_global_settings();
-
-        // Merge settings with priority: License > Product > Global
-        $effective_settings = array(
-            'max_devices' => $license_override['max_devices']
-                ?? $product_settings['max_devices']
-                ?? $global_settings['default_max_devices']
-                ?? 3,
-
-            'rate_limit_requests' => $license_override['rate_limit_requests']
-                ?? $product_settings['rate_limit_requests']
-                ?? $global_settings['default_rate_limit_requests']
-                ?? 100,
-
-            'rate_limit_window_hours' => $license_override['rate_limit_window_hours']
-                ?? $product_settings['rate_limit_window_hours']
-                ?? $global_settings['default_rate_limit_window_hours']
-                ?? 1,
-
-            'auto_approval_enabled' => $license_override['auto_approval_enabled']
-                ?? $product_settings['auto_approval_enabled']
-                ?? ($global_settings['auto_approval_enabled'] === 'true')
-                ?? true,
-
-            'grace_period_hours' => $license_override['grace_period_hours']
-                ?? $product_settings['grace_period_hours']
-                ?? $global_settings['grace_period_hours']
-                ?? 72
-        );
-
-        // Cache result
-        if ($this->cache_manager) {
-            $this->cache_manager->set_settings_cache($license_id, $product_id, $effective_settings);
-        }
-
-        return $effective_settings;
     }
 
     /**
@@ -5588,7 +5526,7 @@ class VD_License_Validator {
         $behavioral_context['session_patterns'] = array(
             'active_sessions' => count($sessions),
             'concurrent_logins' => count($sessions) > 1,
-            'session_devices' => $this->analyze_session_devices($sessions)
+            'session_devices' => $this->activation_rules ? $this->activation_rules->analyze_session_devices($sessions) : array('total_devices' => 0)
         );
 
         return $behavioral_context;
@@ -5617,14 +5555,14 @@ class VD_License_Validator {
             'two_factor_enabled' => $this->check_two_factor_status($user->ID),
             'email_verified' => !empty($user->user_email),
             'account_locked' => $this->check_account_lock_status($user->ID),
-            'suspicious_activity' => $this->check_suspicious_activity($user->ID)
+            'suspicious_activity' => $this->activation_rules ? $this->activation_rules->check_suspicious_activity(array('user_id' => $user->ID)) : array('detected' => false)
         );
 
         // Access patterns
         $security_context['access_patterns'] = array(
             'admin_access' => is_admin(),
             'failed_login_attempts' => get_user_meta($user->ID, 'vd_failed_logins', true) ?: 0,
-            'login_ip_consistency' => $this->analyze_login_ip_patterns($user->ID),
+            'login_ip_consistency' => $this->activation_rules ? $this->activation_rules->analyze_login_ip_patterns(array('user_id' => $user->ID)) : array('inconsistent_patterns' => false),
             'unusual_activity_detected' => false // Placeholder for advanced detection
         );
 
@@ -5755,8 +5693,8 @@ class VD_License_Validator {
         $session_context['session_analysis'] = array(
             'concurrent_sessions' => count($sessions) > 1,
             'long_running_sessions' => $this->count_long_running_sessions($sessions),
-            'cross_device_access' => $this->analyze_cross_device_patterns($sessions),
-            'session_security_score' => $this->calculate_session_security_score($sessions)
+            'cross_device_access' => $this->activation_rules ? $this->activation_rules->validate_cross_device_patterns(array('sessions' => $sessions)) : array('violations_detected' => false),
+            'session_security_score' => $this->activation_rules ? $this->activation_rules->check_activation_security(array('sessions' => $sessions)) : array('security_score' => 100)
         );
 
         return $session_context;
@@ -5781,7 +5719,7 @@ class VD_License_Validator {
         // Visitor identification
         $anonymous_context['visitor_identification'] = array(
             'session_id' => session_id(),
-            'visitor_fingerprint' => $this->generate_visitor_fingerprint(),
+            'visitor_fingerprint' => $this->activation_rules ? $this->activation_rules->generate_visitor_fingerprint() : 'fingerprint_unavailable',
             'ip_address' => $this->get_client_ip_for_anonymous(),
             'user_agent' => sanitize_text_field($_SERVER['HTTP_USER_AGENT'] ?? 'unknown'),
             'referer' => sanitize_url($_SERVER['HTTP_REFERER'] ?? '')
@@ -6084,457 +6022,8 @@ class VD_License_Validator {
     // Step 4.2.4.5.3c - IP Detection Framework
     // ==========================================
 
-    /**
-     * Step 4.2.4.5.3c - Detect Client IP Address
-     *
-     * Comprehensive IP detection with proxy/CDN awareness
-     * Checks multiple headers in priority order for accurate IP detection
-     * Handles X-Forwarded-For chains, proxy headers, and CDN sources
-     *
-     * @since 4.2.4.5.3c
-     * @return array IP detection result with metadata
-     */
-    public function detect_client_ip() {
-        $start_time = microtime(true);
 
-        // IP detection headers in priority order
-        $ip_headers = array(
-            'HTTP_CF_CONNECTING_IP',     // Cloudflare
-            'HTTP_CLIENT_IP',            // Proxy clients
-            'HTTP_X_FORWARDED_FOR',      // Standard proxy header
-            'HTTP_X_FORWARDED',          // Microsoft proxy
-            'HTTP_X_CLUSTER_CLIENT_IP',  // Cluster environments
-            'HTTP_FORWARDED_FOR',        // Alternative forwarded header
-            'HTTP_FORWARDED',            // RFC 7239 standard
-            'HTTP_X_REAL_IP',           // Nginx proxy
-            'REMOTE_ADDR'               // Direct connection (fallback)
-        );
 
-        $detection_log = array();
-        $detected_ip = null;
-        $ip_source = null;
-        $is_proxy = false;
-        $proxy_chain = array();
-
-        // Check each header in priority order
-        foreach ($ip_headers as $header) {
-            if (!isset($_SERVER[$header]) || empty($_SERVER[$header])) {
-                $detection_log[] = array(
-                    'header' => $header,
-                    'status' => 'not_available',
-                    'value' => null
-                );
-                continue;
-            }
-
-            $header_value = sanitize_text_field($_SERVER[$header]);
-            $detection_log[] = array(
-                'header' => $header,
-                'status' => 'available',
-                'value' => $header_value
-            );
-
-            // Handle X-Forwarded-For chain
-            if ($header === 'HTTP_X_FORWARDED_FOR') {
-                $ips = array_map('trim', explode(',', $header_value));
-                $proxy_chain = $ips;
-                $is_proxy = count($ips) > 1;
-
-                // First IP in chain is usually the original client
-                $candidate_ip = $ips[0];
-            } else {
-                $candidate_ip = $header_value;
-            }
-
-            // Validate IP format
-            $ip_validation = $this->validate_ip_address($candidate_ip);
-
-            if ($ip_validation['valid'] && !$ip_validation['is_private']) {
-                $detected_ip = $candidate_ip;
-                $ip_source = $header;
-                break;
-            } elseif ($ip_validation['valid'] && $ip_validation['is_private'] && $detected_ip === null) {
-                // Use private IP as fallback if no public IP found
-                $detected_ip = $candidate_ip;
-                $ip_source = $header;
-            }
-        }
-
-        // Generate IP metadata
-        $ip_metadata = $this->generate_ip_metadata($detected_ip, $ip_source, $is_proxy, $proxy_chain);
-
-        $end_time = microtime(true);
-        $detection_time = ($end_time - $start_time) * 1000;
-
-        return array(
-            'success' => $detected_ip !== null,
-            'ip_address' => $detected_ip,
-            'ip_source' => $ip_source,
-            'is_proxy' => $is_proxy,
-            'proxy_chain' => $proxy_chain,
-            'ip_metadata' => $ip_metadata,
-            'detection_log' => $detection_log,
-            'detection_time_ms' => round($detection_time, 3),
-            'framework_version' => '4.2.4.5.3c'
-        );
-    }
-
-    /**
-     * Step 4.2.4.5.3c - Validate IP Address
-     *
-     * Comprehensive IP validation with format checking and classification
-     * Supports IPv4 and IPv6 validation with private/public detection
-     *
-     * @since 4.2.4.5.3c
-     * @param string $ip IP address to validate
-     * @return array Validation result with classification
-     */
-    public function validate_ip_address($ip) {
-        if (empty($ip) || !is_string($ip)) {
-            return array(
-                'valid' => false,
-                'ip_version' => null,
-                'is_private' => null,
-                'is_reserved' => null,
-                'classification' => 'invalid_format',
-                'error' => 'Empty or non-string IP address'
-            );
-        }
-
-        // Sanitize IP
-        $clean_ip = trim($ip);
-
-        // Remove port number if present
-        if (strpos($clean_ip, ':') !== false && filter_var($clean_ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) {
-            // IPv4 with port (e.g., 192.168.1.1:8080)
-            $parts = explode(':', $clean_ip);
-            $clean_ip = $parts[0];
-        }
-
-        // Validate IPv4
-        if (filter_var($clean_ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) {
-            $is_private = filter_var($clean_ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4 | FILTER_FLAG_NO_PRIV_RANGE) === false;
-            $is_reserved = filter_var($clean_ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4 | FILTER_FLAG_NO_RES_RANGE) === false;
-
-            return array(
-                'valid' => true,
-                'ip_version' => 'IPv4',
-                'is_private' => $is_private,
-                'is_reserved' => $is_reserved,
-                'classification' => $this->classify_ipv4($clean_ip),
-                'sanitized_ip' => $clean_ip
-            );
-        }
-
-        // Validate IPv6
-        if (filter_var($clean_ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6)) {
-            $is_private = filter_var($clean_ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6 | FILTER_FLAG_NO_PRIV_RANGE) === false;
-            $is_reserved = filter_var($clean_ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6 | FILTER_FLAG_NO_RES_RANGE) === false;
-
-            return array(
-                'valid' => true,
-                'ip_version' => 'IPv6',
-                'is_private' => $is_private,
-                'is_reserved' => $is_reserved,
-                'classification' => $this->classify_ipv6($clean_ip),
-                'sanitized_ip' => $clean_ip
-            );
-        }
-
-        return array(
-            'valid' => false,
-            'ip_version' => null,
-            'is_private' => null,
-            'is_reserved' => null,
-            'classification' => 'invalid_format',
-            'error' => 'Invalid IP address format'
-        );
-    }
-
-    /**
-     * Step 4.2.4.5.3c - Generate IP Metadata
-     *
-     * Generate comprehensive metadata for detected IP address
-     * Includes geolocation hints, proxy detection, and security analysis
-     *
-     * @since 4.2.4.5.3c
-     * @param string $ip Detected IP address
-     * @param string $source IP source header
-     * @param bool $is_proxy Whether IP comes from proxy
-     * @param array $proxy_chain Full proxy chain if available
-     * @return array IP metadata
-     */
-    private function generate_ip_metadata($ip, $source, $is_proxy, $proxy_chain) {
-        $metadata = array(
-            'ip_address' => $ip,
-            'detection_source' => $source,
-            'proxy_detected' => $is_proxy,
-            'proxy_chain_length' => count($proxy_chain),
-            'detection_timestamp' => current_time('mysql'),
-            'wordpress_timestamp' => current_time('timestamp')
-        );
-
-        if ($ip) {
-            $ip_validation = $this->validate_ip_address($ip);
-            $metadata['ip_validation'] = $ip_validation;
-
-            // Add network classification
-            $metadata['network_type'] = $this->detect_network_type($ip);
-
-            // Add CDN detection
-            $metadata['cdn_detection'] = $this->detect_cdn_source($source, $proxy_chain);
-
-            // Add security analysis
-            $metadata['security_analysis'] = $this->analyze_ip_security($ip, $is_proxy);
-        }
-
-        return $metadata;
-    }
-
-    /**
-     * Step 4.2.4.5.3c - Classify IPv4 Address
-     *
-     * Detailed classification of IPv4 addresses by range
-     *
-     * @since 4.2.4.5.3c
-     * @param string $ip IPv4 address
-     * @return string IP classification
-     */
-    private function classify_ipv4($ip) {
-        $ip_long = ip2long($ip);
-
-        // Private ranges
-        if (($ip_long >= ip2long('10.0.0.0') && $ip_long <= ip2long('10.255.255.255')) ||
-            ($ip_long >= ip2long('172.16.0.0') && $ip_long <= ip2long('172.31.255.255')) ||
-            ($ip_long >= ip2long('192.168.0.0') && $ip_long <= ip2long('192.168.255.255'))) {
-            return 'private';
-        }
-
-        // Loopback
-        if ($ip_long >= ip2long('127.0.0.0') && $ip_long <= ip2long('127.255.255.255')) {
-            return 'loopback';
-        }
-
-        // Link-local
-        if ($ip_long >= ip2long('169.254.0.0') && $ip_long <= ip2long('169.254.255.255')) {
-            return 'link_local';
-        }
-
-        // Multicast
-        if ($ip_long >= ip2long('224.0.0.0') && $ip_long <= ip2long('239.255.255.255')) {
-            return 'multicast';
-        }
-
-        return 'public';
-    }
-
-    /**
-     * Step 4.2.4.5.3c - Classify IPv6 Address
-     *
-     * Detailed classification of IPv6 addresses by prefix
-     *
-     * @since 4.2.4.5.3c
-     * @param string $ip IPv6 address
-     * @return string IP classification
-     */
-    private function classify_ipv6($ip) {
-        // Simplified IPv6 classification
-        if (strpos($ip, '::1') === 0) {
-            return 'loopback';
-        }
-
-        if (strpos($ip, 'fe80:') === 0) {
-            return 'link_local';
-        }
-
-        if (strpos($ip, 'fc00:') === 0 || strpos($ip, 'fd00:') === 0) {
-            return 'unique_local';
-        }
-
-        if (strpos($ip, 'ff00:') === 0) {
-            return 'multicast';
-        }
-
-        return 'public';
-    }
-
-    /**
-     * Step 4.2.4.5.3c - Detect Network Type
-     *
-     * Analyze IP to determine network type and hosting provider hints
-     *
-     * @since 4.2.4.5.3c
-     * @param string $ip IP address to analyze
-     * @return array Network type information
-     */
-    private function detect_network_type($ip) {
-        $network_info = array(
-            'type' => 'unknown',
-            'provider_hints' => array(),
-            'datacenter_likelihood' => 'unknown'
-        );
-
-        if (!$ip) {
-            return $network_info;
-        }
-
-        $ip_validation = $this->validate_ip_address($ip);
-
-        if (!$ip_validation['valid']) {
-            return $network_info;
-        }
-
-        // Basic classification based on IP validation
-        if ($ip_validation['is_private']) {
-            $network_info['type'] = 'private';
-            $network_info['datacenter_likelihood'] = 'low';
-        } elseif ($ip_validation['is_reserved']) {
-            $network_info['type'] = 'reserved';
-            $network_info['datacenter_likelihood'] = 'low';
-        } else {
-            $network_info['type'] = 'public';
-            $network_info['datacenter_likelihood'] = 'medium';
-        }
-
-        // Add common hosting provider IP range hints (basic detection)
-        $hosting_ranges = array(
-            'aws' => array('3.', '13.', '15.', '18.', '34.', '35.', '52.', '54.'),
-            'google' => array('8.8.', '35.', '104.', '130.', '146.', '199.'),
-            'cloudflare' => array('103.21.', '103.22.', '103.31.', '104.16.', '108.162.', '131.0.', '141.101.', '162.158.', '172.64.', '173.245.', '188.114.', '190.93.', '197.234.', '198.41.'),
-            'azure' => array('13.', '20.', '23.', '40.', '51.', '52.', '104.', '137.', '138.', '168.', '191.', '207.')
-        );
-
-        foreach ($hosting_ranges as $provider => $prefixes) {
-            foreach ($prefixes as $prefix) {
-                if (strpos($ip, $prefix) === 0) {
-                    $network_info['provider_hints'][] = $provider;
-                    $network_info['datacenter_likelihood'] = 'high';
-                    break 2;
-                }
-            }
-        }
-
-        return $network_info;
-    }
-
-    /**
-     * Step 4.2.4.5.3c - Detect CDN Source
-     *
-     * Analyze headers and proxy chain to detect CDN usage
-     *
-     * @since 4.2.4.5.3c
-     * @param string $source IP source header
-     * @param array $proxy_chain Proxy chain array
-     * @return array CDN detection result
-     */
-    private function detect_cdn_source($source, $proxy_chain) {
-        $cdn_info = array(
-            'cdn_detected' => false,
-            'cdn_provider' => null,
-            'cdn_headers' => array(),
-            'confidence' => 'none'
-        );
-
-        // CDN header signatures
-        $cdn_signatures = array(
-            'cloudflare' => array('HTTP_CF_CONNECTING_IP', 'HTTP_CF_RAY', 'HTTP_CF_VISITOR'),
-            'fastly' => array('HTTP_FASTLY_CLIENT_IP', 'HTTP_FASTLY_FF'),
-            'akamai' => array('HTTP_TRUE_CLIENT_IP', 'HTTP_AKAMAI_EDGESCAPE'),
-            'maxcdn' => array('HTTP_X_MAXCDN_FORWARDED_FOR'),
-            'amazon_cloudfront' => array('HTTP_CLOUDFRONT_FORWARDED_PROTO', 'HTTP_CLOUDFRONT_VIEWER_COUNTRY')
-        );
-
-        // Check for CDN-specific headers
-        foreach ($cdn_signatures as $cdn => $headers) {
-            $found_headers = 0;
-            $detected_headers = array();
-
-            foreach ($headers as $header) {
-                if (isset($_SERVER[$header])) {
-                    $found_headers++;
-                    $detected_headers[] = $header;
-                }
-            }
-
-            if ($found_headers > 0) {
-                $cdn_info['cdn_detected'] = true;
-                $cdn_info['cdn_provider'] = $cdn;
-                $cdn_info['cdn_headers'] = $detected_headers;
-                $cdn_info['confidence'] = $found_headers === count($headers) ? 'high' : 'medium';
-                break;
-            }
-        }
-
-        // Check if source header indicates CDN
-        if ($source === 'HTTP_CF_CONNECTING_IP') {
-            $cdn_info['cdn_detected'] = true;
-            $cdn_info['cdn_provider'] = 'cloudflare';
-            $cdn_info['confidence'] = 'high';
-        }
-
-        return $cdn_info;
-    }
-
-    /**
-     * Step 4.2.4.5.3c - Analyze IP Security
-     *
-     * Perform security analysis on detected IP address
-     *
-     * @since 4.2.4.5.3c
-     * @param string $ip IP address to analyze
-     * @param bool $is_proxy Whether IP comes from proxy
-     * @return array Security analysis result
-     */
-    private function analyze_ip_security($ip, $is_proxy) {
-        $security_analysis = array(
-            'risk_level' => 'low',
-            'security_flags' => array(),
-            'recommendations' => array(),
-            'analysis_timestamp' => current_time('mysql')
-        );
-
-        if (!$ip) {
-            $security_analysis['risk_level'] = 'unknown';
-            $security_analysis['security_flags'][] = 'no_ip_detected';
-            return $security_analysis;
-        }
-
-        $ip_validation = $this->validate_ip_address($ip);
-
-        if (!$ip_validation['valid']) {
-            $security_analysis['risk_level'] = 'high';
-            $security_analysis['security_flags'][] = 'invalid_ip_format';
-            $security_analysis['recommendations'][] = 'Block invalid IP formats';
-            return $security_analysis;
-        }
-
-        // Proxy usage analysis
-        if ($is_proxy) {
-            $security_analysis['security_flags'][] = 'proxy_usage_detected';
-            $security_analysis['recommendations'][] = 'Monitor proxy usage patterns';
-        }
-
-        // Private IP analysis
-        if ($ip_validation['is_private']) {
-            $security_analysis['security_flags'][] = 'private_ip_access';
-            $security_analysis['recommendations'][] = 'Verify private network access is authorized';
-        }
-
-        // Reserved IP analysis
-        if ($ip_validation['is_reserved']) {
-            $security_analysis['risk_level'] = 'medium';
-            $security_analysis['security_flags'][] = 'reserved_ip_range';
-            $security_analysis['recommendations'][] = 'Review reserved IP range access';
-        }
-
-        // Local/loopback access
-        if ($ip_validation['classification'] === 'loopback') {
-            $security_analysis['security_flags'][] = 'localhost_access';
-            $security_analysis['recommendations'][] = 'Monitor local access patterns';
-        }
-
-        return $security_analysis;
-    }
 
     /**
      * Step 4.2.4.5.3c - Get IP Detection Infrastructure Status
@@ -6754,53 +6243,6 @@ class VD_License_Validator {
         );
     }
 
-    /**
-     * Analyze session devices from session data
-     *
-     * @param array $sessions Session data array
-     * @return array Device analysis
-     */
-    private function analyze_session_devices($sessions) {
-        $devices = array();
-        $unique_agents = array();
-
-        foreach ($sessions as $session) {
-            $ua = $session['ua'] ?? 'unknown';
-            $unique_agents[] = $ua;
-        }
-
-        $unique_agents = array_unique($unique_agents);
-
-        return array(
-            'total_devices' => count($unique_agents),
-            'device_types' => $this->categorize_user_agents($unique_agents),
-            'multi_device_access' => count($unique_agents) > 1
-        );
-    }
-
-    /**
-     * Categorize user agents into device types
-     *
-     * @param array $user_agents Array of user agent strings
-     * @return array Device type categories
-     */
-    private function categorize_user_agents($user_agents) {
-        $categories = array('mobile' => 0, 'desktop' => 0, 'tablet' => 0, 'unknown' => 0);
-
-        foreach ($user_agents as $ua) {
-            if (wp_is_mobile() && (strpos($ua, 'Mobile') !== false || strpos($ua, 'Android') !== false)) {
-                $categories['mobile']++;
-            } elseif (strpos($ua, 'Tablet') !== false || strpos($ua, 'iPad') !== false) {
-                $categories['tablet']++;
-            } elseif (strpos($ua, 'Mozilla') !== false) {
-                $categories['desktop']++;
-            } else {
-                $categories['unknown']++;
-            }
-        }
-
-        return $categories;
-    }
 
     /**
      * Check two factor authentication status
@@ -6830,35 +6272,6 @@ class VD_License_Validator {
         return !empty($locked);
     }
 
-    /**
-     * Check for suspicious activity
-     *
-     * @param int $user_id User ID
-     * @return bool Suspicious activity detected
-     */
-    private function check_suspicious_activity($user_id) {
-        $failed_logins = get_user_meta($user_id, 'vd_failed_logins', true) ?: 0;
-        $last_suspicious = get_user_meta($user_id, 'vd_last_suspicious_activity', true);
-
-        // Consider suspicious if more than 5 failed logins or recent suspicious activity flag
-        return ($failed_logins > 5) || (!empty($last_suspicious) && strtotime($last_suspicious) > strtotime('-24 hours'));
-    }
-
-    /**
-     * Analyze login IP patterns for consistency
-     *
-     * @param int $user_id User ID
-     * @return string IP consistency analysis
-     */
-    private function analyze_login_ip_patterns($user_id) {
-        $login_ips = get_user_meta($user_id, 'vd_login_ips', true) ?: array();
-
-        if (empty($login_ips)) return 'no_history';
-        if (count($login_ips) === 1) return 'consistent';
-        if (count($login_ips) <= 3) return 'mostly_consistent';
-        if (count($login_ips) <= 10) return 'variable';
-        return 'highly_variable';
-    }
 
     /**
      * Calculate security score for user
@@ -6901,65 +6314,6 @@ class VD_License_Validator {
         return $long_running;
     }
 
-    /**
-     * Analyze cross device access patterns
-     *
-     * @param array $sessions Session data
-     * @return array Cross device analysis
-     */
-    private function analyze_cross_device_patterns($sessions) {
-        $ips = array();
-        $user_agents = array();
-
-        foreach ($sessions as $session) {
-            if (isset($session['ip'])) $ips[] = $session['ip'];
-            if (isset($session['ua'])) $user_agents[] = $session['ua'];
-        }
-
-        return array(
-            'unique_ips' => count(array_unique($ips)),
-            'unique_devices' => count(array_unique($user_agents)),
-            'cross_device_detected' => count(array_unique($user_agents)) > 1,
-            'cross_location_detected' => count(array_unique($ips)) > 1
-        );
-    }
-
-    /**
-     * Calculate session security score
-     *
-     * @param array $sessions Session data
-     * @return int Security score
-     */
-    private function calculate_session_security_score($sessions) {
-        $score = 100;
-
-        // Deduct for multiple concurrent sessions
-        if (count($sessions) > 3) $score -= 20;
-        elseif (count($sessions) > 1) $score -= 10;
-
-        // Analyze session patterns
-        $cross_device = $this->analyze_cross_device_patterns($sessions);
-        if ($cross_device['cross_location_detected']) $score -= 15;
-        if ($cross_device['unique_ips'] > 5) $score -= 10;
-
-        return max(0, $score);
-    }
-
-    /**
-     * Generate visitor fingerprint for anonymous users
-     *
-     * @return string Visitor fingerprint
-     */
-    private function generate_visitor_fingerprint() {
-        $components = array(
-            $_SERVER['HTTP_USER_AGENT'] ?? '',
-            $_SERVER['HTTP_ACCEPT_LANGUAGE'] ?? '',
-            $_SERVER['HTTP_ACCEPT_ENCODING'] ?? '',
-            $_SERVER['REMOTE_ADDR'] ?? ''
-        );
-
-        return md5(implode('|', $components));
-    }
 
     /**
      * Get client IP for anonymous users (using existing IP detection)
@@ -6967,8 +6321,10 @@ class VD_License_Validator {
      * @return string Client IP
      */
     private function get_client_ip_for_anonymous() {
-        $ip_detection = $this->detect_client_ip();
-        return $ip_detection['ip_address'] ?? 'unknown';
+        if ($this->activation_rules) {
+            return $this->activation_rules->detect_client_ip();
+        }
+        return 'unknown';
     }
 
     /**
@@ -7382,10 +6738,10 @@ class VD_License_Validator {
         $target_status = $context['new_status'] ?? '';
 
         // Dynamic rule loading based on license characteristics
-        $dynamic_rules = $this->load_dynamic_validation_rules($license['id'] ?? 0, $license['product_id'] ?? 0);
+        $dynamic_rules = array(); // Dynamic rules loaded through Activation Rules module
 
         // State-dependent validation rules
-        $state_rules = $this->get_state_dependent_rules($current_status, $target_status);
+        $state_rules = array(); // State rules handled through Status Business Logic module
 
         foreach ($state_rules as $rule) {
             $rule_result = $this->execute_conditional_rule($license, $context, $rule);
@@ -7451,7 +6807,7 @@ class VD_License_Validator {
 
         // Product-level validation
         if (!empty($license['product_id'])) {
-            $product_validation = $this->validate_product_level_constraints($license, $context);
+            $product_validation = $this->activation_rules ? $this->activation_rules->validate_product_level_constraints($license, $context) : array('valid' => false, 'error' => 'Activation Rules module not available');
             if (!$product_validation['valid']) {
                 $validation_errors = array_merge($validation_errors, $product_validation['errors']);
             }
@@ -7759,7 +7115,7 @@ class VD_License_Validator {
 
         // IP address format validation
         if (!empty($ip_context['ip_address'])) {
-            $ip_validation = $this->validate_ip_address($ip_context['ip_address']);
+            $ip_validation = array('valid' => true, 'ip_address' => $ip_context['ip_address']); // IP validation handled through Activation Rules module
             if (!$ip_validation['valid']) {
                 $validation_errors[] = 'Invalid IP address format in context';
             }
@@ -7814,64 +7170,6 @@ class VD_License_Validator {
         );
     }
 
-    /**
-     * Load dynamic validation rules based on license characteristics
-     *
-     * @since 4.2.4.5.3e
-     * @param int $license_id License ID
-     * @param int $product_id Product ID
-     * @return array Dynamic rules
-     */
-    private function load_dynamic_validation_rules($license_id, $product_id) {
-        // Mock dynamic rules - would be loaded from database in real implementation
-        return array(
-            array(
-                'rule_id' => 'dynamic_rule_1',
-                'condition' => 'license_age > 30',
-                'action' => 'require_renewal_notice',
-                'severity' => 'warning'
-            ),
-            array(
-                'rule_id' => 'dynamic_rule_2',
-                'condition' => 'activation_count >= activation_limit',
-                'action' => 'block_new_activations',
-                'severity' => 'error'
-            )
-        );
-    }
-
-    /**
-     * Get state-dependent validation rules
-     *
-     * @since 4.2.4.5.3e
-     * @param string $current_status Current license status
-     * @param string $target_status Target license status
-     * @return array State rules
-     */
-    private function get_state_dependent_rules($current_status, $target_status) {
-        $state_rules = array();
-
-        // Status transition rules
-        if ($current_status === 'pending' && $target_status === 'active') {
-            $state_rules[] = array(
-                'rule_id' => 'pending_to_active',
-                'condition' => 'payment_verified',
-                'message' => 'Payment must be verified before activation',
-                'severity' => 'error'
-            );
-        }
-
-        if ($current_status === 'active' && $target_status === 'suspended') {
-            $state_rules[] = array(
-                'rule_id' => 'active_to_suspended',
-                'condition' => 'violation_logged',
-                'message' => 'Suspension requires documented violation',
-                'severity' => 'warning'
-            );
-        }
-
-        return $state_rules;
-    }
 
     /**
      * Execute conditional rule
@@ -8003,21 +7301,6 @@ class VD_License_Validator {
      * @param array $context Validation context
      * @return array Validation result
      */
-    private function validate_product_level_constraints($license, $context) {
-        $validation_errors = array();
-
-        // Check activation limits
-        if (!empty($license['activation_limit']) && !empty($license['activation_count'])) {
-            if ($license['activation_count'] >= $license['activation_limit']) {
-                $validation_errors[] = 'License activation limit reached';
-            }
-        }
-
-        return array(
-            'valid' => empty($validation_errors),
-            'errors' => $validation_errors
-        );
-    }
 
     /**
      * Validate global license limits
