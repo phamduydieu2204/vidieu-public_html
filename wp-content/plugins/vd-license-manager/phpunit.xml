@@ -11,33 +11,69 @@
          verbose="true">
 
     <testsuites>
-        <testsuite name="VD License Manager Phase 2 Tests">
+        <testsuite name="VD License Manager All Tests">
             <directory>./tests/</directory>
         </testsuite>
 
-        <!-- Phase 2 Test Suites -->
-        <testsuite name="Step 2.1 - Activation Rules">
+        <!-- Phase 1: Format & Database Tests -->
+        <testsuite name="Phase 1 - Core Foundation">
+            <directory>./tests/phase-1/</directory>
+        </testsuite>
+
+        <!-- Phase 2: Business Logic Tests -->
+        <testsuite name="Phase 2 - Business Logic">
             <directory>./tests/step-2-1-activation-rules/</directory>
-        </testsuite>
-
-        <testsuite name="Step 2.2.1 - Expiry Core">
             <directory>./tests/step-2-2-1-expiry-core/</directory>
-        </testsuite>
-
-        <testsuite name="Step 2.2.2 - Expiry Automation">
             <directory>./tests/step-2-2-2-expiry-automation/</directory>
         </testsuite>
 
-        <testsuite name="Step 2.2.3 - Expiry Escalation">
-            <directory>./tests/step-2-2-3-expiry-escalation/</directory>
+        <!-- Phase 3: Security Tests -->
+        <testsuite name="Phase 3 - Security & Audit">
+            <directory>./tests/phase-3/</directory>
         </testsuite>
 
-        <testsuite name="Step 2.2.4 - Constraint Validation">
-            <directory>./tests/step-2-2-4-constraint-validation/</directory>
+        <!-- Phase 4: API & Integration Tests -->
+        <testsuite name="Phase 4 - API & Integration">
+            <directory>./tests/phase-4/</directory>
         </testsuite>
 
-        <testsuite name="Step 2.2.5 - Usage Rules">
-            <directory>./tests/step-2-2-5-usage-rules/</directory>
+        <!-- Individual Module Test Suites -->
+        <testsuite name="Format Validation">
+            <directory>./tests/modules/format/</directory>
+        </testsuite>
+
+        <testsuite name="Database Layer">
+            <directory>./tests/modules/database/</directory>
+        </testsuite>
+
+        <testsuite name="Status Management">
+            <directory>./tests/modules/status/</directory>
+        </testsuite>
+
+        <testsuite name="Business Rules">
+            <directory>./tests/modules/rules/</directory>
+        </testsuite>
+
+        <testsuite name="Security Layer">
+            <directory>./tests/modules/security/</directory>
+        </testsuite>
+
+        <testsuite name="API Framework">
+            <directory>./tests/modules/api/</directory>
+        </testsuite>
+
+        <testsuite name="Integration Layer">
+            <directory>./tests/modules/integration/</directory>
+        </testsuite>
+
+        <!-- Performance Tests -->
+        <testsuite name="Performance Tests">
+            <directory>./tests/performance/</directory>
+        </testsuite>
+
+        <!-- Integration Tests -->
+        <testsuite name="Integration Tests">
+            <directory>./tests/integration/</directory>
         </testsuite>
     </testsuites>
 
