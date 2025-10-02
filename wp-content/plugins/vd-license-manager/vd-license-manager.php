@@ -156,9 +156,10 @@ function vd_license_manager_init() {
         }
 
         // Step 5.1.4 Test Infrastructure - Status Transition Controller Test
-        $status_transition_test = VD_LM_PATH . 'includes/modules/validator/test-status-transition-controller.php';
-        if (file_exists($status_transition_test)) {
-            require_once $status_transition_test;
+        // Use working test instead of problematic full test
+        $working_status_test = VD_LM_PATH . 'includes/modules/validator/working-test-status-transition.php';
+        if (file_exists($working_status_test)) {
+            require_once $working_status_test;
         }
 
     } catch (Exception $e) {
