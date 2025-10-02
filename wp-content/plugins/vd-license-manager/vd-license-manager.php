@@ -141,6 +141,7 @@ function vd_license_manager_init() {
                 VD_LM_PATH . 'includes/test-step-3-2-2-security-threat-detector.php',
                 VD_LM_PATH . 'includes/test-step-3-2-3-security-privacy-manager.php',
                 VD_LM_PATH . 'includes/test-step-3-2-4-security-storage-manager.php',
+                VD_LM_PATH . 'includes/test-step-3-2-5-security-report-generator.php',
                 VD_LM_PATH . 'includes/debug-step-3-2-4-simple.php'
             );
 

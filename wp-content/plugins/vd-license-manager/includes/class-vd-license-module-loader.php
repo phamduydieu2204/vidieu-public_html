@@ -234,6 +234,14 @@ class VD_License_Module_Loader {
                 'namespace' => 'VD\\LicenseManager\\Security\\Storage',
                 'dependencies' => array('security.event_logger', 'security.privacy_manager'),
                 'priority' => 19
+            ),
+            // Step 3.2.5: Security Report Generator Module
+            'security.report_generator' => array(
+                'file' => 'security/class-vd-license-security-report-generator.php',
+                'class' => 'VD\\LicenseManager\\Security\\Reports\\VD_License_Security_Report_Generator',
+                'namespace' => 'VD\\LicenseManager\\Security\\Reports',
+                'dependencies' => array('security.event_logger', 'security.storage_manager', 'security.privacy_manager'),
+                'priority' => 20
             )
         );
 

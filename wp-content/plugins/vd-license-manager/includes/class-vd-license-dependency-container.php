@@ -277,6 +277,27 @@ class VD_License_Dependency_Container {
             }
             return $storage_manager;
         });
+
+        // Step 3.2.5: Register Security Report Generator module
+        $this->register('security.report_generator', function($container) {
+            $report_generator = $container->get('module_loader')->load_module('security.report_generator');
+            $event_logger = $container->get('security.event_logger');
+            $storage_manager = $container->get('security.storage_manager');
+            $privacy_manager = $container->get('security.privacy_manager');
+
+            if ($report_generator) {
+                if ($event_logger) {
+                    $report_generator->set_event_logger($event_logger);
+                }
+                if ($storage_manager) {
+                    $report_generator->set_storage_manager($storage_manager);
+                }
+                if ($privacy_manager) {
+                    $report_generator->set_privacy_manager($privacy_manager);
+                }
+            }
+            return $report_generator;
+        });
     }
 
     /**
