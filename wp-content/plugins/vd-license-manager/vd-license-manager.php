@@ -157,6 +157,8 @@ function vd_license_manager_init() {
                 VD_LM_PATH . 'includes/test-step-3-2-3-security-privacy-manager.php',
                 VD_LM_PATH . 'includes/test-step-3-2-3-minimal.php',
                 VD_LM_PATH . 'includes/test-step-3-2-3-progressive.php',
+                VD_LM_PATH . 'includes/test-step-3-2-3-isolate.php',
+                VD_LM_PATH . 'includes/test-step-3-2-3-direct.php',
                 VD_LM_PATH . 'includes/debug-step-3-2-3.php'
             );
 

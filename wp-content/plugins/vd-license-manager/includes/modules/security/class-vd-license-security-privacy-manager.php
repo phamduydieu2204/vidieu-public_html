@@ -179,41 +179,55 @@ class VD_License_Security_Privacy_Manager {
      * @return array Anonymized data
      */
     public function anonymize_user_data($user_data, $options = array()) {
-        $this->stats['anonymizations_performed']++;
+        try {
+            $this->stats['anonymizations_performed']++;
 
-        $default_options = array(
-            'preserve_structure' => true,
-            'hash_identifiers' => true,
-            'remove_pii' => true,
-            'randomize_values' => false
-        );
+            $default_options = array(
+                'preserve_structure' => true,
+                'hash_identifiers' => true,
+                'remove_pii' => true,
+                'randomize_values' => false
+            );
 
-        $options = array_merge($default_options, $options);
+            $options = array_merge($default_options, $options);
 
-        if (!is_array($user_data)) {
-            return $user_data;
-        }
-
-        $anonymized = array();
-
-        foreach ($user_data as $key => $value) {
-            if ($this->is_pii_field($key)) {
-                $anonymized[$key] = $this->anonymize_pii_value($value, $key, $options);
-            } elseif (is_array($value)) {
-                $anonymized[$key] = $this->anonymize_user_data($value, $options);
-            } else {
-                $anonymized[$key] = $value;
+            if (!is_array($user_data)) {
+                return $user_data;
             }
+
+            $anonymized = array();
+
+            foreach ($user_data as $key => $value) {
+                try {
+                    if ($this->is_pii_field($key)) {
+                        $anonymized[$key] = $this->anonymize_pii_value($value, $key, $options);
+                    } elseif (is_array($value)) {
+                        $anonymized[$key] = $this->anonymize_user_data($value, $options);
+                    } else {
+                        $anonymized[$key] = $value;
+                    }
+                } catch (Exception $e) {
+                    error_log('[VD Privacy Manager] Error anonymizing field ' . $key . ': ' . $e->getMessage());
+                    $anonymized[$key] = '[ERROR_ANONYMIZING]';
+                }
+            }
+
+            // Log anonymization event (with error handling)
+            try {
+                $this->log_privacy_event('data_anonymization', array(
+                    'fields_processed' => count($user_data),
+                    'pii_fields_found' => $this->count_pii_fields($user_data),
+                    'options' => $options
+                ));
+            } catch (Exception $e) {
+                error_log('[VD Privacy Manager] Error logging anonymization event: ' . $e->getMessage());
+            }
+
+            return $anonymized;
+        } catch (Exception $e) {
+            error_log('[VD Privacy Manager] Fatal error in anonymize_user_data: ' . $e->getMessage());
+            return array('error' => 'Anonymization failed: ' . $e->getMessage());
         }
-
-        // Log anonymization event
-        $this->log_privacy_event('data_anonymization', array(
-            'fields_processed' => count($user_data),
-            'pii_fields_found' => $this->count_pii_fields($user_data),
-            'options' => $options
-        ));
-
-        return $anonymized;
     }
 
     /**
@@ -224,57 +238,81 @@ class VD_License_Security_Privacy_Manager {
      * @return array Detection results
      */
     public function detect_and_mask_pii($data, $options = array()) {
-        $this->stats['pii_detections']++;
+        try {
+            $this->stats['pii_detections']++;
 
-        $default_options = array(
-            'auto_mask' => $this->config['pii_detection']['auto_mask'],
-            'sensitivity' => $this->config['pii_detection']['sensitivity_level'],
-            'preserve_format' => true
-        );
+            $default_options = array(
+                'auto_mask' => $this->config['pii_detection']['auto_mask'],
+                'sensitivity' => $this->config['pii_detection']['sensitivity_level'],
+                'preserve_format' => true
+            );
 
-        $options = array_merge($default_options, $options);
+            $options = array_merge($default_options, $options);
 
-        $result = array(
-            'original_data' => $data,
-            'masked_data' => $data,
-            'pii_detected' => false,
-            'pii_fields' => array(),
-            'detection_score' => 0
-        );
+            $result = array(
+                'original_data' => $data,
+                'masked_data' => $data,
+                'pii_detected' => false,
+                'pii_fields' => array(),
+                'detection_score' => 0
+            );
 
-        if (is_array($data)) {
-            foreach ($data as $key => $value) {
-                if ($this->is_pii_field($key) || $this->contains_pii_value($value)) {
-                    $result['pii_detected'] = true;
-                    $result['pii_fields'][] = $key;
+            if (is_array($data)) {
+                foreach ($data as $key => $value) {
+                    try {
+                        if ($this->is_pii_field($key) || $this->contains_pii_value($value)) {
+                            $result['pii_detected'] = true;
+                            $result['pii_fields'][] = $key;
 
-                    if ($options['auto_mask']) {
-                        $result['masked_data'][$key] = $this->mask_pii_value($value, $key, $options);
+                            if ($options['auto_mask']) {
+                                $result['masked_data'][$key] = $this->mask_pii_value($value, $key, $options);
+                            }
+
+                            $result['detection_score'] += $this->calculate_pii_score($key, $value);
+                        }
+                    } catch (Exception $e) {
+                        error_log('[VD Privacy Manager] Error processing PII field ' . $key . ': ' . $e->getMessage());
+                        $result['pii_fields'][] = $key . '_ERROR';
                     }
+                }
+            } elseif (is_string($data)) {
+                try {
+                    if ($this->contains_pii_patterns($data)) {
+                        $result['pii_detected'] = true;
+                        $result['detection_score'] = 85;
 
-                    $result['detection_score'] += $this->calculate_pii_score($key, $value);
+                        if ($options['auto_mask']) {
+                            $result['masked_data'] = $this->mask_pii_patterns($data, $options);
+                        }
+                    }
+                } catch (Exception $e) {
+                    error_log('[VD Privacy Manager] Error processing PII patterns: ' . $e->getMessage());
+                    $result['masked_data'] = '[ERROR_PROCESSING_PII]';
                 }
             }
-        } elseif (is_string($data)) {
-            if ($this->contains_pii_patterns($data)) {
-                $result['pii_detected'] = true;
-                $result['detection_score'] = 85;
 
-                if ($options['auto_mask']) {
-                    $result['masked_data'] = $this->mask_pii_patterns($data, $options);
-                }
+            // Log PII detection (with error handling)
+            try {
+                $this->log_privacy_event('pii_detection', array(
+                    'pii_detected' => $result['pii_detected'],
+                    'fields_count' => count($result['pii_fields']),
+                    'detection_score' => $result['detection_score'],
+                    'auto_masked' => $options['auto_mask']
+                ));
+            } catch (Exception $e) {
+                error_log('[VD Privacy Manager] Error logging PII detection event: ' . $e->getMessage());
             }
+
+            return $result;
+        } catch (Exception $e) {
+            error_log('[VD Privacy Manager] Fatal error in detect_and_mask_pii: ' . $e->getMessage());
+            return array(
+                'error' => 'PII detection failed: ' . $e->getMessage(),
+                'pii_detected' => false,
+                'pii_fields' => array(),
+                'detection_score' => 0
+            );
         }
-
-        // Log PII detection
-        $this->log_privacy_event('pii_detection', array(
-            'pii_detected' => $result['pii_detected'],
-            'fields_count' => count($result['pii_fields']),
-            'detection_score' => $result['detection_score'],
-            'auto_masked' => $options['auto_mask']
-        ));
-
-        return $result;
     }
 
     /**
@@ -873,16 +911,21 @@ class VD_License_Security_Privacy_Manager {
      * @return void
      */
     private function log_privacy_event($event_type, $context) {
-        if ($this->event_logger) {
-            $this->event_logger->log_security_event(array(
-                'event_type' => 'privacy_' . $event_type,
-                'component' => 'security_privacy_manager',
-                'severity' => 'INFO',
-                'context' => $context,
-                'timestamp' => current_time('mysql'),
-                'user_id' => get_current_user_id(),
-                'ip_address' => $this->get_client_ip()
-            ));
+        if ($this->event_logger && method_exists($this->event_logger, 'log_security_event')) {
+            try {
+                $this->event_logger->log_security_event(array(
+                    'event_type' => 'privacy_' . $event_type,
+                    'component' => 'security_privacy_manager',
+                    'severity' => 'INFO',
+                    'context' => $context,
+                    'timestamp' => current_time('mysql'),
+                    'user_id' => get_current_user_id(),
+                    'ip_address' => $this->get_client_ip()
+                ));
+            } catch (Exception $e) {
+                // Silently fail if logging fails during testing
+                error_log('[VD Privacy Manager] Logging failed: ' . $e->getMessage());
+            }
         }
     }
 
