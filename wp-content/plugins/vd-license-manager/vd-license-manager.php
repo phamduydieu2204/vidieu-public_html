@@ -154,7 +154,9 @@ function vd_license_manager_init() {
             $test_files = array(
                 VD_LM_PATH . 'includes/test-step-3-2-1-security-event-logger.php',
                 VD_LM_PATH . 'includes/test-step-3-2-2-security-threat-detector.php',
-                VD_LM_PATH . 'includes/test-step-3-2-3-security-privacy-manager.php'
+                // VD_LM_PATH . 'includes/test-step-3-2-3-security-privacy-manager.php', // DISABLE TEMPORARILY
+                VD_LM_PATH . 'includes/test-step-3-2-3-minimal.php',
+                VD_LM_PATH . 'includes/debug-step-3-2-3.php'
             );
 
             foreach ($test_files as $test_file) {
