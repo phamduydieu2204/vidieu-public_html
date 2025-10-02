@@ -162,6 +162,12 @@ function vd_license_manager_init() {
             require_once $working_status_test;
         }
 
+        // Step 5.1.5 Test Infrastructure - Validation Orchestrator Test
+        $orchestrator_test = VD_LM_PATH . 'includes/modules/validator/test-validation-orchestrator.php';
+        if (file_exists($orchestrator_test)) {
+            require_once $orchestrator_test;
+        }
+
     } catch (Exception $e) {
         error_log('[VD License Manager] Initialization error: ' . $e->getMessage());
     } catch (Error $e) {
