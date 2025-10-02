@@ -149,6 +149,12 @@ function vd_license_manager_init() {
             require_once $validation_utils_test;
         }
 
+        // Step 5.1.3 Test Infrastructure - Expiry Processing Manager Test
+        $expiry_processor_test = VD_LM_PATH . 'includes/modules/validator/test-expiry-processor.php';
+        if (file_exists($expiry_processor_test)) {
+            require_once $expiry_processor_test;
+        }
+
     } catch (Exception $e) {
         error_log('[VD License Manager] Initialization error: ' . $e->getMessage());
     } catch (Error $e) {

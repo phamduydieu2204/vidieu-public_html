@@ -423,8 +423,63 @@
 - **Rollback Status**: ✅ SAFE - Original code remains intact, new module is additive
 - **Risk Assessment**: ✅ LOW - Zero impact on existing functionality
 
-#### ⏳ Step 5.1.3: Unit Testing Framework Expansion (Original Phase 5 Plan)
-- **Status**: Deferred (After Validator Refactoring)
+#### ✅ Step 5.1.3: Validator Refactoring - Expiry Processing Manager Extraction
+- **Status**: ✅ COMPLETED (January 2, 2025)
+- **Duration**: 1 day (as planned)
+- **Complexity**: Medium-High
+- **Priority**: High (Monolithic class refactoring continuation)
+- **Implementation Completed**: 2025-01-02
+- **Scope**:
+  - Extract Expiry Processing Manager from monolithic `class-vd-license-validator.php` (7,540 lines)
+  - Create dedicated module for license expiry validation and batch processing
+  - Implement PSR-4 namespace compliance
+  - Maintain existing functionality without business logic changes
+- **Implementation Results**:
+  - ✅ **Files Created**: 3 new files totaling 1,125 lines
+  - ✅ **Main Module**: `includes/modules/validator/class-vd-license-expiry-processor.php` (580 lines)
+  - ✅ **Test Infrastructure**: `includes/modules/validator/test-expiry-processor.php` (475 lines)
+  - ✅ **Verification Tool**: `includes/modules/validator/simple-test-expiry-processor.php` (70 lines)
+  - ✅ **Namespace**: `VD\LicenseManager\Validator\VD_License_Expiry_Processor`
+  - ✅ **Pattern**: Singleton implementation with proper instance management
+- **Extracted Functionality**:
+  - ✅ **Expiry Validation**: `validate_license_expiry_date()` with comprehensive date handling
+  - ✅ **Batch Processing**: `update_expired_license_statuses()` with configurable options
+  - ✅ **Single License Processing**: `process_single_expired_license()` with dry-run support
+  - ✅ **Target Status Logic**: `determine_target_status_for_expired_license()` with escalation rules
+  - ✅ **Database Operations**: `get_expired_licenses_for_update()` with multi-table support
+  - ✅ **Status Updates**: `update_expired_license_status()` with error handling
+  - ✅ **Configuration Validation**: `validate_update_configuration()` with comprehensive checks
+  - ✅ **Results Validation**: `validate_update_results()` with statistics generation
+  - ✅ **Logging System**: Batch completion, error logging, and audit trail
+  - ✅ **Grace Period Logic**: Configurable grace periods and escalation rules
+- **Business Logic Features**:
+  - ✅ **Escalation Rules**: 7 days → expired, 30 days → suspended, >30 days → revoked
+  - ✅ **Grace Period**: Configurable hours before status changes
+  - ✅ **Batch Processing**: 1-1000 licenses per batch with performance optimization
+  - ✅ **Dry Run Mode**: Safe testing without database modifications
+  - ✅ **Multi-table Support**: VD licenses and LMFWC compatibility
+  - ✅ **Audit Logging**: Comprehensive logging with security-safe partial keys
+- **Testing Implementation**:
+  - ✅ **Test Endpoint**: `/wp-admin/admin-ajax.php?action=vd_test_step_5_1_3_expiry_processor`
+  - ✅ **Test Coverage**: 10 comprehensive test cases
+  - ✅ **Mock Testing**: Safe testing with mock data to avoid database modifications
+  - ✅ **Performance Tracking**: Execution time and memory usage monitoring
+  - ✅ **Error Handling**: Graceful error handling and validation testing
+- **Quality Assurance**:
+  - ✅ **WordPress Coding Standards**: Fully compliant
+  - ✅ **PSR-4 Compliance**: Ready for autoload integration
+  - ✅ **Backward Compatibility**: No breaking changes, original code intact
+  - ✅ **Integration**: Loaded seamlessly via main plugin file
+  - ✅ **Safety**: All database operations use prepared statements and validation
+- **Next Extraction Targets** (Future Steps):
+  3. **Status Transition Controller** - 400-600 lines estimated
+  4. **License Lookup Manager** - 500-800 lines estimated
+  5. **Validation Orchestrator** - 300-500 lines estimated
+- **Rollback Status**: ✅ SAFE - Original code remains intact, new module is additive
+- **Risk Assessment**: ✅ LOW - Zero impact on existing functionality
+
+#### ⏳ Step 5.1.4: Unit Testing Framework Expansion (Original Step 5.1.3 Plan)
+- **Status**: Deferred (After Validator Refactoring Complete)
 - **Duration**: 3 days
 - **Complexity**: Medium
 - **Scope**:
@@ -434,10 +489,10 @@
   - Class instantiation and singleton pattern testing
 - **Target**: 95% coverage for individual modules
 - **Estimated Tests**: 200-250 unit tests
-- **Dependencies**: Step 5.1.2 (Validator Refactoring Complete)
+- **Dependencies**: Step 5.1.3 (Validator Refactoring Complete)
 - **Risk Level**: Medium
 
-#### ⏳ Step 5.1.4: Integration Testing Development
+#### ⏳ Step 5.1.5: Integration Testing Development (Original Step 5.1.4)
 - **Status**: Not Started
 - **Duration**: 4 days
 - **Complexity**: High
@@ -448,10 +503,10 @@
   - Cross-module dependency validation
 - **Focus Areas**: Security → API → Integration workflows
 - **Estimated Tests**: 50-75 integration tests
-- **Dependencies**: Step 5.1.3
+- **Dependencies**: Step 5.1.4 (Unit Testing Framework)
 - **Risk Level**: High (complex module interdependencies)
 
-#### ⏳ Step 5.1.5: API Endpoint Testing
+#### ⏳ Step 5.1.6: API Endpoint Testing (Original Step 5.1.5)
 - **Status**: Not Started
 - **Duration**: 3 days
 - **Complexity**: Medium
@@ -463,10 +518,10 @@
   - Rate limiting and security validation
 - **Modules**: `/modules/api/` and `/modules/integration/`
 - **Estimated Tests**: 40-60 API tests
-- **Dependencies**: Step 5.1.4
+- **Dependencies**: Step 5.1.5 (Integration Testing)
 - **Risk Level**: Medium
 
-#### ⏳ Step 5.1.6: Performance Testing Implementation
+#### ⏳ Step 5.1.7: Performance Testing Implementation (Original Step 5.1.6)
 - **Status**: Not Started
 - **Duration**: 2 days
 - **Complexity**: Medium
@@ -478,10 +533,10 @@
   - Stress testing for high-volume operations
 - **Tools**: PHPUnit + custom performance testing utilities
 - **Estimated Tests**: 20-30 performance tests
-- **Dependencies**: Steps 5.1.1, 5.1.2
+- **Dependencies**: Steps 5.1.1, 5.1.2, 5.1.3
 - **Risk Level**: Medium
 
-#### ⏳ Step 5.1.7: Test Coverage Measurement & Reporting
+#### ⏳ Step 5.1.8: Test Coverage Measurement & Reporting (Original Step 5.1.7)
 - **Status**: Not Started
 - **Duration**: 1 day
 - **Complexity**: Low
@@ -491,7 +546,7 @@
   - Gap analysis and missing test identification
   - Continuous coverage monitoring setup
 - **Target**: Achieve and maintain 95% coverage
-- **Dependencies**: Steps 5.1.3, 5.1.4, 5.1.5, 5.1.6
+- **Dependencies**: Steps 5.1.4, 5.1.5, 5.1.6, 5.1.7
 - **Risk Level**: Low
 
 ---
