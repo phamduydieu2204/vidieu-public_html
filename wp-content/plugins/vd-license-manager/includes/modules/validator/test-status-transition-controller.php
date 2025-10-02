@@ -555,3 +555,4 @@ function test_valid_status_enums($status_controller) {
         );
     }
 }
+}

@@ -769,3 +769,4 @@ class VD_License_Status_Transition_Controller {
         return $this->status_categories;
     }
 }
+}
