@@ -137,7 +137,7 @@ function vd_license_manager_init() {
         // Load test endpoints (only in admin or AJAX context)
         if (is_admin() || wp_doing_ajax()) {
             $test_files = array(
-                VD_LM_PATH . 'includes/test-step-3-1-security-validator.php',
+                VD_LM_PATH . 'includes/test-step-3-1-debug.php',
                 VD_LM_PATH . 'includes/test-step-4-1-api-framework.php'
             );
 
