@@ -355,6 +355,24 @@ class VD_License_Dependency_Container {
             }
             return $webhook_system;
         });
+
+        // Step 4.3: Register Third-party Integration Manager module
+        $this->register('integration.manager', function($container) {
+            $integration_manager = $container->get('module_loader')->load_module('integration.manager');
+            $api_framework = $container->get('api.framework');
+            $security_validator = $container->get('security.validator');
+
+            if ($integration_manager) {
+                // Inject dependencies for third-party integration support
+                if ($api_framework && method_exists($integration_manager, 'set_api_framework')) {
+                    $integration_manager->set_api_framework($api_framework);
+                }
+                if ($security_validator && method_exists($integration_manager, 'set_security_validator')) {
+                    $integration_manager->set_security_validator($security_validator);
+                }
+            }
+            return $integration_manager;
+        });
     }
 
     /**

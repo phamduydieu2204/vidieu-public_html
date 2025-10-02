@@ -268,6 +268,15 @@ class VD_License_Module_Loader {
                 'namespace' => 'VD\\LicenseManager\\API',
                 'dependencies' => array('api.framework'),
                 'priority' => 23
+            ),
+
+            // Step 4.3: Third-party Integrations Module
+            'integration.manager' => array(
+                'file' => 'integration/class-vd-license-integration-manager.php',
+                'class' => 'VD\\LicenseManager\\Integration\\VD_License_Integration_Manager',
+                'namespace' => 'VD\\LicenseManager\\Integration',
+                'dependencies' => array('api.framework', 'security.validator'),
+                'priority' => 24
             )
         );
 

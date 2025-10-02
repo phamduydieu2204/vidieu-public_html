@@ -134,20 +134,7 @@ function vd_license_manager_init() {
             $manager->init();
         }
 
-        // Load test endpoints (only in admin or AJAX context)
-        if (is_admin() || wp_doing_ajax()) {
-            $test_files = array(
-                VD_LM_PATH . 'includes/test-step-3-1-security-validator.php',
-                VD_LM_PATH . 'includes/test-step-4-1-api-framework.php',
-                VD_LM_PATH . 'includes/test-step-4-2-webhook-system.php'
-            );
 
-            foreach ($test_files as $test_file) {
-                if (file_exists($test_file)) {
-                    require_once $test_file;
-                }
-            }
-        }
     } catch (Exception $e) {
         error_log('[VD License Manager] Initialization error: ' . $e->getMessage());
     } catch (Error $e) {
