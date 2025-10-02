@@ -159,16 +159,31 @@ function vd_license_manager_init() {
             error_log('[VD License Manager] VD_License_Manager class found successfully');
         }
 
-        // STEP 4 DEBUG - Test manager->init() method - LIKELY CULPRIT
+        // STEP 4 DEBUG - Test manager->init() method
         $manager = VD_License_Manager::get_instance();
         if ($manager) {
             error_log('[VD License Manager] VD_License_Manager instance created successfully');
-
-            // This is likely where the fatal error occurs
             $manager->init();
             error_log('[VD License Manager] Plugin initialized successfully - VD_License_Manager loaded');
         } else {
             error_log('[VD License Manager] Failed to get VD_License_Manager instance');
+        }
+
+        // STEP 5 DEBUG - Test adding test endpoints - REAL CULPRIT?
+        if (is_admin() || wp_doing_ajax()) {
+            $test_files = array(
+                VD_LM_PATH . 'includes/test-step-3-2-4-security-storage-manager.php'
+            );
+
+            foreach ($test_files as $test_file) {
+                if (file_exists($test_file)) {
+                    error_log('[VD License Manager] About to load: ' . basename($test_file));
+                    require_once $test_file;
+                    error_log('[VD License Manager] Successfully loaded: ' . basename($test_file));
+                } else {
+                    error_log('[VD License Manager] Test file not found: ' . $test_file);
+                }
+            }
         }
     } catch (Exception $e) {
         error_log('[VD License Manager] Initialization error: ' . $e->getMessage());
