@@ -168,6 +168,14 @@ function vd_license_manager_init() {
             require_once $orchestrator_test;
         }
 
+        // Step 5.1.5 Admin Page - Validation Orchestrator Test Interface
+        if (is_admin()) {
+            $orchestrator_admin_test = VD_LM_PATH . 'includes/modules/validator/admin-page-validation-orchestrator-test.php';
+            if (file_exists($orchestrator_admin_test)) {
+                require_once $orchestrator_admin_test;
+            }
+        }
+
     } catch (Exception $e) {
         error_log('[VD License Manager] Initialization error: ' . $e->getMessage());
     } catch (Error $e) {
