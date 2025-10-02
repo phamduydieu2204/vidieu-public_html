@@ -194,12 +194,13 @@ function vd_license_manager_init() {
             error_log('[VD License Manager] Module loader error: ' . $e->getMessage());
         }
 
-        // STEP 11 - Test adding threat detector test
+        // STEP 12 - Test adding privacy manager test
         if (is_admin() || wp_doing_ajax()) {
             // Load confirmed OK files
             $confirmed_files = array(
                 VD_LM_PATH . 'includes/debug-minimal.php',
-                VD_LM_PATH . 'includes/test-step-3-2-1-security-event-logger.php'
+                VD_LM_PATH . 'includes/test-step-3-2-1-security-event-logger.php',
+                VD_LM_PATH . 'includes/test-step-3-2-2-security-threat-detector.php'
             );
 
             foreach ($confirmed_files as $file) {
@@ -209,21 +210,15 @@ function vd_license_manager_init() {
                 }
             }
 
-            // Test adding test-step-3-2-2-security-threat-detector.php
-            $threat_detector_test = VD_LM_PATH . 'includes/test-step-3-2-2-security-threat-detector.php';
-            if (file_exists($threat_detector_test)) {
-                error_log('[VD License Manager] About to load: test-step-3-2-2-security-threat-detector.php');
-                require_once $threat_detector_test;
-                error_log('[VD License Manager] Successfully loaded: test-step-3-2-2-security-threat-detector.php');
+            // Test adding test-step-3-2-3-security-privacy-manager.php
+            $privacy_manager_test = VD_LM_PATH . 'includes/test-step-3-2-3-security-privacy-manager.php';
+            if (file_exists($privacy_manager_test)) {
+                error_log('[VD License Manager] About to load: test-step-3-2-3-security-privacy-manager.php');
+                require_once $privacy_manager_test;
+                error_log('[VD License Manager] Successfully loaded: test-step-3-2-3-security-privacy-manager.php');
             }
 
-            // STOP HERE - Don't load more files yet
-            /*
-            $remaining_files = array(
-                VD_LM_PATH . 'includes/test-step-3-2-3-security-privacy-manager.php',
-                VD_LM_PATH . 'includes/debug-step-3-2-4-simple.php'
-            );
-            */
+            // STOP HERE - Only debug-step-3-2-4-simple.php left to test
         }
     } catch (Exception $e) {
         error_log('[VD License Manager] Initialization error: ' . $e->getMessage());
