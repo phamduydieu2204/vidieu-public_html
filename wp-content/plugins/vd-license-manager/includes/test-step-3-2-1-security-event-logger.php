@@ -66,7 +66,7 @@ function vd_test_step_3_2_1_security_event_logger_handler() {
         $results['tests']['event_hashing'] = test_event_hashing($event_logger);
 
         // Test 8: Configuration Management
-        $results['tests']['configuration'] = test_configuration_management($event_logger);
+        $results['tests']['configuration'] = test_event_logger_configuration_management($event_logger);
 
         // Test 9: Metadata Sanitization
         $results['tests']['metadata_sanitization'] = test_metadata_sanitization($event_logger);
@@ -483,7 +483,7 @@ function test_event_hashing($event_logger) {
 /**
  * Test 8: Configuration Management
  */
-function test_configuration_management($event_logger) {
+function test_event_logger_configuration_management($event_logger) {
     $test = array(
         'name' => 'Configuration Management',
         'success' => false,

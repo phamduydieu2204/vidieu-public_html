@@ -55,13 +55,13 @@ function vd_test_step_3_2_5_security_report_generator_handler() {
         $results['tests']['recommendations_generation'] = test_recommendations_generation($report_generator);
 
         // Test 6: Configuration Management
-        $results['tests']['configuration_management'] = test_configuration_management($report_generator);
+        $results['tests']['configuration_management'] = test_report_generator_configuration_management($report_generator);
 
         // Test 7: Statistics Tracking
-        $results['tests']['statistics_tracking'] = test_statistics_tracking($report_generator);
+        $results['tests']['statistics_tracking'] = test_report_generator_statistics_tracking($report_generator);
 
         // Test 8: Dependencies Integration
-        $results['tests']['dependencies_integration'] = test_dependencies_integration($report_generator);
+        $results['tests']['dependencies_integration'] = test_report_generator_dependencies_integration($report_generator);
 
         // Test 9: Performance Testing
         $results['tests']['performance_testing'] = test_performance($report_generator);
@@ -449,7 +449,7 @@ function test_recommendations_generation($report_generator) {
 /**
  * Test configuration management
  */
-function test_configuration_management($report_generator) {
+function test_report_generator_configuration_management($report_generator) {
     $test_result = array(
         'success' => false,
         'message' => '',
@@ -507,7 +507,7 @@ function test_configuration_management($report_generator) {
 /**
  * Test statistics tracking
  */
-function test_statistics_tracking($report_generator) {
+function test_report_generator_statistics_tracking($report_generator) {
     $test_result = array(
         'success' => false,
         'message' => '',
@@ -556,7 +556,7 @@ function test_statistics_tracking($report_generator) {
 /**
  * Test dependencies integration
  */
-function test_dependencies_integration($report_generator) {
+function test_report_generator_dependencies_integration($report_generator) {
     $test_result = array(
         'success' => false,
         'message' => '',

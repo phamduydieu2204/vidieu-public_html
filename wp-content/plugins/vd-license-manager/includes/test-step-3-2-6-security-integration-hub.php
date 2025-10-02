@@ -55,13 +55,13 @@ function vd_test_step_3_2_6_security_integration_hub_handler() {
         $results['tests']['siem_integration'] = test_siem_integration($integration_hub);
 
         // Test 6: Configuration Management
-        $results['tests']['configuration_management'] = test_configuration_management($integration_hub);
+        $results['tests']['configuration_management'] = test_integration_hub_configuration_management($integration_hub);
 
         // Test 7: Dependencies Integration
-        $results['tests']['dependencies_integration'] = test_dependencies_integration($integration_hub);
+        $results['tests']['dependencies_integration'] = test_integration_hub_dependencies_integration($integration_hub);
 
         // Test 8: Statistics Tracking
-        $results['tests']['statistics_tracking'] = test_statistics_tracking($integration_hub);
+        $results['tests']['statistics_tracking'] = test_integration_hub_statistics_tracking($integration_hub);
 
         // Test 9: Security Event Handling
         $results['tests']['security_event_handling'] = test_security_event_handling($integration_hub);
@@ -319,7 +319,7 @@ function test_siem_integration($integration_hub) {
 /**
  * Test configuration management
  */
-function test_configuration_management($integration_hub) {
+function test_integration_hub_configuration_management($integration_hub) {
     $test_result = array(
         'test_name' => 'Configuration Management',
         'status' => 'PASS',
@@ -359,7 +359,7 @@ function test_configuration_management($integration_hub) {
 /**
  * Test dependencies integration
  */
-function test_dependencies_integration($integration_hub) {
+function test_integration_hub_dependencies_integration($integration_hub) {
     $test_result = array(
         'test_name' => 'Dependencies Integration',
         'status' => 'PASS',
@@ -397,7 +397,7 @@ function test_dependencies_integration($integration_hub) {
 /**
  * Test statistics tracking
  */
-function test_statistics_tracking($integration_hub) {
+function test_integration_hub_statistics_tracking($integration_hub) {
     $test_result = array(
         'test_name' => 'Statistics Tracking',
         'status' => 'PASS',
