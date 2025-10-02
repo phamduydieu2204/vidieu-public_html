@@ -39,6 +39,9 @@ register_deactivation_hook(__FILE__, 'vd_license_manager_deactivate');
 // Initialize plugin
 add_action('plugins_loaded', 'vd_license_manager_init');
 
+// Log when plugin file is loaded
+error_log('[VD License Manager] Main plugin file loaded, adding plugins_loaded hook');
+
 /**
  * Check plugin requirements
  *
@@ -109,12 +112,17 @@ function vd_license_manager_deactivate() {
  */
 function vd_license_manager_init() {
     try {
+        // Log that plugin init is called
+        error_log('[VD License Manager] vd_license_manager_init() called');
+
         // TEMPORARY DEBUG MODE - Only load ultra minimal endpoint
         if (is_admin() || wp_doing_ajax()) {
             $debug_file = VD_LM_PATH . 'includes/debug-ultra-minimal.php';
             if (file_exists($debug_file)) {
                 require_once $debug_file;
-                error_log('[VD License Manager] Ultra minimal debug loaded');
+                error_log('[VD License Manager] Ultra minimal debug loaded from: ' . $debug_file);
+            } else {
+                error_log('[VD License Manager] Ultra minimal debug file NOT FOUND: ' . $debug_file);
             }
         }
 
