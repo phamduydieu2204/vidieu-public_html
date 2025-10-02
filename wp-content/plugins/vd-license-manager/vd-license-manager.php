@@ -143,6 +143,12 @@ function vd_license_manager_init() {
         //     }
         // }
 
+        // Step 5.1.2 Test Infrastructure - Validation Utils Manager Test
+        $validation_utils_test = VD_LM_PATH . 'includes/modules/validator/test-validation-utils.php';
+        if (file_exists($validation_utils_test)) {
+            require_once $validation_utils_test;
+        }
+
     } catch (Exception $e) {
         error_log('[VD License Manager] Initialization error: ' . $e->getMessage());
     } catch (Error $e) {
