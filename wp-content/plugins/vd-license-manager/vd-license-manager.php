@@ -159,17 +159,18 @@ function vd_license_manager_init() {
             error_log('[VD License Manager] VD_License_Manager class found successfully');
         }
 
-        // TEMPORARILY STOP HERE - Don't initialize manager yet
-        /*
-        // Initialize
+        // STEP 3 DEBUG - Test manager initialization (but don't call init() yet)
         $manager = VD_License_Manager::get_instance();
         if ($manager) {
+            error_log('[VD License Manager] VD_License_Manager instance created successfully');
+            // TEMPORARILY STOP HERE - Don't call $manager->init() yet
+            /*
             $manager->init();
             error_log('[VD License Manager] Plugin initialized successfully - VD_License_Manager loaded');
+            */
         } else {
             error_log('[VD License Manager] Failed to get VD_License_Manager instance');
         }
-        */
     } catch (Exception $e) {
         error_log('[VD License Manager] Initialization error: ' . $e->getMessage());
     } catch (Error $e) {
