@@ -194,29 +194,26 @@ function vd_license_manager_init() {
             error_log('[VD License Manager] Module loader error: ' . $e->getMessage());
         }
 
-        // STEP 13 FINAL - Test adding debug-step-3-2-4-simple.php - LIKELY CULPRIT
+        // STEP 14 - Test EXACT original setup (including ultra-minimal first)
         if (is_admin() || wp_doing_ajax()) {
-            // Load ALL confirmed OK files
-            $confirmed_files = array(
+            $test_files = array(
+                VD_LM_PATH . 'includes/debug-ultra-minimal.php',
                 VD_LM_PATH . 'includes/debug-minimal.php',
                 VD_LM_PATH . 'includes/test-step-3-2-1-security-event-logger.php',
                 VD_LM_PATH . 'includes/test-step-3-2-2-security-threat-detector.php',
-                VD_LM_PATH . 'includes/test-step-3-2-3-security-privacy-manager.php'
+                VD_LM_PATH . 'includes/test-step-3-2-3-security-privacy-manager.php',
+                VD_LM_PATH . 'includes/test-step-3-2-4-security-storage-manager.php',
+                VD_LM_PATH . 'includes/debug-step-3-2-4-simple.php'
             );
 
-            foreach ($confirmed_files as $file) {
-                if (file_exists($file)) {
-                    require_once $file;
-                    error_log('[VD License Manager] Loaded: ' . basename($file));
+            foreach ($test_files as $test_file) {
+                if (file_exists($test_file)) {
+                    error_log('[VD License Manager] About to load: ' . basename($test_file));
+                    require_once $test_file;
+                    error_log('[VD License Manager] Successfully loaded: ' . basename($test_file));
+                } else {
+                    error_log('[VD License Manager] Test file not found: ' . basename($test_file));
                 }
-            }
-
-            // Test adding THE LAST FILE - debug-step-3-2-4-simple.php
-            $debug_simple = VD_LM_PATH . 'includes/debug-step-3-2-4-simple.php';
-            if (file_exists($debug_simple)) {
-                error_log('[VD License Manager] About to load FINAL FILE: debug-step-3-2-4-simple.php');
-                require_once $debug_simple;
-                error_log('[VD License Manager] Successfully loaded: debug-step-3-2-4-simple.php');
             }
         }
     } catch (Exception $e) {
