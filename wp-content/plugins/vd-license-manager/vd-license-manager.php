@@ -137,7 +137,13 @@ function vd_license_manager_init() {
         // Load test endpoints (only in admin or AJAX context)
         if (is_admin() || wp_doing_ajax()) {
             $test_files = array(
-                VD_LM_PATH . 'includes/test-step-3-2-6-simple.php'
+                VD_LM_PATH . 'includes/test-step-3-1-security-validator.php',
+                VD_LM_PATH . 'includes/test-step-3-2-1-security-event-logger.php',
+                VD_LM_PATH . 'includes/test-step-3-2-2-security-threat-detector.php',
+                VD_LM_PATH . 'includes/test-step-3-2-3-security-privacy-manager.php',
+                VD_LM_PATH . 'includes/test-step-3-2-4-security-storage-manager.php',
+                VD_LM_PATH . 'includes/test-step-3-2-5-security-report-generator.php',
+                VD_LM_PATH . 'includes/test-step-3-2-6-security-integration-hub.php'
             );
 
             foreach ($test_files as $test_file) {
