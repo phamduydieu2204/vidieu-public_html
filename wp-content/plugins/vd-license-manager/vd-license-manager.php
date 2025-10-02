@@ -134,13 +134,13 @@ function vd_license_manager_init() {
             $manager->init();
         }
 
-        // Load Step 4.3 test endpoint (disabled temporarily due to fatal error)
-        // if (is_admin() || wp_doing_ajax()) {
-        //     $test_file = VD_LM_PATH . 'includes/test-step-4-3-integration-simple.php';
-        //     if (file_exists($test_file)) {
-        //         require_once $test_file;
-        //     }
-        // }
+        // Load safe integration status test
+        if (is_admin() || wp_doing_ajax()) {
+            $test_file = VD_LM_PATH . 'includes/test-integration-status.php';
+            if (file_exists($test_file)) {
+                require_once $test_file;
+            }
+        }
 
     } catch (Exception $e) {
         error_log('[VD License Manager] Initialization error: ' . $e->getMessage());
