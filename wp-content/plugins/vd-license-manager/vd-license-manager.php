@@ -134,13 +134,13 @@ function vd_license_manager_init() {
             $manager->init();
         }
 
-        // Load admin integration test page
-        if (is_admin()) {
-            $admin_test_file = VD_LM_PATH . 'includes/admin-integration-test.php';
-            if (file_exists($admin_test_file)) {
-                require_once $admin_test_file;
-            }
-        }
+        // Disabled admin test page due to fatal error
+        // if (is_admin()) {
+        //     $admin_test_file = VD_LM_PATH . 'includes/admin-integration-test.php';
+        //     if (file_exists($admin_test_file)) {
+        //         require_once $admin_test_file;
+        //     }
+        // }
 
     } catch (Exception $e) {
         error_log('[VD License Manager] Initialization error: ' . $e->getMessage());
