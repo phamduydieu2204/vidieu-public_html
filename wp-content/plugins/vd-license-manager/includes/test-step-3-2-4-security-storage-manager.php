@@ -735,4 +735,5 @@ function generate_test_summary($tests, $storage_manager) {
             'performance' => $tests['performance_optimization']['success'] ?? false
         )
     );
-}*/
+}
+*/
