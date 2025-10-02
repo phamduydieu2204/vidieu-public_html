@@ -194,27 +194,25 @@ function vd_license_manager_init() {
             error_log('[VD License Manager] Module loader error: ' . $e->getMessage());
         }
 
-        // STEP 8 FINAL - Test loading ALL test files like original setup
+        // STEP 9 - Test loading files ONE BY ONE to identify culprit
         if (is_admin() || wp_doing_ajax()) {
-            $test_files = array(
-                VD_LM_PATH . 'includes/debug-ultra-minimal.php',
-                VD_LM_PATH . 'includes/debug-minimal.php',
+            // Test debug-minimal.php first (suspect)
+            $debug_minimal = VD_LM_PATH . 'includes/debug-minimal.php';
+            if (file_exists($debug_minimal)) {
+                error_log('[VD License Manager] About to load: debug-minimal.php');
+                require_once $debug_minimal;
+                error_log('[VD License Manager] Successfully loaded: debug-minimal.php');
+            }
+
+            // STOP HERE - Don't load other files yet
+            /*
+            $other_files = array(
                 VD_LM_PATH . 'includes/test-step-3-2-1-security-event-logger.php',
                 VD_LM_PATH . 'includes/test-step-3-2-2-security-threat-detector.php',
                 VD_LM_PATH . 'includes/test-step-3-2-3-security-privacy-manager.php',
-                VD_LM_PATH . 'includes/test-step-3-2-4-security-storage-manager.php',
                 VD_LM_PATH . 'includes/debug-step-3-2-4-simple.php'
             );
-
-            foreach ($test_files as $test_file) {
-                if (file_exists($test_file)) {
-                    error_log('[VD License Manager] About to load: ' . basename($test_file));
-                    require_once $test_file;
-                    error_log('[VD License Manager] Successfully loaded: ' . basename($test_file));
-                } else {
-                    error_log('[VD License Manager] Test file not found: ' . basename($test_file));
-                }
-            }
+            */
         }
     } catch (Exception $e) {
         error_log('[VD License Manager] Initialization error: ' . $e->getMessage());
