@@ -260,6 +260,23 @@ class VD_License_Dependency_Container {
             }
             return $privacy_manager;
         });
+
+        // Step 3.2.4: Register Security Storage Manager module
+        $this->register('security.storage_manager', function($container) {
+            $storage_manager = $container->get('module_loader')->load_module('security.storage_manager');
+            $event_logger = $container->get('security.event_logger');
+            $privacy_manager = $container->get('security.privacy_manager');
+
+            if ($storage_manager) {
+                if ($event_logger) {
+                    $storage_manager->set_event_logger($event_logger);
+                }
+                if ($privacy_manager) {
+                    $storage_manager->set_privacy_manager($privacy_manager);
+                }
+            }
+            return $storage_manager;
+        });
     }
 
     /**

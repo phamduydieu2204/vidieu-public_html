@@ -226,6 +226,14 @@ class VD_License_Module_Loader {
                 'namespace' => 'VD\\LicenseManager\\Security\\Privacy',
                 'dependencies' => array('security.event_logger'),
                 'priority' => 18
+            ),
+            // Step 3.2.4: Security Storage Manager Module
+            'security.storage_manager' => array(
+                'file' => 'security/class-vd-license-security-storage-manager.php',
+                'class' => 'VD\\LicenseManager\\Security\\Storage\\VD_License_Security_Storage_Manager',
+                'namespace' => 'VD\\LicenseManager\\Security\\Storage',
+                'dependencies' => array('security.event_logger', 'security.privacy_manager'),
+                'priority' => 19
             )
         );
 
