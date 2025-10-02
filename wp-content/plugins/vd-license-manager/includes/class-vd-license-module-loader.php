@@ -242,6 +242,14 @@ class VD_License_Module_Loader {
                 'namespace' => 'VD\\LicenseManager\\Security\\Reports',
                 'dependencies' => array('security.event_logger', 'security.storage_manager', 'security.privacy_manager'),
                 'priority' => 20
+            ),
+            // Step 3.2.6: Security Integration Hub Module
+            'security.integration_hub' => array(
+                'file' => 'security/class-vd-license-security-integration-hub.php',
+                'class' => 'VD\\LicenseManager\\Security\\Integration\\VD_License_Security_Integration_Hub',
+                'namespace' => 'VD\\LicenseManager\\Security\\Integration',
+                'dependencies' => array('security.event_logger', 'security.storage_manager', 'security.privacy_manager', 'security.threat_detector', 'security.report_generator'),
+                'priority' => 21
             )
         );
 

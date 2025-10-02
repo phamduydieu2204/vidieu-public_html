@@ -301,6 +301,35 @@ class VD_License_Dependency_Container {
             return $report_generator;
         });
         */
+
+        // Step 3.2.6: Register Security Integration Hub module
+        $this->register('security.integration_hub', function($container) {
+            $integration_hub = $container->get('module_loader')->load_module('security.integration_hub');
+            $event_logger = $container->get('security.event_logger');
+            $storage_manager = $container->get('security.storage_manager');
+            $privacy_manager = $container->get('security.privacy_manager');
+            $threat_detector = $container->get('security.threat_detector');
+            $report_generator = $container->get('security.report_generator');
+
+            if ($integration_hub) {
+                if ($event_logger) {
+                    $integration_hub->set_event_logger($event_logger);
+                }
+                if ($storage_manager) {
+                    $integration_hub->set_storage_manager($storage_manager);
+                }
+                if ($privacy_manager) {
+                    $integration_hub->set_privacy_manager($privacy_manager);
+                }
+                if ($threat_detector) {
+                    $integration_hub->set_threat_detector($threat_detector);
+                }
+                if ($report_generator) {
+                    $integration_hub->set_report_generator($report_generator);
+                }
+            }
+            return $integration_hub;
+        });
     }
 
     /**
