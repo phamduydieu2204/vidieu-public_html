@@ -155,6 +155,12 @@ function vd_license_manager_init() {
             require_once $expiry_processor_test;
         }
 
+        // Step 5.1.4 Test Infrastructure - Status Transition Controller Test
+        $status_transition_test = VD_LM_PATH . 'includes/modules/validator/test-status-transition-controller.php';
+        if (file_exists($status_transition_test)) {
+            require_once $status_transition_test;
+        }
+
     } catch (Exception $e) {
         error_log('[VD License Manager] Initialization error: ' . $e->getMessage());
     } catch (Error $e) {
