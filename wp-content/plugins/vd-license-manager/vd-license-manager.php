@@ -134,11 +134,11 @@ function vd_license_manager_init() {
             $manager->init();
         }
 
-        // Load safe integration status test
-        if (is_admin() || wp_doing_ajax()) {
-            $test_file = VD_LM_PATH . 'includes/test-integration-status.php';
-            if (file_exists($test_file)) {
-                require_once $test_file;
+        // Load admin integration test page
+        if (is_admin()) {
+            $admin_test_file = VD_LM_PATH . 'includes/admin-integration-test.php';
+            if (file_exists($admin_test_file)) {
+                require_once $admin_test_file;
             }
         }
 
