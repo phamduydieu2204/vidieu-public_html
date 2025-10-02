@@ -79,6 +79,32 @@ class VD_License_Validation_Orchestrator {
     private $validation_context = array();
 
     /**
+     * Dependency container for module loading
+     *
+     * @var object|null
+     */
+    private $dependency_container = null;
+
+    /**
+     * Loaded modules cache
+     *
+     * @var array
+     */
+    private $loaded_modules = array();
+
+    /**
+     * Performance tracking properties
+     *
+     * @var int|float
+     */
+    private $validation_count = 0;
+    private $batch_count = 0;
+    private $average_execution_time = 0.0;
+    private $total_execution_time = 0.0;
+    private $error_rate = 0.0;
+    private $last_validation_time = null;
+
+    /**
      * Get singleton instance
      *
      * @return VD_License_Validation_Orchestrator
@@ -687,6 +713,128 @@ class VD_License_Validation_Orchestrator {
         }
 
         return $result;
+    }
+
+    /**
+     * Get validation pipeline configuration
+     *
+     * Step 5.1.5 - Get pipeline configuration
+     *
+     * @since 1.6.0
+     * @return array Pipeline configuration
+     */
+    public function get_validation_pipeline_configuration() {
+        return array(
+            'format_validation' => array(
+                'priority' => 1,
+                'enabled' => true,
+                'timeout' => 5,
+                'description' => 'License format and pattern validation'
+            ),
+            'checksum_validation' => array(
+                'priority' => 2,
+                'enabled' => true,
+                'timeout' => 5,
+                'description' => 'License checksum verification'
+            ),
+            'database_lookup' => array(
+                'priority' => 3,
+                'enabled' => true,
+                'timeout' => 10,
+                'description' => 'Database existence and record validation'
+            ),
+            'status_validation' => array(
+                'priority' => 4,
+                'enabled' => true,
+                'timeout' => 5,
+                'description' => 'License status validation'
+            ),
+            'expiry_validation' => array(
+                'priority' => 5,
+                'enabled' => true,
+                'timeout' => 5,
+                'description' => 'License expiry date validation'
+            ),
+            'business_rules' => array(
+                'priority' => 6,
+                'enabled' => true,
+                'timeout' => 10,
+                'description' => 'Business rules and constraints validation'
+            )
+        );
+    }
+
+    /**
+     * Get dependency container status
+     *
+     * Step 5.1.5 - Get dependency container status
+     *
+     * @since 1.6.0
+     * @return array Container status
+     */
+    public function get_dependency_container_status() {
+        return array(
+            'container_loaded' => isset($this->dependency_container),
+            'available_modules' => array_keys($this->loaded_modules),
+            'module_count' => count($this->loaded_modules),
+            'fallback_available' => true,
+            'last_updated' => current_time('mysql')
+        );
+    }
+
+    /**
+     * Get performance metrics
+     *
+     * Step 5.1.5 - Get performance metrics
+     *
+     * @since 1.6.0
+     * @return array Performance metrics
+     */
+    public function get_performance_metrics() {
+        return array(
+            'validation_count' => $this->validation_count,
+            'batch_count' => $this->batch_count,
+            'average_execution_time' => $this->average_execution_time,
+            'total_execution_time' => $this->total_execution_time,
+            'error_rate' => $this->error_rate,
+            'last_validation' => $this->last_validation_time,
+            'memory_usage' => memory_get_usage(true),
+            'peak_memory' => memory_get_peak_usage(true)
+        );
+    }
+
+    /**
+     * Get orchestrator configuration
+     *
+     * Step 5.1.5 - Get orchestrator configuration
+     *
+     * @since 1.6.0
+     * @return array Orchestrator configuration
+     */
+    public function get_orchestrator_configuration() {
+        return array(
+            'pipeline_stages' => $this->get_validation_pipeline_configuration(),
+            'dependency_injection' => array(
+                'enabled' => true,
+                'container_type' => 'custom',
+                'fallback_mode' => 'direct_instantiation'
+            ),
+            'performance_monitoring' => array(
+                'enabled' => true,
+                'metrics_collection' => true,
+                'memory_tracking' => true
+            ),
+            'error_handling' => array(
+                'mode' => 'graceful',
+                'fallback_enabled' => true,
+                'logging_enabled' => true
+            ),
+            'batch_processing' => array(
+                'enabled' => true,
+                'default_batch_size' => 10,
+                'max_batch_size' => 100
+            )
+        );
     }
 
     /**
