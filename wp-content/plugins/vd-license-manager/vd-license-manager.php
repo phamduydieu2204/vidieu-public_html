@@ -194,7 +194,7 @@ function vd_license_manager_init() {
             error_log('[VD License Manager] Module loader error: ' . $e->getMessage());
         }
 
-        // STEP 14 - Test EXACT original setup (including ultra-minimal first)
+        // STEP 15 - Test with new simple Step 3.2.4 file
         if (is_admin() || wp_doing_ajax()) {
             $test_files = array(
                 VD_LM_PATH . 'includes/debug-ultra-minimal.php',
@@ -202,7 +202,7 @@ function vd_license_manager_init() {
                 VD_LM_PATH . 'includes/test-step-3-2-1-security-event-logger.php',
                 VD_LM_PATH . 'includes/test-step-3-2-2-security-threat-detector.php',
                 VD_LM_PATH . 'includes/test-step-3-2-3-security-privacy-manager.php',
-                VD_LM_PATH . 'includes/test-step-3-2-4-security-storage-manager.php',
+                VD_LM_PATH . 'includes/test-step-3-2-4-simple-new.php',
                 VD_LM_PATH . 'includes/debug-step-3-2-4-simple.php'
             );
 
