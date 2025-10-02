@@ -200,11 +200,14 @@ class VD_License_Validation_Orchestrator {
 
         $validation_result = array(
             'valid' => false,
+            'is_valid' => false, // For test compatibility
             'license_key' => substr($license_key, 0, 8) . '...', // Security: partial key only
             'validation_pipeline' => array(),
+            'validation_stages' => array(), // For test compatibility
             'accumulated_errors' => array(),
             'validation_warnings' => array(),
             'execution_time' => 0,
+            'performance_metrics' => array(), // For test compatibility
             'advanced_report' => null
         );
 
@@ -213,11 +216,13 @@ class VD_License_Validation_Orchestrator {
             $pipeline_result = $this->execute_validation_pipeline($license_key, $options);
 
             $validation_result['validation_pipeline'] = $pipeline_result['pipeline'];
+            $validation_result['validation_stages'] = $pipeline_result['pipeline']; // For test compatibility
             $validation_result['accumulated_errors'] = $pipeline_result['errors'];
             $validation_result['validation_warnings'] = $pipeline_result['warnings'];
 
             // Determine overall validation result
             $validation_result['valid'] = empty($pipeline_result['errors']);
+            $validation_result['is_valid'] = empty($pipeline_result['errors']); // For test compatibility
 
             // Generate advanced report if requested
             if ($options['detailed_report'] ?? false) {
@@ -238,7 +243,28 @@ class VD_License_Validation_Orchestrator {
             );
         }
 
-        $validation_result['execution_time'] = round((microtime(true) - $start_time) * 1000, 2);
+        // Calculate execution time
+        $execution_time = round((microtime(true) - $start_time) * 1000, 2);
+        $validation_result['execution_time'] = $execution_time;
+
+        // Add performance metrics for test compatibility
+        if (isset($options['enable_metrics']) && $options['enable_metrics']) {
+            $validation_result['performance_metrics'] = array(
+                'execution_time' => $execution_time,
+                'memory_usage' => memory_get_usage(true),
+                'peak_memory' => memory_get_peak_usage(true),
+                'stages_count' => count($validation_result['validation_pipeline']),
+                'errors_count' => count($validation_result['accumulated_errors']),
+                'warnings_count' => count($validation_result['validation_warnings'])
+            );
+
+            // Update instance metrics
+            $this->validation_count++;
+            $this->total_execution_time += $execution_time;
+            $this->average_execution_time = $this->total_execution_time / $this->validation_count;
+            $this->last_validation_time = current_time('mysql');
+        }
+
         return $validation_result;
     }
 
@@ -377,10 +403,13 @@ class VD_License_Validation_Orchestrator {
      */
     public function generate_advanced_validation_report($license_key, $validation_pipeline, $accumulated_errors, $validation_warnings) {
         $report = array(
+            'license_key' => substr($license_key, 0, 8) . '...', // For test compatibility
+            'summary' => array(), // For test compatibility
             'validation_summary' => array(),
             'pipeline_analysis' => array(),
             'error_analysis' => array(),
             'recommendations' => array(),
+            'performance_analysis' => array(), // For test compatibility
             'report_metadata' => array()
         );
 
@@ -416,6 +445,18 @@ class VD_License_Validation_Orchestrator {
             'generated_at' => current_time('mysql'),
             'report_version' => '1.6.0',
             'validation_context' => $this->validation_context
+        );
+
+        // Add summary for test compatibility
+        $report['summary'] = $report['validation_summary'];
+
+        // Add performance analysis for test compatibility
+        $report['performance_analysis'] = array(
+            'pipeline_stages' => count($validation_pipeline),
+            'error_count' => count($accumulated_errors),
+            'warning_count' => count($validation_warnings),
+            'memory_usage' => memory_get_usage(true),
+            'timestamp' => current_time('mysql')
         );
 
         return $report;
