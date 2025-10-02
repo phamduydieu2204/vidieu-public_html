@@ -169,7 +169,32 @@ function vd_license_manager_init() {
             error_log('[VD License Manager] Failed to get VD_License_Manager instance');
         }
 
-        // STEP 5 DEBUG - Test adding test endpoints - REAL CULPRIT?
+        // STEP 6 DEBUG - Test storage manager class loading directly
+        $storage_class_file = VD_LM_PATH . 'includes/modules/security/class-vd-license-security-storage-manager.php';
+        if (file_exists($storage_class_file)) {
+            error_log('[VD License Manager] About to load storage manager class');
+            require_once $storage_class_file;
+            error_log('[VD License Manager] Storage manager class loaded successfully');
+        } else {
+            error_log('[VD License Manager] Storage manager class not found: ' . $storage_class_file);
+        }
+
+        // STEP 7 DEBUG - Test loading storage manager via module loader
+        try {
+            $module_loader = VD_License_Module_Loader::get_instance();
+            error_log('[VD License Manager] Module loader instance obtained');
+
+            $storage_manager = $module_loader->load_module('security.storage_manager');
+            if ($storage_manager) {
+                error_log('[VD License Manager] Storage manager loaded via module loader: SUCCESS');
+            } else {
+                error_log('[VD License Manager] Storage manager loaded via module loader: FAILED');
+            }
+        } catch (Exception $e) {
+            error_log('[VD License Manager] Module loader error: ' . $e->getMessage());
+        }
+
+        // STEP 5 - Test file loading (after dependencies)
         if (is_admin() || wp_doing_ajax()) {
             $test_files = array(
                 VD_LM_PATH . 'includes/test-step-3-2-4-security-storage-manager.php'
