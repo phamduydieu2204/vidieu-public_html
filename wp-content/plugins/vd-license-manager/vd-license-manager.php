@@ -135,9 +135,7 @@ function vd_license_manager_init() {
             error_log('[VD License Manager] Missing functions.php file: ' . $functions_file);
         }
 
-        // TEMPORARILY STOP HERE - Don't load manager class yet
-        /*
-        // Load main plugin class
+        // STEP 2 DEBUG - Test manager class loading (but don't initialize yet)
         $manager_file = VD_LM_PATH . 'includes/class-vd-license-manager.php';
         if (file_exists($manager_file)) {
             require_once $manager_file;
@@ -157,8 +155,12 @@ function vd_license_manager_init() {
             });
             error_log('[VD License Manager] Available VD classes: ' . implode(', ', $vd_classes));
             return;
+        } else {
+            error_log('[VD License Manager] VD_License_Manager class found successfully');
         }
 
+        // TEMPORARILY STOP HERE - Don't initialize manager yet
+        /*
         // Initialize
         $manager = VD_License_Manager::get_instance();
         if ($manager) {
