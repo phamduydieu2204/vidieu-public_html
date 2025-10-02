@@ -279,6 +279,8 @@ class VD_License_Dependency_Container {
         });
 
         // Step 3.2.5: Register Security Report Generator module
+        // Temporarily disabled for debugging
+        /*
         $this->register('security.report_generator', function($container) {
             $report_generator = $container->get('module_loader')->load_module('security.report_generator');
             $event_logger = $container->get('security.event_logger');
@@ -298,6 +300,7 @@ class VD_License_Dependency_Container {
             }
             return $report_generator;
         });
+        */
     }
 
     /**
