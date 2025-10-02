@@ -194,13 +194,14 @@ function vd_license_manager_init() {
             error_log('[VD License Manager] Module loader error: ' . $e->getMessage());
         }
 
-        // STEP 12 - Test adding privacy manager test
+        // STEP 13 FINAL - Test adding debug-step-3-2-4-simple.php - LIKELY CULPRIT
         if (is_admin() || wp_doing_ajax()) {
-            // Load confirmed OK files
+            // Load ALL confirmed OK files
             $confirmed_files = array(
                 VD_LM_PATH . 'includes/debug-minimal.php',
                 VD_LM_PATH . 'includes/test-step-3-2-1-security-event-logger.php',
-                VD_LM_PATH . 'includes/test-step-3-2-2-security-threat-detector.php'
+                VD_LM_PATH . 'includes/test-step-3-2-2-security-threat-detector.php',
+                VD_LM_PATH . 'includes/test-step-3-2-3-security-privacy-manager.php'
             );
 
             foreach ($confirmed_files as $file) {
@@ -210,15 +211,13 @@ function vd_license_manager_init() {
                 }
             }
 
-            // Test adding test-step-3-2-3-security-privacy-manager.php
-            $privacy_manager_test = VD_LM_PATH . 'includes/test-step-3-2-3-security-privacy-manager.php';
-            if (file_exists($privacy_manager_test)) {
-                error_log('[VD License Manager] About to load: test-step-3-2-3-security-privacy-manager.php');
-                require_once $privacy_manager_test;
-                error_log('[VD License Manager] Successfully loaded: test-step-3-2-3-security-privacy-manager.php');
+            // Test adding THE LAST FILE - debug-step-3-2-4-simple.php
+            $debug_simple = VD_LM_PATH . 'includes/debug-step-3-2-4-simple.php';
+            if (file_exists($debug_simple)) {
+                error_log('[VD License Manager] About to load FINAL FILE: debug-step-3-2-4-simple.php');
+                require_once $debug_simple;
+                error_log('[VD License Manager] Successfully loaded: debug-step-3-2-4-simple.php');
             }
-
-            // STOP HERE - Only debug-step-3-2-4-simple.php left to test
         }
     } catch (Exception $e) {
         error_log('[VD License Manager] Initialization error: ' . $e->getMessage());
