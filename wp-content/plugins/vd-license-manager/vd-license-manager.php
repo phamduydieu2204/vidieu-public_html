@@ -109,6 +109,17 @@ function vd_license_manager_deactivate() {
  */
 function vd_license_manager_init() {
     try {
+        // TEMPORARY DEBUG MODE - Only load ultra minimal endpoint
+        if (is_admin() || wp_doing_ajax()) {
+            $debug_file = VD_LM_PATH . 'includes/debug-ultra-minimal.php';
+            if (file_exists($debug_file)) {
+                require_once $debug_file;
+                error_log('[VD License Manager] Ultra minimal debug loaded');
+            }
+        }
+
+        // MAIN PLUGIN CODE TEMPORARILY DISABLED FOR DEBUGGING
+        /*
         // Load core functions first
         $functions_file = VD_LM_PATH . 'includes/functions.php';
         if (file_exists($functions_file)) {
@@ -148,25 +159,7 @@ function vd_license_manager_init() {
         } else {
             error_log('[VD License Manager] Failed to get VD_License_Manager instance');
         }
-
-        // Load test endpoints (only in admin or AJAX context)
-        if (is_admin() || wp_doing_ajax()) {
-            $test_files = array(
-                VD_LM_PATH . 'includes/debug-minimal.php',
-                VD_LM_PATH . 'includes/test-step-3-2-1-security-event-logger.php',
-                VD_LM_PATH . 'includes/test-step-3-2-2-security-threat-detector.php',
-                VD_LM_PATH . 'includes/test-step-3-2-3-security-privacy-manager.php',
-                VD_LM_PATH . 'includes/test-step-3-2-4-security-storage-manager.php',
-                VD_LM_PATH . 'includes/debug-step-3-2-4-simple.php'
-            );
-
-            foreach ($test_files as $test_file) {
-                if (file_exists($test_file)) {
-                    require_once $test_file;
-                    error_log('[VD License Manager] Test file loaded: ' . basename($test_file));
-                }
-            }
-        }
+        */
     } catch (Exception $e) {
         error_log('[VD License Manager] Initialization error: ' . $e->getMessage());
     } catch (Error $e) {
