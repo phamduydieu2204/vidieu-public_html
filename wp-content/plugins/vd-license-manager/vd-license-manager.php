@@ -194,10 +194,16 @@ function vd_license_manager_init() {
             error_log('[VD License Manager] Module loader error: ' . $e->getMessage());
         }
 
-        // STEP 5 - Test file loading (after dependencies)
+        // STEP 8 FINAL - Test loading ALL test files like original setup
         if (is_admin() || wp_doing_ajax()) {
             $test_files = array(
-                VD_LM_PATH . 'includes/test-step-3-2-4-security-storage-manager.php'
+                VD_LM_PATH . 'includes/debug-ultra-minimal.php',
+                VD_LM_PATH . 'includes/debug-minimal.php',
+                VD_LM_PATH . 'includes/test-step-3-2-1-security-event-logger.php',
+                VD_LM_PATH . 'includes/test-step-3-2-2-security-threat-detector.php',
+                VD_LM_PATH . 'includes/test-step-3-2-3-security-privacy-manager.php',
+                VD_LM_PATH . 'includes/test-step-3-2-4-security-storage-manager.php',
+                VD_LM_PATH . 'includes/debug-step-3-2-4-simple.php'
             );
 
             foreach ($test_files as $test_file) {
@@ -206,7 +212,7 @@ function vd_license_manager_init() {
                     require_once $test_file;
                     error_log('[VD License Manager] Successfully loaded: ' . basename($test_file));
                 } else {
-                    error_log('[VD License Manager] Test file not found: ' . $test_file);
+                    error_log('[VD License Manager] Test file not found: ' . basename($test_file));
                 }
             }
         }
