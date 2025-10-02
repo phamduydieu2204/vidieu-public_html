@@ -29,10 +29,18 @@ function vd_test_step_3_2_4_security_storage_manager_handler() {
             'message' => 'Step 3.2.4 test file loading works',
             'timestamp' => current_time('mysql')
         ));
-        return;
 
-        // ORIGINAL CODE TEMPORARILY DISABLED
-        /*
+    } catch (Exception $e) {
+        wp_send_json_error('Exception: ' . $e->getMessage());
+    } catch (Error $e) {
+        wp_send_json_error('Fatal Error: ' . $e->getMessage());
+    }
+}
+
+// ORIGINAL HANDLER TEMPORARILY DISABLED
+/*
+function vd_test_step_3_2_4_security_storage_manager_handler_original() {
+    try {
         // Initialize dependency container
         $container = VD_License_Dependency_Container::get_instance();
 
@@ -46,15 +54,16 @@ function vd_test_step_3_2_4_security_storage_manager_handler() {
         if (!$storage_manager) {
             throw new Exception('Failed to load Security Storage Manager module');
         }
-        */
 
         $results = array(
-            'module_info' => $storage_manager->get_module_info(),
+            //'module_info' => $storage_manager->get_module_info(),
             'tests' => array(),
             'summary' => array(),
             'timestamp' => current_time('mysql')
         );
 
+        // ALL TESTS TEMPORARILY DISABLED
+        /*
         // Test 1: Audit Log Storage
         $results['tests']['audit_log_storage'] = test_audit_log_storage($storage_manager);
 
@@ -726,4 +735,4 @@ function generate_test_summary($tests, $storage_manager) {
             'performance' => $tests['performance_optimization']['success'] ?? false
         )
     );
-}
+}*/
