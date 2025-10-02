@@ -218,6 +218,14 @@ class VD_License_Module_Loader {
                 'namespace' => 'VD\\LicenseManager\\Security\\Detection',
                 'dependencies' => array('security.validator', 'security.event_logger'),
                 'priority' => 17
+            ),
+            // Step 3.2.3: Security Privacy Manager Module
+            'security.privacy_manager' => array(
+                'file' => 'security/class-vd-license-security-privacy-manager.php',
+                'class' => 'VD\\LicenseManager\\Security\\Privacy\\VD_License_Security_Privacy_Manager',
+                'namespace' => 'VD\\LicenseManager\\Security\\Privacy',
+                'dependencies' => array('security.event_logger'),
+                'priority' => 18
             )
         );
 

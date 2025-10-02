@@ -153,7 +153,8 @@ function vd_license_manager_init() {
         if (is_admin() || wp_doing_ajax()) {
             $test_files = array(
                 VD_LM_PATH . 'includes/test-step-3-2-1-security-event-logger.php',
-                VD_LM_PATH . 'includes/test-step-3-2-2-security-threat-detector.php'
+                VD_LM_PATH . 'includes/test-step-3-2-2-security-threat-detector.php',
+                VD_LM_PATH . 'includes/test-step-3-2-3-security-privacy-manager.php'
             );
 
             foreach ($test_files as $test_file) {

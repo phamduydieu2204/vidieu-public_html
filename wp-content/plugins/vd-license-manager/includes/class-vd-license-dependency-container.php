@@ -249,6 +249,17 @@ class VD_License_Dependency_Container {
             }
             return $threat_detector;
         });
+
+        // Step 3.2.3: Register Security Privacy Manager module
+        $this->register('security.privacy_manager', function($container) {
+            $privacy_manager = $container->get('module_loader')->load_module('security.privacy_manager');
+            $event_logger = $container->get('security.event_logger');
+
+            if ($privacy_manager && $event_logger) {
+                $privacy_manager->set_event_logger($event_logger);
+            }
+            return $privacy_manager;
+        });
     }
 
     /**
