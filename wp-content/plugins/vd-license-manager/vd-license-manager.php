@@ -39,9 +39,6 @@ register_deactivation_hook(__FILE__, 'vd_license_manager_deactivate');
 // Initialize plugin
 add_action('plugins_loaded', 'vd_license_manager_init');
 
-// Log when plugin file is loaded
-error_log('[VD License Manager] Main plugin file loaded, adding plugins_loaded hook');
-
 /**
  * Check plugin requirements
  *
@@ -112,108 +109,44 @@ function vd_license_manager_deactivate() {
  */
 function vd_license_manager_init() {
     try {
-        // Log that plugin init is called
-        error_log('[VD License Manager] vd_license_manager_init() called');
-
-        // TEMPORARY DEBUG MODE - Only load ultra minimal endpoint
-        if (is_admin() || wp_doing_ajax()) {
-            $debug_file = VD_LM_PATH . 'includes/debug-ultra-minimal.php';
-            if (file_exists($debug_file)) {
-                require_once $debug_file;
-                error_log('[VD License Manager] Ultra minimal debug loaded from: ' . $debug_file);
-            } else {
-                error_log('[VD License Manager] Ultra minimal debug file NOT FOUND: ' . $debug_file);
-            }
-        }
-
-        // STEP-BY-STEP DEBUG - Test functions.php first
+        // Load core functions first
         $functions_file = VD_LM_PATH . 'includes/functions.php';
         if (file_exists($functions_file)) {
             require_once $functions_file;
-            error_log('[VD License Manager] Functions loaded successfully');
-        } else {
-            error_log('[VD License Manager] Missing functions.php file: ' . $functions_file);
         }
 
-        // STEP 2 DEBUG - Test manager class loading (but don't initialize yet)
+        // Load main plugin class
         $manager_file = VD_LM_PATH . 'includes/class-vd-license-manager.php';
         if (file_exists($manager_file)) {
             require_once $manager_file;
-            error_log('[VD License Manager] Manager class file loaded');
         } else {
-            error_log('[VD License Manager] Missing class-vd-license-manager.php file: ' . $manager_file);
             return;
         }
 
         // Verify class exists before initializing
         if (!class_exists('VD_License_Manager')) {
-            error_log('[VD License Manager] VD_License_Manager class not found after require');
-            // Try to debug what classes are available
-            $declared_classes = get_declared_classes();
-            $vd_classes = array_filter($declared_classes, function($class) {
-                return strpos($class, 'VD_') === 0;
-            });
-            error_log('[VD License Manager] Available VD classes: ' . implode(', ', $vd_classes));
             return;
-        } else {
-            error_log('[VD License Manager] VD_License_Manager class found successfully');
         }
 
-        // STEP 4 DEBUG - Test manager->init() method
+        // Initialize
         $manager = VD_License_Manager::get_instance();
         if ($manager) {
-            error_log('[VD License Manager] VD_License_Manager instance created successfully');
             $manager->init();
-            error_log('[VD License Manager] Plugin initialized successfully - VD_License_Manager loaded');
-        } else {
-            error_log('[VD License Manager] Failed to get VD_License_Manager instance');
         }
 
-        // STEP 6 DEBUG - Test storage manager class loading directly
-        $storage_class_file = VD_LM_PATH . 'includes/modules/security/class-vd-license-security-storage-manager.php';
-        if (file_exists($storage_class_file)) {
-            error_log('[VD License Manager] About to load storage manager class');
-            require_once $storage_class_file;
-            error_log('[VD License Manager] Storage manager class loaded successfully');
-        } else {
-            error_log('[VD License Manager] Storage manager class not found: ' . $storage_class_file);
-        }
-
-        // STEP 7 DEBUG - Test loading storage manager via module loader
-        try {
-            $module_loader = VD_License_Module_Loader::get_instance();
-            error_log('[VD License Manager] Module loader instance obtained');
-
-            $storage_manager = $module_loader->load_module('security.storage_manager');
-            if ($storage_manager) {
-                error_log('[VD License Manager] Storage manager loaded via module loader: SUCCESS');
-            } else {
-                error_log('[VD License Manager] Storage manager loaded via module loader: FAILED');
-            }
-        } catch (Exception $e) {
-            error_log('[VD License Manager] Module loader error: ' . $e->getMessage());
-        }
-
-        // STEP 15 - Test with new simple Step 3.2.4 file
+        // Load test endpoints (only in admin or AJAX context)
         if (is_admin() || wp_doing_ajax()) {
             $test_files = array(
-                VD_LM_PATH . 'includes/debug-ultra-minimal.php',
-                VD_LM_PATH . 'includes/debug-minimal.php',
                 VD_LM_PATH . 'includes/test-step-3-2-1-security-event-logger.php',
                 VD_LM_PATH . 'includes/test-step-3-2-2-security-threat-detector.php',
                 VD_LM_PATH . 'includes/test-step-3-2-3-security-privacy-manager.php',
-                VD_LM_PATH . 'includes/test-step-3-2-4-simple-new.php',
-                VD_LM_PATH . 'includes/test-step-3-2-4-full.php',
+                VD_LM_PATH . 'includes/test-step-3-2-4-security-storage-manager.php',
                 VD_LM_PATH . 'includes/debug-step-3-2-4-simple.php'
             );
 
             foreach ($test_files as $test_file) {
                 if (file_exists($test_file)) {
-                    error_log('[VD License Manager] About to load: ' . basename($test_file));
                     require_once $test_file;
-                    error_log('[VD License Manager] Successfully loaded: ' . basename($test_file));
-                } else {
-                    error_log('[VD License Manager] Test file not found: ' . basename($test_file));
                 }
             }
         }
