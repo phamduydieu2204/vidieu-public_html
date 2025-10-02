@@ -259,6 +259,15 @@ class VD_License_Module_Loader {
                 'namespace' => 'VD\\LicenseManager\\API',
                 'dependencies' => array('security.validator'),
                 'priority' => 22
+            ),
+
+            // Step 4.2: Webhook System Module
+            'api.webhook_system' => array(
+                'file' => 'api/class-vd-license-webhook-system.php',
+                'class' => 'VD\\LicenseManager\\API\\VD_License_Webhook_System',
+                'namespace' => 'VD\\LicenseManager\\API',
+                'dependencies' => array('api.framework'),
+                'priority' => 23
             )
         );
 

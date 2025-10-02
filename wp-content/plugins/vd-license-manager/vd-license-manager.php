@@ -138,7 +138,8 @@ function vd_license_manager_init() {
         if (is_admin() || wp_doing_ajax()) {
             $test_files = array(
                 VD_LM_PATH . 'includes/test-step-3-1-security-validator.php',
-                VD_LM_PATH . 'includes/test-step-4-1-api-framework.php'
+                VD_LM_PATH . 'includes/test-step-4-1-api-framework.php',
+                VD_LM_PATH . 'includes/test-step-4-2-webhook-system.php'
             );
 
             foreach ($test_files as $test_file) {

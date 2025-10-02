@@ -341,6 +341,20 @@ class VD_License_Dependency_Container {
             }
             return $api_framework;
         });
+
+        // Step 4.2: Register Webhook System module
+        $this->register('api.webhook_system', function($container) {
+            $webhook_system = $container->get('module_loader')->load_module('api.webhook_system');
+            $api_framework = $container->get('api.framework');
+
+            if ($webhook_system && $api_framework) {
+                // Inject API framework for webhook endpoint integration
+                if (method_exists($webhook_system, 'set_api_framework')) {
+                    $webhook_system->set_api_framework($api_framework);
+                }
+            }
+            return $webhook_system;
+        });
     }
 
     /**
