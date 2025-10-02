@@ -137,7 +137,7 @@ function vd_license_manager_init() {
         // Load test endpoints (only in admin or AJAX context)
         if (is_admin() || wp_doing_ajax()) {
             $test_files = array(
-                VD_LM_PATH . 'includes/test-step-3-2-6-security-integration-hub.php'
+                VD_LM_PATH . 'includes/test-step-3-2-6-simple.php'
             );
 
             foreach ($test_files as $test_file) {
