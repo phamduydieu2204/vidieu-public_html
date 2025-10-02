@@ -1,5 +1,7 @@
 <?php
 
+namespace VD\LicenseManager\Integration;
+
 if (!defined('ABSPATH')) {
     exit;
 }
@@ -12,10 +14,7 @@ if (!defined('ABSPATH')) {
  *
  * @since 1.6.0
  * @package VD_License_Manager
- * @namespace VD\LicenseManager\Integration
  */
-
-namespace VD\LicenseManager\Integration;
 
 /**
  * Class VD_License_Integration_Manager
