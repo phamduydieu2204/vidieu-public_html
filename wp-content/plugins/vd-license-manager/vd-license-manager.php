@@ -194,27 +194,32 @@ function vd_license_manager_init() {
             error_log('[VD License Manager] Module loader error: ' . $e->getMessage());
         }
 
-        // STEP 10 - Test debug-minimal.php + test-step-3-2-1
+        // STEP 11 - Test adding threat detector test
         if (is_admin() || wp_doing_ajax()) {
-            // Load debug-minimal.php (confirmed OK)
-            $debug_minimal = VD_LM_PATH . 'includes/debug-minimal.php';
-            if (file_exists($debug_minimal)) {
-                require_once $debug_minimal;
-                error_log('[VD License Manager] Loaded: debug-minimal.php');
+            // Load confirmed OK files
+            $confirmed_files = array(
+                VD_LM_PATH . 'includes/debug-minimal.php',
+                VD_LM_PATH . 'includes/test-step-3-2-1-security-event-logger.php'
+            );
+
+            foreach ($confirmed_files as $file) {
+                if (file_exists($file)) {
+                    require_once $file;
+                    error_log('[VD License Manager] Loaded: ' . basename($file));
+                }
             }
 
-            // Test adding test-step-3-2-1-security-event-logger.php
-            $event_logger_test = VD_LM_PATH . 'includes/test-step-3-2-1-security-event-logger.php';
-            if (file_exists($event_logger_test)) {
-                error_log('[VD License Manager] About to load: test-step-3-2-1-security-event-logger.php');
-                require_once $event_logger_test;
-                error_log('[VD License Manager] Successfully loaded: test-step-3-2-1-security-event-logger.php');
+            // Test adding test-step-3-2-2-security-threat-detector.php
+            $threat_detector_test = VD_LM_PATH . 'includes/test-step-3-2-2-security-threat-detector.php';
+            if (file_exists($threat_detector_test)) {
+                error_log('[VD License Manager] About to load: test-step-3-2-2-security-threat-detector.php');
+                require_once $threat_detector_test;
+                error_log('[VD License Manager] Successfully loaded: test-step-3-2-2-security-threat-detector.php');
             }
 
             // STOP HERE - Don't load more files yet
             /*
-            $other_files = array(
-                VD_LM_PATH . 'includes/test-step-3-2-2-security-threat-detector.php',
+            $remaining_files = array(
                 VD_LM_PATH . 'includes/test-step-3-2-3-security-privacy-manager.php',
                 VD_LM_PATH . 'includes/debug-step-3-2-4-simple.php'
             );
