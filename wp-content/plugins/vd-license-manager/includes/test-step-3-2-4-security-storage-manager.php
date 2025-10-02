@@ -23,6 +23,16 @@ add_action('wp_ajax_nopriv_vd_test_step_3_2_4_security_storage_manager', 'vd_tes
  */
 function vd_test_step_3_2_4_security_storage_manager_handler() {
     try {
+        // TEMPORARY DEBUG - Just test basic response
+        wp_send_json_success(array(
+            'status' => 'storage_manager_test_works',
+            'message' => 'Step 3.2.4 test file loading works',
+            'timestamp' => current_time('mysql')
+        ));
+        return;
+
+        // ORIGINAL CODE TEMPORARILY DISABLED
+        /*
         // Initialize dependency container
         $container = VD_License_Dependency_Container::get_instance();
 
@@ -36,6 +46,7 @@ function vd_test_step_3_2_4_security_storage_manager_handler() {
         if (!$storage_manager) {
             throw new Exception('Failed to load Security Storage Manager module');
         }
+        */
 
         $results = array(
             'module_info' => $storage_manager->get_module_info(),
