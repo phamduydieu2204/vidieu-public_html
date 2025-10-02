@@ -250,6 +250,15 @@ class VD_License_Module_Loader {
                 'namespace' => 'VD\\LicenseManager\\Security\\Integration',
                 'dependencies' => array('security.event_logger', 'security.storage_manager', 'security.privacy_manager', 'security.threat_detector', 'security.report_generator'),
                 'priority' => 21
+            ),
+
+            // Step 4.1: REST API Framework Module
+            'api.framework' => array(
+                'file' => 'api/class-vd-license-api-framework.php',
+                'class' => 'VD\\LicenseManager\\API\\VD_License_API_Framework',
+                'namespace' => 'VD\\LicenseManager\\API',
+                'dependencies' => array('security.validator'),
+                'priority' => 22
             )
         );
 

@@ -327,6 +327,20 @@ class VD_License_Dependency_Container {
             }
             return $integration_hub;
         });
+
+        // Step 4.1: Register API Framework module
+        $this->register('api.framework', function($container) {
+            $api_framework = $container->get('module_loader')->load_module('api.framework');
+            $security_validator = $container->get('security.validator');
+
+            if ($api_framework && $security_validator) {
+                // Inject security validator for API validation
+                if (method_exists($api_framework, 'set_security_validator')) {
+                    $api_framework->set_security_validator($security_validator);
+                }
+            }
+            return $api_framework;
+        });
     }
 
     /**

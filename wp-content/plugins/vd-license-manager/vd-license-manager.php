@@ -143,7 +143,8 @@ function vd_license_manager_init() {
                 VD_LM_PATH . 'includes/test-step-3-2-3-security-privacy-manager.php',
                 VD_LM_PATH . 'includes/test-step-3-2-4-security-storage-manager.php',
                 VD_LM_PATH . 'includes/test-step-3-2-5-security-report-generator.php',
-                VD_LM_PATH . 'includes/test-step-3-2-6-security-integration-hub.php'
+                VD_LM_PATH . 'includes/test-step-3-2-6-security-integration-hub.php',
+                VD_LM_PATH . 'includes/test-step-4-1-api-framework.php'
             );
 
             foreach ($test_files as $test_file) {
