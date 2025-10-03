@@ -7060,50 +7060,9 @@ class VD_License_Validator {
      * @param array $validation_warnings All validation warnings
      * @return array Comprehensive validation report
      */
-    private function generate_advanced_validation_report($license, $validation_pipeline, $accumulated_errors, $validation_warnings) {
-        $report = array(
-            'validation_summary' => array(),
-            'pipeline_analysis' => array(),
-            'error_analysis' => array(),
-            'recommendations' => array(),
-            'report_metadata' => array()
-        );
-
-        // Validation summary
-        $report['validation_summary'] = array(
-            'overall_result' => empty($accumulated_errors) ? 'PASS' : 'FAIL',
-            'total_errors' => count($accumulated_errors),
-            'total_warnings' => count($validation_warnings),
-            'pipeline_stages_completed' => count($validation_pipeline),
-            'validation_completeness' => $this->calculate_validation_completeness($validation_pipeline)
-        );
-
-        // Pipeline analysis
-        foreach ($validation_pipeline as $stage => $result) {
-            $report['pipeline_analysis'][$stage] = array(
-                'status' => $result['valid'] ?? true ? 'PASS' : 'FAIL',
-                'errors' => count($result['errors'] ?? array()),
-                'warnings' => count($result['warnings'] ?? array()),
-                'checks_performed' => count($result) - 2 // Exclude 'valid' and 'errors'
-            );
-        }
-
-        // Error analysis and categorization
-        $report['error_analysis'] = $this->analyze_validation_errors($accumulated_errors);
-
-        // Generate recommendations
-        $report['recommendations'] = $this->generate_validation_recommendations($license, $validation_pipeline, $accumulated_errors);
-
-        // Report metadata
-        $report['report_metadata'] = array(
-            'generated_at' => current_time('mysql'),
-            'license_id' => $license['id'] ?? 'unknown',
-            'framework_version' => '4.2.4.5.3e',
-            'report_format_version' => '1.0'
-        );
-
-        return $report;
-    }
+    // REMOVED: generate_advanced_validation_report() - Now handled by VD_License_Validation_Orchestrator
+    // This duplicate method was removed during Phase 5 cleanup
+    // Use orchestrator->generate_advanced_validation_report() instead
 
     /**
      * Step 4.2.4.5.3e - Get Advanced Validation Rules Infrastructure Status
@@ -7132,7 +7091,7 @@ class VD_License_Validator {
                 'validate_license_relationships' => method_exists($this, 'validate_license_relationships'),
                 'check_compliance_requirements' => method_exists($this, 'check_compliance_requirements'),
                 'validate_step_integration' => method_exists($this, 'validate_step_integration'),
-                'generate_advanced_validation_report' => method_exists($this, 'generate_advanced_validation_report')
+                'generate_advanced_validation_report' => class_exists('VD\\LicenseManager\\Validator\\VD_License_Validation_Orchestrator')
             ),
             'validation_capabilities' => array(
                 'multi_layer_pipeline' => true,
@@ -7493,20 +7452,9 @@ class VD_License_Validator {
         );
     }
 
-    /**
-     * Count total validation checks in pipeline
-     *
-     * @since 4.2.4.5.3e
-     * @param array $validation_pipeline Pipeline results
-     * @return int Total check count
-     */
-    private function count_total_validation_checks($validation_pipeline) {
-        $total_checks = 0;
-        foreach ($validation_pipeline as $stage => $result) {
-            $total_checks += count($result) - 2; // Exclude 'valid' and 'errors'
-        }
-        return $total_checks;
-    }
+    // REMOVED: count_total_validation_checks() - Legacy method removed in Phase 5 cleanup
+    // This method was only used in the original apply_advanced_validation_rules() logic
+    // Now handled by VD_License_Validation_Orchestrator
 
     /**
      * Calculate validation completeness percentage
