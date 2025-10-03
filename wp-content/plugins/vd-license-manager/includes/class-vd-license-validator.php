@@ -331,12 +331,25 @@ class VD_License_Validator {
      * @return bool|array True/false for simple validation, array for detailed
      */
     public function validate_license_key_format($license_key, $detailed = false) {
-        // Use the extracted pattern validator module
-        if (!$this->pattern_validator) {
-            $this->init_pattern_validator();
+        // MICRO-STEP 1: Direct replacement with extracted modules
+        // Load format validation modules
+        if (!class_exists('VD_License_Pattern_Validator')) {
+            require_once plugin_dir_path(__FILE__) . 'modules/format/class-vd-license-pattern-validator.php';
+        }
+        if (!class_exists('VD_License_Checksum_Validator')) {
+            require_once plugin_dir_path(__FILE__) . 'modules/format/class-vd-license-checksum-validator.php';
         }
 
-        return $this->pattern_validator->validate_license_key_format($license_key, $detailed);
+        // Use extracted modules directly
+        $pattern_validator = VD_License_Pattern_Validator::get_instance();
+        $checksum_validator = VD_License_Checksum_Validator::get_instance();
+
+        $pattern_result = $pattern_validator->validate_license_key_format($license_key, $detailed);
+        if (!$pattern_result['valid']) {
+            return $pattern_result;
+        }
+
+        return $checksum_validator->validate_license_checksum($license_key, $detailed);
     }
 
     /**

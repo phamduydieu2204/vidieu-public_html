@@ -35,6 +35,9 @@ add_action('wp_ajax_vd_test_specific_performance_scenario', 'vd_test_specific_pe
 add_action('wp_ajax_vd_test_coverage_analysis', 'vd_test_coverage_analysis');
 add_action('wp_ajax_vd_test_specific_coverage_category', 'vd_test_specific_coverage_category');
 
+// Validator Replacement Testing AJAX handlers
+add_action('wp_ajax_vd_test_validator_replacement', 'vd_ajax_test_validator_replacement');
+
 /**
  * Add admin menu page for VD Unit Tests
  */
@@ -288,6 +291,32 @@ function vd_render_validation_orchestrator_test_page() {
             </div>
         </div>
 
+        <!-- Validator Replacement Testing Section -->
+        <div class="card" style="max-width: none;">
+            <h2>🔄 Validator Replacement Testing</h2>
+            <div class="notice notice-info inline">
+                <p><strong>Validator Migration Testing:</strong> Test replacement of monolithic validator methods with extracted modules</p>
+                <p><strong>Coverage:</strong> 5 micro-steps | <strong>Focus:</strong> Safe method replacement with backward compatibility</p>
+            </div>
+
+            <div style="margin: 20px 0;">
+                <button id="run-validator-replacement-test" class="button button-primary button-large">
+                    <span class="dashicons dashicons-update" style="vertical-align: middle;"></span>
+                    Chạy Validator Replacement Tests
+                </button>
+                <button id="clear-validator-replacement-results" class="button button-secondary" style="margin-left: 10px;">
+                    <span class="dashicons dashicons-trash" style="vertical-align: middle;"></span>
+                    Xóa Kết Quả Replacement
+                </button>
+            </div>
+
+            <div id="validator-replacement-test-status" style="display: none;">
+                <div class="notice notice-warning">
+                    <p><span class="dashicons dashicons-update-alt" style="animation: spin 1s linear infinite;"></span> Đang chạy validator replacement tests...</p>
+                </div>
+            </div>
+        </div>
+
         <!-- Test Controls -->
         <div class="card" style="max-width: none;">
             <h2>🎛️ Test Controls</h2>
@@ -336,6 +365,14 @@ function vd_render_validation_orchestrator_test_page() {
                 <h2>📊 Kết Quả Test Coverage Analysis</h2>
                 <div id="coverage-test-summary"></div>
                 <div id="coverage-test-details"></div>
+            </div>
+        </div>
+
+        <div id="validator-replacement-test-results" style="display: none;">
+            <div class="card" style="max-width: none;">
+                <h2>🔄 Kết Quả Validator Replacement Tests</h2>
+                <div id="validator-replacement-test-summary"></div>
+                <div id="validator-replacement-test-details"></div>
             </div>
         </div>
 
@@ -678,6 +715,58 @@ function vd_render_validation_orchestrator_test_page() {
             $('#performance-test-results').hide();
             $('#performance-test-summary').empty();
             $('#performance-test-details').empty();
+        });
+
+        $('#run-validator-replacement-test').on('click', function() {
+            var $button = $(this);
+            var $status = $('#validator-replacement-test-status');
+            var $results = $('#validator-replacement-test-results');
+
+            // Disable button và show loading
+            $button.prop('disabled', true);
+            $status.show();
+            $results.hide();
+
+            // Chạy AJAX validator replacement test
+            $.ajax({
+                url: vd_ajax.ajax_url,
+                type: 'POST',
+                data: {
+                    action: 'vd_test_validator_replacement',
+                    _ajax_nonce: vd_ajax.nonce
+                },
+                timeout: 30000,
+                success: function(response) {
+                    $status.hide();
+                    $button.prop('disabled', false);
+
+                    if (response.success) {
+                        displayValidatorReplacementSuccessResults(response.data);
+                    } else {
+                        displayValidatorReplacementErrorResults(response.data);
+                    }
+
+                    $results.show();
+                },
+                error: function(xhr, status, error) {
+                    $status.hide();
+                    $button.prop('disabled', false);
+
+                    displayValidatorReplacementErrorResults({
+                        message: 'AJAX Error: ' + error,
+                        status: status,
+                        responseText: xhr.responseText
+                    });
+
+                    $results.show();
+                }
+            });
+        });
+
+        $('#clear-validator-replacement-results').on('click', function() {
+            $('#validator-replacement-test-results').hide();
+            $('#validator-replacement-test-summary').empty();
+            $('#validator-replacement-test-details').empty();
         });
 
         function displaySuccessResults(data) {
@@ -1171,6 +1260,74 @@ function vd_render_validation_orchestrator_test_page() {
             $('#coverage-test-summary').html(errorHtml);
             $('#coverage-test-details').empty();
         }
+
+        function displayValidatorReplacementSuccessResults(data) {
+            var summary = data.summary;
+            var testResults = data.detailed_results || [];
+
+            // Summary
+            var summaryHtml = '<div class="test-summary-box">';
+            summaryHtml += '<h3>🔄 Tóm Tắt Validator Replacement Testing</h3>';
+            summaryHtml += '<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-top: 10px;">';
+            summaryHtml += '<div><strong>Test Suite:</strong> ' + (summary.test_suite || 'Validator Replacement') + '</div>';
+            summaryHtml += '<div><strong>Total Categories:</strong> ' + (summary.total_test_categories || '0') + '</div>';
+            summaryHtml += '<div class="test-result-success"><strong>Passed Categories:</strong> ' + (summary.passed_categories || '0') + '</div>';
+            summaryHtml += '<div class="test-result-failed"><strong>Failed Categories:</strong> ' + (summary.failed_categories || '0') + '</div>';
+            summaryHtml += '<div><strong>Success Rate:</strong> ' + (summary.success_rate || '0') + '%</div>';
+            summaryHtml += '<div><strong>Validator Available:</strong> ' + (summary.validator_available ? 'Yes' : 'No') + '</div>';
+            summaryHtml += '<div><strong>Replacement Readiness:</strong> <span class="test-result-success">' + (summary.replacement_readiness || 'UNKNOWN') + '</span></div>';
+            summaryHtml += '</div></div>';
+
+            $('#validator-replacement-test-summary').html(summaryHtml);
+
+            // Detailed results
+            var detailsHtml = '<h3>🔍 Chi Tiết Validator Replacement Tests</h3>';
+            if (testResults.length > 0) {
+                detailsHtml += '<table class="test-detail-table">';
+                detailsHtml += '<thead><tr><th>Test Category</th><th>Status</th><th>Module Target</th><th>Details</th></tr></thead>';
+                detailsHtml += '<tbody>';
+
+                $.each(testResults, function(key, result) {
+                    var statusClass = result.success ? 'test-passed' : 'test-failed';
+                    var statusIcon = result.success ? '✅' : '❌';
+
+                    detailsHtml += '<tr class="' + statusClass + '">';
+                    detailsHtml += '<td><strong>' + result.test + '</strong></td>';
+                    detailsHtml += '<td>' + statusIcon + ' ' + (result.success ? 'PASSED' : 'FAILED') + '</td>';
+                    detailsHtml += '<td>' + (result.details.module_target || 'N/A') + '</td>';
+                    detailsHtml += '<td><div class="code-block">' + JSON.stringify(result.details, null, 2) + '</div></td>';
+                    detailsHtml += '</tr>';
+                });
+
+                detailsHtml += '</tbody></table>';
+            } else {
+                detailsHtml += '<p>No detailed test results available.</p>';
+            }
+
+            // Next steps
+            if (data.next_steps) {
+                detailsHtml += '<h3>🎯 Next Steps</h3>';
+                detailsHtml += '<div class="test-summary-box">';
+                detailsHtml += '<ul>';
+                $.each(data.next_steps, function(key, value) {
+                    detailsHtml += '<li><strong>' + key.replace(/_/g, ' ').toUpperCase() + ':</strong> ' + value + '</li>';
+                });
+                detailsHtml += '</ul>';
+                detailsHtml += '</div>';
+            }
+
+            $('#validator-replacement-test-details').html(detailsHtml);
+        }
+
+        function displayValidatorReplacementErrorResults(errorData) {
+            var errorHtml = '<div class="notice notice-error">';
+            errorHtml += '<h3>❌ Validator Replacement Test Error</h3>';
+            errorHtml += '<div class="code-block">' + JSON.stringify(errorData, null, 2) + '</div>';
+            errorHtml += '</div>';
+
+            $('#validator-replacement-test-summary').html(errorHtml);
+            $('#validator-replacement-test-details').empty();
+        }
     });
     </script>
     <?php
@@ -1434,6 +1591,32 @@ function vd_test_specific_coverage_category() {
         wp_send_json_error([
             'message' => 'Specific coverage analysis failed: ' . $e->getMessage(),
             'error_code' => 'SPECIFIC_COVERAGE_ANALYSIS_FAILED'
+        ]);
+    }
+}
+
+/**
+ * AJAX handler for validator replacement testing
+ */
+function vd_ajax_test_validator_replacement() {
+    if (!current_user_can('manage_options')) {
+        wp_die('Unauthorized access');
+    }
+
+    check_ajax_referer('vd_test_nonce', '_ajax_nonce');
+
+    try {
+        require_once plugin_dir_path(__FILE__) . '../../validator-replacement-test.php';
+
+        $replacement_test = new VD_Validator_Replacement_Test();
+        $results = $replacement_test->run_replacement_tests();
+
+        wp_send_json_success($results);
+
+    } catch (Exception $e) {
+        wp_send_json_error([
+            'message' => 'Validator replacement test failed: ' . $e->getMessage(),
+            'error_code' => 'REPLACEMENT_TEST_FAILED'
         ]);
     }
 }
