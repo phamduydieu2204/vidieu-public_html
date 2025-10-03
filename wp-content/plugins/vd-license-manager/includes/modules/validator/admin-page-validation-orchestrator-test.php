@@ -1,8 +1,9 @@
 <?php
 /**
- * Admin Page for Validation Orchestrator Testing
+ * VD Unit Tests - Comprehensive Testing Dashboard
  *
- * Dedicated admin interface for testing Step 5.1.5 - Validation Orchestrator
+ * Central admin interface for all VD License Manager testing activities
+ * Originally Step 5.1.5, now expanded for project-wide testing
  *
  * @since 1.6.0
  * @package VD_License_Manager
@@ -19,15 +20,15 @@ add_action('admin_menu', 'vd_add_validation_orchestrator_test_page');
 add_action('admin_enqueue_scripts', 'vd_enqueue_validation_orchestrator_test_scripts');
 
 /**
- * Add admin menu page for validation orchestrator testing
+ * Add admin menu page for VD Unit Tests
  */
 function vd_add_validation_orchestrator_test_page() {
     add_submenu_page(
         'tools.php',
-        'VD License - Step 5.1.5 Test',
-        'Step 5.1.5 Test',
+        'VD Unit Tests - Comprehensive Testing Dashboard',
+        'VD Unit Tests',
         'manage_options',
-        'vd-step-515-test',
+        'vd-unit-tests',
         'vd_render_validation_orchestrator_test_page'
     );
 }
@@ -36,7 +37,7 @@ function vd_add_validation_orchestrator_test_page() {
  * Enqueue scripts for the test page
  */
 function vd_enqueue_validation_orchestrator_test_scripts($hook) {
-    if ($hook !== 'tools_page_vd-step-515-test') {
+    if ($hook !== 'tools_page_vd-unit-tests') {
         return;
     }
 
@@ -53,16 +54,18 @@ function vd_enqueue_validation_orchestrator_test_scripts($hook) {
 function vd_render_validation_orchestrator_test_page() {
     ?>
     <div class="wrap">
-        <h1>🧪 Step 5.1.5 - Validation Orchestrator Test</h1>
+        <h1>🧪 VD Unit Tests - Comprehensive Testing Dashboard</h1>
 
         <div class="notice notice-info">
-            <p><strong>Thông tin:</strong> Trang này test module Validation Orchestrator đã được trích xuất từ validator chính.</p>
-            <p><strong>Namespace:</strong> <code>VD\LicenseManager\Validator\VD_License_Validation_Orchestrator</code></p>
-            <p><strong>File:</strong> <code>class-vd-license-validation-orchestrator.php</code> (685+ dòng)</p>
+            <p><strong>Comprehensive Testing Platform:</strong> Central dashboard for all VD License Manager testing activities</p>
+            <p><strong>Current Focus:</strong> Validation Orchestrator (Step 5.1.5) - <code>VD\LicenseManager\Validator\VD_License_Validation_Orchestrator</code></p>
+            <p><strong>Future Ready:</strong> This page will be enhanced for testing all project phases and modules</p>
+            <p><strong>Project Progress:</strong> 81% Complete | <strong>Phase 5:</strong> Testing & Quality Assurance</p>
         </div>
 
+        <!-- Current Testing Section -->
         <div class="card" style="max-width: none;">
-            <h2>🚀 Test Controls</h2>
+            <h2>🧪 Current Test: Validation Orchestrator (Step 5.1.5)</h2>
             <div style="margin: 20px 0;">
                 <button id="run-orchestrator-test" class="button button-primary button-large">
                     <span class="dashicons dashicons-play" style="vertical-align: middle;"></span>
@@ -73,6 +76,61 @@ function vd_render_validation_orchestrator_test_page() {
                     Xóa Kết Quả
                 </button>
             </div>
+        </div>
+
+        <!-- Future Testing Sections (Coming Soon) -->
+        <div class="card" style="max-width: none; opacity: 0.7;">
+            <h2>🚀 Future Testing Capabilities (Coming Soon)</h2>
+            <div class="notice notice-info inline">
+                <p>This dashboard will be enhanced with comprehensive testing for all project phases:</p>
+            </div>
+            <table class="widefat fixed striped">
+                <thead>
+                    <tr>
+                        <th>Test Category</th>
+                        <th>Scope</th>
+                        <th>Status</th>
+                        <th>Planned Features</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Phase 1-4 Modules</strong></td>
+                        <td>25+ modules across all phases</td>
+                        <td>📋 Planned</td>
+                        <td>Format, Database, Security, API testing</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Unit Test Framework</strong></td>
+                        <td>200+ comprehensive tests</td>
+                        <td>✅ Ready</td>
+                        <td>95% coverage target, Performance benchmarks</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Integration Testing</strong></td>
+                        <td>Module-to-module interactions</td>
+                        <td>📋 Planned</td>
+                        <td>Cross-phase integration validation</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Performance Testing</strong></td>
+                        <td>System performance monitoring</td>
+                        <td>📋 Planned</td>
+                        <td>&lt;50ms execution, &lt;2MB memory targets</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Security Testing</strong></td>
+                        <td>Penetration testing suite</td>
+                        <td>📋 Planned</td>
+                        <td>Vulnerability scanning, Compliance validation</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Test Controls -->
+        <div class="card" style="max-width: none;">
+            <h2>🎛️ Test Controls</h2>
 
             <div id="test-status" style="display: none;">
                 <div class="notice notice-warning">
