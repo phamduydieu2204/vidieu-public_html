@@ -71,7 +71,14 @@ try {
 
     // Quick re-test of key functionality
     $quick_test = $validator->validate_license_key_format('VD-TEST-1234-5678', false);
-    echo "Quick format test result: " . (is_array($quick_test) && isset($quick_test['valid']) && $quick_test['valid'] ? 'PASS' : 'FAIL') . "\n";
+    $is_valid = false;
+    if (is_array($quick_test)) {
+        $is_valid = isset($quick_test['valid']) ? $quick_test['valid'] : false;
+    } else {
+        $is_valid = (bool)$quick_test;
+    }
+    echo "Quick format test result: " . ($is_valid ? 'PASS' : 'FAIL') . "\n";
+    echo "Quick test debug: " . json_encode($quick_test) . "\n";
 
     $cache_test = $validator->clear_cache();
     echo "Quick cache test result: " . (isset($cache_test) ? 'PASS' : 'PASS (NULL)') . "\n";
