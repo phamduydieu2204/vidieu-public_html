@@ -6658,140 +6658,77 @@ class VD_License_Validator {
      * @return array Comprehensive validation result
      */
     public function apply_advanced_validation_rules($license, $context = array()) {
-        // Step 5.2: MIGRATED - Now delegates to VD_License_Validation_Orchestrator
-        // Check if orchestrator is available
-        if (!class_exists('VD\\LicenseManager\\Validator\\VD_License_Validation_Orchestrator')) {
-            return $this->apply_advanced_validation_rules_fallback($license, $context);
-        }
-
-        try {
-            $orchestrator = \VD\LicenseManager\Validator\VD_License_Validation_Orchestrator::get_instance();
-
-            // Transform input parameters
-            $license_key = $this->extract_license_key($license);
-            $options = $this->transform_context_to_options($context, $license);
-
-            // Execute orchestrated validation
-            $orchestrator_result = $orchestrator->orchestrate_license_validation($license_key, $options);
-
-            // Transform result to legacy format
-            return $this->map_orchestrator_result_to_legacy_format($orchestrator_result);
-
-        } catch (Exception $e) {
-            error_log('[VD License Manager] Orchestrator delegation failed: ' . $e->getMessage());
-            return $this->apply_advanced_validation_rules_fallback($license, $context);
-        }
-    }
-
-    /**
-     * Step 5.2 - Extract license key from license data
-     * Helper method for orchestrator delegation
-     *
-     * @since 4.2.4.5.3e
-     * @param array|string $license License data
-     * @return string License key
-     */
-    private function extract_license_key($license) {
-        if (is_string($license)) {
-            return $license;
-        }
-
-        return $license['key'] ?? $license['license_key'] ?? $license['id'] ?? '';
-    }
-
-    /**
-     * Step 5.2 - Transform validation context to orchestrator options
-     * Helper method for orchestrator delegation
-     *
-     * @since 4.2.4.5.3e
-     * @param array $context Validation context
-     * @param array $license License data
-     * @return array Orchestrator options
-     */
-    private function transform_context_to_options($context, $license) {
-        return array_merge($context, array(
-            'license_data' => $license,
-            'validation_type' => 'advanced_rules',
-            'include_warnings' => true,
-            'generate_report' => true,
-            'framework_version' => '4.2.4.5.3e'
-        ));
-    }
-
-    /**
-     * Step 5.2 - Map orchestrator result to legacy format
-     * Helper method for orchestrator delegation
-     *
-     * @since 4.2.4.5.3e
-     * @param array $orchestrator_result Result from orchestrator
-     * @return array Legacy format result
-     */
-    private function map_orchestrator_result_to_legacy_format($orchestrator_result) {
-        return array(
-            'valid' => $orchestrator_result['valid'],
-            'validation_pipeline' => $orchestrator_result['validation_pipeline'] ?? array(),
-            'errors' => $orchestrator_result['accumulated_errors'] ?? array(),
-            'warnings' => $orchestrator_result['validation_warnings'] ?? array(),
-            'info' => array(), // Extracted from advanced_report if needed
-            'validation_report' => $orchestrator_result['advanced_report'] ?? array(),
-            'validation_time_ms' => $orchestrator_result['execution_time'] ?? 0,
-            'framework_version' => '4.2.4.5.3e-orchestrated',
-            'pipeline_stages' => count($orchestrator_result['validation_pipeline'] ?? array()),
-            'total_checks' => $this->count_orchestrator_checks($orchestrator_result)
-        );
-    }
-
-    /**
-     * Step 5.2 - Count orchestrator validation checks
-     * Helper method for orchestrator delegation
-     *
-     * @since 4.2.4.5.3e
-     * @param array $orchestrator_result Result from orchestrator
-     * @return int Total number of checks
-     */
-    private function count_orchestrator_checks($orchestrator_result) {
-        $total = 0;
-        $pipeline = $orchestrator_result['validation_pipeline'] ?? array();
-
-        foreach ($pipeline as $stage => $stage_data) {
-            if (is_array($stage_data) && isset($stage_data['checks_performed'])) {
-                $total += (int) $stage_data['checks_performed'];
-            } else {
-                $total += 1; // Default to 1 check per stage
-            }
-        }
-
-        return $total;
-    }
-
-    /**
-     * Step 5.2 - Fallback method for when orchestrator is unavailable
-     * Helper method for orchestrator delegation
-     *
-     * @since 4.2.4.5.3e
-     * @param array $license License data
-     * @param array $context Validation context
-     * @return array Fallback validation result
-     */
-    private function apply_advanced_validation_rules_fallback($license, $context) {
         // Delegate to constraint validation module if available
         if ($this->constraint_validation) {
             return $this->constraint_validation->perform_conditional_state_validation($license, $context);
         }
 
-        error_log('[VD License Manager] Using fallback validation - orchestrator unavailable');
+        $start_time = microtime(true);
+
+        // Initialize validation pipeline
+        $validation_pipeline = array(
+            'basic_validation' => array(),
+            'conditional_validation' => array(),
+            'cross_entity_validation' => array(),
+            'compliance_validation' => array(),
+            'integration_validation' => array()
+        );
+
+        $accumulated_errors = array();
+        $validation_warnings = array();
+        $validation_info = array();
+
+        // Stage 1: Enhanced Basic Validation (building on existing validation)
+        $basic_validation = $this->perform_enhanced_basic_validation($license, $context);
+        $validation_pipeline['basic_validation'] = $basic_validation;
+        if (!$basic_validation['valid']) {
+            $accumulated_errors = array_merge($accumulated_errors, $basic_validation['errors']);
+        }
+
+        // Stage 2: Conditional State Validation
+        $conditional_validation = $this->perform_conditional_state_validation($license, $context);
+        $validation_pipeline['conditional_validation'] = $conditional_validation;
+        if (!$conditional_validation['valid']) {
+            $accumulated_errors = array_merge($accumulated_errors, $conditional_validation['errors']);
+        }
+        $validation_warnings = array_merge($validation_warnings, $conditional_validation['warnings'] ?? array());
+
+        // Stage 3: Cross-Entity Validation
+        $cross_entity_validation = $this->validate_license_relationships($license, $context);
+        $validation_pipeline['cross_entity_validation'] = $cross_entity_validation;
+        if (!$cross_entity_validation['valid']) {
+            $accumulated_errors = array_merge($accumulated_errors, $cross_entity_validation['errors']);
+        }
+
+        // Stage 4: Compliance and Business Policy Validation
+        $compliance_validation = $this->check_compliance_requirements($license, $context);
+        $validation_pipeline['compliance_validation'] = $compliance_validation;
+        if (!$compliance_validation['valid']) {
+            $accumulated_errors = array_merge($accumulated_errors, $compliance_validation['errors']);
+        }
+
+        // Stage 5: Integration Validation (with previous steps)
+        $integration_validation = $this->validate_step_integration($license, $context);
+        $validation_pipeline['integration_validation'] = $integration_validation;
+        $validation_info = array_merge($validation_info, $integration_validation['info'] ?? array());
+
+        // Generate comprehensive validation report
+        $validation_report = $this->generate_advanced_validation_report($license, $validation_pipeline, $accumulated_errors, $validation_warnings);
+
+        $end_time = microtime(true);
+        $validation_time = ($end_time - $start_time) * 1000;
 
         return array(
-            'valid' => false,
-            'validation_pipeline' => array(),
-            'errors' => array('Orchestrator unavailable - using fallback validation'),
-            'warnings' => array(),
-            'info' => array(),
-            'validation_report' => array(),
-            'validation_time_ms' => 0,
-            'framework_version' => '4.2.4.5.3e-fallback',
-            'pipeline_stages' => 0,
-            'total_checks' => 0
+            'valid' => empty($accumulated_errors),
+            'validation_pipeline' => $validation_pipeline,
+            'errors' => $accumulated_errors,
+            'warnings' => $validation_warnings,
+            'info' => $validation_info,
+            'validation_report' => $validation_report,
+            'validation_time_ms' => round($validation_time, 3),
+            'framework_version' => '4.2.4.5.3e',
+            'pipeline_stages' => count($validation_pipeline),
+            'total_checks' => $this->count_total_validation_checks($validation_pipeline)
         );
     }
 
