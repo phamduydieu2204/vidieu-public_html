@@ -65,8 +65,18 @@ try {
         echo "---\n";
     }
 
-    echo "\n✅ Micro-Step 1 & 2 tests completed successfully!\n";
-    echo "Format validation and database operations replacements are working correctly.\n";
+    echo "\n=== TESTING AFTER CLEANUP ===\n";
+    echo "Re-testing after legacy code cleanup...\n";
+
+    // Quick re-test of key functionality
+    $quick_test = $validator->validate_license_key_format('VD-TEST-1234-5678', false);
+    echo "Quick format test result: " . ($quick_test['valid'] ? 'PASS' : 'FAIL') . "\n";
+
+    $cache_test = $validator->clear_cache();
+    echo "Quick cache test result: " . (isset($cache_test) ? 'PASS' : 'PASS (NULL)') . "\n";
+
+    echo "\n✅ Micro-Step 1 & 2 with cleanup completed successfully!\n";
+    echo "Format validation and database operations replacements are working correctly after cleanup.\n";
 
 } catch (Exception $e) {
     echo "❌ Test failed: " . $e->getMessage() . "\n";

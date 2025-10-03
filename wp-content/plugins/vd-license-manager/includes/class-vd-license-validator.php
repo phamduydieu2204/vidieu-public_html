@@ -224,7 +224,7 @@ class VD_License_Validator {
             $this->security_audit = VD_Security_Audit::get_instance();
         }
 
-        // Initialize pattern validator module
+        // CLEANUP: Initialize pattern validator module (partially deprecated after Micro-Steps 1 & 2)
         $this->init_pattern_validator();
 
         $this->initialized = true;
@@ -354,19 +354,17 @@ class VD_License_Validator {
 
     /**
      * Validate license key checksum using extracted module
+     * CLEANUP: Method deprecated - functionality moved to validate_license_key_format()
      * Refactored in Step 1.2 - Checksum validation now handled by dedicated module
      *
+     * @deprecated Micro-Step 1 - Use validate_license_key_format() instead
      * @since 1.5.0-rc.1 (Refactored from 4.2.2)
      * @param string $license_key License key to validate
      * @return bool True if checksum is valid or not applicable
      */
     private function validate_license_checksum($license_key) {
-        // Use the extracted checksum validator module
-        if (!$this->checksum_validator) {
-            $this->init_pattern_validator();
-        }
-
-        return $this->checksum_validator->validate_license_checksum($license_key, false);
+        // CLEANUP: Method deprecated - use validate_license_key_format() which includes checksum validation
+        return $this->validate_license_key_format($license_key, false)['valid'] ?? false;
     }
 
     /**
