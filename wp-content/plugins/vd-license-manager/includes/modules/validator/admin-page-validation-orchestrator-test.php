@@ -23,6 +23,10 @@ add_action('admin_enqueue_scripts', 'vd_enqueue_validation_orchestrator_test_scr
 add_action('wp_ajax_vd_test_integration_framework', 'vd_test_integration_framework');
 add_action('wp_ajax_vd_test_specific_integration', 'vd_test_specific_integration');
 
+// Register AJAX endpoints for API endpoint testing (Step 5.1.8)
+add_action('wp_ajax_vd_test_api_endpoints', 'vd_test_api_endpoints');
+add_action('wp_ajax_vd_test_specific_api_scenario', 'vd_test_specific_api_scenario');
+
 /**
  * Add admin menu page for VD Unit Tests
  */
@@ -117,6 +121,40 @@ function vd_render_validation_orchestrator_test_page() {
             </div>
         </div>
 
+        <!-- API Endpoint Testing Section (Step 5.1.8) -->
+        <div class="card" style="max-width: none;">
+            <h2>🌐 API Endpoint Testing (Step 5.1.8)</h2>
+            <div class="notice notice-info inline">
+                <p><strong>API Validation Testing:</strong> Test REST API endpoints, webhooks, and third-party integrations</p>
+                <p><strong>Coverage:</strong> 5 API scenarios | <strong>Focus:</strong> REST API, Webhooks, Authentication & Security</p>
+            </div>
+
+            <div style="margin: 20px 0;">
+                <button id="run-api-test" class="button button-primary button-large">
+                    <span class="dashicons dashicons-cloud" style="vertical-align: middle;"></span>
+                    Chạy API Tests
+                </button>
+                <select id="api-scenario" style="margin-left: 10px; padding: 8px;">
+                    <option value="">Tất Cả API Scenarios</option>
+                    <option value="rest_api_endpoints">REST API Endpoints</option>
+                    <option value="webhook_system">Webhook System</option>
+                    <option value="third_party_integration">Third-party Integration</option>
+                    <option value="authentication_flow">Authentication Flow</option>
+                    <option value="rate_limiting_security">Rate Limiting & Security</option>
+                </select>
+                <button id="clear-api-results" class="button button-secondary" style="margin-left: 10px;">
+                    <span class="dashicons dashicons-trash" style="vertical-align: middle;"></span>
+                    Xóa Kết Quả API
+                </button>
+            </div>
+
+            <div id="api-test-status" style="display: none;">
+                <div class="notice notice-warning">
+                    <p><span class="dashicons dashicons-update-alt" style="animation: spin 1s linear infinite;"></span> Đang chạy API tests...</p>
+                </div>
+            </div>
+        </div>
+
         <!-- Future Testing Sections (Coming Soon) -->
         <div class="card" style="max-width: none; opacity: 0.7;">
             <h2>🚀 Future Testing Capabilities (Coming Soon)</h2>
@@ -191,6 +229,14 @@ function vd_render_validation_orchestrator_test_page() {
                 <h2>🔗 Kết Quả Integration Tests</h2>
                 <div id="integration-test-summary"></div>
                 <div id="integration-test-details"></div>
+            </div>
+        </div>
+
+        <div id="api-test-results" style="display: none;">
+            <div class="card" style="max-width: none;">
+                <h2>🌐 Kết Quả API Tests</h2>
+                <div id="api-test-summary"></div>
+                <div id="api-test-details"></div>
             </div>
         </div>
 
@@ -427,6 +473,60 @@ function vd_render_validation_orchestrator_test_page() {
             $('#integration-test-details').empty();
         });
 
+        $('#run-api-test').on('click', function() {
+            var $button = $(this);
+            var $status = $('#api-test-status');
+            var $results = $('#api-test-results');
+            var scenario = $('#api-scenario').val();
+
+            // Disable button và show loading
+            $button.prop('disabled', true);
+            $status.show();
+            $results.hide();
+
+            // Chạy AJAX API test
+            $.ajax({
+                url: vd_ajax.ajax_url,
+                type: 'POST',
+                data: {
+                    action: scenario ? 'vd_test_specific_api_scenario' : 'vd_test_api_endpoints',
+                    scenario: scenario,
+                    _ajax_nonce: vd_ajax.nonce
+                },
+                timeout: 30000,
+                success: function(response) {
+                    $status.hide();
+                    $button.prop('disabled', false);
+
+                    if (response.success) {
+                        displayApiSuccessResults(response.data);
+                    } else {
+                        displayApiErrorResults(response.data);
+                    }
+
+                    $results.show();
+                },
+                error: function(xhr, status, error) {
+                    $status.hide();
+                    $button.prop('disabled', false);
+
+                    displayApiErrorResults({
+                        message: 'AJAX Error: ' + error,
+                        status: status,
+                        responseText: xhr.responseText
+                    });
+
+                    $results.show();
+                }
+            });
+        });
+
+        $('#clear-api-results').on('click', function() {
+            $('#api-test-results').hide();
+            $('#api-test-summary').empty();
+            $('#api-test-details').empty();
+        });
+
         function displaySuccessResults(data) {
             var summary = data.summary;
             var testResults = data.test_results;
@@ -546,6 +646,82 @@ function vd_render_validation_orchestrator_test_page() {
             $('#integration-test-summary').html(errorHtml);
             $('#integration-test-details').empty();
         }
+
+        function displayApiSuccessResults(data) {
+            var summary = data.summary || data;
+            var testResults = data.detailed_results || data.scenario_results || [];
+
+            // Summary
+            var summaryHtml = '<div class="test-summary-box">';
+            summaryHtml += '<h3>🌐 Tóm Tắt API Testing</h3>';
+            summaryHtml += '<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-top: 10px;">';
+            summaryHtml += '<div><strong>Framework:</strong> ' + (summary.framework || 'API Endpoint Testing') + '</div>';
+            summaryHtml += '<div><strong>Total Scenarios:</strong> ' + (summary.total_scenarios || testResults.length) + '</div>';
+            summaryHtml += '<div class="test-result-success"><strong>Passed:</strong> ' + (summary.passed_scenarios || '0') + '</div>';
+            summaryHtml += '<div class="test-result-failed"><strong>Failed:</strong> ' + (summary.failed_scenarios || '0') + '</div>';
+            summaryHtml += '<div><strong>Success Rate:</strong> ' + (summary.success_rate || '0') + '%</div>';
+            summaryHtml += '<div><strong>Execution Time:</strong> ' + (summary.execution_time || '0') + 'ms</div>';
+            if (data.filtered_scenario) {
+                summaryHtml += '<div><strong>Filtered Scenario:</strong> ' + data.filtered_scenario + '</div>';
+            }
+            summaryHtml += '</div></div>';
+
+            $('#api-test-summary').html(summaryHtml);
+
+            // Detailed results
+            var detailsHtml = '<h3>🔍 Chi Tiết API Test Scenarios</h3>';
+            if (testResults.length > 0) {
+                detailsHtml += '<table class="test-detail-table">';
+                detailsHtml += '<thead><tr><th>API Scenario</th><th>Category</th><th>Status</th><th>Details</th></tr></thead>';
+                detailsHtml += '<tbody>';
+
+                $.each(testResults, function(key, result) {
+                    var statusClass = result.success ? 'test-passed' : 'test-failed';
+                    var statusIcon = result.success ? '✅' : '❌';
+
+                    detailsHtml += '<tr class="' + statusClass + '">';
+                    detailsHtml += '<td><strong>' + result.test + '</strong></td>';
+                    detailsHtml += '<td>' + (result.category || 'API Testing') + '</td>';
+                    detailsHtml += '<td>' + statusIcon + ' ' + (result.success ? 'PASSED' : 'FAILED') + '</td>';
+                    detailsHtml += '<td><div class="code-block">' + JSON.stringify(result.details, null, 2) + '</div></td>';
+                    detailsHtml += '</tr>';
+                });
+
+                detailsHtml += '</tbody></table>';
+            } else {
+                detailsHtml += '<p>No detailed API test results available.</p>';
+            }
+
+            // API Coverage information
+            if (data.api_coverage) {
+                detailsHtml += '<h3>📊 API Coverage</h3>';
+                detailsHtml += '<div class="test-summary-box">';
+                detailsHtml += '<ul>';
+                $.each(data.api_coverage, function(key, value) {
+                    detailsHtml += '<li><strong>' + key.replace(/_/g, ' ').toUpperCase() + ':</strong> ' + value + '</li>';
+                });
+                detailsHtml += '</ul>';
+                detailsHtml += '</div>';
+            }
+
+            // Implementation notes
+            if (data.implementation_notes) {
+                detailsHtml += '<h3>📝 Implementation Notes</h3>';
+                detailsHtml += '<div class="code-block">' + JSON.stringify(data.implementation_notes, null, 2) + '</div>';
+            }
+
+            $('#api-test-details').html(detailsHtml);
+        }
+
+        function displayApiErrorResults(errorData) {
+            var errorHtml = '<div class="notice notice-error">';
+            errorHtml += '<h3>❌ API Test Error</h3>';
+            errorHtml += '<div class="code-block">' + JSON.stringify(errorData, null, 2) + '</div>';
+            errorHtml += '</div>';
+
+            $('#api-test-summary').html(errorHtml);
+            $('#api-test-details').empty();
+        }
     });
     </script>
     <?php
@@ -612,6 +788,71 @@ function vd_test_specific_integration() {
         wp_send_json_error([
             'message' => 'Specific integration test failed: ' . $e->getMessage(),
             'error_code' => 'SPECIFIC_INTEGRATION_FAILED'
+        ]);
+    }
+}
+
+/**
+ * AJAX handler for API endpoint testing framework
+ */
+function vd_test_api_endpoints() {
+    if (!current_user_can('manage_options')) {
+        wp_die('Unauthorized access');
+    }
+
+    check_ajax_referer('vd_test_nonce', 'nonce');
+
+    try {
+        require_once plugin_dir_path(__FILE__) . '../../../tests/api/api-endpoint-test-framework.php';
+
+        $api_tests = new VD_API_Endpoint_Test_Framework();
+        $results = $api_tests->run_api_endpoint_tests();
+
+        wp_send_json_success($results);
+
+    } catch (Exception $e) {
+        wp_send_json_error([
+            'message' => 'API endpoint testing failed: ' . $e->getMessage(),
+            'error_code' => 'API_TEST_FAILED'
+        ]);
+    }
+}
+
+/**
+ * AJAX handler for specific API scenario testing
+ */
+function vd_test_specific_api_scenario() {
+    if (!current_user_can('manage_options')) {
+        wp_die('Unauthorized access');
+    }
+
+    check_ajax_referer('vd_test_nonce', 'nonce');
+
+    $scenario = sanitize_text_field($_POST['scenario'] ?? '');
+
+    try {
+        require_once plugin_dir_path(__FILE__) . '../../../tests/api/api-endpoint-test-framework.php';
+
+        $api_tests = new VD_API_Endpoint_Test_Framework();
+
+        // Run specific scenario (simplified for this implementation)
+        $results = $api_tests->run_api_endpoint_tests();
+
+        // Filter results for specific scenario if needed
+        if (!empty($scenario)) {
+            $filtered_results = array_filter($results['detailed_results'], function($result) use ($scenario) {
+                return strpos($result['scenario_key'], $scenario) !== false;
+            });
+            $results['filtered_scenario'] = $scenario;
+            $results['scenario_results'] = array_values($filtered_results);
+        }
+
+        wp_send_json_success($results);
+
+    } catch (Exception $e) {
+        wp_send_json_error([
+            'message' => 'Specific API test failed: ' . $e->getMessage(),
+            'error_code' => 'SPECIFIC_API_TEST_FAILED'
         ]);
     }
 }
