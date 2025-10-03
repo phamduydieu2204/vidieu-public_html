@@ -878,6 +878,31 @@ vd-license-manager/
 
 ---
 
+## 🧪 Testing Platform Guidelines
+
+**⚠️ IMPORTANT: Centralized Testing Platform**
+
+**VD Unit Tests** is the **SINGLE, UNIFIED** testing platform for all project testing activities.
+
+**Location**: WordPress Admin → **Tools → VD Unit Tests**
+
+**📋 Testing Guidelines:**
+- ✅ **USE**: Existing VD Unit Tests platform for all testing enhancements
+- 🚫 **DON'T**: Create additional test pages or duplicate testing interfaces
+- 📖 **Documentation**: See [`VD-UNIT-TESTS-PLATFORM.md`](./VD-UNIT-TESTS-PLATFORM.md) for complete guidelines
+
+**Current Capabilities:**
+- ✅ Validation Orchestrator testing (Step 5.1.5)
+- ✅ Future-ready framework for all project phases
+
+**Planned Enhancements** (add to existing platform):
+- 📋 Unit Test Framework integration (200+ tests ready)
+- 📋 Performance benchmarking dashboard
+- 📋 Security testing suite
+- 📋 Integration testing capabilities
+
+---
+
 ## 📝 Next Actions
 
 ### ✅ Completed Phases
