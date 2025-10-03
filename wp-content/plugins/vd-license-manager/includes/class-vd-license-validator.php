@@ -538,12 +538,14 @@ class VD_License_Validator {
      * @return array|null License data or null if not found
      */
     private function lookup_license_from_database($license_key) {
-        // Use the extracted query manager module
-        if (!$this->query_manager) {
-            $this->init_pattern_validator();
+        // MICRO-STEP 2: Direct replacement with extracted modules
+        // Load database query manager module
+        if (!class_exists('VD_License_Query_Manager')) {
+            require_once plugin_dir_path(__FILE__) . 'modules/database/class-vd-license-query-manager.php';
         }
 
-        return $this->query_manager->lookup_license($license_key, true);
+        $query_manager = VD_License_Query_Manager::get_instance();
+        return $query_manager->lookup_license($license_key, true);
     }
 
     /**
@@ -1272,9 +1274,14 @@ class VD_License_Validator {
      * @return void
      */
     public function clear_cache() {
-        if ($this->cache_manager) {
-            $this->cache_manager->clear_all_cache();
+        // MICRO-STEP 2: Direct replacement with extracted modules
+        // Load cache manager module
+        if (!class_exists('VD_License_Cache_Manager')) {
+            require_once plugin_dir_path(__FILE__) . 'modules/database/class-vd-license-cache-manager.php';
         }
+
+        $cache_manager = VD_License_Cache_Manager::get_instance();
+        return $cache_manager->clear_cache();
     }
 
     /**

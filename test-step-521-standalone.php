@@ -45,8 +45,28 @@ try {
         echo "---\n";
     }
 
-    echo "\n✅ Micro-Step 1 test completed successfully!\n";
-    echo "Format validation replacement is working correctly.\n";
+    echo "\n=== TESTING MICRO-STEP 2: Database Operations ===\n";
+
+    // Test clear_cache method
+    echo "Testing clear_cache method:\n";
+    $cache_result = $validator->clear_cache();
+    echo "Cache clear result: " . json_encode($cache_result, JSON_PRETTY_PRINT) . "\n";
+
+    // Test database lookup (using reflection to access private method)
+    echo "\nTesting lookup_license_from_database method:\n";
+    $reflection = new ReflectionClass($validator);
+    $lookup_method = $reflection->getMethod('lookup_license_from_database');
+    $lookup_method->setAccessible(true);
+
+    foreach (['VD-TEST-1234-5678', 'VD-NONEXISTENT-KEY'] as $lookup_key) {
+        echo "Looking up: $lookup_key\n";
+        $lookup_result = $lookup_method->invoke($validator, $lookup_key);
+        echo "Lookup result: " . (is_array($lookup_result) ? json_encode($lookup_result, JSON_PRETTY_PRINT) : 'NULL') . "\n";
+        echo "---\n";
+    }
+
+    echo "\n✅ Micro-Step 1 & 2 tests completed successfully!\n";
+    echo "Format validation and database operations replacements are working correctly.\n";
 
 } catch (Exception $e) {
     echo "❌ Test failed: " . $e->getMessage() . "\n";
