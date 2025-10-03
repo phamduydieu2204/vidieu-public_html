@@ -62,6 +62,9 @@ function vd_enqueue_validation_orchestrator_test_scripts($hook) {
         'ajax_url' => admin_url('admin-ajax.php'),
         'nonce' => wp_create_nonce('vd_test_nonce')
     ));
+
+    // Also create a global JavaScript variable for backward compatibility
+    wp_add_inline_script('jquery', 'var vd_test_nonce = "' . wp_create_nonce('vd_test_nonce') . '";');
 }
 
 /**
