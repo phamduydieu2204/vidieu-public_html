@@ -31,10 +31,17 @@ try {
     foreach ($test_keys as $key) {
         echo "Testing: $key\n";
 
+        // Test pattern validation first
+        require_once('./wp-content/plugins/vd-license-manager/includes/modules/format/class-vd-license-pattern-validator.php');
+        $pattern_validator = VD_License_Pattern_Validator::get_instance();
+        $pattern_result = $pattern_validator->validate_license_key_format($key, true);
+
+        echo "Pattern Result: " . json_encode($pattern_result, JSON_PRETTY_PRINT) . "\n";
+
         // Test the replaced method
         $result = $validator->validate_license_key_format($key, true);
 
-        echo "Result: " . (is_array($result) ? json_encode($result, JSON_PRETTY_PRINT) : ($result ? 'VALID' : 'INVALID')) . "\n";
+        echo "Final Result: " . (is_array($result) ? json_encode($result, JSON_PRETTY_PRINT) : ($result ? 'VALID' : 'INVALID')) . "\n";
         echo "---\n";
     }
 
