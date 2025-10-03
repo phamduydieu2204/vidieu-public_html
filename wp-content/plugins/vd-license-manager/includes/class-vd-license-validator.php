@@ -431,11 +431,11 @@ class VD_License_Validator {
     public function validate_license_expiry($license_key) {
         // MICRO-STEP 3: Direct replacement with extracted modules
         // Load expiry processor module
-        if (!class_exists('VD_License_Expiry_Processor')) {
+        if (!class_exists('VD\LicenseManager\Validator\VD_License_Expiry_Processor')) {
             require_once plugin_dir_path(__FILE__) . 'modules/validator/class-vd-license-expiry-processor.php';
         }
 
-        $expiry_processor = VD_License_Expiry_Processor::get_instance();
+        $expiry_processor = VD\LicenseManager\Validator\VD_License_Expiry_Processor::get_instance();
         return $expiry_processor->validate_license_expiry_date($license_key);
 
         // CLEANUP: Original complex logic moved to VD_License_Expiry_Processor
@@ -1328,11 +1328,11 @@ class VD_License_Validator {
     public function update_expired_license_statuses($options = array()) {
         // MICRO-STEP 3: Direct replacement with extracted modules
         // Load expiry processor module
-        if (!class_exists('VD_License_Expiry_Processor')) {
+        if (!class_exists('VD\LicenseManager\Validator\VD_License_Expiry_Processor')) {
             require_once plugin_dir_path(__FILE__) . 'modules/validator/class-vd-license-expiry-processor.php';
         }
 
-        $expiry_processor = VD_License_Expiry_Processor::get_instance();
+        $expiry_processor = VD\LicenseManager\Validator\VD_License_Expiry_Processor::get_instance();
         return $expiry_processor->update_expired_license_statuses($options);
 
         $start_time = microtime(true);
@@ -2100,11 +2100,11 @@ class VD_License_Validator {
     public function schedule_automatic_updates($schedule_options = array()) {
         // MICRO-STEP 3: Direct replacement with extracted modules
         // Load expiry processor module
-        if (!class_exists('VD_License_Expiry_Processor')) {
+        if (!class_exists('VD\LicenseManager\Validator\VD_License_Expiry_Processor')) {
             require_once plugin_dir_path(__FILE__) . 'modules/validator/class-vd-license-expiry-processor.php';
         }
 
-        $expiry_processor = VD_License_Expiry_Processor::get_instance();
+        $expiry_processor = VD\LicenseManager\Validator\VD_License_Expiry_Processor::get_instance();
         return $expiry_processor->schedule_automatic_updates($schedule_options);
 
         $default_schedule = array(

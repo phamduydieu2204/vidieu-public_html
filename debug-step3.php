@@ -25,10 +25,10 @@ try {
         require_once($expiry_processor_file);
         echo "✅ Expiry processor file loaded\n";
 
-        if (class_exists('VD_License_Expiry_Processor')) {
-            echo "✅ VD_License_Expiry_Processor class exists\n";
+        if (class_exists('VD\LicenseManager\Validator\VD_License_Expiry_Processor')) {
+            echo "✅ VD_License_Expiry_Processor class exists (with namespace)\n";
 
-            $expiry_processor = VD_License_Expiry_Processor::get_instance();
+            $expiry_processor = VD\LicenseManager\Validator\VD_License_Expiry_Processor::get_instance();
             echo "✅ Expiry processor instance created\n";
 
             // Test validate_license_expiry_date method
