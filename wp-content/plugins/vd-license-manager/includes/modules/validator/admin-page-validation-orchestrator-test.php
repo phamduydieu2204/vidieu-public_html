@@ -27,6 +27,10 @@ add_action('wp_ajax_vd_test_specific_integration', 'vd_test_specific_integration
 add_action('wp_ajax_vd_test_api_endpoints', 'vd_test_api_endpoints');
 add_action('wp_ajax_vd_test_specific_api_scenario', 'vd_test_specific_api_scenario');
 
+// Register AJAX endpoints for performance testing (Step 5.1.9)
+add_action('wp_ajax_vd_test_performance', 'vd_test_performance');
+add_action('wp_ajax_vd_test_specific_performance_scenario', 'vd_test_specific_performance_scenario');
+
 /**
  * Add admin menu page for VD Unit Tests
  */
@@ -155,6 +159,40 @@ function vd_render_validation_orchestrator_test_page() {
             </div>
         </div>
 
+        <!-- Performance Testing Section (Step 5.1.9) -->
+        <div class="card" style="max-width: none;">
+            <h2>⚡ Performance Testing (Step 5.1.9)</h2>
+            <div class="notice notice-info inline">
+                <p><strong>Performance Validation:</strong> Test load, memory usage, database performance, and stress testing</p>
+                <p><strong>Coverage:</strong> 5 performance scenarios | <strong>Focus:</strong> Response time, scalability, resource optimization</p>
+            </div>
+
+            <div style="margin: 20px 0;">
+                <button id="run-performance-test" class="button button-primary button-large">
+                    <span class="dashicons dashicons-performance" style="vertical-align: middle;"></span>
+                    Chạy Performance Tests
+                </button>
+                <select id="performance-scenario" style="margin-left: 10px; padding: 8px;">
+                    <option value="">Tất Cả Performance Scenarios</option>
+                    <option value="load_testing">Load Testing</option>
+                    <option value="memory_usage">Memory Usage</option>
+                    <option value="database_performance">Database Performance</option>
+                    <option value="response_time_benchmarking">Response Time Benchmarking</option>
+                    <option value="stress_testing">Stress Testing</option>
+                </select>
+                <button id="clear-performance-results" class="button button-secondary" style="margin-left: 10px;">
+                    <span class="dashicons dashicons-trash" style="vertical-align: middle;"></span>
+                    Xóa Kết Quả Performance
+                </button>
+            </div>
+
+            <div id="performance-test-status" style="display: none;">
+                <div class="notice notice-warning">
+                    <p><span class="dashicons dashicons-update-alt" style="animation: spin 1s linear infinite;"></span> Đang chạy performance tests...</p>
+                </div>
+            </div>
+        </div>
+
         <!-- Future Testing Sections (Coming Soon) -->
         <div class="card" style="max-width: none; opacity: 0.7;">
             <h2>🚀 Future Testing Capabilities (Coming Soon)</h2>
@@ -237,6 +275,14 @@ function vd_render_validation_orchestrator_test_page() {
                 <h2>🌐 Kết Quả API Tests</h2>
                 <div id="api-test-summary"></div>
                 <div id="api-test-details"></div>
+            </div>
+        </div>
+
+        <div id="performance-test-results" style="display: none;">
+            <div class="card" style="max-width: none;">
+                <h2>⚡ Kết Quả Performance Tests</h2>
+                <div id="performance-test-summary"></div>
+                <div id="performance-test-details"></div>
             </div>
         </div>
 
@@ -527,6 +573,60 @@ function vd_render_validation_orchestrator_test_page() {
             $('#api-test-details').empty();
         });
 
+        $('#run-performance-test').on('click', function() {
+            var $button = $(this);
+            var $status = $('#performance-test-status');
+            var $results = $('#performance-test-results');
+            var scenario = $('#performance-scenario').val();
+
+            // Disable button và show loading
+            $button.prop('disabled', true);
+            $status.show();
+            $results.hide();
+
+            // Chạy AJAX performance test
+            $.ajax({
+                url: vd_ajax.ajax_url,
+                type: 'POST',
+                data: {
+                    action: scenario ? 'vd_test_specific_performance_scenario' : 'vd_test_performance',
+                    scenario: scenario,
+                    _ajax_nonce: vd_ajax.nonce
+                },
+                timeout: 45000, // Longer timeout for performance tests
+                success: function(response) {
+                    $status.hide();
+                    $button.prop('disabled', false);
+
+                    if (response.success) {
+                        displayPerformanceSuccessResults(response.data);
+                    } else {
+                        displayPerformanceErrorResults(response.data);
+                    }
+
+                    $results.show();
+                },
+                error: function(xhr, status, error) {
+                    $status.hide();
+                    $button.prop('disabled', false);
+
+                    displayPerformanceErrorResults({
+                        message: 'AJAX Error: ' + error,
+                        status: status,
+                        responseText: xhr.responseText
+                    });
+
+                    $results.show();
+                }
+            });
+        });
+
+        $('#clear-performance-results').on('click', function() {
+            $('#performance-test-results').hide();
+            $('#performance-test-summary').empty();
+            $('#performance-test-details').empty();
+        });
+
         function displaySuccessResults(data) {
             var summary = data.summary;
             var testResults = data.test_results;
@@ -722,6 +822,103 @@ function vd_render_validation_orchestrator_test_page() {
             $('#api-test-summary').html(errorHtml);
             $('#api-test-details').empty();
         }
+
+        function displayPerformanceSuccessResults(data) {
+            var summary = data.summary || data;
+            var testResults = data.detailed_results || data.scenario_results || [];
+
+            // Summary with performance score
+            var summaryHtml = '<div class="test-summary-box">';
+            summaryHtml += '<h3>⚡ Tóm Tắt Performance Testing</h3>';
+            summaryHtml += '<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-top: 10px;">';
+            summaryHtml += '<div><strong>Framework:</strong> ' + (summary.framework || 'Performance Testing') + '</div>';
+            summaryHtml += '<div><strong>Total Scenarios:</strong> ' + (summary.total_scenarios || testResults.length) + '</div>';
+            summaryHtml += '<div class="test-result-success"><strong>Passed:</strong> ' + (summary.passed_scenarios || '0') + '</div>';
+            summaryHtml += '<div class="test-result-failed"><strong>Failed:</strong> ' + (summary.failed_scenarios || '0') + '</div>';
+            summaryHtml += '<div><strong>Success Rate:</strong> ' + (summary.success_rate || '0') + '%</div>';
+            summaryHtml += '<div><strong>Performance Score:</strong> ' + (summary.overall_performance_score || '0') + '/100</div>';
+            summaryHtml += '<div><strong>Execution Time:</strong> ' + (summary.execution_time || '0') + 'ms</div>';
+            if (data.filtered_scenario) {
+                summaryHtml += '<div><strong>Filtered Scenario:</strong> ' + data.filtered_scenario + '</div>';
+            }
+            summaryHtml += '</div></div>';
+
+            $('#performance-test-summary').html(summaryHtml);
+
+            // Detailed results with performance scores
+            var detailsHtml = '<h3>🔍 Chi Tiết Performance Test Scenarios</h3>';
+            if (testResults.length > 0) {
+                detailsHtml += '<table class="test-detail-table">';
+                detailsHtml += '<thead><tr><th>Performance Scenario</th><th>Category</th><th>Score</th><th>Status</th><th>Details</th></tr></thead>';
+                detailsHtml += '<tbody>';
+
+                $.each(testResults, function(key, result) {
+                    var statusClass = result.success ? 'test-passed' : 'test-failed';
+                    var statusIcon = result.success ? '✅' : '❌';
+                    var score = result.performance_score || 0;
+                    var scoreClass = score >= 90 ? 'test-result-success' : (score >= 70 ? 'test-result-warning' : 'test-result-failed');
+
+                    detailsHtml += '<tr class="' + statusClass + '">';
+                    detailsHtml += '<td><strong>' + result.test + '</strong></td>';
+                    detailsHtml += '<td>' + (result.category || 'Performance Testing') + '</td>';
+                    detailsHtml += '<td><span class="' + scoreClass + '">' + score + '/100</span></td>';
+                    detailsHtml += '<td>' + statusIcon + ' ' + (result.success ? 'PASSED' : 'FAILED') + '</td>';
+                    detailsHtml += '<td><div class="code-block">' + JSON.stringify(result.details, null, 2) + '</div></td>';
+                    detailsHtml += '</tr>';
+                });
+
+                detailsHtml += '</tbody></table>';
+            } else {
+                detailsHtml += '<p>No detailed performance test results available.</p>';
+            }
+
+            // Performance Analysis
+            if (data.performance_analysis) {
+                detailsHtml += '<h3>📊 Performance Analysis</h3>';
+                detailsHtml += '<div class="test-summary-box">';
+                detailsHtml += '<ul>';
+                $.each(data.performance_analysis, function(key, value) {
+                    detailsHtml += '<li><strong>' + key.replace(/_/g, ' ').toUpperCase() + ':</strong> ' + value + '</li>';
+                });
+                detailsHtml += '</ul>';
+                detailsHtml += '</div>';
+            }
+
+            // Performance Thresholds
+            if (data.performance_thresholds) {
+                detailsHtml += '<h3>🎯 Performance Thresholds</h3>';
+                detailsHtml += '<div class="test-summary-box">';
+                detailsHtml += '<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px;">';
+                $.each(data.performance_thresholds, function(category, thresholds) {
+                    detailsHtml += '<div><strong>' + category.replace(/_/g, ' ').toUpperCase() + ':</strong><br>';
+                    $.each(thresholds, function(level, value) {
+                        var color = level === 'excellent' ? 'green' : (level === 'good' ? 'blue' : (level === 'acceptable' ? 'orange' : 'red'));
+                        detailsHtml += '<span style="color: ' + color + ';">• ' + level.toUpperCase() + ': ' + value + (typeof value === 'number' ? 'ms' : '') + '</span><br>';
+                    });
+                    detailsHtml += '</div>';
+                });
+                detailsHtml += '</div>';
+                detailsHtml += '</div>';
+            }
+
+            // Implementation notes
+            if (data.implementation_notes) {
+                detailsHtml += '<h3>📝 Implementation Notes</h3>';
+                detailsHtml += '<div class="code-block">' + JSON.stringify(data.implementation_notes, null, 2) + '</div>';
+            }
+
+            $('#performance-test-details').html(detailsHtml);
+        }
+
+        function displayPerformanceErrorResults(errorData) {
+            var errorHtml = '<div class="notice notice-error">';
+            errorHtml += '<h3>❌ Performance Test Error</h3>';
+            errorHtml += '<div class="code-block">' + JSON.stringify(errorData, null, 2) + '</div>';
+            errorHtml += '</div>';
+
+            $('#performance-test-summary').html(errorHtml);
+            $('#performance-test-details').empty();
+        }
     });
     </script>
     <?php
@@ -853,6 +1050,71 @@ function vd_test_specific_api_scenario() {
         wp_send_json_error([
             'message' => 'Specific API test failed: ' . $e->getMessage(),
             'error_code' => 'SPECIFIC_API_TEST_FAILED'
+        ]);
+    }
+}
+
+/**
+ * AJAX handler for performance testing framework
+ */
+function vd_test_performance() {
+    if (!current_user_can('manage_options')) {
+        wp_die('Unauthorized access');
+    }
+
+    check_ajax_referer('vd_test_nonce', 'nonce');
+
+    try {
+        require_once plugin_dir_path(__FILE__) . '../../../tests/performance/performance-test-framework.php';
+
+        $performance_tests = new VD_Performance_Test_Framework();
+        $results = $performance_tests->run_performance_tests();
+
+        wp_send_json_success($results);
+
+    } catch (Exception $e) {
+        wp_send_json_error([
+            'message' => 'Performance testing failed: ' . $e->getMessage(),
+            'error_code' => 'PERFORMANCE_TEST_FAILED'
+        ]);
+    }
+}
+
+/**
+ * AJAX handler for specific performance scenario testing
+ */
+function vd_test_specific_performance_scenario() {
+    if (!current_user_can('manage_options')) {
+        wp_die('Unauthorized access');
+    }
+
+    check_ajax_referer('vd_test_nonce', 'nonce');
+
+    $scenario = sanitize_text_field($_POST['scenario'] ?? '');
+
+    try {
+        require_once plugin_dir_path(__FILE__) . '../../../tests/performance/performance-test-framework.php';
+
+        $performance_tests = new VD_Performance_Test_Framework();
+
+        // Run specific scenario (simplified for this implementation)
+        $results = $performance_tests->run_performance_tests();
+
+        // Filter results for specific scenario if needed
+        if (!empty($scenario)) {
+            $filtered_results = array_filter($results['detailed_results'], function($result) use ($scenario) {
+                return strpos($result['scenario_key'], $scenario) !== false;
+            });
+            $results['filtered_scenario'] = $scenario;
+            $results['scenario_results'] = array_values($filtered_results);
+        }
+
+        wp_send_json_success($results);
+
+    } catch (Exception $e) {
+        wp_send_json_error([
+            'message' => 'Specific performance test failed: ' . $e->getMessage(),
+            'error_code' => 'SPECIFIC_PERFORMANCE_TEST_FAILED'
         ]);
     }
 }
