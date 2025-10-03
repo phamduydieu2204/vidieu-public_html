@@ -31,6 +31,10 @@ add_action('wp_ajax_vd_test_specific_api_scenario', 'vd_test_specific_api_scenar
 add_action('wp_ajax_vd_test_performance', 'vd_test_performance');
 add_action('wp_ajax_vd_test_specific_performance_scenario', 'vd_test_specific_performance_scenario');
 
+// Test Coverage Analysis AJAX handlers
+add_action('wp_ajax_vd_test_coverage_analysis', 'vd_test_coverage_analysis');
+add_action('wp_ajax_vd_test_specific_coverage_category', 'vd_test_specific_coverage_category');
+
 /**
  * Add admin menu page for VD Unit Tests
  */
@@ -234,6 +238,12 @@ function vd_render_validation_orchestrator_test_page() {
                         <td>&lt;50ms execution, &lt;2MB memory targets</td>
                     </tr>
                     <tr>
+                        <td><strong>Test Coverage Analysis</strong></td>
+                        <td>Code coverage measurement</td>
+                        <td>✅ Ready</td>
+                        <td>Coverage analysis, Gap analysis, Recommendations</td>
+                    </tr>
+                    <tr>
                         <td><strong>Security Testing</strong></td>
                         <td>Penetration testing suite</td>
                         <td>📋 Planned</td>
@@ -241,6 +251,38 @@ function vd_render_validation_orchestrator_test_page() {
                     </tr>
                 </tbody>
             </table>
+        </div>
+
+        <!-- Test Coverage Analysis Section (Step 5.1.10) -->
+        <div class="card" style="max-width: none;">
+            <h2>📊 Test Coverage Analysis (Step 5.1.10)</h2>
+            <p>Comprehensive code coverage measurement and reporting across all 25+ modules.</p>
+
+            <div style="margin-bottom: 20px;">
+                <button type="button" id="run-coverage-analysis" class="button button-primary" style="margin-right: 10px;">
+                    🔍 Run Coverage Analysis
+                </button>
+
+                <select id="coverage-category" style="margin-right: 10px;">
+                    <option value="">All Categories</option>
+                    <option value="format">Format Validation</option>
+                    <option value="database">Database Layer</option>
+                    <option value="status">Status Management</option>
+                    <option value="rules">Business Rules</option>
+                    <option value="security">Security & Audit</option>
+                    <option value="api">API Framework</option>
+                    <option value="integration">Integration Layer</option>
+                    <option value="validator">Validator Modules</option>
+                </select>
+
+                <button type="button" id="run-specific-coverage" class="button">
+                    📈 Analyze Specific Category
+                </button>
+            </div>
+
+            <div class="notice notice-info">
+                <p><strong>Coverage Target:</strong> 95% | <strong>Modules:</strong> 25+ | <strong>Analysis:</strong> Gap identification and recommendations</p>
+            </div>
         </div>
 
         <!-- Test Controls -->
@@ -283,6 +325,14 @@ function vd_render_validation_orchestrator_test_page() {
                 <h2>⚡ Kết Quả Performance Tests</h2>
                 <div id="performance-test-summary"></div>
                 <div id="performance-test-details"></div>
+            </div>
+        </div>
+
+        <div id="coverage-test-results" style="display: none;">
+            <div class="card" style="max-width: none;">
+                <h2>📊 Kết Quả Test Coverage Analysis</h2>
+                <div id="coverage-test-summary"></div>
+                <div id="coverage-test-details"></div>
             </div>
         </div>
 
@@ -919,6 +969,205 @@ function vd_render_validation_orchestrator_test_page() {
             $('#performance-test-summary').html(errorHtml);
             $('#performance-test-details').empty();
         }
+
+        // Test Coverage Analysis handlers (Step 5.1.10)
+        $('#run-coverage-analysis').on('click', function() {
+            var $button = $(this);
+            var $status = $('#test-status');
+            var $results = $('#coverage-test-results');
+
+            $button.prop('disabled', true);
+            $status.show();
+            $results.hide();
+
+            $.ajax({
+                url: ajaxurl,
+                type: 'POST',
+                data: {
+                    action: 'vd_test_coverage_analysis',
+                    nonce: vd_test_nonce
+                },
+                timeout: 30000, // 30 seconds timeout for coverage analysis
+                success: function(response) {
+                    $status.hide();
+                    $button.prop('disabled', false);
+
+                    if (response.success) {
+                        displayCoverageSuccessResults(response.data);
+                    } else {
+                        displayCoverageErrorResults(response.data);
+                    }
+
+                    $results.show();
+                },
+                error: function(xhr, status, error) {
+                    $status.hide();
+                    $button.prop('disabled', false);
+
+                    displayCoverageErrorResults({
+                        message: 'AJAX Error: ' + error,
+                        status: status,
+                        responseText: xhr.responseText
+                    });
+
+                    $results.show();
+                }
+            });
+        });
+
+        $('#run-specific-coverage').on('click', function() {
+            var $button = $(this);
+            var $status = $('#test-status');
+            var $results = $('#coverage-test-results');
+            var category = $('#coverage-category').val();
+
+            $button.prop('disabled', true);
+            $status.show();
+            $results.hide();
+
+            $.ajax({
+                url: ajaxurl,
+                type: 'POST',
+                data: {
+                    action: 'vd_test_specific_coverage_category',
+                    category: category,
+                    nonce: vd_test_nonce
+                },
+                timeout: 20000, // 20 seconds timeout for category analysis
+                success: function(response) {
+                    $status.hide();
+                    $button.prop('disabled', false);
+
+                    if (response.success) {
+                        displayCoverageSuccessResults(response.data);
+                    } else {
+                        displayCoverageErrorResults(response.data);
+                    }
+
+                    $results.show();
+                },
+                error: function(xhr, status, error) {
+                    $status.hide();
+                    $button.prop('disabled', false);
+
+                    displayCoverageErrorResults({
+                        message: 'AJAX Error: ' + error,
+                        status: status,
+                        responseText: xhr.responseText
+                    });
+
+                    $results.show();
+                }
+            });
+        });
+
+        function displayCoverageSuccessResults(data) {
+            var summary = data.summary || data;
+            var categoryResults = data.category_breakdown || [];
+            var detailedResults = data.detailed_results || {};
+
+            // Summary
+            var summaryHtml = '<div class="test-summary-box">';
+            summaryHtml += '<h3>📊 Tóm Tắt Test Coverage Analysis</h3>';
+            summaryHtml += '<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-top: 10px;">';
+            summaryHtml += '<div><strong>Framework:</strong> ' + (summary.framework || 'Coverage Analysis') + '</div>';
+            summaryHtml += '<div><strong>Total Modules:</strong> ' + (summary.total_modules || '0') + '</div>';
+            summaryHtml += '<div><strong>Total Lines:</strong> ' + (summary.total_lines || '0') + '</div>';
+            summaryHtml += '<div><strong>Covered Lines:</strong> ' + (summary.covered_lines || '0') + '</div>';
+
+            var coverage = summary.overall_coverage || 0;
+            var coverageClass = coverage >= 95 ? 'test-result-success' : (coverage >= 85 ? 'test-result-warning' : 'test-result-failed');
+            summaryHtml += '<div><strong>Overall Coverage:</strong> <span class="' + coverageClass + '">' + coverage + '%</span></div>';
+            summaryHtml += '<div><strong>Target Coverage:</strong> ' + (summary.target_coverage || '95') + '%</div>';
+            summaryHtml += '<div><strong>Coverage Gap:</strong> ' + (summary.coverage_gap || '0') + '%</div>';
+            summaryHtml += '<div><strong>Execution Time:</strong> ' + (summary.execution_time || '0') + 'ms</div>';
+            summaryHtml += '<div><strong>Status:</strong> <span class="' + (summary.status === 'EXCELLENT' ? 'test-result-success' : 'test-result-warning') + '">' + (summary.status || 'UNKNOWN') + '</span></div>';
+            summaryHtml += '</div></div>';
+
+            $('#coverage-test-summary').html(summaryHtml);
+
+            // Detailed results
+            var detailsHtml = '<h3>🔍 Chi Tiết Coverage Analysis</h3>';
+
+            // Category breakdown
+            if (categoryResults.length > 0) {
+                detailsHtml += '<h4>📁 Coverage by Category</h4>';
+                detailsHtml += '<table class="test-detail-table">';
+                detailsHtml += '<thead><tr><th>Category</th><th>Modules</th><th>Coverage</th><th>Status</th><th>Details</th></tr></thead>';
+                detailsHtml += '<tbody>';
+
+                $.each(categoryResults, function(key, category) {
+                    var coverageClass = category.coverage >= 95 ? 'test-result-success' :
+                                       (category.coverage >= 85 ? 'test-result-warning' : 'test-result-failed');
+                    var statusIcon = category.coverage >= 95 ? '✅' : (category.coverage >= 85 ? '⚠️' : '❌');
+
+                    detailsHtml += '<tr>';
+                    detailsHtml += '<td><strong>' + category.category + '</strong></td>';
+                    detailsHtml += '<td>' + category.modules + '</td>';
+                    detailsHtml += '<td><span class="' + coverageClass + '">' + category.coverage + '%</span></td>';
+                    detailsHtml += '<td>' + statusIcon + ' ' + category.status + '</td>';
+                    detailsHtml += '<td>Total: ' + (detailedResults[category.category]?.total_lines || '0') + ' lines</td>';
+                    detailsHtml += '</tr>';
+                });
+
+                detailsHtml += '</tbody></table>';
+            }
+
+            // Gap Analysis
+            if (data.gap_analysis) {
+                detailsHtml += '<h4>🔍 Gap Analysis</h4>';
+                detailsHtml += '<div class="test-summary-box">';
+
+                var gaps = data.gap_analysis;
+                if (gaps.critical_gaps && gaps.critical_gaps.length > 0) {
+                    detailsHtml += '<h5 style="color: red;">🚨 Critical Gaps (Below 50%)</h5>';
+                    detailsHtml += '<ul>';
+                    $.each(gaps.critical_gaps, function(key, gap) {
+                        detailsHtml += '<li><strong>' + gap.category + ':</strong> ' + gap.coverage + '% coverage</li>';
+                    });
+                    detailsHtml += '</ul>';
+                }
+
+                if (gaps.improvement_opportunities && gaps.improvement_opportunities.length > 0) {
+                    detailsHtml += '<h5 style="color: orange;">📈 Improvement Opportunities</h5>';
+                    detailsHtml += '<ul>';
+                    $.each(gaps.improvement_opportunities, function(key, opportunity) {
+                        detailsHtml += '<li><strong>' + opportunity.category + ':</strong> ' + opportunity.coverage + '% (Gap: ' + opportunity.gap + '%)</li>';
+                    });
+                    detailsHtml += '</ul>';
+                }
+
+                if (gaps.recommendations && gaps.recommendations.length > 0) {
+                    detailsHtml += '<h5>💡 Recommendations</h5>';
+                    detailsHtml += '<ul>';
+                    $.each(gaps.recommendations, function(key, rec) {
+                        var priorityColor = rec.priority === 'CRITICAL' ? 'red' : (rec.priority === 'HIGH' ? 'orange' : 'blue');
+                        detailsHtml += '<li><strong style="color: ' + priorityColor + ';">[' + rec.priority + ']</strong> ' + rec.title + ' - ' + rec.description + ' (' + rec.estimated_effort + ')</li>';
+                    });
+                    detailsHtml += '</ul>';
+                }
+
+                detailsHtml += '</div>';
+            }
+
+            // Implementation notes
+            if (data.implementation_notes) {
+                detailsHtml += '<h4>📝 Implementation Notes</h4>';
+                detailsHtml += '<div class="code-block">' + JSON.stringify(data.implementation_notes, null, 2) + '</div>';
+            }
+
+            $('#coverage-test-details').html(detailsHtml);
+        }
+
+        function displayCoverageErrorResults(errorData) {
+            var errorHtml = '<div class="notice notice-error">';
+            errorHtml += '<h3>❌ Coverage Analysis Error</h3>';
+            errorHtml += '<div class="code-block">' + JSON.stringify(errorData, null, 2) + '</div>';
+            errorHtml += '</div>';
+
+            $('#coverage-test-summary').html(errorHtml);
+            $('#coverage-test-details').empty();
+        }
     });
     </script>
     <?php
@@ -1115,6 +1364,73 @@ function vd_test_specific_performance_scenario() {
         wp_send_json_error([
             'message' => 'Specific performance test failed: ' . $e->getMessage(),
             'error_code' => 'SPECIFIC_PERFORMANCE_TEST_FAILED'
+        ]);
+    }
+}
+
+/**
+ * AJAX handler for test coverage analysis
+ */
+function vd_test_coverage_analysis() {
+    if (!current_user_can('manage_options')) {
+        wp_die('Unauthorized access');
+    }
+
+    check_ajax_referer('vd_test_nonce', 'nonce');
+
+    try {
+        require_once plugin_dir_path(__FILE__) . '../../../tests/coverage/test-coverage-framework.php';
+
+        $coverage_tests = new VD_Test_Coverage_Framework();
+        $results = $coverage_tests->run_coverage_analysis();
+
+        wp_send_json_success($results);
+
+    } catch (Exception $e) {
+        wp_send_json_error([
+            'message' => 'Coverage analysis failed: ' . $e->getMessage(),
+            'error_code' => 'COVERAGE_ANALYSIS_FAILED'
+        ]);
+    }
+}
+
+/**
+ * AJAX handler for specific coverage category analysis
+ */
+function vd_test_specific_coverage_category() {
+    if (!current_user_can('manage_options')) {
+        wp_die('Unauthorized access');
+    }
+
+    check_ajax_referer('vd_test_nonce', 'nonce');
+
+    $category = sanitize_text_field($_POST['category'] ?? '');
+
+    try {
+        require_once plugin_dir_path(__FILE__) . '../../../tests/coverage/test-coverage-framework.php';
+
+        $coverage_tests = new VD_Test_Coverage_Framework();
+
+        // Run full analysis (simplified for this implementation)
+        $results = $coverage_tests->run_coverage_analysis();
+
+        // Filter results for specific category if provided
+        if (!empty($category)) {
+            $filtered_results = [];
+            if (isset($results['detailed_results'][$category])) {
+                $filtered_results[$category] = $results['detailed_results'][$category];
+            }
+
+            $results['filtered_category'] = $category;
+            $results['category_results'] = $filtered_results;
+        }
+
+        wp_send_json_success($results);
+
+    } catch (Exception $e) {
+        wp_send_json_error([
+            'message' => 'Specific coverage analysis failed: ' . $e->getMessage(),
+            'error_code' => 'SPECIFIC_COVERAGE_ANALYSIS_FAILED'
         ]);
     }
 }
