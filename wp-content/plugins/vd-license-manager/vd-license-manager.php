@@ -26,6 +26,10 @@ define('VD_LM_FILE', __FILE__);
 define('VD_LM_BASENAME', plugin_basename(__FILE__));
 define('VD_LM_TEXT_DOMAIN', 'vd-license-manager');
 
+// Load Micro-Step Status components
+require_once VD_LM_PATH . 'micro-step-status-shortcode.php';
+require_once VD_LM_PATH . 'admin-micro-step-status.php';
+
 // Check requirements before loading
 if (!vd_check_requirements()) {
     add_action('admin_notices', 'vd_requirements_notice');
