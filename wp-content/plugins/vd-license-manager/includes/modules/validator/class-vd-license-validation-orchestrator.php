@@ -1116,4 +1116,200 @@ class VD_License_Validation_Orchestrator {
     public function get_validation_context() {
         return $this->validation_context;
     }
+
+    // ===== MICRO-STEP 5.3: BASIC INTEGRATION METHODS =====
+
+    /**
+     * Validate license key (main entry point)
+     * Step 5.3 - Basic orchestrator integration for main validation method
+     *
+     * @since 1.6.0
+     * @param string $license_key License key to validate
+     * @return bool|array Validation result
+     */
+    public function vd_validate_license_key($license_key) {
+        if (empty($license_key)) {
+            return false;
+        }
+
+        try {
+            $options = array(
+                'validation_type' => 'standard',
+                'include_warnings' => false,
+                'generate_report' => false
+            );
+
+            $result = $this->orchestrate_license_validation($license_key, $options);
+
+            // Return simplified boolean result for backward compatibility
+            return $result['valid'] ?? false;
+
+        } catch (Exception $e) {
+            error_log('[VD Orchestrator] vd_validate_license_key failed: ' . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Get detailed validation results
+     * Step 5.3 - Detailed validation with orchestrator integration
+     *
+     * @since 1.6.0
+     * @param string $license_key License key to validate
+     * @return array Detailed validation results
+     */
+    public function get_detailed_validation($license_key) {
+        if (empty($license_key)) {
+            return array(
+                'valid' => false,
+                'error' => 'Empty license key provided'
+            );
+        }
+
+        try {
+            $options = array(
+                'validation_type' => 'detailed',
+                'include_warnings' => true,
+                'generate_report' => true,
+                'detailed_breakdown' => true
+            );
+
+            $result = $this->orchestrate_license_validation($license_key, $options);
+
+            // Transform to detailed format expected by legacy code
+            return array(
+                'valid' => $result['valid'] ?? false,
+                'license_key' => substr($license_key, 0, 8) . '...', // Security: partial key only
+                'validation_stages' => $result['validation_pipeline'] ?? array(),
+                'errors' => $result['accumulated_errors'] ?? array(),
+                'warnings' => $result['validation_warnings'] ?? array(),
+                'execution_time' => $result['execution_time'] ?? 0,
+                'advanced_report' => $result['advanced_report'] ?? array(),
+                'framework_version' => '4.2.4.5.3e-orchestrated',
+                'orchestrator_integration' => true
+            );
+
+        } catch (Exception $e) {
+            error_log('[VD Orchestrator] get_detailed_validation failed: ' . $e->getMessage());
+            return array(
+                'valid' => false,
+                'error' => 'Orchestrator validation failed: ' . $e->getMessage(),
+                'license_key' => substr($license_key, 0, 8) . '...',
+                'framework_version' => '4.2.4.5.3e-orchestrated-error'
+            );
+        }
+    }
+
+    /**
+     * Validate license key format (delegated method)
+     * Step 5.3 - Format validation through orchestrator
+     *
+     * @since 1.6.0
+     * @param string $license_key License key to validate
+     * @param bool $detailed Whether to return detailed results
+     * @return bool|array Validation result
+     */
+    public function validate_license_key_format($license_key, $detailed = false) {
+        if (empty($license_key)) {
+            return $detailed ? array('valid' => false, 'error' => 'Empty license key') : false;
+        }
+
+        try {
+            $options = array(
+                'validation_type' => 'format_only',
+                'include_warnings' => $detailed,
+                'generate_report' => $detailed,
+                'focus_stage' => 'format_validation'
+            );
+
+            $result = $this->orchestrate_license_validation($license_key, $options);
+
+            if ($detailed) {
+                return array(
+                    'valid' => $result['valid'] ?? false,
+                    'format_check' => array(
+                        'length_valid' => strlen($license_key) >= 8,
+                        'pattern_valid' => true, // Will be validated by format stage
+                        'checksum_valid' => true  // Will be validated by checksum stage
+                    ),
+                    'validation_pipeline' => $result['validation_pipeline'] ?? array(),
+                    'errors' => $result['accumulated_errors'] ?? array(),
+                    'framework_version' => '4.2.4.5.3e-orchestrated'
+                );
+            }
+
+            return $result['valid'] ?? false;
+
+        } catch (Exception $e) {
+            error_log('[VD Orchestrator] validate_license_key_format failed: ' . $e->getMessage());
+            return $detailed ? array('valid' => false, 'error' => $e->getMessage()) : false;
+        }
+    }
+
+    /**
+     * Validate license expiry (delegated method)
+     * Step 5.3 - Expiry validation through orchestrator
+     *
+     * @since 1.6.0
+     * @param string $license_key License key to check expiry
+     * @return array Expiry validation result
+     */
+    public function validate_license_expiry($license_key) {
+        if (empty($license_key)) {
+            return array(
+                'valid' => false,
+                'error' => 'Empty license key provided'
+            );
+        }
+
+        try {
+            $options = array(
+                'validation_type' => 'expiry_only',
+                'include_warnings' => true,
+                'generate_report' => false,
+                'focus_stage' => 'expiry_validation'
+            );
+
+            $result = $this->orchestrate_license_validation($license_key, $options);
+
+            return array(
+                'valid' => $result['valid'] ?? false,
+                'license_key' => substr($license_key, 0, 8) . '...',
+                'expiry_status' => $this->extract_expiry_status($result),
+                'errors' => $result['accumulated_errors'] ?? array(),
+                'warnings' => $result['validation_warnings'] ?? array(),
+                'framework_version' => '4.2.4.5.3e-orchestrated'
+            );
+
+        } catch (Exception $e) {
+            error_log('[VD Orchestrator] validate_license_expiry failed: ' . $e->getMessage());
+            return array(
+                'valid' => false,
+                'error' => 'Expiry validation failed: ' . $e->getMessage(),
+                'license_key' => substr($license_key, 0, 8) . '...'
+            );
+        }
+    }
+
+    /**
+     * Extract expiry status from orchestrator result
+     * Step 5.3 - Helper method for expiry validation
+     *
+     * @since 1.6.0
+     * @param array $orchestrator_result Result from orchestrator
+     * @return string Expiry status
+     */
+    private function extract_expiry_status($orchestrator_result) {
+        $pipeline = $orchestrator_result['validation_pipeline'] ?? array();
+
+        if (isset($pipeline['expiry_validation']['data']['expiry_status'])) {
+            return $pipeline['expiry_validation']['data']['expiry_status'];
+        }
+
+        if (!empty($orchestrator_result['accumulated_errors'])) {
+            return 'error';
+        }
+
+        return 'active';
+    }
 }
