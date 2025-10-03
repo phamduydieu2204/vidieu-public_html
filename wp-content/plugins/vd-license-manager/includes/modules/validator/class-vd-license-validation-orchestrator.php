@@ -1146,6 +1146,19 @@ class VD_License_Validation_Orchestrator {
 
         } catch (Exception $e) {
             error_log('[VD Orchestrator] vd_validate_license_key failed: ' . $e->getMessage());
+
+            // Step 5.4: Use Fallback Manager for graceful degradation
+            $fallback_manager = $this->get_fallback_manager();
+            if ($fallback_manager) {
+                $fallback_result = $fallback_manager->execute_fallback_validation(
+                    $license_key,
+                    array(),
+                    'vd_validate_license_key',
+                    $e
+                );
+                return $fallback_result['valid'] ?? false;
+            }
+
             return false;
         }
     }
@@ -1191,6 +1204,32 @@ class VD_License_Validation_Orchestrator {
 
         } catch (Exception $e) {
             error_log('[VD Orchestrator] get_detailed_validation failed: ' . $e->getMessage());
+
+            // Step 5.4: Use Fallback Manager for graceful degradation
+            $fallback_manager = $this->get_fallback_manager();
+            if ($fallback_manager) {
+                $fallback_result = $fallback_manager->execute_fallback_validation(
+                    $license_key,
+                    array(),
+                    'get_detailed_validation',
+                    $e
+                );
+
+                // Transform fallback result to detailed format
+                return array(
+                    'valid' => $fallback_result['valid'] ?? false,
+                    'license_key' => substr($license_key, 0, 8) . '...',
+                    'fallback_used' => true,
+                    'fallback_method' => $fallback_result['fallback_method'] ?? 'unknown',
+                    'errors' => $fallback_result['errors'] ?? array(),
+                    'warnings' => array_merge(
+                        array('Orchestrator failed, used fallback: ' . $e->getMessage()),
+                        $fallback_result['warnings'] ?? array()
+                    ),
+                    'framework_version' => '4.2.4.5.3e-orchestrated-fallback'
+                );
+            }
+
             return array(
                 'valid' => false,
                 'error' => 'Orchestrator validation failed: ' . $e->getMessage(),
@@ -1311,5 +1350,189 @@ class VD_License_Validation_Orchestrator {
         }
 
         return 'active';
+    }
+
+    // ===== MICRO-STEP 5.4: FALLBACK MECHANISM METHODS =====
+
+    /**
+     * Get fallback manager instance
+     * Step 5.4 - Fallback manager integration
+     *
+     * @since 1.6.0
+     * @return VD_License_Fallback_Manager|null Fallback manager instance
+     */
+    private function get_fallback_manager() {
+        static $fallback_manager = null;
+
+        if ($fallback_manager === null) {
+            // Load fallback manager
+            $fallback_file = plugin_dir_path(__FILE__) . 'class-vd-license-fallback-manager.php';
+
+            if (file_exists($fallback_file)) {
+                require_once $fallback_file;
+
+                if (class_exists('VD\\LicenseManager\\Validator\\VD_License_Fallback_Manager')) {
+                    try {
+                        $fallback_manager = \VD\LicenseManager\Validator\VD_License_Fallback_Manager::get_instance();
+                    } catch (Exception $e) {
+                        error_log('[VD Orchestrator] Failed to load fallback manager: ' . $e->getMessage());
+                        $fallback_manager = false; // Mark as failed to avoid retrying
+                    }
+                } else {
+                    $fallback_manager = false; // Mark as failed
+                }
+            } else {
+                $fallback_manager = false; // Mark as failed
+            }
+        }
+
+        return $fallback_manager === false ? null : $fallback_manager;
+    }
+
+    /**
+     * Enhanced orchestration with fallback support
+     * Step 5.4 - Enhanced orchestration with comprehensive fallback
+     *
+     * @since 1.6.0
+     * @param string $license_key License key to validate
+     * @param array $options Validation options
+     * @return array Enhanced validation result with fallback support
+     */
+    public function orchestrate_license_validation_with_fallback($license_key, $options = array()) {
+        try {
+            // Try normal orchestration first
+            return $this->orchestrate_license_validation($license_key, $options);
+
+        } catch (Exception $e) {
+            error_log('[VD Orchestrator] Main orchestration failed: ' . $e->getMessage());
+
+            // Use fallback manager
+            $fallback_manager = $this->get_fallback_manager();
+            if ($fallback_manager) {
+                $fallback_result = $fallback_manager->execute_fallback_validation(
+                    $license_key,
+                    $options,
+                    'orchestrate_license_validation',
+                    $e
+                );
+
+                // Enhanced fallback result with orchestrator compatibility
+                return array(
+                    'valid' => $fallback_result['valid'] ?? false,
+                    'is_valid' => $fallback_result['valid'] ?? false,
+                    'license_key' => substr($license_key, 0, 8) . '...',
+                    'validation_pipeline' => array(
+                        'fallback_stage' => array(
+                            'valid' => $fallback_result['valid'] ?? false,
+                            'method' => $fallback_result['fallback_method'] ?? 'unknown',
+                            'errors' => $fallback_result['errors'] ?? array(),
+                            'warnings' => $fallback_result['warnings'] ?? array()
+                        )
+                    ),
+                    'validation_stages' => array(
+                        'fallback_stage' => $fallback_result
+                    ),
+                    'accumulated_errors' => array_merge(
+                        array('Main orchestration failed: ' . $e->getMessage()),
+                        $fallback_result['errors'] ?? array()
+                    ),
+                    'validation_warnings' => $fallback_result['warnings'] ?? array(),
+                    'execution_time' => $fallback_result['performance_metrics']['execution_time_ms'] ?? 0,
+                    'performance_metrics' => $fallback_result['performance_metrics'] ?? array(),
+                    'advanced_report' => array(
+                        'fallback_used' => true,
+                        'original_error' => $e->getMessage(),
+                        'fallback_method' => $fallback_result['fallback_method'] ?? 'unknown',
+                        'fallback_chain' => $fallback_result['fallback_chain_executed'] ?? array()
+                    ),
+                    'framework_version' => '4.2.4.5.3e-orchestrated-fallback'
+                );
+            }
+
+            // Final fallback - return error result
+            return array(
+                'valid' => false,
+                'is_valid' => false,
+                'license_key' => substr($license_key, 0, 8) . '...',
+                'validation_pipeline' => array(),
+                'validation_stages' => array(),
+                'accumulated_errors' => array('All validation methods failed: ' . $e->getMessage()),
+                'validation_warnings' => array(),
+                'execution_time' => 0,
+                'performance_metrics' => array(),
+                'advanced_report' => array(
+                    'total_failure' => true,
+                    'error' => $e->getMessage()
+                ),
+                'framework_version' => '4.2.4.5.3e-orchestrated-failed'
+            );
+        }
+    }
+
+    /**
+     * Get comprehensive fallback statistics
+     * Step 5.4 - Provide fallback monitoring and statistics
+     *
+     * @since 1.6.0
+     * @return array Comprehensive fallback statistics
+     */
+    public function get_fallback_statistics() {
+        $fallback_manager = $this->get_fallback_manager();
+
+        if ($fallback_manager) {
+            return $fallback_manager->get_fallback_statistics();
+        }
+
+        return array(
+            'fallback_manager_available' => false,
+            'error' => 'Fallback manager not available'
+        );
+    }
+
+    /**
+     * Test fallback mechanisms
+     * Step 5.4 - Test all fallback methods for monitoring
+     *
+     * @since 1.6.0
+     * @param string $test_license_key Test license key
+     * @return array Fallback test results
+     */
+    public function test_fallback_mechanisms($test_license_key = 'TEST-FALLBACK-KEY-123') {
+        $fallback_manager = $this->get_fallback_manager();
+
+        if (!$fallback_manager) {
+            return array(
+                'success' => false,
+                'error' => 'Fallback manager not available'
+            );
+        }
+
+        $test_results = array(
+            'fallback_manager_loaded' => true,
+            'test_results' => array(),
+            'overall_success' => false
+        );
+
+        // Simulate orchestrator failure to test fallback
+        $simulated_error = new Exception('Simulated orchestrator failure for testing');
+
+        try {
+            $fallback_result = $fallback_manager->execute_fallback_validation(
+                $test_license_key,
+                array('test_mode' => true),
+                'test_orchestrator_failure',
+                $simulated_error
+            );
+
+            $test_results['test_results'] = $fallback_result;
+            $test_results['overall_success'] = isset($fallback_result['fallback_method']);
+
+        } catch (Exception $e) {
+            $test_results['test_results'] = array(
+                'error' => 'Fallback test failed: ' . $e->getMessage()
+            );
+        }
+
+        return $test_results;
     }
 }
