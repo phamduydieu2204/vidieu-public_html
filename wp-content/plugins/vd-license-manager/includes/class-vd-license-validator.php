@@ -1280,8 +1280,8 @@ class VD_License_Validator {
             require_once plugin_dir_path(__FILE__) . 'modules/database/class-vd-license-cache-manager.php';
         }
 
-        $cache_manager = VD_License_Cache_Manager::get_instance();
-        return $cache_manager->clear_cache();
+        $cache_manager = new VD_License_Cache_Manager();
+        return $cache_manager->clear_all_cache();
     }
 
     /**
