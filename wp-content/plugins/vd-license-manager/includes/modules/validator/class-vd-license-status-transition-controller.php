@@ -768,4 +768,203 @@ class VD_License_Status_Transition_Controller {
     public function get_all_status_categories() {
         return $this->status_categories;
     }
+
+    /**
+     * Track status history for license
+     *
+     * Micro-Step 4 - Status history tracking extracted from monolithic validator
+     *
+     * @since 1.6.0
+     * @param array $license License data
+     * @param string $old_status Previous status
+     * @param string $new_status New status
+     * @param array $context Change context
+     * @return array Tracking result
+     */
+    public function track_status_history($license, $old_status, $new_status, $context = array()) {
+        global $wpdb;
+
+        // Validate parameters
+        if (!is_array($license) || !isset($license['id'])) {
+            return array(
+                'success' => false,
+                'error' => 'Invalid license data provided',
+                'code' => 'INVALID_LICENSE_DATA'
+            );
+        }
+
+        if (empty($old_status) || empty($new_status)) {
+            return array(
+                'success' => false,
+                'error' => 'Status parameters cannot be empty',
+                'code' => 'INVALID_STATUS_PARAMETERS'
+            );
+        }
+
+        try {
+            // Prepare history record
+            $history_data = array(
+                'license_id' => $license['id'],
+                'old_status' => $old_status,
+                'new_status' => $new_status,
+                'change_reason' => $context['reason'] ?? 'System update',
+                'changed_by' => $context['changed_by'] ?? 'system',
+                'change_timestamp' => current_time('mysql'),
+                'context_data' => wp_json_encode($context),
+                'ip_address' => $context['ip_address'] ?? $_SERVER['REMOTE_ADDR'] ?? 'unknown',
+                'user_agent' => $context['user_agent'] ?? $_SERVER['HTTP_USER_AGENT'] ?? 'unknown'
+            );
+
+            // Insert into status history table
+            $table_name = $wpdb->prefix . 'vd_license_status_history';
+            $result = $wpdb->insert($table_name, $history_data);
+
+            if ($result === false) {
+                return array(
+                    'success' => false,
+                    'error' => 'Failed to insert status history record',
+                    'code' => 'DB_INSERT_FAILED',
+                    'db_error' => $wpdb->last_error
+                );
+            }
+
+            return array(
+                'success' => true,
+                'history_id' => $wpdb->insert_id,
+                'license_id' => $license['id'],
+                'status_change' => array(
+                    'from' => $old_status,
+                    'to' => $new_status
+                ),
+                'timestamp' => $history_data['change_timestamp']
+            );
+
+        } catch (Exception $e) {
+            return array(
+                'success' => false,
+                'error' => 'Exception occurred while tracking status history',
+                'code' => 'EXCEPTION_ERROR',
+                'exception_message' => $e->getMessage()
+            );
+        }
+    }
+
+    /**
+     * Get status history for license
+     *
+     * Micro-Step 4 - Status history retrieval extracted from monolithic validator
+     *
+     * @since 1.6.0
+     * @param int $license_id License ID
+     * @param array $options Query options
+     * @return array Status history records
+     */
+    public function get_status_history($license_id, $options = array()) {
+        global $wpdb;
+
+        // Validate license ID
+        if (!is_numeric($license_id) || $license_id <= 0) {
+            return array(
+                'success' => false,
+                'error' => 'Invalid license ID provided',
+                'code' => 'INVALID_LICENSE_ID',
+                'data' => array()
+            );
+        }
+
+        // Prepare default options
+        $default_options = array(
+            'limit' => 50,
+            'offset' => 0,
+            'order_by' => 'change_timestamp',
+            'order_direction' => 'DESC',
+            'include_context' => true,
+            'date_from' => null,
+            'date_to' => null
+        );
+
+        $options = array_merge($default_options, $options);
+
+        try {
+            // Build query
+            $table_name = $wpdb->prefix . 'vd_license_status_history';
+            $where_conditions = array('license_id = %d');
+            $where_values = array($license_id);
+
+            // Add date filters if provided
+            if (!empty($options['date_from'])) {
+                $where_conditions[] = 'change_timestamp >= %s';
+                $where_values[] = $options['date_from'];
+            }
+
+            if (!empty($options['date_to'])) {
+                $where_conditions[] = 'change_timestamp <= %s';
+                $where_values[] = $options['date_to'];
+            }
+
+            // Build complete query
+            $query = $wpdb->prepare(
+                "SELECT * FROM {$table_name}
+                 WHERE " . implode(' AND ', $where_conditions) . "
+                 ORDER BY {$options['order_by']} {$options['order_direction']}
+                 LIMIT %d OFFSET %d",
+                array_merge($where_values, array($options['limit'], $options['offset']))
+            );
+
+            $results = $wpdb->get_results($query, ARRAY_A);
+
+            // Process results
+            $processed_results = array();
+            foreach ($results as $record) {
+                $processed_record = array(
+                    'id' => $record['id'] ?? null,
+                    'license_id' => $record['license_id'],
+                    'old_status' => $record['old_status'],
+                    'new_status' => $record['new_status'],
+                    'change_reason' => $record['change_reason'],
+                    'changed_by' => $record['changed_by'],
+                    'change_timestamp' => $record['change_timestamp'],
+                    'ip_address' => $record['ip_address'] ?? null
+                );
+
+                // Include context data if requested
+                if ($options['include_context'] && !empty($record['context_data'])) {
+                    $context_data = json_decode($record['context_data'], true);
+                    $processed_record['context'] = is_array($context_data) ? $context_data : array();
+                }
+
+                $processed_results[] = $processed_record;
+            }
+
+            // Get total count for pagination
+            $count_query = $wpdb->prepare(
+                "SELECT COUNT(*) FROM {$table_name}
+                 WHERE " . implode(' AND ', $where_conditions),
+                $where_values
+            );
+
+            $total_count = $wpdb->get_var($count_query);
+
+            return array(
+                'success' => true,
+                'data' => $processed_results,
+                'pagination' => array(
+                    'total_records' => (int)$total_count,
+                    'current_page' => floor($options['offset'] / $options['limit']) + 1,
+                    'per_page' => $options['limit'],
+                    'total_pages' => ceil($total_count / $options['limit'])
+                ),
+                'license_id' => $license_id
+            );
+
+        } catch (Exception $e) {
+            return array(
+                'success' => false,
+                'error' => 'Exception occurred while retrieving status history',
+                'code' => 'EXCEPTION_ERROR',
+                'exception_message' => $e->getMessage(),
+                'data' => array()
+            );
+        }
+    }
 }

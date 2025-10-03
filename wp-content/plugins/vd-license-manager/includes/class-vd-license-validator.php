@@ -1956,31 +1956,214 @@ class VD_License_Validator {
      * @return array Notification result
      */
     public function send_status_change_notification($license, $old_status, $new_status, $context = array()) {
-        // Delegate to expiry escalation module if available
-        if ($this->expiry_escalation) {
-            return $this->expiry_escalation->send_status_change_notification($license, $old_status, $new_status, $context);
+        // MICRO-STEP 4: Direct replacement with extracted modules
+        // Load status transition controller module
+        if (!class_exists('VD\LicenseManager\Validator\VD_License_Status_Transition_Controller')) {
+            require_once plugin_dir_path(__FILE__) . 'modules/validator/class-vd-license-status-transition-controller.php';
         }
 
-        $start_time = microtime(true);
+        $status_controller = VD\LicenseManager\Validator\VD_License_Status_Transition_Controller::get_instance();
+        return $status_controller->send_status_change_notification($license, $old_status, $new_status, $context);
 
-        // Initialize notification context
-        $notification_context = array_merge(array(
-            'change_type' => 'status_change',
-            'triggered_by' => 'system',
-            'notification_enabled' => true,
-            'priority' => 'normal',
-            'retry_enabled' => true,
-            'queue_enabled' => true
-        ), $context);
+        // MIGRATED: Original complex logic moved to VD_License_Status_Transition_Controller module (Micro-Step 4)
+    }
 
-        $results = array(
-            'notifications_sent' => 0,
-            'notifications_queued' => 0,
-            'notifications_failed' => 0,
-            'execution_time_ms' => 0,
-            'notifications' => array(),
-            'errors' => array()
+    /**
+     * Send SMS notification
+     *
+     * @since 4.2.4.4
+     * @param array $content SMS content
+     * @param array $context Notification context
+     * @return array|null SMS target
+     */
+    private function send_sms_notification($content, $context) {
+        // Placeholder for SMS notification
+        // Would require SMS service integration
+        return null;
+    }
+
+    /**
+     * Send webhook notification
+     *
+     * @since 4.2.4.4
+     * @param array $content Webhook content
+     * @param array $context Notification context
+     * @return array Delivery result
+     */
+    private function send_webhook_notification($content, $context) {
+        // Placeholder for webhook delivery
+        // Would use wp_remote_post() to send webhook
+        return array(
+            'success' => false,
+            'error' => array(
+                'type' => 'not_implemented',
+                'message' => 'Webhook notifications not yet implemented'
+            )
         );
+    }
+
+    // ============================================================================
+    // STEP 4.2.4.5.1a - METHOD SIGNATURE DEFINITION
+    // ============================================================================
+
+    /**
+     * Track license status history change
+     *
+     * Records a status change event for a license with comprehensive context data.
+     * This method creates a history entry without immediate persistence, preparing
+     * for future storage implementation in the vd_license_assignment_history table.
+     *
+     * Step 4.2.4.5.1e: Enhanced documentation với comprehensive parameter và return value details
+     *
+     * @since 4.2.4.5.1a Method signature definition
+     * @since 4.2.4.5.1b Parameter validation structure added
+     * @since 4.2.4.5.1c Standardized return structure implemented
+     * @since 4.2.4.5.1d Property infrastructure established
+     * @since 4.2.4.5.1e Documentation enhanced
+     *
+     * @param array $license License data array containing license information
+     *                      Required fields: id, key, product_id, customer_id
+     *                      Optional fields: provider_account_id, status, created_at
+     * @param string $old_status Previous license status before change
+     *                          Valid values: 'active', 'inactive', 'suspended', 'expired', 'pending'
+     * @param string $new_status New license status after change
+     *                          Valid values: 'active', 'inactive', 'suspended', 'expired', 'pending'
+     * @param array $context Optional context data for the status change
+     *                      Supported keys:
+     *                      - 'reason' (string): Reason for status change
+     *                      - 'changed_by' (int): User ID who made the change
+     *                      - 'ip_address' (string): IP address of change origin
+     *                      - 'user_agent' (string): User agent string
+     *                      - 'source' (string): Source of change ('manual', 'auto', 'api')
+     *                      - 'metadata' (array): Additional metadata
+     *
+     * @return array Standardized tracking result với success status và details
+     *               On validation failure:
+     *               - 'success' (bool): false
+     *               - 'error' (string): Error message
+     *               - 'error_code' (string): 'VALIDATION_FAILED'
+     *               - 'error_details' (array): Validation errors array
+     *
+     *               On not implemented (current state):
+     *               - 'success' (bool): false
+     *               - 'error' (string): 'History tracking not yet implemented'
+     *               - 'error_code' (string): 'NOT_IMPLEMENTED'
+     *               - 'error_details' (array): Parameters received và validation status
+     *
+     *               Future implementation will return:
+     *               - 'success' (bool): true
+     *               - 'data' (array): History record data
+     *               - 'metadata' (array): Operation metadata
+     *
+     * @throws VD_Validation_Exception If parameter validation fails (future implementation)
+     * @throws VD_Database_Exception If database operation fails (future implementation)
+     *
+     * @see validate_track_status_history_parameters() For parameter validation logic
+     * @see create_error_response() For error response structure
+     * @see create_history_record_structure() For history record format
+     *
+     * @todo Implement actual database storage to vd_license_assignment_history table
+     * @todo Add audit trail logging for history changes
+     * @todo Implement automatic cleanup of old history records
+     *
+     * @example
+     * $license = array('id' => 123, 'key' => 'VD-1234-ABCD', 'product_id' => 456);
+     * $context = array('reason' => 'Manual deactivation', 'changed_by' => 1);
+     * $result = $validator->track_status_history($license, 'active', 'inactive', $context);
+     */
+    public function track_status_history($license, $old_status, $new_status, $context = array()) {
+        // MICRO-STEP 4: Direct replacement with extracted modules
+        // Load status transition controller module
+        if (!class_exists('VD\LicenseManager\Validator\VD_License_Status_Transition_Controller')) {
+            require_once plugin_dir_path(__FILE__) . 'modules/validator/class-vd-license-status-transition-controller.php';
+        }
+
+        $status_controller = VD\LicenseManager\Validator\VD_License_Status_Transition_Controller::get_instance();
+        return $status_controller->track_status_history($license, $old_status, $new_status, $context);
+
+        // MIGRATED: Original complex logic moved to VD_License_Status_Transition_Controller module (Micro-Step 4)
+    }
+
+    /**
+     * Get license status history
+     *
+     * Retrieves complete status history for a given license với filtering options.
+     * This method provides access to historical status change records với pagination
+     * và filtering capabilities.
+     *
+     * Step 4.2.4.5.2f: Enhanced documentation với comprehensive parameter và return value details
+     *
+     * @since 4.2.4.5.2a Method signature definition
+     * @since 4.2.4.5.2b Parameter validation structure added
+     * @since 4.2.4.5.2c Standardized return structure implemented
+     * @since 4.2.4.5.2d Property infrastructure established
+     * @since 4.2.4.5.2e Documentation enhanced
+     * @since 4.2.4.5.2f Return structure standardized
+     *
+     * @param int $license_id License ID to retrieve history for
+     *                       Must be positive integer
+     * @param array $options Optional filtering và pagination options
+     *                      Supported keys:
+     *                      - 'limit' (int): Maximum records to return (default: 50, max: 200)
+     *                      - 'offset' (int): Number of records to skip (default: 0)
+     *                      - 'order_by' (string): Sort field ('changed_at', 'id') (default: 'changed_at')
+     *                      - 'order_direction' (string): Sort direction ('ASC', 'DESC') (default: 'DESC')
+     *                      - 'status_filter' (array): Filter by specific statuses
+     *                      - 'date_from' (string): Start date filter (MySQL format)
+     *                      - 'date_to' (string): End date filter (MySQL format)
+     *                      - 'changed_by' (int): Filter by user who made changes
+     *                      - 'include_metadata' (bool): Include full metadata (default: false)
+     *
+     * @return array Standardized history result với success status và data
+     *               On validation failure:
+     *               - 'success' (bool): false
+     *               - 'error' (string): Error message
+     *               - 'error_code' (string): 'VALIDATION_FAILED'
+     *               - 'error_details' (array): Validation errors array
+     *               - 'data' (array): Empty array
+     *
+     *               On not implemented (current state):
+     *               - 'success' (bool): false
+     *               - 'error' (string): 'History retrieval not yet implemented'
+     *               - 'error_code' (string): 'NOT_IMPLEMENTED'
+     *               - 'error_details' (array): Parameters received và validation status
+     *               - 'data' (array): Empty array
+     *
+     *               Future implementation will return:
+     *               - 'success' (bool): true
+     *               - 'data' (array): Array of history records
+     *               - 'pagination' (array): Pagination metadata
+     *               - 'filters_applied' (array): Applied filters summary
+     *               - 'metadata' (array): Operation metadata
+     *
+     * @throws VD_Validation_Exception If parameter validation fails (future implementation)
+     * @throws VD_Database_Exception If database operation fails (future implementation)
+     *
+     * @see validate_get_status_history_parameters() For parameter validation logic
+     * @see create_error_response() For error response structure
+     * @see format_history_records() For record formatting logic
+     *
+     * @todo Implement actual database retrieval from vd_license_assignment_history table
+     * @todo Add caching for frequently accessed history data
+     * @todo Implement advanced filtering options (date ranges, user filters)
+     * @todo Add export functionality for history data
+     *
+     * @example
+     * $options = array('limit' => 10, 'order_direction' => 'ASC', 'include_metadata' => true);
+     * $history = $validator->get_status_history(123, $options);
+     */
+    public function get_status_history($license_id, $options = array()) {
+        // MICRO-STEP 4: Direct replacement with extracted modules
+        // Load status transition controller module
+        if (!class_exists('VD\LicenseManager\Validator\VD_License_Status_Transition_Controller')) {
+            require_once plugin_dir_path(__FILE__) . 'modules/validator/class-vd-license-status-transition-controller.php';
+        }
+
+        $status_controller = VD\LicenseManager\Validator\VD_License_Status_Transition_Controller::get_instance();
+        return $status_controller->get_status_history($license_id, $options);
+
+        // MIGRATED: Original complex logic moved to VD_License_Status_Transition_Controller module (Micro-Step 4)
+    }
 
         try {
             // Check if notifications are enabled for this change
