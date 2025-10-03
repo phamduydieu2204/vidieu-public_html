@@ -525,17 +525,8 @@ class VD_License_Manager {
             );
         }
 
-        // Step 4.2.1 - Initialize License Validator
-        if (class_exists('VD_License_Validator')) {
-            $this->license_validator = VD_License_Validator::get_instance();
-            // Initialize validator with WordPress hooks
-            $this->license_validator->init();
-            $this->vd_native_error_log(
-                'LICENSE_VALIDATOR',
-                'info',
-                'License Validator initialized successfully with validation framework'
-            );
-        }
+        // Step 5.1.11 - Initialize License Validator with Migration Support
+        $this->initialize_validator_with_migration();
 
         // Initialize security manager (Sprint 3.1)
         if (class_exists('VD_Security_Manager')) {
@@ -2852,5 +2843,44 @@ class VD_License_Manager {
     private function count_admin_pages() {
         // Simplified admin page counting
         return 5; // Dashboard, System Status, Settings, etc.
+    }
+
+    /**
+     * Initialize License Validator with Migration Support
+     * Step 5.1.11 - Validator Migration to Facade Pattern
+     *
+     * @since 5.1.11
+     */
+    private function initialize_validator_with_migration() {
+        // Load migration helper
+        $migration_file = plugin_dir_path(__FILE__) . 'class-vd-validator-migration.php';
+        if (file_exists($migration_file)) {
+            require_once $migration_file;
+        }
+
+        // Try migration approach first
+        if (class_exists('VD_Validator_Migration')) {
+            $migration_success = VD_Validator_Migration::apply_migration($this);
+
+            if ($migration_success && $this->license_validator) {
+                $this->vd_native_error_log(
+                    'LICENSE_VALIDATOR',
+                    'info',
+                    'License Validator initialized successfully with Facade pattern (Step 5.1.11)'
+                );
+                return;
+            }
+        }
+
+        // Fallback to legacy initialization
+        if (class_exists('VD_License_Validator')) {
+            $this->license_validator = VD_License_Validator::get_instance();
+            $this->license_validator->init();
+            $this->vd_native_error_log(
+                'LICENSE_VALIDATOR',
+                'info',
+                'License Validator initialized with legacy pattern (fallback)'
+            );
+        }
     }
 }

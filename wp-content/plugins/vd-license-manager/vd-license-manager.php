@@ -174,6 +174,12 @@ function vd_license_manager_init() {
             if (file_exists($orchestrator_admin_test)) {
                 require_once $orchestrator_admin_test;
             }
+
+            // Step 5.1.11 Admin Page - Validator Migration Monitor
+            $migration_monitor = VD_LM_PATH . 'includes/admin-validator-migration-monitor.php';
+            if (file_exists($migration_monitor)) {
+                require_once $migration_monitor;
+            }
         }
 
     } catch (Exception $e) {
