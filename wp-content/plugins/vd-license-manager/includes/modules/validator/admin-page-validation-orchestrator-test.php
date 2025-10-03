@@ -19,6 +19,10 @@ if (!defined('ABSPATH')) {
 add_action('admin_menu', 'vd_add_validation_orchestrator_test_page');
 add_action('admin_enqueue_scripts', 'vd_enqueue_validation_orchestrator_test_scripts');
 
+// Register AJAX endpoints for integration testing
+add_action('wp_ajax_vd_test_integration_framework', 'vd_test_integration_framework');
+add_action('wp_ajax_vd_test_specific_integration', 'vd_test_specific_integration');
+
 /**
  * Add admin menu page for VD Unit Tests
  */
@@ -78,6 +82,41 @@ function vd_render_validation_orchestrator_test_page() {
             </div>
         </div>
 
+        <!-- Integration Testing Section (Step 5.1.7) -->
+        <div class="card" style="max-width: none;">
+            <h2>🔗 Integration Testing (Step 5.1.7)</h2>
+            <div class="notice notice-info inline">
+                <p><strong>Module Interaction Testing:</strong> Test interactions between different project modules and phases</p>
+                <p><strong>Coverage:</strong> 6 interaction scenarios | <strong>Focus:</strong> Cross-phase integration validation</p>
+            </div>
+
+            <div style="margin: 20px 0;">
+                <button id="run-integration-test" class="button button-primary button-large">
+                    <span class="dashicons dashicons-networking" style="vertical-align: middle;"></span>
+                    Chạy Integration Tests
+                </button>
+                <select id="integration-scenario" style="margin-left: 10px; padding: 8px;">
+                    <option value="">Tất Cả Scenarios</option>
+                    <option value="validator_security">Validator → Security</option>
+                    <option value="security_api">Security → API</option>
+                    <option value="api_integration">API → Integration</option>
+                    <option value="database_cache">Database → Cache</option>
+                    <option value="status_validation">Status → Validation</option>
+                    <option value="wordpress_hooks">WordPress Hooks</option>
+                </select>
+                <button id="clear-integration-results" class="button button-secondary" style="margin-left: 10px;">
+                    <span class="dashicons dashicons-trash" style="vertical-align: middle;"></span>
+                    Xóa Kết Quả Integration
+                </button>
+            </div>
+
+            <div id="integration-test-status" style="display: none;">
+                <div class="notice notice-warning">
+                    <p><span class="dashicons dashicons-update-alt" style="animation: spin 1s linear infinite;"></span> Đang chạy integration tests...</p>
+                </div>
+            </div>
+        </div>
+
         <!-- Future Testing Sections (Coming Soon) -->
         <div class="card" style="max-width: none; opacity: 0.7;">
             <h2>🚀 Future Testing Capabilities (Coming Soon)</h2>
@@ -109,8 +148,8 @@ function vd_render_validation_orchestrator_test_page() {
                     <tr>
                         <td><strong>Integration Testing</strong></td>
                         <td>Module-to-module interactions</td>
-                        <td>📋 Planned</td>
-                        <td>Cross-phase integration validation</td>
+                        <td>🧪 Active</td>
+                        <td>Cross-phase integration validation, 6 interaction scenarios</td>
                     </tr>
                     <tr>
                         <td><strong>Performance Testing</strong></td>
@@ -144,6 +183,14 @@ function vd_render_validation_orchestrator_test_page() {
                 <h2>📊 Kết Quả Test</h2>
                 <div id="test-summary"></div>
                 <div id="test-details"></div>
+            </div>
+        </div>
+
+        <div id="integration-test-results" style="display: none;">
+            <div class="card" style="max-width: none;">
+                <h2>🔗 Kết Quả Integration Tests</h2>
+                <div id="integration-test-summary"></div>
+                <div id="integration-test-details"></div>
             </div>
         </div>
 
@@ -326,6 +373,60 @@ function vd_render_validation_orchestrator_test_page() {
             $('#test-details').empty();
         });
 
+        $('#run-integration-test').on('click', function() {
+            var $button = $(this);
+            var $status = $('#integration-test-status');
+            var $results = $('#integration-test-results');
+            var scenario = $('#integration-scenario').val();
+
+            // Disable button và show loading
+            $button.prop('disabled', true);
+            $status.show();
+            $results.hide();
+
+            // Chạy AJAX integration test
+            $.ajax({
+                url: vd_ajax.ajax_url,
+                type: 'POST',
+                data: {
+                    action: scenario ? 'vd_test_specific_integration' : 'vd_test_integration_framework',
+                    scenario: scenario,
+                    _ajax_nonce: vd_ajax.nonce
+                },
+                timeout: 30000,
+                success: function(response) {
+                    $status.hide();
+                    $button.prop('disabled', false);
+
+                    if (response.success) {
+                        displayIntegrationSuccessResults(response.data);
+                    } else {
+                        displayIntegrationErrorResults(response.data);
+                    }
+
+                    $results.show();
+                },
+                error: function(xhr, status, error) {
+                    $status.hide();
+                    $button.prop('disabled', false);
+
+                    displayIntegrationErrorResults({
+                        message: 'AJAX Error: ' + error,
+                        status: status,
+                        responseText: xhr.responseText
+                    });
+
+                    $results.show();
+                }
+            });
+        });
+
+        $('#clear-integration-results').on('click', function() {
+            $('#integration-test-results').hide();
+            $('#integration-test-summary').empty();
+            $('#integration-test-details').empty();
+        });
+
         function displaySuccessResults(data) {
             var summary = data.summary;
             var testResults = data.test_results;
@@ -382,7 +483,135 @@ function vd_render_validation_orchestrator_test_page() {
             $('#test-summary').html(errorHtml);
             $('#test-details').empty();
         }
+
+        function displayIntegrationSuccessResults(data) {
+            var summary = data.summary || data;
+            var testResults = data.detailed_results || data.scenario_results || [];
+
+            // Summary
+            var summaryHtml = '<div class="test-summary-box">';
+            summaryHtml += '<h3>🔗 Tóm Tắt Integration Testing</h3>';
+            summaryHtml += '<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-top: 10px;">';
+            summaryHtml += '<div><strong>Framework:</strong> ' + (summary.framework || 'Integration Testing') + '</div>';
+            summaryHtml += '<div><strong>Total Scenarios:</strong> ' + (summary.total_scenarios || testResults.length) + '</div>';
+            summaryHtml += '<div class="test-result-success"><strong>Passed:</strong> ' + (summary.passed_scenarios || '0') + '</div>';
+            summaryHtml += '<div class="test-result-failed"><strong>Failed:</strong> ' + (summary.failed_scenarios || '0') + '</div>';
+            summaryHtml += '<div><strong>Success Rate:</strong> ' + (summary.success_rate || '0') + '%</div>';
+            summaryHtml += '<div><strong>Execution Time:</strong> ' + (summary.execution_time || '0') + 'ms</div>';
+            if (data.filtered_scenario) {
+                summaryHtml += '<div><strong>Filtered Scenario:</strong> ' + data.filtered_scenario + '</div>';
+            }
+            summaryHtml += '</div></div>';
+
+            $('#integration-test-summary').html(summaryHtml);
+
+            // Detailed results
+            var detailsHtml = '<h3>🔍 Chi Tiết Integration Scenarios</h3>';
+            if (testResults.length > 0) {
+                detailsHtml += '<table class="test-detail-table">';
+                detailsHtml += '<thead><tr><th>Scenario</th><th>Status</th><th>Details</th></tr></thead>';
+                detailsHtml += '<tbody>';
+
+                $.each(testResults, function(key, result) {
+                    var statusClass = result.success ? 'test-passed' : 'test-failed';
+                    var statusIcon = result.success ? '✅' : '❌';
+
+                    detailsHtml += '<tr class="' + statusClass + '">';
+                    detailsHtml += '<td><strong>' + result.test + '</strong></td>';
+                    detailsHtml += '<td>' + statusIcon + ' ' + (result.success ? 'PASSED' : 'FAILED') + '</td>';
+                    detailsHtml += '<td><div class="code-block">' + JSON.stringify(result.details, null, 2) + '</div></td>';
+                    detailsHtml += '</tr>';
+                });
+
+                detailsHtml += '</tbody></table>';
+            } else {
+                detailsHtml += '<p>No detailed test results available.</p>';
+            }
+
+            // Implementation notes
+            if (data.implementation_notes) {
+                detailsHtml += '<h3>📝 Implementation Notes</h3>';
+                detailsHtml += '<div class="code-block">' + JSON.stringify(data.implementation_notes, null, 2) + '</div>';
+            }
+
+            $('#integration-test-details').html(detailsHtml);
+        }
+
+        function displayIntegrationErrorResults(errorData) {
+            var errorHtml = '<div class="notice notice-error">';
+            errorHtml += '<h3>❌ Integration Test Error</h3>';
+            errorHtml += '<div class="code-block">' + JSON.stringify(errorData, null, 2) + '</div>';
+            errorHtml += '</div>';
+
+            $('#integration-test-summary').html(errorHtml);
+            $('#integration-test-details').empty();
+        }
     });
     </script>
     <?php
+}
+
+/**
+ * AJAX handler for integration testing framework
+ */
+function vd_test_integration_framework() {
+    if (!current_user_can('manage_options')) {
+        wp_die('Unauthorized access');
+    }
+
+    check_ajax_referer('vd_test_nonce', 'nonce');
+
+    try {
+        require_once plugin_dir_path(__FILE__) . '../../../tests/integration/integration-test-framework.php';
+
+        $integration_tests = new VD_Integration_Test_Framework();
+        $results = $integration_tests->run_integration_tests();
+
+        wp_send_json_success($results);
+
+    } catch (Exception $e) {
+        wp_send_json_error([
+            'message' => 'Integration testing failed: ' . $e->getMessage(),
+            'error_code' => 'INTEGRATION_TEST_FAILED'
+        ]);
+    }
+}
+
+/**
+ * AJAX handler for specific integration scenario testing
+ */
+function vd_test_specific_integration() {
+    if (!current_user_can('manage_options')) {
+        wp_die('Unauthorized access');
+    }
+
+    check_ajax_referer('vd_test_nonce', 'nonce');
+
+    $scenario = sanitize_text_field($_POST['scenario'] ?? '');
+
+    try {
+        require_once plugin_dir_path(__FILE__) . '../../../tests/integration/integration-test-framework.php';
+
+        $integration_tests = new VD_Integration_Test_Framework();
+
+        // Run specific scenario (simplified for this implementation)
+        $results = $integration_tests->run_integration_tests();
+
+        // Filter results for specific scenario if needed
+        if (!empty($scenario)) {
+            $filtered_results = array_filter($results['detailed_results'], function($result) use ($scenario) {
+                return strpos($result['test'], $scenario) !== false;
+            });
+            $results['filtered_scenario'] = $scenario;
+            $results['scenario_results'] = array_values($filtered_results);
+        }
+
+        wp_send_json_success($results);
+
+    } catch (Exception $e) {
+        wp_send_json_error([
+            'message' => 'Specific integration test failed: ' . $e->getMessage(),
+            'error_code' => 'SPECIFIC_INTEGRATION_FAILED'
+        ]);
+    }
 }
