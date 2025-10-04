@@ -734,7 +734,8 @@ class VD_License_Validator {
             $debug_info['hierarchy'] = $hierarchy_validation;
 
             $validation_end = microtime(true);
-            $debug_info['validation_time_ms'] = $this->get_calculation_helper_method('calculate_execution_time_ms', $validation_start, $validation_end);
+            $calculation_helper = $this->utility_helper ? $this->utility_helper->get_calculation_helper() : null;
+            $debug_info['validation_time_ms'] = $calculation_helper ? $calculation_helper::calculate_execution_time_ms($validation_start, $validation_end) : $this->legacy_calculate_execution_time_ms($validation_start, $validation_end);
 
             // Debug logging for successful validation
             $this->log_status_validation_debug('status_validation_success', $status_info, $debug_info);
@@ -2371,7 +2372,8 @@ class VD_License_Validator {
             $this->log_notification_error('send_status_change_notification', $e, $license, $notification_context);
         }
 
-        $results['execution_time_ms'] = $this->get_calculation_helper_method('calculate_execution_time_ms', $start_time);
+        $calculation_helper = $this->utility_helper ? $this->utility_helper->get_calculation_helper() : null;
+        $results['execution_time_ms'] = $calculation_helper ? $calculation_helper::calculate_execution_time_ms($start_time) : $this->legacy_calculate_execution_time_ms($start_time);
 
         return $results;
     }
@@ -3375,7 +3377,8 @@ class VD_License_Validator {
         $validation_result = $this->validate_track_status_history_parameters($license, $old_status, $new_status, $context);
         if (!$validation_result['valid']) {
             // Step 4.2.4.5.1c - Use standardized error response structure
-            return $this->get_response_builder_method('create_error_response', array(
+            $response_builder = $this->utility_helper ? $this->utility_helper->get_response_builder() : null;
+            return $response_builder ? $response_builder::create_error_response(array(
                 'method' => 'track_status_history',
                 'message' => 'Parameter validation failed',
                 'error_code' => 'VALIDATION_FAILED',
@@ -3931,7 +3934,8 @@ class VD_License_Validator {
                 )
             );
 
-            $execution_time = $this->get_calculation_helper_method('calculate_execution_time_ms', $start_time);
+            $calculation_helper = $this->utility_helper ? $this->utility_helper->get_calculation_helper() : null;
+            $execution_time = $calculation_helper ? $calculation_helper::calculate_execution_time_ms($start_time) : $this->legacy_calculate_execution_time_ms($start_time);
 
             // Step 4.2.4.5.1c - Use standardized success response structure
             return $this->create_get_status_statistics_return_structure(
@@ -4082,11 +4086,12 @@ class VD_License_Validator {
                 $errors[] = 'Group by must be one of: ' . implode(', ', $allowed_group_by);
             }
 
-            if (isset($options['date_from']) && !empty($options['date_from']) && !$this->get_datetime_helper_method('is_valid_date', $options['date_from'])) {
+            $datetime_helper = $this->utility_helper ? $this->utility_helper->get_datetime_helper() : null;
+            if (isset($options['date_from']) && !empty($options['date_from']) && !($datetime_helper ? $datetime_helper::is_valid_date($options['date_from']) : $this->legacy_is_valid_date($options['date_from']))) {
                 $errors[] = 'Date from must be a valid date format (Y-m-d)';
             }
 
-            if (isset($options['date_to']) && !empty($options['date_to']) && !$this->get_datetime_helper_method('is_valid_date', $options['date_to'])) {
+            if (isset($options['date_to']) && !empty($options['date_to']) && !($datetime_helper ? $datetime_helper::is_valid_date($options['date_to']) : $this->legacy_is_valid_date($options['date_to']))) {
                 $errors[] = 'Date to must be a valid date format (Y-m-d)';
             }
         }
@@ -4201,16 +4206,46 @@ class VD_License_Validator {
     }
 
     /**
-     * Helper method to validate date format
+     * Legacy sanitize status value fallback
      *
-     * @since 4.2.4.5.1b
-     * @deprecated 2B.1.4 Use DateTimeHelper component instead
-     * @param string $date Date string to validate
-     * @return bool True if valid date format
+     * @param string $status Status value to sanitize
+     * @return string Sanitized status
      */
-    private function is_valid_date($date) {
-        return $this->get_datetime_helper_method('is_valid_date', $date);
+    private function legacy_sanitize_status_value($status) {
+        if (!is_string($status)) return 'unknown';
+        $status = trim(strtolower($status));
+        $valid_statuses = array('active', 'inactive', 'expired', 'suspended', 'revoked', 'pending');
+        return in_array($status, $valid_statuses) ? $status : 'unknown';
     }
+
+    /**
+     * Legacy sanitize context data fallback
+     *
+     * @param array $context Context data to sanitize
+     * @return array Sanitized context
+     */
+    private function legacy_sanitize_context_data($context) {
+        if (!is_array($context)) return array();
+        $sanitized = array();
+        foreach ($context as $key => $value) {
+            if (is_string($key) && (is_string($value) || is_numeric($value))) {
+                $sanitized[sanitize_key($key)] = sanitize_text_field($value);
+            }
+        }
+        return $sanitized;
+    }
+
+    /**
+     * Legacy sanitize query string fallback
+     *
+     * @param string $query_string Query string to sanitize
+     * @return string Sanitized query string
+     */
+    private function legacy_sanitize_query_string($query_string) {
+        if (!is_string($query_string)) return '';
+        return sanitize_text_field($query_string);
+    }
+
 
     /**
      * Get validation framework status
@@ -4319,7 +4354,8 @@ class VD_License_Validator {
      */
     public function create_track_status_history_return_structure($success, $data = array(), $message = '') {
         if ($success) {
-            return $this->get_response_builder_method('create_success_response', array(
+            $response_builder = $this->utility_helper ? $this->utility_helper->get_response_builder() : null;
+            return $response_builder ? $response_builder::create_success_response(array(
                 'method' => 'track_status_history',
                 'data' => array_merge(array(
                     'history_id' => isset($data['history_id']) ? $data['history_id'] : null,
@@ -4949,11 +4985,12 @@ class VD_License_Validator {
             }
 
             // Create structured record for valid data
+            $data_sanitizer = $this->utility_helper ? $this->utility_helper->get_data_sanitizer() : null;
             $structured_record = array(
                 'license_id' => (int) $license_id,
-                'old_status' => $this->get_data_sanitizer_method('sanitize_status_value', $old_status),
-                'new_status' => $this->get_data_sanitizer_method('sanitize_status_value', $new_status),
-                'context' => $this->get_data_sanitizer_method('sanitize_context_data', $context),
+                'old_status' => $data_sanitizer ? $data_sanitizer::sanitize_status_value($old_status) : $this->legacy_sanitize_status_value($old_status),
+                'new_status' => $data_sanitizer ? $data_sanitizer::sanitize_status_value($new_status) : $this->legacy_sanitize_status_value($new_status),
+                'context' => $data_sanitizer ? $data_sanitizer::sanitize_context_data($context) : $this->legacy_sanitize_context_data($context),
                 'validation_metadata' => array(
                     'validated_at' => $validation_metadata['validation_timestamp'],
                     'validation_time_ms' => $validation_metadata['validation_time_ms'],
@@ -5338,7 +5375,8 @@ class VD_License_Validator {
 
         try {
             // Sanitize base context first
-            $sanitized_base_context = $this->get_data_sanitizer_method('sanitize_context_data', $base_context);
+            $data_sanitizer = $this->utility_helper ? $this->utility_helper->get_data_sanitizer() : null;
+            $sanitized_base_context = $data_sanitizer ? $data_sanitizer::sanitize_context_data($base_context) : $this->legacy_sanitize_context_data($base_context);
 
             // Initialize enhanced context structure
             $enhanced_context = array(
@@ -5953,7 +5991,8 @@ class VD_License_Validator {
 
         // Remove potential sensitive query parameters
         if (!empty($request_data['query_string'])) {
-            $request_data['query_string'] = $this->get_data_sanitizer_method('sanitize_query_string', $request_data['query_string']);
+            $data_sanitizer = $this->utility_helper ? $this->utility_helper->get_data_sanitizer() : null;
+            $request_data['query_string'] = $data_sanitizer ? $data_sanitizer::sanitize_query_string($request_data['query_string']) : $this->legacy_sanitize_query_string($request_data['query_string']);
         }
 
         return $request_data;
@@ -7493,18 +7532,6 @@ class VD_License_Validator {
     // This method was only used in the original apply_advanced_validation_rules() logic
     // Now handled by VD_License_Validation_Orchestrator
 
-    /**
-     * Calculate validation completeness percentage
-     *
-     * @since 4.2.4.5.3e
-     * @param array $validation_pipeline Pipeline results
-     * @return string Completeness percentage
-     */
-    private function calculate_validation_completeness($validation_pipeline) {
-        $total_stages = 5;
-        $completed_stages = count($validation_pipeline);
-        return $this->get_calculation_helper_method('calculate_validation_completeness', $validation_pipeline, $total_stages);
-    }
 
     /**
      * Analyze validation errors
