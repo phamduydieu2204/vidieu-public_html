@@ -75,6 +75,68 @@ if ($standalone_mode) {
             return str_replace('\\', '/', $path);
         }
     }
+
+    // Additional WordPress function stubs for class loading
+    if (!function_exists('is_user_logged_in')) {
+        function is_user_logged_in() { return false; }
+    }
+    if (!function_exists('wp_get_current_user')) {
+        function wp_get_current_user() { return new stdClass(); }
+    }
+    if (!function_exists('get_current_user_id')) {
+        function get_current_user_id() { return 0; }
+    }
+    if (!function_exists('is_admin')) {
+        function is_admin() { return false; }
+    }
+    if (!function_exists('sanitize_text_field')) {
+        function sanitize_text_field($str) { return htmlspecialchars(trim($str), ENT_QUOTES, 'UTF-8'); }
+    }
+    if (!function_exists('sanitize_url')) {
+        function sanitize_url($url) { return filter_var($url, FILTER_SANITIZE_URL); }
+    }
+    if (!function_exists('memory_get_usage')) {
+        function memory_get_usage($real_usage = false) { return function_exists('memory_get_usage') ? \memory_get_usage($real_usage) : 0; }
+    }
+    if (!function_exists('get_option')) {
+        function get_option($option, $default = false) { return $default; }
+    }
+    if (!defined('ABSPATH')) {
+        define('ABSPATH', __DIR__ . '/');
+    }
+}
+
+// Try to load VD License Manager classes manually
+$vd_plugin_loaded = false;
+$class_load_errors = [];
+
+// Define plugin paths
+$plugin_base_path = wp_normalize_path(__DIR__ . '/wp-content/plugins/vd-license-manager/includes');
+
+// First, try to load Module Loader (needed for other classes)
+$module_loader_path = $plugin_base_path . '/class-vd-license-module-loader.php';
+if (file_exists($module_loader_path) && !class_exists('VD_License_Module_Loader')) {
+    try {
+        require_once($module_loader_path);
+        if (class_exists('VD_License_Module_Loader')) {
+            $vd_plugin_loaded = true;
+        }
+    } catch (Throwable $e) {
+        $class_load_errors['VD_License_Module_Loader'] = $e->getMessage();
+    }
+}
+
+// Then try to load Validator class
+$validator_path = $plugin_base_path . '/class-vd-license-validator.php';
+if (file_exists($validator_path) && !class_exists('VD_License_Validator')) {
+    try {
+        require_once($validator_path);
+        if (class_exists('VD_License_Validator')) {
+            $vd_plugin_loaded = true;
+        }
+    } catch (Throwable $e) {
+        $class_load_errors['VD_License_Validator'] = $e->getMessage();
+    }
 }
 
 ?>
@@ -108,13 +170,29 @@ if ($standalone_mode) {
             <p>Testing extracted Security Audit Logger and Context Enhancer modules</p>
         </div>
 
-        <?php if ($standalone_mode): ?>
-        <div class="test-section warning">
-            <h3>⚠️ Standalone Mode</h3>
-            <p><strong>WordPress not loaded.</strong> Running in standalone test mode.</p>
-            <p>Some tests may be limited without full WordPress environment.</p>
+        <div class="test-section info">
+            <h3>🔧 Environment Status</h3>
+            <ul>
+                <li><strong>WordPress:</strong> <?php echo $wordpress_loaded ? '✅ Loaded' : '❌ Not Loaded (Standalone Mode)'; ?></li>
+                <li><strong>VD License Manager:</strong> <?php echo $vd_plugin_loaded ? '✅ Classes Available' : '❌ Classes Not Found'; ?></li>
+                <li><strong>Test Mode:</strong> <?php echo $standalone_mode ? '⚠️ Standalone' : '✅ Full Environment'; ?></li>
+                <li><strong>Module Loader Class:</strong> <?php echo class_exists('VD_License_Module_Loader') ? '✅ Loaded' : '❌ Not Found'; ?></li>
+                <li><strong>Validator Class:</strong> <?php echo class_exists('VD_License_Validator') ? '✅ Loaded' : '❌ Not Found'; ?></li>
+            </ul>
+            <?php if ($standalone_mode): ?>
+            <p><strong>Note:</strong> Some tests may be limited without full WordPress environment.</p>
+            <?php endif; ?>
+            <?php if (!empty($class_load_errors)): ?>
+            <div style="background: #f8d7da; padding: 10px; border-radius: 5px; margin-top: 10px;">
+                <strong>Class Loading Errors:</strong>
+                <ul>
+                <?php foreach ($class_load_errors as $class => $error): ?>
+                    <li><strong><?php echo esc_html($class); ?>:</strong> <?php echo esc_html($error); ?></li>
+                <?php endforeach; ?>
+                </ul>
+            </div>
+            <?php endif; ?>
         </div>
-        <?php endif; ?>
 
         <div class="phase-info">
             <h2>🚀 Phase 3.2 Implementation Summary</h2>
