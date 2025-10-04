@@ -123,7 +123,7 @@ class VD_License_Utility_Helper {
     }
 
     /**
-     * Load a specific component
+     * Load a specific component with optimization
      *
      * @param string $component_name Component name
      * @return bool True if loaded successfully, false otherwise
@@ -133,14 +133,25 @@ class VD_License_Utility_Helper {
             return false;
         }
 
+        // Return immediately if already loaded (performance optimization)
         if ($this->components[$component_name]['loaded']) {
             return true;
         }
 
+        // Start performance tracking
+        $load_start = microtime(true);
+        $memory_before = memory_get_usage();
+
         $component = $this->components[$component_name];
         $file_path = dirname(__FILE__) . '/' . $component['file'];
 
-        if (!file_exists($file_path)) {
+        // Optimized file existence check with caching
+        static $file_cache = array();
+        if (!isset($file_cache[$file_path])) {
+            $file_cache[$file_path] = file_exists($file_path);
+        }
+
+        if (!$file_cache[$file_path]) {
             if (defined('VD_DEBUG') && VD_DEBUG) {
                 error_log("VD Utility Helper: Component file not found: {$file_path}");
             }
@@ -148,32 +159,26 @@ class VD_License_Utility_Helper {
         }
 
         try {
-            // Load interfaces first if component needs them
-            if ($component_name === 'data_sanitizer') {
-                $interface_file = dirname(__FILE__) . '/interfaces/data-sanitizer-interface.php';
-                if (file_exists($interface_file)) {
-                    require_once $interface_file;
-                }
-            } elseif ($component_name === 'response_builder') {
-                $interface_file = dirname(__FILE__) . '/interfaces/response-builder-interface.php';
-                if (file_exists($interface_file)) {
-                    require_once $interface_file;
-                }
-            } elseif ($component_name === 'datetime_helper') {
-                $interface_file = dirname(__FILE__) . '/interfaces/datetime-helper-interface.php';
-                if (file_exists($interface_file)) {
-                    require_once $interface_file;
-                }
-            } elseif ($component_name === 'calculation_helper') {
-                $interface_file = dirname(__FILE__) . '/interfaces/calculation-helper-interface.php';
-                if (file_exists($interface_file)) {
-                    require_once $interface_file;
-                }
-            }
+            // Optimized interface loading with caching
+            $this->load_component_interface($component_name);
 
+            // Load component file with optimized require_once
             require_once $file_path;
+
+            // Mark as loaded and update counters
             $this->components[$component_name]['loaded'] = true;
             $this->status['loaded_components']++;
+
+            // Performance tracking
+            $load_time = round((microtime(true) - $load_start) * 1000, 2);
+            $memory_used = memory_get_usage() - $memory_before;
+
+            // Store performance metrics
+            $this->components[$component_name]['performance'] = array(
+                'load_time_ms' => $load_time,
+                'memory_usage' => $memory_used,
+                'loaded_at' => microtime(true)
+            );
 
             if (defined('VD_DEBUG') && VD_DEBUG) {
                 error_log("VD Utility Helper: Loaded component '{$component_name}'");
@@ -183,6 +188,36 @@ class VD_License_Utility_Helper {
         } catch (Exception $e) {
             error_log("VD Utility Helper: Failed to load component '{$component_name}': " . $e->getMessage());
             return false;
+        }
+    }
+
+    /**
+     * Optimized interface loading with caching
+     *
+     * @param string $component_name Component name
+     * @return void
+     */
+    private function load_component_interface($component_name) {
+        static $interface_cache = array();
+
+        $interface_map = array(
+            'data_sanitizer' => 'data-sanitizer-interface.php',
+            'response_builder' => 'response-builder-interface.php',
+            'datetime_helper' => 'datetime-helper-interface.php',
+            'calculation_helper' => 'calculation-helper-interface.php'
+        );
+
+        if (isset($interface_map[$component_name])) {
+            $interface_file = dirname(__FILE__) . '/interfaces/' . $interface_map[$component_name];
+
+            // Use cache to avoid repeated file_exists calls
+            if (!isset($interface_cache[$interface_file])) {
+                $interface_cache[$interface_file] = file_exists($interface_file);
+            }
+
+            if ($interface_cache[$interface_file]) {
+                require_once $interface_file;
+            }
         }
     }
 

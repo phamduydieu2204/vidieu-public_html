@@ -65,6 +65,14 @@ class VD_License_Validator {
     private $utility_helper = null;
 
     /**
+     * Component cache for performance optimization
+     *
+     * @since 2B.1.8
+     * @var array
+     */
+    private $component_cache = array();
+
+    /**
      * Validation initialization status
      *
      * @since 4.2.1
@@ -4246,6 +4254,71 @@ class VD_License_Validator {
         return sanitize_text_field($query_string);
     }
 
+    /**
+     * Get cached component instance with optimized loading
+     *
+     * @since 2B.1.8
+     * @param string $component_type Component type
+     * @return mixed Component instance or false
+     */
+    private function get_cached_component($component_type) {
+        // Return cached instance if available
+        if (isset($this->component_cache[$component_type])) {
+            return $this->component_cache[$component_type];
+        }
+
+        // Load component and cache it
+        if ($this->utility_helper) {
+            $method_name = "get_{$component_type}";
+            if (method_exists($this->utility_helper, $method_name)) {
+                $component = call_user_func(array($this->utility_helper, $method_name));
+                if ($component) {
+                    $this->component_cache[$component_type] = $component;
+                    return $component;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Optimized component method execution with caching
+     *
+     * @since 2B.1.8
+     * @param string $component_type Component type
+     * @param string $method Method name
+     * @param array $args Method arguments
+     * @param callable $fallback_method Fallback method
+     * @return mixed Method result
+     */
+    private function execute_component_method($component_type, $method, $args = array(), $fallback_method = null) {
+        $component = $this->get_cached_component($component_type);
+
+        if ($component && (is_string($component) || is_object($component))) {
+            try {
+                if (is_string($component)) {
+                    // Static method call
+                    return call_user_func_array(array($component, $method), $args);
+                } else {
+                    // Instance method call
+                    return call_user_func_array(array($component, $method), $args);
+                }
+            } catch (Exception $e) {
+                // Log error and fall back
+                if (defined('VD_DEBUG') && VD_DEBUG) {
+                    error_log("VD Validator: Component method failed: {$component_type}::{$method}");
+                }
+            }
+        }
+
+        // Execute fallback if provided
+        if (is_callable($fallback_method)) {
+            return call_user_func_array($fallback_method, $args);
+        }
+
+        return null;
+    }
 
     /**
      * Get validation framework status
