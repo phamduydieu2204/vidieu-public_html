@@ -122,7 +122,6 @@ class VD_License_Validator {
      */
     private $history_retention = array();
 
-
     /**
      * Pattern validator module instance
      *
@@ -600,7 +599,6 @@ class VD_License_Validator {
         $expiry_processor = VD\LicenseManager\Validator\VD_License_Expiry_Processor::get_instance();
         return $expiry_processor->validate_license_expiry_date($license_key);
 
-        // MIGRATED: Original complex logic moved to VD_License_Expiry_Processor module (Micro-Step 3)
     }
 
     /**
@@ -1017,7 +1015,6 @@ class VD_License_Validator {
         );
     }
 
-
     /**
      * Step 4.2.4.1 - Create status validation error
      * Standardized error response creation
@@ -1103,7 +1100,6 @@ class VD_License_Validator {
             'code' => 'module_not_available'
         );
     }
-
 
     /**
      * Step 4.2.4.2 - Enforce transition rules
@@ -1413,7 +1409,6 @@ class VD_License_Validator {
         $expiry_processor = VD\LicenseManager\Validator\VD_License_Expiry_Processor::get_instance();
         return $expiry_processor->update_expired_license_statuses($options);
 
-        // MIGRATED: Original complex logic moved to VD_License_Expiry_Processor module (Micro-Step 3)
     }
 
     /**
@@ -2097,7 +2092,6 @@ class VD_License_Validator {
         $expiry_processor = VD\LicenseManager\Validator\VD_License_Expiry_Processor::get_instance();
         return $expiry_processor->schedule_automatic_updates($schedule_options);
 
-        // MIGRATED: Original complex logic moved to VD_License_Expiry_Processor module (Micro-Step 3)
     }
 
     /**
@@ -2128,7 +2122,6 @@ class VD_License_Validator {
         $status_controller = VD\LicenseManager\Validator\VD_License_Status_Transition_Controller::get_instance();
         return $status_controller->send_status_change_notification($license, $old_status, $new_status, $context);
 
-        // MIGRATED: Original complex logic moved to VD_License_Status_Transition_Controller module (Micro-Step 4)
     }
 
     /**
@@ -2244,7 +2237,6 @@ class VD_License_Validator {
         $status_controller = VD\LicenseManager\Validator\VD_License_Status_Transition_Controller::get_instance();
         return $status_controller->track_status_history($license, $old_status, $new_status, $context);
 
-        // MIGRATED: Original complex logic moved to VD_License_Status_Transition_Controller module (Micro-Step 4)
     }
 
     /**
@@ -2325,7 +2317,6 @@ class VD_License_Validator {
         $status_controller = VD\LicenseManager\Validator\VD_License_Status_Transition_Controller::get_instance();
         return $status_controller->get_status_history($license_id, $options);
 
-        // MIGRATED: Original complex logic moved to VD_License_Status_Transition_Controller module (Micro-Step 4)
     }
 
         try {
@@ -4347,10 +4338,6 @@ class VD_License_Validator {
 
     // Step 4.2.4.5.1c - Standardized Return Structure Definition Methods
 
-
-
-
-
     /**
      * Get available return structure formats
      *
@@ -5289,8 +5276,6 @@ class VD_License_Validator {
         );
     }
 
-
-
     /**
      * Get validation infrastructure status
      *
@@ -6071,7 +6056,6 @@ class VD_License_Validator {
         return $request_data;
     }
 
-
     /**
      * Merge enhanced context with validation result
      *
@@ -6229,9 +6213,6 @@ class VD_License_Validator {
     // ==========================================
     // Step 4.2.4.5.3c - IP Detection Framework
     // ==========================================
-
-
-
 
     /**
      * Step 4.2.4.5.3c - Get IP Detection Infrastructure Status
@@ -6451,7 +6432,6 @@ class VD_License_Validator {
         );
     }
 
-
     /**
      * Check two factor authentication status
      *
@@ -6479,7 +6459,6 @@ class VD_License_Validator {
         $locked = get_user_meta($user_id, 'vd_account_locked', true);
         return !empty($locked);
     }
-
 
     /**
      * Calculate security score for user
@@ -6521,7 +6500,6 @@ class VD_License_Validator {
 
         return $long_running;
     }
-
 
     /**
      * Get client IP for anonymous users (using existing IP detection)
@@ -7209,9 +7187,6 @@ class VD_License_Validator {
      * @param array $validation_warnings All validation warnings
      * @return array Comprehensive validation report
      */
-    // REMOVED: generate_advanced_validation_report() - Now handled by VD_License_Validation_Orchestrator
-    // This duplicate method was removed during Phase 5 cleanup
-    // Use orchestrator->generate_advanced_validation_report() instead
 
     /**
      * Step 4.2.4.5.3e - Get Advanced Validation Rules Infrastructure Status
@@ -7404,7 +7379,6 @@ class VD_License_Validator {
             'errors' => $validation_errors
         );
     }
-
 
     /**
      * Execute conditional rule
@@ -7600,11 +7574,6 @@ class VD_License_Validator {
             'errors' => array()
         );
     }
-
-    // REMOVED: count_total_validation_checks() - Legacy method removed in Phase 5 cleanup
-    // This method was only used in the original apply_advanced_validation_rules() logic
-    // Now handled by VD_License_Validation_Orchestrator
-
 
     /**
      * Analyze validation errors

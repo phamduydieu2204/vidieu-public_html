@@ -70,6 +70,9 @@ $dashboard_start = microtime(true);
                     $utility_helper = $loader->load_module('utility.helper');
 
                     if ($utility_helper) {
+                        // Load all components first to get accurate status
+                        $utility_helper->load_all_components();
+
                         $status = $utility_helper->get_status();
                         $health = $utility_helper->health_check();
 
@@ -120,8 +123,10 @@ $dashboard_start = microtime(true);
                         $load_time = round((microtime(true) - $load_start) * 1000, 2);
 
                         if ($component) {
-                            if (method_exists($component, 'get_status')) {
-                                $comp_status = call_user_func(array($component, 'get_status'));
+                            // Handle both string class names and object instances
+                            if ((is_string($component) && method_exists($component, 'get_status')) ||
+                                (is_object($component) && method_exists($component, 'get_status'))) {
+                                $comp_status = is_string($component) ? $component::get_status() : $component->get_status();
                                 $version = $comp_status['version'] ?? 'Unknown';
                                 $method_count = count($comp_status['methods'] ?? array());
                                 echo "<div class='component-status component-ok'>";
@@ -289,13 +294,13 @@ $dashboard_start = microtime(true);
             <div class="component-status component-ok">✅ 2B.1.4: DateTime Helper Implementation</div>
             <div class="component-status component-ok">✅ 2B.1.5: Calculation Helper Implementation</div>
             <div class="component-status component-ok">✅ 2B.1.6: Integration Testing</div>
-            <div class="component-status component-warning">⏳ 2B.1.7: Code Extraction & Replacement</div>
-            <div class="component-status component-warning">⏳ 2B.1.8: Final Optimization & Testing</div>
+            <div class="component-status component-ok">✅ 2B.1.7: Code Extraction & Replacement</div>
+            <div class="component-status component-ok">✅ 2B.1.8: Final Optimization & Testing</div>
 
             <div class="progress-bar" style="margin-top: 15px;">
-                <div class="progress-fill" style="width: 75%"></div>
+                <div class="progress-fill" style="width: 100%"></div>
             </div>
-            <p>Phase 2B.1 Progress: 75% Complete (6/8 steps)</p>
+            <p>Phase 2B.1 Progress: 100% Complete (8/8 steps)</p>
         </div>
     </div>
 
