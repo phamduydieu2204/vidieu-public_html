@@ -302,6 +302,15 @@ class VD_License_Module_Loader {
                 'namespace' => 'VD\\LicenseManager\\SecurityAudit',
                 'dependencies' => array('security.audit_logger'),
                 'priority' => 3
+            ),
+
+            // Phase 3.3: Domain Context Management
+            'domain.context_manager' => array(
+                'file' => 'domain-context/class-vd-license-domain-context-manager.php',
+                'class' => 'VD\\LicenseManager\\DomainContext\\VD_License_Domain_Context_Manager',
+                'namespace' => 'VD\\LicenseManager\\DomainContext',
+                'dependencies' => array(),
+                'priority' => 4
             )
         );
 

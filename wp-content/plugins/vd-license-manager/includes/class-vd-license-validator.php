@@ -81,6 +81,14 @@ class VD_License_Validator {
     private $context_enhancer = null;
 
     /**
+     * Domain context manager module instance
+     *
+     * @since 3.3.0
+     * @var VD\LicenseManager\DomainContext\VD_License_Domain_Context_Manager|null
+     */
+    private $domain_context_manager = null;
+
+    /**
      * Component cache for performance optimization
      *
      * @since 2B.1.8
@@ -363,6 +371,12 @@ class VD_License_Validator {
         $this->context_enhancer = $loader->load_module('security.context_enhancer');
         if ($this->context_enhancer && defined('VD_DEBUG') && VD_DEBUG) {
             error_log('VD License Validator: Context Enhancer initialized successfully');
+        }
+
+        // Phase 3.3: Initialize Domain Context Manager
+        $this->domain_context_manager = $loader->load_module('domain.context_manager');
+        if ($this->domain_context_manager && defined('VD_DEBUG') && VD_DEBUG) {
+            error_log('VD License Validator: Domain Context Manager initialized successfully');
         }
     }
 
@@ -5785,9 +5799,17 @@ class VD_License_Validator {
     /**
      * Estimate current session duration
      *
+     * Phase 3.3 - Delegated to Domain Context Manager module
+     *
      * @return int Session duration in seconds
      */
     private function estimate_session_duration() {
+        // Phase 3.3 - Delegated to Domain Context Manager module
+        if ($this->domain_context_manager) {
+            return $this->domain_context_manager->estimate_session_duration();
+        }
+
+        // Fallback if module not available
         if (!is_user_logged_in()) return 0;
 
         $current_session = wp_get_session_token();
@@ -5936,6 +5958,12 @@ class VD_License_Validator {
      * @return string Client IP
      */
     private function get_client_ip_for_anonymous() {
+        // Phase 3.3 - Delegated to Domain Context Manager module
+        if ($this->domain_context_manager) {
+            return $this->domain_context_manager->get_client_ip_for_anonymous();
+        }
+
+        // Fallback if module not available
         if ($this->activation_rules) {
             return $this->activation_rules->detect_client_ip();
         }
@@ -5945,19 +5973,22 @@ class VD_License_Validator {
     /**
      * Estimate anonymous session duration
      *
+     * Phase 3.3 - Delegated to Domain Context Manager module
      * @return int Estimated session duration
      */
     private function estimate_anonymous_session_duration() {
-        // Ensure session is started
+        if ($this->domain_context_manager) {
+            return $this->domain_context_manager->estimate_anonymous_session_duration();
+        }
+
+        // Fallback if module not available
         if (session_status() === PHP_SESSION_NONE) {
             @session_start();
         }
-
         if (!isset($_SESSION['vd_session_start'])) {
             $_SESSION['vd_session_start'] = time();
             return 0;
         }
-
         return time() - $_SESSION['vd_session_start'];
     }
 
@@ -5987,9 +6018,14 @@ class VD_License_Validator {
      * @return string Bounce risk level
      */
     private function calculate_bounce_risk() {
+        // Phase 3.3 - Delegated to Domain Context Manager module
+        if ($this->domain_context_manager) {
+            return $this->domain_context_manager->calculate_bounce_risk();
+        }
+
+        // Fallback if module not available
         $page_views = $this->get_anonymous_page_views();
         $session_duration = $this->estimate_anonymous_session_duration();
-
         if ($page_views === 1 && $session_duration < 30) return 'high';
         if ($page_views < 3 && $session_duration < 60) return 'medium';
         return 'low';
@@ -6001,13 +6037,17 @@ class VD_License_Validator {
      * @return int Engagement score
      */
     private function calculate_anonymous_engagement() {
+        // Phase 3.3 - Delegated to Domain Context Manager module
+        if ($this->domain_context_manager) {
+            return $this->domain_context_manager->calculate_anonymous_engagement();
+        }
+
+        // Fallback if module not available
         $page_views = $this->get_anonymous_page_views();
         $session_duration = $this->estimate_anonymous_session_duration();
-
         $score = 0;
-        $score += min($page_views * 10, 50); // Max 50 points for page views
-        $score += min($session_duration / 60 * 5, 50); // Max 50 points for time
-
+        $score += min($page_views * 10, 50);
+        $score += min($session_duration / 60 * 5, 50);
         return min(100, $score);
     }
 
@@ -6017,15 +6057,18 @@ class VD_License_Validator {
      * @return string Landing page URL
      */
     private function get_landing_page() {
-        // Ensure session is started
+        // Phase 3.3 - Delegated to Domain Context Manager module
+        if ($this->domain_context_manager) {
+            return $this->domain_context_manager->get_landing_page();
+        }
+
+        // Fallback if module not available
         if (session_status() === PHP_SESSION_NONE) {
             @session_start();
         }
-
         if (!isset($_SESSION['vd_landing_page'])) {
             $_SESSION['vd_landing_page'] = $_SERVER['REQUEST_URI'] ?? '';
         }
-
         return $_SESSION['vd_landing_page'];
     }
 
@@ -6035,38 +6078,56 @@ class VD_License_Validator {
      * @return array Visited pages
      */
     private function get_visited_pages_anonymous() {
-        // Ensure session is started
+        // Phase 3.3 - Delegated to Domain Context Manager module
+        if ($this->domain_context_manager) {
+            return $this->domain_context_manager->get_visited_pages_anonymous();
+        }
+
+        // Fallback if module not available
         if (session_status() === PHP_SESSION_NONE) {
             @session_start();
         }
-
         if (!isset($_SESSION['vd_visited_pages'])) {
             $_SESSION['vd_visited_pages'] = array();
         }
-
         $current_page = $_SERVER['REQUEST_URI'] ?? '';
         if (!in_array($current_page, $_SESSION['vd_visited_pages'])) {
             $_SESSION['vd_visited_pages'][] = $current_page;
         }
-
         return $_SESSION['vd_visited_pages'];
     }
 
     /**
      * Get time on site for anonymous user
      *
+     * Phase 3.3 - Delegated to Domain Context Manager module
+     *
      * @return int Time on site in seconds
      */
     private function get_time_on_site_anonymous() {
+        // Phase 3.3 - Delegated to Domain Context Manager module
+        if ($this->domain_context_manager) {
+            return $this->domain_context_manager->get_time_on_site_anonymous();
+        }
+
+        // Fallback if module not available
         return $this->estimate_anonymous_session_duration();
     }
 
     /**
      * Check anonymous cart status
      *
+     * Phase 3.3 - Delegated to Domain Context Manager module
+     *
      * @return array Cart status
      */
     private function check_anonymous_cart_status() {
+        // Phase 3.3 - Delegated to Domain Context Manager module
+        if ($this->domain_context_manager) {
+            return $this->domain_context_manager->check_anonymous_cart_status();
+        }
+
+        // Fallback if module not available
         if (!class_exists('WooCommerce')) {
             return array('woocommerce_not_active' => true);
         }
@@ -6098,9 +6159,17 @@ class VD_License_Validator {
     /**
      * Analyze purchase intent for anonymous user
      *
+     * Phase 3.3 - Delegated to Domain Context Manager module
+     *
      * @return string Purchase intent level
      */
     private function analyze_purchase_intent_anonymous() {
+        // Phase 3.3 - Delegated to Domain Context Manager module
+        if ($this->domain_context_manager) {
+            return $this->domain_context_manager->analyze_purchase_intent_anonymous();
+        }
+
+        // Fallback if module not available
         $cart_status = $this->check_anonymous_cart_status();
         $visited_pages = $this->get_visited_pages_anonymous();
 
