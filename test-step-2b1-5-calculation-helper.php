@@ -61,12 +61,12 @@ try {
             echo "<ul>\n";
             echo "<li>Utility Helper Loading: ✅ SUCCESS</li>\n";
 
-            // Check if component is loaded before getting it
-            echo "<li>Calculation Helper Component Loaded: " . ($utility_helper->is_component_loaded('calculation_helper') ? '✅ YES' : '❌ NO') . "</li>\n";
-
             // Try to load CalculationHelper component
             try {
                 $calculation_helper = $utility_helper->get_calculation_helper();
+
+                // Check if component is loaded after getting it
+                echo "<li>Calculation Helper Component Loaded: " . ($utility_helper->is_component_loaded('calculation_helper') ? '✅ YES' : '❌ NO') . "</li>\n";
 
                 if ($calculation_helper) {
                     echo "<li>CalculationHelper Component: ✅ LOADED</li>\n";
@@ -170,14 +170,20 @@ if (isset($calculation_helper) && $calculation_helper) {
         echo "<li>Built-in Test Suite: ";
         $all_passed = true;
         $passed_count = 0;
+        $failed_tests = array();
         foreach ($test_results as $test_name => $test_result) {
             if (isset($test_result['passed']) && $test_result['passed']) {
                 $passed_count++;
             } else {
                 $all_passed = false;
+                $failed_tests[] = $test_name;
             }
         }
-        echo ($all_passed ? '✅ ALL PASS' : '❌ SOME FAIL') . " ({$passed_count}/" . count($test_results) . " passed)</li>\n";
+        echo ($all_passed ? '✅ ALL PASS' : '❌ SOME FAIL') . " ({$passed_count}/" . count($test_results) . " passed)";
+        if (!$all_passed) {
+            echo " - Failed: " . implode(', ', $failed_tests);
+        }
+        echo "</li>\n";
     }
 
     echo "</ul>\n\n";

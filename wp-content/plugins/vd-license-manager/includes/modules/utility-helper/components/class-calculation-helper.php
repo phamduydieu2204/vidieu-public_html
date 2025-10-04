@@ -356,10 +356,19 @@ class CalculationHelper implements CalculationHelperInterface {
             'input' => array('processed' => 150, 'total' => 200, 'batch' => 50),
             'output' => $progress,
             'passed' => (
-                $progress['percentage'] === 75.0 &&
-                $progress['batches_completed'] === 3 &&
-                $progress['items_remaining'] === 50
+                isset($progress['percentage']) && $progress['percentage'] === 75.0 &&
+                isset($progress['batches_completed']) && $progress['batches_completed'] === 3 &&
+                isset($progress['items_remaining']) && $progress['items_remaining'] === 50
             )
+        );
+
+        // Test calculate_total_from_array
+        $test_array = array(10, 20, 30, 40);
+        $total = self::calculate_total_from_array($test_array);
+        $results['calculate_total_from_array'] = array(
+            'input' => $test_array,
+            'output' => $total,
+            'passed' => ($total === 100)
         );
 
         return $results;
