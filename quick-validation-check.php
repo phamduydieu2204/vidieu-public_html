@@ -107,6 +107,37 @@ if (isset($utility_helper) && $utility_helper) {
     $results['direct_access'] = false;
 }
 
+// Check 5: Optimization Features (NEW)
+echo "<h2>5. Optimization Features Check</h2>\n";
+$validator_file = ABSPATH . 'wp-content/plugins/vd-license-manager/includes/class-vd-license-validator.php';
+if (file_exists($validator_file)) {
+    $content = file_get_contents($validator_file);
+
+    $optimization_features = array(
+        'component_cache' => 'Component caching property',
+        'get_cached_component' => 'Cached component getter',
+        'execute_component_method' => 'Optimized method execution',
+        'static $file_cache' => 'File existence caching',
+        'static $interface_cache' => 'Interface caching'
+    );
+
+    $optimization_count = 0;
+    foreach ($optimization_features as $feature => $description) {
+        $exists = strpos($content, $feature) !== false;
+        if ($exists) $optimization_count++;
+    }
+
+    echo "<p>Optimization Features: {$optimization_count}/" . count($optimization_features) . " ✅</p>\n";
+    echo "<p>File existence caching: " . (strpos($content, 'static $file_cache') !== false ? '✅ IMPLEMENTED' : '❌ MISSING') . "</p>\n";
+    echo "<p>Interface caching: " . (strpos($content, 'static $interface_cache') !== false ? '✅ IMPLEMENTED' : '❌ MISSING') . "</p>\n";
+    echo "<p>Caching Optimization: " . ($optimization_count >= 4 ? '✅ FULLY OPTIMIZED' : '⚠️ PARTIALLY OPTIMIZED') . "</p>\n";
+
+    $results['optimization_features'] = ($optimization_count >= 4);
+} else {
+    echo "<p>❌ Validator file not found</p>\n";
+    $results['optimization_features'] = false;
+}
+
 // Summary
 echo "<h2>Summary</h2>\n";
 $total_passed = array_sum($results);

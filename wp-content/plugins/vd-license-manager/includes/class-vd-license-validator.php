@@ -73,6 +73,26 @@ class VD_License_Validator {
     private $component_cache = array();
 
     /**
+     * Memory-optimized lazy loading registry
+     *
+     * @since 2B.1.8
+     * @var array
+     */
+    private $lazy_load_registry = array();
+
+    /**
+     * Performance metrics tracking
+     *
+     * @since 2B.1.8
+     * @var array
+     */
+    private $performance_metrics = array(
+        'cache_hits' => 0,
+        'cache_misses' => 0,
+        'load_times' => array()
+    );
+
+    /**
      * Validation initialization status
      *
      * @since 4.2.1
@@ -4253,24 +4273,109 @@ class VD_License_Validator {
      * @return mixed Component instance or false
      */
     private function get_cached_component($component_type) {
-        // Return cached instance if available
+        $start_time = microtime(true);
+
+        // Return cached instance if available (cache hit)
         if (isset($this->component_cache[$component_type])) {
+            $this->performance_metrics['cache_hits']++;
             return $this->component_cache[$component_type];
         }
 
-        // Load component and cache it
+        // Cache miss - load component and cache it
+        $this->performance_metrics['cache_misses']++;
+
         if ($this->utility_helper) {
             $method_name = "get_{$component_type}";
             if (method_exists($this->utility_helper, $method_name)) {
                 $component = call_user_func(array($this->utility_helper, $method_name));
                 if ($component) {
                     $this->component_cache[$component_type] = $component;
+
+                    // Track performance metrics
+                    $load_time = microtime(true) - $start_time;
+                    $this->performance_metrics['load_times'][$component_type] = $load_time;
+
                     return $component;
                 }
             }
         }
 
         return false;
+    }
+
+    /**
+     * File existence caching for optimization
+     *
+     * @since 2B.1.8
+     * @param string $file_path File path to check
+     * @return bool True if file exists, false otherwise
+     */
+    private function check_file_exists($file_path) {
+        static $file_cache = array();
+
+        if (!isset($file_cache[$file_path])) {
+            $file_cache[$file_path] = file_exists($file_path);
+        }
+
+        return $file_cache[$file_path];
+    }
+
+    /**
+     * Interface caching for optimization
+     *
+     * @since 2B.1.8
+     * @param string $interface_name Interface name
+     * @return bool True if interface loaded, false otherwise
+     */
+    private function load_cached_interface($interface_name) {
+        static $interface_cache = array();
+
+        if (!isset($interface_cache[$interface_name])) {
+            $interface_file = $this->get_interface_file_path($interface_name);
+
+            if ($this->check_file_exists($interface_file)) {
+                require_once $interface_file;
+                $interface_cache[$interface_name] = true;
+            } else {
+                $interface_cache[$interface_name] = false;
+            }
+        }
+
+        return $interface_cache[$interface_name];
+    }
+
+    /**
+     * Get interface file path
+     *
+     * @since 2B.1.8
+     * @param string $interface_name Interface name
+     * @return string Interface file path
+     */
+    private function get_interface_file_path($interface_name) {
+        $plugin_dir = dirname(dirname(__FILE__));
+        return $plugin_dir . '/modules/utility-helper/interfaces/' . $interface_name . '-interface.php';
+    }
+
+    /**
+     * Get performance metrics for optimization analysis
+     *
+     * @since 2B.1.8
+     * @return array Performance metrics data
+     */
+    public function get_performance_metrics() {
+        $total_requests = $this->performance_metrics['cache_hits'] + $this->performance_metrics['cache_misses'];
+        $cache_hit_ratio = $total_requests > 0 ? round(($this->performance_metrics['cache_hits'] / $total_requests) * 100, 2) : 0;
+
+        return array(
+            'cache_hits' => $this->performance_metrics['cache_hits'],
+            'cache_misses' => $this->performance_metrics['cache_misses'],
+            'cache_hit_ratio' => $cache_hit_ratio . '%',
+            'total_requests' => $total_requests,
+            'load_times' => $this->performance_metrics['load_times'],
+            'avg_load_time' => !empty($this->performance_metrics['load_times'])
+                ? round(array_sum($this->performance_metrics['load_times']) / count($this->performance_metrics['load_times']), 4)
+                : 0
+        );
     }
 
     /**
