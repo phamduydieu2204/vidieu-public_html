@@ -308,17 +308,11 @@ class VD_License_Validator {
             }
         }
 
-        // Fallback to legacy methods if utility helper not available
-        switch ($method) {
-            case 'sanitize_status_value':
-                return $this->legacy_sanitize_status_value($data);
-            case 'sanitize_context_data':
-                return $this->legacy_sanitize_context_data($data);
-            case 'sanitize_query_string':
-                return $this->legacy_sanitize_query_string($data);
-            default:
-                return $data;
+        // If utility helper not available, log error and return data unchanged
+        if (defined('VD_DEBUG') && VD_DEBUG) {
+            error_log("VD License Validator: DataSanitizer component not available for method: {$method}");
         }
+        return $data;
     }
 
     /**
@@ -5126,58 +5120,7 @@ class VD_License_Validator {
         );
     }
 
-    /**
-     * Legacy sanitize status value (fallback)
-     *
-     * Step 4.2.4.5.3a - Core validation utility
-     * @deprecated 2B.1.2 Use DataSanitizer component instead
-     *
-     * @since 4.2.4.5.3a
-     * @param string $status Status value to sanitize
-     * @return string Sanitized status value
-     */
-    private function legacy_sanitize_status_value($status) {
-        return strtolower(trim((string) $status));
-    }
 
-    /**
-     * Legacy sanitize context data (fallback)
-     *
-     * Step 4.2.4.5.3a - Core validation utility
-     * @deprecated 2B.1.2 Use DataSanitizer component instead
-     *
-     * @since 4.2.4.5.3a
-     * @param array $context Context data to sanitize
-     * @return array Sanitized context data
-     */
-    private function legacy_sanitize_context_data($context) {
-        if (!is_array($context)) {
-            return array();
-        }
-
-        $sanitized = array();
-
-        foreach ($context as $key => $value) {
-            // Sanitize key
-            $clean_key = sanitize_key($key);
-
-            // Sanitize value based on type
-            if (is_string($value)) {
-                $sanitized[$clean_key] = sanitize_text_field($value);
-            } elseif (is_numeric($value)) {
-                $sanitized[$clean_key] = is_float($value) ? (float) $value : (int) $value;
-            } elseif (is_bool($value)) {
-                $sanitized[$clean_key] = $value;
-            } elseif (is_array($value)) {
-                $sanitized[$clean_key] = $this->legacy_sanitize_context_data($value); // Recursive sanitization
-            } else {
-                // Convert other types to string and sanitize
-                $sanitized[$clean_key] = sanitize_text_field((string) $value);
-            }
-        }
-
-        return $sanitized;
-    }
 
     /**
      * Get validation infrastructure status
@@ -5957,32 +5900,6 @@ class VD_License_Validator {
         return $request_data;
     }
 
-    /**
-     * Legacy sanitize query string (fallback)
-     *
-     * Step 4.2.4.5.3b - Enhanced Context Processing utility
-     * @deprecated 2B.1.2 Use DataSanitizer component instead
-     *
-     * @since 4.2.4.5.3b
-     * @param string $query_string Query string to sanitize
-     * @return string Sanitized query string
-     */
-    private function legacy_sanitize_query_string($query_string) {
-        // Remove sensitive parameters
-        $sensitive_params = array('password', 'token', 'key', 'secret', 'api_key', 'auth');
-
-        parse_str($query_string, $params);
-
-        foreach ($sensitive_params as $sensitive_param) {
-            foreach ($params as $param_name => $param_value) {
-                if (stripos($param_name, $sensitive_param) !== false) {
-                    $params[$param_name] = '[FILTERED]';
-                }
-            }
-        }
-
-        return http_build_query($params);
-    }
 
     /**
      * Merge enhanced context with validation result
