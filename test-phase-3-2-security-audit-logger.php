@@ -16,14 +16,65 @@
  * @since 3.2.0
  */
 
-// Prevent direct access
-if (!defined('ABSPATH')) {
-    exit('Direct access not allowed');
+// Load WordPress if not already loaded
+$wordpress_loaded = false;
+
+if (!function_exists('get_option')) {
+    // Try different paths to find wp-load.php
+    $wp_load_paths = [
+        __DIR__ . '/wp-load.php',
+        __DIR__ . '/../wp-load.php',
+        __DIR__ . '/../../wp-load.php',
+        __DIR__ . '/../../../wp-load.php'
+    ];
+
+    foreach ($wp_load_paths as $path) {
+        if (file_exists($path)) {
+            require_once($path);
+            if (function_exists('get_option')) {
+                $wordpress_loaded = true;
+            }
+            break;
+        }
+    }
+} else {
+    $wordpress_loaded = true;
 }
 
-// Load WordPress if not already loaded
-if (!function_exists('get_option')) {
-    require_once('../../../wp-load.php');
+// Allow standalone testing without WordPress
+$standalone_mode = !$wordpress_loaded;
+
+// Helper functions for standalone mode
+if ($standalone_mode) {
+    if (!function_exists('esc_html')) {
+        function esc_html($text) {
+            return htmlspecialchars($text, ENT_QUOTES, 'UTF-8');
+        }
+    }
+
+    if (!function_exists('esc_url')) {
+        function esc_url($url) {
+            return filter_var($url, FILTER_SANITIZE_URL);
+        }
+    }
+
+    if (!function_exists('get_bloginfo')) {
+        function get_bloginfo($info) {
+            return 'N/A (Standalone Mode)';
+        }
+    }
+
+    if (!function_exists('current_time')) {
+        function current_time($format) {
+            return date($format);
+        }
+    }
+
+    if (!function_exists('wp_normalize_path')) {
+        function wp_normalize_path($path) {
+            return str_replace('\\', '/', $path);
+        }
+    }
 }
 
 ?>
@@ -56,6 +107,14 @@ if (!function_exists('get_option')) {
             <h1>🔐 Phase 3.2 - Security Audit Logger Test</h1>
             <p>Testing extracted Security Audit Logger and Context Enhancer modules</p>
         </div>
+
+        <?php if ($standalone_mode): ?>
+        <div class="test-section warning">
+            <h3>⚠️ Standalone Mode</h3>
+            <p><strong>WordPress not loaded.</strong> Running in standalone test mode.</p>
+            <p>Some tests may be limited without full WordPress environment.</p>
+        </div>
+        <?php endif; ?>
 
         <div class="phase-info">
             <h2>🚀 Phase 3.2 Implementation Summary</h2>
