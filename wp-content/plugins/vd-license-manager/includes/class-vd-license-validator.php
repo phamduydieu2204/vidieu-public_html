@@ -4073,7 +4073,7 @@ class VD_License_Validator {
         if (empty($date) || !is_string($date)) {
             return false;
         }
-        $d = DateTime::createFromFormat('Y-m-d', $date);
+        $d = \DateTime::createFromFormat('Y-m-d', $date);
         return $d && $d->format('Y-m-d') === $date;
     }
 

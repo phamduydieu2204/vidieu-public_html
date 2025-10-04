@@ -39,7 +39,7 @@ class DateTimeHelper implements DateTimeHelperInterface {
             return false;
         }
 
-        $d = DateTime::createFromFormat('Y-m-d', $date);
+        $d = \DateTime::createFromFormat('Y-m-d', $date);
         return $d && $d->format('Y-m-d') === $date;
     }
 
