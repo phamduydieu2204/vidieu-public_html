@@ -639,6 +639,51 @@ Successfully extracted utility functions from validator while maintaining 100% f
 **🚀 Ready for Production:**
 The modular component system is fully operational, thoroughly tested, and ready for production deployment. Future development can now leverage this foundation for additional module extractions and system enhancements.
 
+#### 🧹 Post-Phase 2B.1: Legacy Code Cleanup
+
+**Status:** In Progress (Critical Priority)
+
+**Objective:** Complete elimination of legacy code dependencies to finalize modular architecture
+
+**Issue Identified:** After removing deprecated legacy methods (achieving 302-line file size reduction), 15 legacy method calls remain in the validator that reference deleted methods, causing potential Fatal Errors.
+
+**Resolution Strategy - Option 2 (Chosen):**
+Replace all legacy method calls with component method calls to:
+- ✅ Maintain optimized file size (7,598 lines)
+- ✅ Complete modular architecture transition
+- ✅ Eliminate all legacy code dependencies
+- ✅ Prepare clean foundation for Phase 3
+
+**Legacy Calls to Fix (15 total):**
+1. `$this->legacy_is_valid_date()` → `$datetime_helper::is_valid_date()`
+2. `$this->legacy_calculate_execution_time_ms()` → `$calculation_helper::calculate_execution_time_ms()`
+3. `$this->legacy_calculate_days_until_expiry()` → `$datetime_helper::calculate_days_until_expiry()`
+4. `$this->legacy_format_grace_cutoff()` → `$datetime_helper::format_grace_cutoff()`
+5. `$this->legacy_calculate_percentage()` → `$calculation_helper::calculate_percentage()`
+6. `$this->legacy_calculate_validation_completeness()` → `$calculation_helper::calculate_validation_completeness()`
+7. `$this->legacy_safe_round()` → `$calculation_helper::safe_round()`
+8. `$this->legacy_sanitize_status_value()` → `$data_sanitizer::sanitize_status_value()`
+9. `$this->legacy_sanitize_context_data()` → `$data_sanitizer::sanitize_context_data()`
+10. `$this->legacy_sanitize_query_string()` → `$data_sanitizer::sanitize_query_string()`
+
+**Implementation Pattern:**
+```php
+// Before (causes Fatal Error):
+$result = $this->legacy_method($data);
+
+// After (uses component):
+$component = $this->get_component();
+$result = $component ? $component::method($data) : $fallback_value;
+```
+
+**Expected Outcome:**
+- File size maintained at ~7,580 lines (still achieving 320+ line reduction from original 7,900)
+- Zero legacy dependencies
+- 100% component-based architecture
+- Clean foundation for Phase 3: Security & Context modules
+
+**Timeline:** 30-60 minutes for complete implementation
+
 ---
 
 ## [1.5.0-rc.1] - 2024-XX-XX

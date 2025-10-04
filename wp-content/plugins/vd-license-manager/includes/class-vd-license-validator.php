@@ -398,11 +398,14 @@ class VD_License_Validator {
         // Fallback implementations for critical methods
         switch ($method) {
             case 'is_valid_date':
-                return $this->legacy_is_valid_date($data);
+                $datetime_helper = $this->get_datetime_helper();
+                return $datetime_helper ? $datetime_helper::is_valid_date($data) : false;
             case 'calculate_days_until_expiry':
-                return $this->legacy_calculate_days_until_expiry($data);
+                $datetime_helper = $this->get_datetime_helper();
+                return $datetime_helper ? $datetime_helper::calculate_days_until_expiry($data) : PHP_INT_MAX;
             case 'format_grace_cutoff':
-                return $this->legacy_format_grace_cutoff($data);
+                $datetime_helper = $this->get_datetime_helper();
+                return $datetime_helper ? $datetime_helper::format_grace_cutoff($data) : date('Y-m-d H:i:s');
             default:
                 return null;
         }
@@ -432,13 +435,17 @@ class VD_License_Validator {
         // Fallback implementations for critical methods
         switch ($method) {
             case 'calculate_execution_time_ms':
-                return $this->legacy_calculate_execution_time_ms(...$args);
+                $calculation_helper = $this->get_calculation_helper();
+                return $calculation_helper ? $calculation_helper::calculate_execution_time_ms(...$args) : 0.0;
             case 'calculate_percentage':
-                return $this->legacy_calculate_percentage(...$args);
+                $calculation_helper = $this->get_calculation_helper();
+                return $calculation_helper ? $calculation_helper::calculate_percentage(...$args) : 0.0;
             case 'calculate_validation_completeness':
-                return $this->legacy_calculate_validation_completeness(...$args);
+                $calculation_helper = $this->get_calculation_helper();
+                return $calculation_helper ? $calculation_helper::calculate_validation_completeness(...$args) : '0%';
             case 'safe_round':
-                return $this->legacy_safe_round(...$args);
+                $calculation_helper = $this->get_calculation_helper();
+                return $calculation_helper ? $calculation_helper::safe_round(...$args) : 0.0;
             default:
                 return null;
         }
@@ -761,7 +768,7 @@ class VD_License_Validator {
 
             $validation_end = microtime(true);
             $calculation_helper = $this->utility_helper ? $this->utility_helper->get_calculation_helper() : null;
-            $debug_info['validation_time_ms'] = $calculation_helper ? $calculation_helper::calculate_execution_time_ms($validation_start, $validation_end) : $this->legacy_calculate_execution_time_ms($validation_start, $validation_end);
+            $debug_info['validation_time_ms'] = $calculation_helper ? $calculation_helper::calculate_execution_time_ms($validation_start, $validation_end) : round(($validation_end - $validation_start) * 1000, 2);
 
             // Debug logging for successful validation
             $this->log_status_validation_debug('status_validation_success', $status_info, $debug_info);
@@ -2392,7 +2399,7 @@ class VD_License_Validator {
         }
 
         $calculation_helper = $this->utility_helper ? $this->utility_helper->get_calculation_helper() : null;
-        $results['execution_time_ms'] = $calculation_helper ? $calculation_helper::calculate_execution_time_ms($start_time) : $this->legacy_calculate_execution_time_ms($start_time);
+        $results['execution_time_ms'] = $calculation_helper ? $calculation_helper::calculate_execution_time_ms($start_time) : round((microtime(true) - $start_time) * 1000, 2);
 
         return $results;
     }
@@ -3954,7 +3961,7 @@ class VD_License_Validator {
             );
 
             $calculation_helper = $this->utility_helper ? $this->utility_helper->get_calculation_helper() : null;
-            $execution_time = $calculation_helper ? $calculation_helper::calculate_execution_time_ms($start_time) : $this->legacy_calculate_execution_time_ms($start_time);
+            $execution_time = $calculation_helper ? $calculation_helper::calculate_execution_time_ms($start_time) : round((microtime(true) - $start_time) * 1000, 2);
 
             // Step 4.2.4.5.1c - Use standardized success response structure
             return $this->create_get_status_statistics_return_structure(
@@ -4106,11 +4113,11 @@ class VD_License_Validator {
             }
 
             $datetime_helper = $this->utility_helper ? $this->utility_helper->get_datetime_helper() : null;
-            if (isset($options['date_from']) && !empty($options['date_from']) && !($datetime_helper ? $datetime_helper::is_valid_date($options['date_from']) : $this->legacy_is_valid_date($options['date_from']))) {
+            if (isset($options['date_from']) && !empty($options['date_from']) && !($datetime_helper ? $datetime_helper::is_valid_date($options['date_from']) : (bool) strtotime($options['date_from']))) {
                 $errors[] = 'Date from must be a valid date format (Y-m-d)';
             }
 
-            if (isset($options['date_to']) && !empty($options['date_to']) && !($datetime_helper ? $datetime_helper::is_valid_date($options['date_to']) : $this->legacy_is_valid_date($options['date_to']))) {
+            if (isset($options['date_to']) && !empty($options['date_to']) && !($datetime_helper ? $datetime_helper::is_valid_date($options['date_to']) : (bool) strtotime($options['date_to']))) {
                 $errors[] = 'Date to must be a valid date format (Y-m-d)';
             }
         }
@@ -5011,9 +5018,9 @@ class VD_License_Validator {
             $data_sanitizer = $this->utility_helper ? $this->utility_helper->get_data_sanitizer() : null;
             $structured_record = array(
                 'license_id' => (int) $license_id,
-                'old_status' => $data_sanitizer ? $data_sanitizer::sanitize_status_value($old_status) : $this->legacy_sanitize_status_value($old_status),
-                'new_status' => $data_sanitizer ? $data_sanitizer::sanitize_status_value($new_status) : $this->legacy_sanitize_status_value($new_status),
-                'context' => $data_sanitizer ? $data_sanitizer::sanitize_context_data($context) : $this->legacy_sanitize_context_data($context),
+                'old_status' => $data_sanitizer ? $data_sanitizer::sanitize_status_value($old_status) : sanitize_text_field($old_status),
+                'new_status' => $data_sanitizer ? $data_sanitizer::sanitize_status_value($new_status) : sanitize_text_field($new_status),
+                'context' => $data_sanitizer ? $data_sanitizer::sanitize_context_data($context) : (is_array($context) ? array_map('sanitize_text_field', $context) : array()),
                 'validation_metadata' => array(
                     'validated_at' => $validation_metadata['validation_timestamp'],
                     'validation_time_ms' => $validation_metadata['validation_time_ms'],
@@ -5397,7 +5404,7 @@ class VD_License_Validator {
         try {
             // Sanitize base context first
             $data_sanitizer = $this->utility_helper ? $this->utility_helper->get_data_sanitizer() : null;
-            $sanitized_base_context = $data_sanitizer ? $data_sanitizer::sanitize_context_data($base_context) : $this->legacy_sanitize_context_data($base_context);
+            $sanitized_base_context = $data_sanitizer ? $data_sanitizer::sanitize_context_data($base_context) : (is_array($base_context) ? array_map('sanitize_text_field', $base_context) : array());
 
             // Initialize enhanced context structure
             $enhanced_context = array(
@@ -6013,7 +6020,7 @@ class VD_License_Validator {
         // Remove potential sensitive query parameters
         if (!empty($request_data['query_string'])) {
             $data_sanitizer = $this->utility_helper ? $this->utility_helper->get_data_sanitizer() : null;
-            $request_data['query_string'] = $data_sanitizer ? $data_sanitizer::sanitize_query_string($request_data['query_string']) : $this->legacy_sanitize_query_string($request_data['query_string']);
+            $request_data['query_string'] = $data_sanitizer ? $data_sanitizer::sanitize_query_string($request_data['query_string']) : sanitize_text_field($request_data['query_string']);
         }
 
         return $request_data;
