@@ -483,7 +483,10 @@
 - ✅ **Micro-Step 5.2**: COMPLETED (Validation Rules Mapping)
 - ✅ **Micro-Step 5.3**: COMPLETED (Basic Orchestrator Integration)
 - ✅ **Micro-Step 5.4**: COMPLETED (Fallback Mechanism Implementation)
-- 🎯 **ALL MICRO-STEPS 5.1-5.4 COMPLETED**: Ready for Phase 2A
+- ✅ **Micro-Step 2A.1**: COMPLETED (Legacy Method Analysis)
+- ✅ **Micro-Step 2A.2**: COMPLETED (Dependency Mapping)
+- ✅ **Micro-Step 2A.3**: COMPLETED (Module Architecture Planning)
+- 🎯 **ALL PHASE 2A COMPLETED**: Ready for Phase 2B Implementation
 
 | Day | Phase | Micro-Steps | Risk | Key Deliverable | Status |
 |-----|-------|-------------|------|-----------------|--------|
@@ -495,16 +498,12 @@
 | **✅** | **MS 5.2** | **Validation Rules Mapping** | **Med** | **Method Mapping Specification** | **DONE** |
 | **✅** | **MS 5.3** | **Basic Integration** | **Med** | **Orchestrator Delegation** | **DONE** |
 | **✅** | **MS 5.4** | **Fallback Mechanisms** | **Med** | **Error Handling System** | **DONE** |
-| **1** | 2A | 2A.1-2A.3 | Low | Analysis & Planning Complete | Pending |
-| **2** | 2A | 2A.4-2A.6 | Low | Testing Infrastructure Ready | Pending |
-| **3** | 2B | 2B.1-2B.3 | Med | Business Logic Module Foundation | Pending |
-| **4** | 2B | 2B.4-2B.6 | Med | Business Logic Integration Complete | Pending |
-| **5** | 2B | 2B.7-2B.9 | Med | System Management Module Complete | Pending |
-| **6** | 2C | 2C.1-2C.3 | Med | Context Manager Module Complete | Pending |
-| **7** | 2C | 2C.4-2C.6 | Low | Infrastructure Monitor Complete | Pending |
-| **8** | 2C | 2C.7-2C.9 | Low | Migration 95% Complete | Pending |
-| **9** | 3A | 3A.1-3A.3 | Low | Deprecation & Documentation | Pending |
-| **10** | 3A | 3A.4-3A.6 | Med | Final Cleanup & Validation | Pending |
+| **✅** | **2A.1** | **Legacy Method Analysis** | **Low** | **190 Methods Analyzed & Categorized** | **DONE** |
+| **✅** | **2A.2** | **Dependency Mapping** | **Low** | **6 Dependency Chains Mapped** | **DONE** |
+| **✅** | **2A.3** | **Module Architecture Planning** | **Low** | **7 Module Specifications Complete** | **DONE** |
+| **1** | 2B | 2B.1 (Utility Module) | Low | Foundation Module Ready | Ready |
+| **2** | 2B | 2B.2 (Infrastructure Monitor) | Low | Monitoring Module Ready | Ready |
+| **3** | 2B | 2B.3 (Integration & Testing) | Low | 25% Size Reduction Achieved | Ready |
 
 ### **Success Metrics:**
 - ✅ **28/30 methods migrated** (93% target achieved)
@@ -523,3 +522,280 @@
 5. **Rollback safety** at every step
 
 Ready to execute với confidence và minimal risk! 🚀
+
+---
+
+## 🚀 **Phase 2B: Foundation Implementation - Detailed Micro-Steps**
+
+### **📋 Overview:**
+- **Duration**: 3 days (9-12 hours total)
+- **Target**: 25% file size reduction (289.8KB → 220KB)
+- **Risk Level**: LOW
+- **Methods**: Extract 52 methods (31 utility + 21 monitor)
+
+---
+
+## 🔧 **Step 2B.1: Utility Module Implementation** (Total: 3-4 hours)
+
+### **Micro-Step 2B.1.1: Environment Setup** ⏱️ 20-25 phút
+**Task**: Tạo directory structure và namespace foundation
+- [ ] Tạo folder `includes/modules/utility-helper/`
+- [ ] Tạo folder `includes/modules/utility-helper/interfaces/`
+- [ ] Tạo folder `includes/modules/utility-helper/components/`
+- [ ] Setup PSR-4 autoloading configuration
+- [ ] Tạo basic namespace structure
+- 📊 **Deliverable**: Directory structure ready
+- ✅ **Success Criteria**: Namespace autoloading works
+
+### **Micro-Step 2B.1.2: Interface Creation** ⏱️ 25-30 phút
+**Task**: Thiết kế interfaces cho Utility module
+- [ ] Tạo `UtilityHelperInterface.php`
+- [ ] Tạo `DataSanitizerInterface.php`
+- [ ] Tạo `ResponseBuilderInterface.php`
+- [ ] Tạo `DateTimeHelperInterface.php`
+- [ ] Validate interface syntax
+- 📊 **Deliverable**: 4 interface contracts defined
+- ✅ **Success Criteria**: All interfaces validate without errors
+
+### **Micro-Step 2B.1.3: DataSanitizer Component** ⏱️ 25-30 phút
+**Task**: Extract và implement data sanitization methods
+- [ ] Extract `sanitize_status_value()`
+- [ ] Extract `sanitize_context_data()`
+- [ ] Extract `sanitize_query_string()`
+- [ ] Test basic sanitization functions
+- [ ] Validate static method implementations
+- 📊 **Deliverable**: DataSanitizer component complete
+- ✅ **Success Criteria**: All sanitization methods work correctly
+
+### **Micro-Step 2B.1.4: ResponseBuilder Component** ⏱️ 25-30 phút
+**Task**: Extract response structure methods
+- [ ] Extract `create_success_response()`
+- [ ] Extract `create_error_response()`
+- [ ] Extract `create_history_record_structure()`
+- [ ] Extract `create_statistics_structure()`
+- [ ] Test response format consistency
+- 📊 **Deliverable**: ResponseBuilder component complete
+- ✅ **Success Criteria**: Consistent response structures generated
+
+### **Micro-Step 2B.1.5: DateTimeHelper Component** ⏱️ 20-25 phút
+**Task**: Extract date/time utility methods
+- [ ] Extract `is_valid_date()`
+- [ ] Extract `format_date_for_display()`
+- [ ] Extract `calculate_date_difference()`
+- [ ] Test date validation functions
+- [ ] Validate timezone handling
+- 📊 **Deliverable**: DateTimeHelper component complete
+- ✅ **Success Criteria**: All date operations work correctly
+
+### **Micro-Step 2B.1.6: Additional Utilities** ⏱️ 25-30 phút
+**Task**: Extract remaining utility methods
+- [ ] Extract `categorize_account_age()`
+- [ ] Extract `determine_permission_level()`
+- [ ] Extract `calculate_login_frequency()`
+- [ ] Extract `estimate_session_duration()`
+- [ ] Extract `get_return_structure_info()`
+- 📊 **Deliverable**: All 31 utility methods extracted
+- ✅ **Success Criteria**: All utility methods functional
+
+### **Micro-Step 2B.1.7: Unit Testing Setup** ⏱️ 30 phút
+**Task**: Tạo test framework cho Utility module
+- [ ] Tạo `UtilityHelperTest.php`
+- [ ] Setup test cases cho DataSanitizer
+- [ ] Setup test cases cho ResponseBuilder
+- [ ] Setup test cases cho DateTimeHelper
+- [ ] Run initial test suite
+- 📊 **Deliverable**: Complete test suite for utility module
+- ✅ **Success Criteria**: >95% test coverage achieved
+
+### **Micro-Step 2B.1.8: Facade Integration** ⏱️ 25-30 phút
+**Task**: Update facade để delegate utility calls
+- [ ] Update `VD_License_Validator` facade
+- [ ] Implement lazy loading cho utility module
+- [ ] Add fallback mechanisms
+- [ ] Test facade delegation
+- [ ] Validate backward compatibility
+- 📊 **Deliverable**: Utility module integrated with facade
+- ✅ **Success Criteria**: All utility calls work through facade
+
+---
+
+## 📊 **Step 2B.2: Infrastructure Monitor Implementation** (Total: 4-5 hours)
+
+### **Micro-Step 2B.2.1: Monitor Directory Setup** ⏱️ 20-25 phút
+**Task**: Tạo Infrastructure Monitor structure
+- [ ] Tạo folder `includes/modules/infrastructure-monitor/`
+- [ ] Tạo subfolder `interfaces/` và `components/`
+- [ ] Setup namespace `VD\LicenseManager\Modules\InfrastructureMonitor`
+- [ ] Configure autoloading
+- [ ] Create base module file
+- 📊 **Deliverable**: Monitor module structure ready
+- ✅ **Success Criteria**: Module loads without errors
+
+### **Micro-Step 2B.2.2: Monitor Interfaces** ⏱️ 25-30 phút
+**Task**: Design monitoring interfaces
+- [ ] Tạo `InfrastructureMonitorInterface.php`
+- [ ] Tạo `HealthCheckerInterface.php`
+- [ ] Tạo `StatusReporterInterface.php`
+- [ ] Tạo `ReadinessValidatorInterface.php`
+- [ ] Validate interface contracts
+- 📊 **Deliverable**: 4 monitoring interfaces defined
+- ✅ **Success Criteria**: Interface contracts validated
+
+### **Micro-Step 2B.2.3: Basic Status Methods** ⏱️ 25-30 phút
+**Task**: Extract basic status monitoring methods
+- [ ] Extract `get_validation_status()`
+- [ ] Extract `get_validation_stats()`
+- [ ] Extract `is_ready()`
+- [ ] Extract `clear_cache()`
+- [ ] Test basic status methods
+- 📊 **Deliverable**: Core status methods extracted
+- ✅ **Success Criteria**: Basic monitoring functional
+
+### **Micro-Step 2B.2.4: Health Checker Component** ⏱️ 30 phút
+**Task**: Implement health checking functionality
+- [ ] Create `HealthChecker` component
+- [ ] Extract `check_database_health()`
+- [ ] Extract `check_cache_health()`
+- [ ] Extract `check_api_health()`
+- [ ] Test health check methods
+- 📊 **Deliverable**: HealthChecker component complete
+- ✅ **Success Criteria**: All health checks working
+
+### **Micro-Step 2B.2.5: Status Reporter Component** ⏱️ 30 phút
+**Task**: Implement comprehensive status reporting
+- [ ] Create `StatusReporter` component
+- [ ] Extract `get_testing_infrastructure_status()`
+- [ ] Extract `get_validation_infrastructure_status()`
+- [ ] Extract `get_documentation_status()`
+- [ ] Test status reporting
+- 📊 **Deliverable**: StatusReporter component complete
+- ✅ **Success Criteria**: Comprehensive status reporting works
+
+### **Micro-Step 2B.2.6: Enhanced Status Methods** ⏱️ 25-30 phút
+**Task**: Extract advanced monitoring methods
+- [ ] Extract `get_enhanced_context_processing_status()`
+- [ ] Extract `get_ip_detection_infrastructure_status()`
+- [ ] Extract `get_user_information_enhancement_status()`
+- [ ] Extract `get_advanced_validation_rules_status()`
+- [ ] Test enhanced status methods
+- 📊 **Deliverable**: Advanced monitoring methods extracted
+- ✅ **Success Criteria**: Enhanced monitoring functional
+
+### **Micro-Step 2B.2.7: Readiness Validator** ⏱️ 20-25 phút
+**Task**: Implement readiness validation
+- [ ] Create `ReadinessValidator` component
+- [ ] Implement dependency validation
+- [ ] Add system resource checks
+- [ ] Add configuration validation
+- [ ] Test readiness checks
+- 📊 **Deliverable**: ReadinessValidator component complete
+- ✅ **Success Criteria**: System readiness validation works
+
+### **Micro-Step 2B.2.8: Monitor Testing** ⏱️ 30 phút
+**Task**: Comprehensive testing for Infrastructure Monitor
+- [ ] Create `InfrastructureMonitorTest.php`
+- [ ] Test health checker components
+- [ ] Test status reporter functionality
+- [ ] Test readiness validation
+- [ ] Run full test suite
+- 📊 **Deliverable**: Complete test suite for monitor module
+- ✅ **Success Criteria**: >95% test coverage achieved
+
+### **Micro-Step 2B.2.9: Facade Integration** ⏱️ 25-30 phút
+**Task**: Integrate monitor với facade
+- [ ] Update facade delegation for monitoring
+- [ ] Implement lazy loading for monitor
+- [ ] Add fallback mechanisms
+- [ ] Test monitoring through facade
+- [ ] Validate performance impact
+- 📊 **Deliverable**: Monitor module integrated with facade
+- ✅ **Success Criteria**: All monitoring calls work through facade
+
+---
+
+## 🧪 **Step 2B.3: Integration & Validation** (Total: 2-3 hours)
+
+### **Micro-Step 2B.3.1: Module Loading Test** ⏱️ 20-25 phút
+**Task**: Test module loading và initialization
+- [ ] Test autoloading functionality
+- [ ] Test namespace resolution
+- [ ] Test singleton patterns
+- [ ] Validate memory usage
+- [ ] Check for conflicts
+- 📊 **Deliverable**: Module loading validation complete
+- ✅ **Success Criteria**: All modules load correctly
+
+### **Micro-Step 2B.3.2: Facade Integration Test** ⏱️ 25-30 phút
+**Task**: Test complete facade delegation
+- [ ] Test utility method delegation
+- [ ] Test monitor method delegation
+- [ ] Test fallback mechanisms
+- [ ] Validate response consistency
+- [ ] Check error handling
+- 📊 **Deliverable**: Complete facade integration tested
+- ✅ **Success Criteria**: All delegations work correctly
+
+### **Micro-Step 2B.3.3: Performance Validation** ⏱️ 25-30 phút
+**Task**: Validate performance benchmarks
+- [ ] Measure response time impact
+- [ ] Check memory usage increase
+- [ ] Test lazy loading efficiency
+- [ ] Validate cache effectiveness
+- [ ] Compare với baseline
+- 📊 **Deliverable**: Performance benchmark report
+- ✅ **Success Criteria**: <50ms degradation, <10% memory increase
+
+### **Micro-Step 2B.3.4: Regression Testing** ⏱️ 30 phút
+**Task**: Ensure no functionality regression
+- [ ] Run existing test suite
+- [ ] Test all utility methods
+- [ ] Test all monitoring methods
+- [ ] Validate API compatibility
+- [ ] Check edge cases
+- 📊 **Deliverable**: Regression test report
+- ✅ **Success Criteria**: Zero functionality regression
+
+### **Micro-Step 2B.3.5: Documentation Update** ⏱️ 20-25 phút
+**Task**: Update documentation for Phase 2B
+- [ ] Update module documentation
+- [ ] Update API documentation
+- [ ] Create usage examples
+- [ ] Update migration status
+- [ ] Generate test reports
+- 📊 **Deliverable**: Updated documentation
+- ✅ **Success Criteria**: Documentation reflects current state
+
+### **Micro-Step 2B.3.6: Migration Status Tracking** ⏱️ 20-25 phút
+**Task**: Track và validate migration progress
+- [ ] Calculate file size reduction
+- [ ] Count extracted methods
+- [ ] Validate target metrics
+- [ ] Update migration status
+- [ ] Prepare for next phase
+- 📊 **Deliverable**: Migration progress report
+- ✅ **Success Criteria**: 25% size reduction achieved
+
+---
+
+## 📊 **Phase 2B Summary:**
+
+| Step | Micro-Steps | Duration | Complexity | Risk | Methods Extracted |
+|------|-------------|----------|------------|------|-------------------|
+| **2B.1** | 8 steps | 3-4 hours | Low | Zero | 31 utility methods |
+| **2B.2** | 9 steps | 4-5 hours | Low-Medium | Low | 21 monitor methods |
+| **2B.3** | 6 steps | 2-3 hours | Low | Low | 0 (integration only) |
+| **Total** | **23 micro-steps** | **9-12 hours** | **Low** | **Low** | **52 methods** |
+
+### **Expected Results:**
+✅ **File Size**: 289.8KB → 220KB (25% reduction)
+✅ **Methods**: 52 methods extracted to 2 modules
+✅ **Architecture**: Foundation established for future phases
+✅ **Testing**: >95% coverage with isolated module testing
+✅ **Performance**: <50ms degradation, <10% memory increase
+
+### **Next Phase Ready:**
+After Phase 2B completion, ready for **Phase 2C: Context & Communication** with target 45% total reduction.
+
+---
+
+**Phase 2B provides the foundation for all subsequent modular extraction phases** 🚀
