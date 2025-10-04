@@ -171,7 +171,12 @@ if (isset($utility_helper) && $utility_helper) {
         $data_sanitizer = $utility_helper->get_data_sanitizer();
         if ($data_sanitizer) {
             $test_data = '  ACTIVE  ';
-            $result = call_user_func(array($data_sanitizer, 'sanitize_status_value'), $test_data);
+            // Use direct static method call for components that return class names
+            if (is_string($data_sanitizer)) {
+                $result = $data_sanitizer::sanitize_status_value($test_data);
+            } else {
+                $result = call_user_func(array($data_sanitizer, 'sanitize_status_value'), $test_data);
+            }
             $test_results['data_sanitizer'] = ($result === 'active');
         }
     } catch (Exception $e) {
@@ -182,8 +187,13 @@ if (isset($utility_helper) && $utility_helper) {
     try {
         $response_builder = $utility_helper->get_response_builder();
         if ($response_builder) {
-            $response = call_user_func(array($response_builder, 'create_success_response'),
-                array('method' => 'test'), 'Test message');
+            // Use direct static method call for components that return class names
+            if (is_string($response_builder)) {
+                $response = $response_builder::create_success_response(array('method' => 'test'), 'Test message');
+            } else {
+                $response = call_user_func(array($response_builder, 'create_success_response'),
+                    array('method' => 'test'), 'Test message');
+            }
             $test_results['response_builder'] = (isset($response['success']) && $response['success'] === true);
         }
     } catch (Exception $e) {
@@ -194,7 +204,12 @@ if (isset($utility_helper) && $utility_helper) {
     try {
         $datetime_helper = $utility_helper->get_datetime_helper();
         if ($datetime_helper) {
-            $result = call_user_func(array($datetime_helper, 'is_valid_date'), '2024-12-31 23:59:59');
+            // Use direct static method call for components that return class names
+            if (is_string($datetime_helper)) {
+                $result = $datetime_helper::is_valid_date('2024-12-31 23:59:59');
+            } else {
+                $result = call_user_func(array($datetime_helper, 'is_valid_date'), '2024-12-31 23:59:59');
+            }
             $test_results['datetime_helper'] = ($result === true);
         }
     } catch (Exception $e) {
@@ -205,7 +220,12 @@ if (isset($utility_helper) && $utility_helper) {
     try {
         $calculation_helper = $utility_helper->get_calculation_helper();
         if ($calculation_helper) {
-            $result = call_user_func(array($calculation_helper, 'calculate_percentage'), 25, 100, 1);
+            // Use direct static method call for components that return class names
+            if (is_string($calculation_helper)) {
+                $result = $calculation_helper::calculate_percentage(25, 100, 1);
+            } else {
+                $result = call_user_func(array($calculation_helper, 'calculate_percentage'), 25, 100, 1);
+            }
             $test_results['calculation_helper'] = ($result === 25.0);
         }
     } catch (Exception $e) {

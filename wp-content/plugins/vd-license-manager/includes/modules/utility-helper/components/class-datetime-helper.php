@@ -39,8 +39,20 @@ class DateTimeHelper implements DateTimeHelperInterface {
             return false;
         }
 
+        // Try Y-m-d H:i:s format first
+        $d = \DateTime::createFromFormat('Y-m-d H:i:s', $date);
+        if ($d && $d->format('Y-m-d H:i:s') === $date) {
+            return true;
+        }
+
+        // Try Y-m-d format
         $d = \DateTime::createFromFormat('Y-m-d', $date);
-        return $d && $d->format('Y-m-d') === $date;
+        if ($d && $d->format('Y-m-d') === $date) {
+            return true;
+        }
+
+        // Try standard strtotime validation as fallback
+        return strtotime($date) !== false;
     }
 
     /**
