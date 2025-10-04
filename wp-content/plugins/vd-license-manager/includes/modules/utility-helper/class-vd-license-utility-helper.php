@@ -164,6 +164,11 @@ class VD_License_Utility_Helper {
                 if (file_exists($interface_file)) {
                     require_once $interface_file;
                 }
+            } elseif ($component_name === 'calculation_helper') {
+                $interface_file = dirname(__FILE__) . '/interfaces/calculation-helper-interface.php';
+                if (file_exists($interface_file)) {
+                    require_once $interface_file;
+                }
             }
 
             require_once $file_path;
@@ -280,6 +285,26 @@ class VD_License_Utility_Helper {
 
         if ($this->is_component_loaded('datetime_helper')) {
             $component = $this->components['datetime_helper'];
+            if (class_exists($component['class'])) {
+                return $component['class'];
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Get CalculationHelper component
+     *
+     * @return object|false CalculationHelper class or false if not loaded
+     */
+    public function get_calculation_helper() {
+        if (!$this->is_component_loaded('calculation_helper')) {
+            $this->load_component('calculation_helper');
+        }
+
+        if ($this->is_component_loaded('calculation_helper')) {
+            $component = $this->components['calculation_helper'];
             if (class_exists($component['class'])) {
                 return $component['class'];
             }

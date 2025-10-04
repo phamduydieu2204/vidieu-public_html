@@ -382,6 +382,42 @@ class VD_License_Validator {
     }
 
     /**
+     * Get CalculationHelper component method
+     *
+     * @since 2B.1.5
+     * @param string $method Method name to call
+     * @param mixed ...$args Arguments to pass to method
+     * @return mixed Method result or fallback value
+     */
+    private function get_calculation_helper_method($method, ...$args) {
+        if ($this->utility_helper) {
+            $calculation_helper = $this->utility_helper->get_calculation_helper();
+            if ($calculation_helper && method_exists($calculation_helper, $method)) {
+                return call_user_func_array(array($calculation_helper, $method), $args);
+            }
+        }
+
+        // If utility helper not available, use fallback implementation
+        if (defined('VD_DEBUG') && VD_DEBUG) {
+            error_log("VD License Validator: CalculationHelper component not available for method: {$method}");
+        }
+
+        // Fallback implementations for critical methods
+        switch ($method) {
+            case 'calculate_execution_time_ms':
+                return $this->legacy_calculate_execution_time_ms(...$args);
+            case 'calculate_percentage':
+                return $this->legacy_calculate_percentage(...$args);
+            case 'calculate_validation_completeness':
+                return $this->legacy_calculate_validation_completeness(...$args);
+            case 'safe_round':
+                return $this->legacy_safe_round(...$args);
+            default:
+                return null;
+        }
+    }
+
+    /**
      * Initialize validator modules
      *
      * @since 1.5.0-rc.1
@@ -698,7 +734,7 @@ class VD_License_Validator {
             $debug_info['hierarchy'] = $hierarchy_validation;
 
             $validation_end = microtime(true);
-            $debug_info['validation_time_ms'] = round(($validation_end - $validation_start) * 1000, 2);
+            $debug_info['validation_time_ms'] = $this->get_calculation_helper_method('calculate_execution_time_ms', $validation_start, $validation_end);
 
             // Debug logging for successful validation
             $this->log_status_validation_debug('status_validation_success', $status_info, $debug_info);
@@ -2335,7 +2371,7 @@ class VD_License_Validator {
             $this->log_notification_error('send_status_change_notification', $e, $license, $notification_context);
         }
 
-        $results['execution_time_ms'] = round((microtime(true) - $start_time) * 1000, 2);
+        $results['execution_time_ms'] = $this->get_calculation_helper_method('calculate_execution_time_ms', $start_time);
 
         return $results;
     }
@@ -3895,7 +3931,7 @@ class VD_License_Validator {
                 )
             );
 
-            $execution_time = round((microtime(true) - $start_time) * 1000, 2);
+            $execution_time = $this->get_calculation_helper_method('calculate_execution_time_ms', $start_time);
 
             // Step 4.2.4.5.1c - Use standardized success response structure
             return $this->create_get_status_statistics_return_structure(
@@ -4105,6 +4141,63 @@ class VD_License_Validator {
         if ($grace_hours < 0) $grace_hours = 0;
         $cutoff_timestamp = current_time('timestamp') - ($grace_hours * 3600);
         return date('Y-m-d H:i:s', $cutoff_timestamp);
+    }
+
+    /**
+     * Legacy fallback for calculate_execution_time_ms
+     *
+     * @deprecated Use CalculationHelper component method instead
+     * @param float $start_time Start time from microtime(true)
+     * @param float $end_time End time (optional)
+     * @return float Execution time in milliseconds
+     */
+    private function legacy_calculate_execution_time_ms($start_time, $end_time = null) {
+        if ($end_time === null) {
+            $end_time = microtime(true);
+        }
+        return round(($end_time - $start_time) * 1000, 2);
+    }
+
+    /**
+     * Legacy fallback for calculate_percentage
+     *
+     * @deprecated Use CalculationHelper component method instead
+     * @param int|float $part Part value
+     * @param int|float $total Total value
+     * @param int $decimals Number of decimal places
+     * @return float Calculated percentage
+     */
+    private function legacy_calculate_percentage($part, $total, $decimals = 1) {
+        if ($total == 0) return 0.0;
+        $percentage = ($part / $total) * 100;
+        return round($percentage, $decimals);
+    }
+
+    /**
+     * Legacy fallback for calculate_validation_completeness
+     *
+     * @deprecated Use CalculationHelper component method instead
+     * @param array $validation_pipeline Validation stages
+     * @param int $total_stages Total stages
+     * @return string Formatted percentage
+     */
+    private function legacy_calculate_validation_completeness($validation_pipeline, $total_stages = 5) {
+        $completed_stages = count($validation_pipeline);
+        $percentage = ($completed_stages / $total_stages) * 100;
+        return round($percentage, 1) . '%';
+    }
+
+    /**
+     * Legacy fallback for safe_round
+     *
+     * @deprecated Use CalculationHelper component method instead
+     * @param float $value Value to round
+     * @param int $precision Decimal places
+     * @return float Rounded value
+     */
+    private function legacy_safe_round($value, $precision = 2) {
+        if (!is_numeric($value)) return 0.0;
+        return round((float) $value, $precision);
     }
 
     /**
@@ -7410,8 +7503,7 @@ class VD_License_Validator {
     private function calculate_validation_completeness($validation_pipeline) {
         $total_stages = 5;
         $completed_stages = count($validation_pipeline);
-        $percentage = ($completed_stages / $total_stages) * 100;
-        return round($percentage, 1) . '%';
+        return $this->get_calculation_helper_method('calculate_validation_completeness', $validation_pipeline, $total_stages);
     }
 
     /**
