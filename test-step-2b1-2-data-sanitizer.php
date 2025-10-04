@@ -60,10 +60,14 @@ try {
             echo "<ul>\n";
             echo "<li>Utility Helper Loading: ✅ SUCCESS</li>\n";
 
-            // Try to load DataSanitizer component
-            $data_sanitizer = $utility_helper->get_data_sanitizer();
+            // Check if component is loaded before getting it
+            echo "<li>Data Sanitizer Component Loaded: " . ($utility_helper->is_component_loaded('data_sanitizer') ? '✅ YES' : '❌ NO') . "</li>\n";
 
-            if ($data_sanitizer) {
+            // Try to load DataSanitizer component
+            try {
+                $data_sanitizer = $utility_helper->get_data_sanitizer();
+
+                if ($data_sanitizer) {
                 echo "<li>DataSanitizer Component: ✅ LOADED</li>\n";
                 echo "<li>DataSanitizer Class: " . $data_sanitizer . "</li>\n";
 
@@ -75,6 +79,9 @@ try {
                 }
             } else {
                 echo "<li>DataSanitizer Component: ❌ FAILED TO LOAD</li>\n";
+            }
+            } catch (Exception $e) {
+                echo "<li>DataSanitizer Loading Error: " . htmlspecialchars($e->getMessage()) . "</li>\n";
             }
             echo "</ul>\n\n";
         } else {

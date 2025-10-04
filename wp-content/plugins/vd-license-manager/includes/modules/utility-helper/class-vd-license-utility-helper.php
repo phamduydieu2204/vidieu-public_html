@@ -148,6 +148,14 @@ class VD_License_Utility_Helper {
         }
 
         try {
+            // Load interfaces first if component needs them
+            if ($component_name === 'data_sanitizer') {
+                $interface_file = dirname(__FILE__) . '/interfaces/data-sanitizer-interface.php';
+                if (file_exists($interface_file)) {
+                    require_once $interface_file;
+                }
+            }
+
             require_once $file_path;
             $this->components[$component_name]['loaded'] = true;
             $this->status['loaded_components']++;
