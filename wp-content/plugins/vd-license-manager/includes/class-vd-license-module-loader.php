@@ -277,6 +277,15 @@ class VD_License_Module_Loader {
                 'namespace' => 'VD\\LicenseManager\\Integration',
                 'dependencies' => array('api.framework', 'security.validator'),
                 'priority' => 24
+            ),
+
+            // Phase 2B.1: Utility Helper Module (Foundation)
+            'utility.helper' => array(
+                'file' => 'utility-helper/class-vd-license-utility-helper.php',
+                'class' => 'VD\\LicenseManager\\UtilityHelper\\VD_License_Utility_Helper',
+                'namespace' => 'VD\\LicenseManager\\UtilityHelper',
+                'dependencies' => array(),
+                'priority' => 1
             )
         );
 
