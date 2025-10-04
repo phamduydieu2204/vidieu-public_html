@@ -356,9 +356,11 @@ class CalculationHelper implements CalculationHelperInterface {
             'input' => array('processed' => 150, 'total' => 200, 'batch' => 50),
             'output' => $progress,
             'passed' => (
-                isset($progress['percentage']) && $progress['percentage'] === 75.0 &&
+                isset($progress['percentage']) && abs($progress['percentage'] - 75.0) < 0.001 &&
                 isset($progress['batches_completed']) && $progress['batches_completed'] === 3 &&
-                isset($progress['items_remaining']) && $progress['items_remaining'] === 50
+                isset($progress['items_remaining']) && $progress['items_remaining'] === 50 &&
+                isset($progress['batches_remaining']) && $progress['batches_remaining'] === 1 &&
+                isset($progress['total_batches']) && $progress['total_batches'] === 4
             )
         );
 
