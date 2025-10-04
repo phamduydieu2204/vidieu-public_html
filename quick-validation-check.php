@@ -38,8 +38,12 @@ echo "<h2>2. File Size Reduction Check</h2>\n";
 $validator_file = ABSPATH . 'wp-content/plugins/vd-license-manager/includes/class-vd-license-validator.php';
 if (file_exists($validator_file)) {
     $current_size = count(file($validator_file));
-    $reduction = 7900 - $current_size;
+    $original_size = 7900; // Original file size before Phase 2B.1
+    $reduction = $original_size - $current_size;
+    echo "<p>Original Size: {$original_size} lines</p>\n";
+    echo "<p>Current Size: {$current_size} lines</p>\n";
     echo "<p>File Size Reduction: {$reduction} lines " . ($reduction >= 250 ? '✅' : '❌') . "</p>\n";
+    echo "<p>Reduction Target: 250+ lines " . ($reduction >= 250 ? '✅ ACHIEVED' : '❌ NOT MET') . "</p>\n";
     $results['file_reduction'] = ($reduction >= 250);
 } else {
     $results['file_reduction'] = false;

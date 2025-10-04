@@ -308,7 +308,10 @@ foreach ($micro_steps as $step => $description) {
 // Final achievement validation
 if (file_exists($validator_file)) {
     $current_size = count(file($validator_file));
-    $reduction = 7900 - $current_size;
+    $original_size = 7900; // Original file size before Phase 2B.1
+    $reduction = $original_size - $current_size;
+    echo "<li>Original File Size: {$original_size} lines</li>\n";
+    echo "<li>Current File Size: {$current_size} lines</li>\n";
     echo "<li>File Size Reduction: {$reduction} lines (Target: 250+) - " . ($reduction >= 250 ? '✅ ACHIEVED' : '❌ NOT MET') . "</li>\n";
     $completion_metrics[] = ($reduction >= 250) ? 1 : 0;
 }
