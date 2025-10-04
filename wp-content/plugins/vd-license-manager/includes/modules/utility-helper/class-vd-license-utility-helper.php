@@ -154,6 +154,11 @@ class VD_License_Utility_Helper {
                 if (file_exists($interface_file)) {
                     require_once $interface_file;
                 }
+            } elseif ($component_name === 'response_builder') {
+                $interface_file = dirname(__FILE__) . '/interfaces/response-builder-interface.php';
+                if (file_exists($interface_file)) {
+                    require_once $interface_file;
+                }
             }
 
             require_once $file_path;
@@ -230,6 +235,26 @@ class VD_License_Utility_Helper {
 
         if ($this->is_component_loaded('data_sanitizer')) {
             $component = $this->components['data_sanitizer'];
+            if (class_exists($component['class'])) {
+                return $component['class'];
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Get ResponseBuilder component
+     *
+     * @return object|false ResponseBuilder class or false if not loaded
+     */
+    public function get_response_builder() {
+        if (!$this->is_component_loaded('response_builder')) {
+            $this->load_component('response_builder');
+        }
+
+        if ($this->is_component_loaded('response_builder')) {
+            $component = $this->components['response_builder'];
             if (class_exists($component['class'])) {
                 return $component['class'];
             }

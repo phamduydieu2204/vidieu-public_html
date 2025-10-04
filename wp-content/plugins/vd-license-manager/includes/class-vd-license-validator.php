@@ -316,6 +316,38 @@ class VD_License_Validator {
     }
 
     /**
+     * Get ResponseBuilder method call
+     *
+     * @since 2B.1.3
+     * @param string $method Method name
+     * @param mixed $data Data for response building
+     * @return mixed Response structure
+     */
+    private function get_response_builder_method($method, $data = null) {
+        if ($this->utility_helper) {
+            $response_builder = $this->utility_helper->get_response_builder();
+            if ($response_builder && method_exists($response_builder, $method)) {
+                return call_user_func(array($response_builder, $method), $data);
+            }
+        }
+
+        // If utility helper not available, log error and return basic structure
+        if (defined('VD_DEBUG') && VD_DEBUG) {
+            error_log("VD License Validator: ResponseBuilder component not available for method: {$method}");
+        }
+
+        // Return basic fallback structure
+        switch ($method) {
+            case 'create_success_response':
+                return array('success' => true, 'data' => $data);
+            case 'create_error_response':
+                return array('success' => false, 'error' => is_string($data) ? $data : 'Unknown error');
+            default:
+                return $data;
+        }
+    }
+
+    /**
      * Initialize validator modules
      *
      * @since 1.5.0-rc.1
@@ -3273,12 +3305,12 @@ class VD_License_Validator {
         $validation_result = $this->validate_track_status_history_parameters($license, $old_status, $new_status, $context);
         if (!$validation_result['valid']) {
             // Step 4.2.4.5.1c - Use standardized error response structure
-            return $this->create_error_response(
-                'track_status_history',
-                'Parameter validation failed',
-                'VALIDATION_FAILED',
-                array('validation_errors' => $validation_result['errors'])
-            );
+            return $this->get_response_builder_method('create_error_response', array(
+                'method' => 'track_status_history',
+                'message' => 'Parameter validation failed',
+                'error_code' => 'VALIDATION_FAILED',
+                'details' => array('validation_errors' => $validation_result['errors'])
+            ));
         }
 
         // Step 4.2.4.5.2 - Temporary History Storage (Memory-Based) Implementation
@@ -4260,20 +4292,20 @@ class VD_License_Validator {
      */
     public function create_track_status_history_return_structure($success, $data = array(), $message = '') {
         if ($success) {
-            return $this->create_success_response(
-                'track_status_history',
-                array_merge(array(
+            return $this->get_response_builder_method('create_success_response', array(
+                'method' => 'track_status_history',
+                'data' => array_merge(array(
                     'history_id' => isset($data['history_id']) ? $data['history_id'] : null,
                     'timestamp' => isset($data['timestamp']) ? $data['timestamp'] : current_time('mysql'),
                     'license_id' => isset($data['license_id']) ? $data['license_id'] : null,
                     'old_status' => isset($data['old_status']) ? $data['old_status'] : '',
                     'new_status' => isset($data['new_status']) ? $data['new_status'] : ''
                 ), $data),
-                array(
+                'metadata' => array(
                     'message' => $message ?: 'Status history tracked successfully',
                     'framework_version' => '4.2.4.5.1c'
                 )
-            );
+            ));
         } else {
             return $this->create_error_response(
                 'track_status_history',
