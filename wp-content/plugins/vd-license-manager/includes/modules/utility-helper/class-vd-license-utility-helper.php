@@ -211,6 +211,26 @@ class VD_License_Utility_Helper {
     }
 
     /**
+     * Get DataSanitizer component
+     *
+     * @return object|false DataSanitizer class or false if not loaded
+     */
+    public function get_data_sanitizer() {
+        if (!$this->is_component_loaded('data_sanitizer')) {
+            $this->load_component('data_sanitizer');
+        }
+
+        if ($this->is_component_loaded('data_sanitizer')) {
+            $component = $this->components['data_sanitizer'];
+            if (class_exists($component['class'])) {
+                return $component['class'];
+            }
+        }
+
+        return false;
+    }
+
+    /**
      * Get module information for debugging
      *
      * @return array Module information

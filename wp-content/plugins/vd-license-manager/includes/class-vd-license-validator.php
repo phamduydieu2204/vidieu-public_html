@@ -57,6 +57,14 @@ class VD_License_Validator {
     private $cache_manager = null;
 
     /**
+     * Utility helper module instance
+     *
+     * @since 2B.1.2
+     * @var VD\LicenseManager\UtilityHelper\VD_License_Utility_Helper|null
+     */
+    private $utility_helper = null;
+
+    /**
      * Validation initialization status
      *
      * @since 4.2.1
@@ -224,6 +232,9 @@ class VD_License_Validator {
             $this->security_audit = VD_Security_Audit::get_instance();
         }
 
+        // Initialize utility helper module - Micro-Step 2B.1.2
+        $this->init_utility_helper();
+
         // CLEANUP: Initialize pattern validator module (partially deprecated after Micro-Steps 1 & 2)
         $this->init_pattern_validator();
 
@@ -261,6 +272,53 @@ class VD_License_Validator {
      */
     private function __wakeup() {
         // Prevent unserialization
+    }
+
+    /**
+     * Initialize utility helper module
+     *
+     * @since 2B.1.2
+     */
+    private function init_utility_helper() {
+        // Load module loader
+        require_once plugin_dir_path(__FILE__) . 'class-vd-license-module-loader.php';
+
+        // Get utility helper through module loader
+        $loader = VD_License_Module_Loader::get_instance();
+        $this->utility_helper = $loader->load_module('utility.helper');
+
+        if ($this->utility_helper && defined('VD_DEBUG') && VD_DEBUG) {
+            error_log('VD License Validator: Utility Helper initialized successfully');
+        }
+    }
+
+    /**
+     * Get DataSanitizer method call
+     *
+     * @since 2B.1.2
+     * @param string $method Method name
+     * @param mixed $data Data to sanitize
+     * @return mixed Sanitized data
+     */
+    private function get_data_sanitizer_method($method, $data) {
+        if ($this->utility_helper) {
+            $sanitizer = $this->utility_helper->get_data_sanitizer();
+            if ($sanitizer && method_exists($sanitizer, $method)) {
+                return call_user_func(array($sanitizer, $method), $data);
+            }
+        }
+
+        // Fallback to legacy methods if utility helper not available
+        switch ($method) {
+            case 'sanitize_status_value':
+                return $this->legacy_sanitize_status_value($data);
+            case 'sanitize_context_data':
+                return $this->legacy_sanitize_context_data($data);
+            case 'sanitize_query_string':
+                return $this->legacy_sanitize_query_string($data);
+            default:
+                return $data;
+        }
     }
 
     /**
@@ -4840,9 +4898,9 @@ class VD_License_Validator {
             // Create structured record for valid data
             $structured_record = array(
                 'license_id' => (int) $license_id,
-                'old_status' => $this->sanitize_status_value($old_status),
-                'new_status' => $this->sanitize_status_value($new_status),
-                'context' => $this->sanitize_context_data($context),
+                'old_status' => $this->get_data_sanitizer_method('sanitize_status_value', $old_status),
+                'new_status' => $this->get_data_sanitizer_method('sanitize_status_value', $new_status),
+                'context' => $this->get_data_sanitizer_method('sanitize_context_data', $context),
                 'validation_metadata' => array(
                     'validated_at' => $validation_metadata['validation_timestamp'],
                     'validation_time_ms' => $validation_metadata['validation_time_ms'],
@@ -5069,28 +5127,30 @@ class VD_License_Validator {
     }
 
     /**
-     * Sanitize status value
+     * Legacy sanitize status value (fallback)
      *
      * Step 4.2.4.5.3a - Core validation utility
+     * @deprecated 2B.1.2 Use DataSanitizer component instead
      *
      * @since 4.2.4.5.3a
      * @param string $status Status value to sanitize
      * @return string Sanitized status value
      */
-    private function sanitize_status_value($status) {
+    private function legacy_sanitize_status_value($status) {
         return strtolower(trim((string) $status));
     }
 
     /**
-     * Sanitize context data
+     * Legacy sanitize context data (fallback)
      *
      * Step 4.2.4.5.3a - Core validation utility
+     * @deprecated 2B.1.2 Use DataSanitizer component instead
      *
      * @since 4.2.4.5.3a
      * @param array $context Context data to sanitize
      * @return array Sanitized context data
      */
-    private function sanitize_context_data($context) {
+    private function legacy_sanitize_context_data($context) {
         if (!is_array($context)) {
             return array();
         }
@@ -5109,7 +5169,7 @@ class VD_License_Validator {
             } elseif (is_bool($value)) {
                 $sanitized[$clean_key] = $value;
             } elseif (is_array($value)) {
-                $sanitized[$clean_key] = $this->sanitize_context_data($value); // Recursive sanitization
+                $sanitized[$clean_key] = $this->legacy_sanitize_context_data($value); // Recursive sanitization
             } else {
                 // Convert other types to string and sanitize
                 $sanitized[$clean_key] = sanitize_text_field((string) $value);
@@ -5276,7 +5336,7 @@ class VD_License_Validator {
 
         try {
             // Sanitize base context first
-            $sanitized_base_context = $this->sanitize_context_data($base_context);
+            $sanitized_base_context = $this->get_data_sanitizer_method('sanitize_context_data', $base_context);
 
             // Initialize enhanced context structure
             $enhanced_context = array(
@@ -5891,22 +5951,23 @@ class VD_License_Validator {
 
         // Remove potential sensitive query parameters
         if (!empty($request_data['query_string'])) {
-            $request_data['query_string'] = $this->sanitize_query_string($request_data['query_string']);
+            $request_data['query_string'] = $this->get_data_sanitizer_method('sanitize_query_string', $request_data['query_string']);
         }
 
         return $request_data;
     }
 
     /**
-     * Sanitize query string to remove sensitive parameters
+     * Legacy sanitize query string (fallback)
      *
      * Step 4.2.4.5.3b - Enhanced Context Processing utility
+     * @deprecated 2B.1.2 Use DataSanitizer component instead
      *
      * @since 4.2.4.5.3b
      * @param string $query_string Query string to sanitize
      * @return string Sanitized query string
      */
-    private function sanitize_query_string($query_string) {
+    private function legacy_sanitize_query_string($query_string) {
         // Remove sensitive parameters
         $sensitive_params = array('password', 'token', 'key', 'secret', 'api_key', 'auth');
 
