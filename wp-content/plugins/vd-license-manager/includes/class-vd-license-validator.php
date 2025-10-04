@@ -262,7 +262,7 @@ class VD_License_Validator {
         // Initialize utility helper module - Micro-Step 2B.1.2
         $this->init_utility_helper();
 
-        // CLEANUP: Initialize pattern validator module (partially deprecated after Micro-Steps 1 & 2)
+        // Initialize pattern validator module
         $this->init_pattern_validator();
 
         $this->initialized = true;
@@ -542,7 +542,7 @@ class VD_License_Validator {
 
     /**
      * Validate license key checksum using extracted module
-     * CLEANUP: Method deprecated - functionality moved to validate_license_key_format()
+     * Method deprecated - functionality moved to validate_license_key_format()
      * Refactored in Step 1.2 - Checksum validation now handled by dedicated module
      *
      * @deprecated Micro-Step 1 - Use validate_license_key_format() instead
@@ -551,7 +551,7 @@ class VD_License_Validator {
      * @return bool True if checksum is valid or not applicable
      */
     private function validate_license_checksum($license_key) {
-        // CLEANUP: Method deprecated - use validate_license_key_format() which includes checksum validation
+        // Method deprecated - use validate_license_key_format() which includes checksum validation
         return $this->validate_license_key_format($license_key, false)['valid'] ?? false;
     }
 
@@ -651,21 +651,6 @@ class VD_License_Validator {
     }
 
     /**
-     * Fallback lookup from VD licenses table
-     * Step 4.2.3 - Fallback mechanism
-     *
-     * @deprecated 1.5.0-rc.1 Moved to Database Query Manager module
-     * @since 4.2.3
-     * @param string $license_key License key to look up
-     * @return array|null License data or null if not found
-     */
-    private function lookup_from_vd_licenses($license_key) {
-        // CLEANUP: This method is deprecated - logic moved to Database Query Manager
-        // Use query manager for all database operations
-        return $this->query_manager ? $this->query_manager->lookup_license($license_key, true) : null;
-    }
-
-    /**
      * Map LMfWC status codes to VD status
      * Step 4.2.3 - Status mapping integration
      *
@@ -675,7 +660,7 @@ class VD_License_Validator {
      * @return string Mapped VD status
      */
     private function map_lmfwc_status($lmfwc_status) {
-        // CLEANUP: This method is deprecated - logic moved to LMfWC Adapter module
+        // This method is deprecated - logic moved to LMfWC Adapter module
         // Status mapping is now handled by the LMfWC Adapter
         $container = VD_License_Dependency_Container::get_instance();
         $lmfwc_adapter = $container->get('database.lmfwc_adapter');
@@ -4128,7 +4113,6 @@ class VD_License_Validator {
             'validated_at' => current_time('mysql')
         );
     }
-
 
     /**
      * Get cached component instance with optimized loading
