@@ -226,8 +226,8 @@ class CalculationHelper implements CalculationHelperInterface {
         }
 
         $percentage = self::calculate_percentage($processed, $total, 1);
-        $batches_completed = $batch_size > 0 ? ceil($processed / $batch_size) : 0;
-        $total_batches = $batch_size > 0 ? ceil($total / $batch_size) : 0;
+        $batches_completed = $batch_size > 0 ? (int) ceil($processed / $batch_size) : 0;
+        $total_batches = $batch_size > 0 ? (int) ceil($total / $batch_size) : 0;
         $batches_remaining = max(0, $total_batches - $batches_completed);
         $items_remaining = max(0, $total - $processed);
 
