@@ -65,6 +65,22 @@ class VD_License_Validator {
     private $utility_helper = null;
 
     /**
+     * Security audit logger module instance
+     *
+     * @since 3.2.0
+     * @var VD\LicenseManager\SecurityAudit\VD_License_Security_Audit_Logger|null
+     */
+    private $security_audit_logger = null;
+
+    /**
+     * Context enhancer module instance
+     *
+     * @since 3.2.0
+     * @var VD\LicenseManager\SecurityAudit\VD_License_Context_Enhancer|null
+     */
+    private $context_enhancer = null;
+
+    /**
      * Component cache for performance optimization
      *
      * @since 2B.1.8
@@ -262,6 +278,9 @@ class VD_License_Validator {
         // Initialize utility helper module - Micro-Step 2B.1.2
         $this->init_utility_helper();
 
+        // Initialize security audit modules - Phase 3.2
+        $this->init_security_audit_modules();
+
         // Initialize pattern validator module
         $this->init_pattern_validator();
 
@@ -316,6 +335,34 @@ class VD_License_Validator {
 
         if ($this->utility_helper && defined('VD_DEBUG') && VD_DEBUG) {
             error_log('VD License Validator: Utility Helper initialized successfully');
+        }
+    }
+
+    /**
+     * Initialize Security Audit modules
+     * Phase 3.2 - Security Audit Logger and Context Enhancer
+     *
+     * @since 3.2.0
+     */
+    private function init_security_audit_modules() {
+        // Load module loader if not already loaded
+        if (!class_exists('VD_License_Module_Loader')) {
+            require_once plugin_dir_path(__FILE__) . 'class-vd-license-module-loader.php';
+        }
+
+        // Get security modules through module loader
+        $loader = VD_License_Module_Loader::get_instance();
+
+        // Initialize Security Audit Logger
+        $this->security_audit_logger = $loader->load_module('security.audit_logger');
+        if ($this->security_audit_logger && defined('VD_DEBUG') && VD_DEBUG) {
+            error_log('VD License Validator: Security Audit Logger initialized successfully');
+        }
+
+        // Initialize Context Enhancer
+        $this->context_enhancer = $loader->load_module('security.context_enhancer');
+        if ($this->context_enhancer && defined('VD_DEBUG') && VD_DEBUG) {
+            error_log('VD License Validator: Context Enhancer initialized successfully');
         }
     }
 
@@ -1060,20 +1107,9 @@ class VD_License_Validator {
      * @return void
      */
     private function log_status_validation_debug($event_type, $status_info, $debug_info) {
-        if (function_exists('vd_debug_log')) {
-            $log_data = array(
-                'event' => $event_type,
-                'status_info' => $status_info,
-                'validation_time' => $debug_info['validation_time_ms'] ?? 0,
-                'timestamp' => current_time('mysql')
-            );
-
-            vd_debug_log(sprintf(
-                '[VD License Validator 4.2.4.1] %s: %s (%.2fms)',
-                $event_type,
-                wp_json_encode($log_data, JSON_UNESCAPED_UNICODE),
-                $debug_info['validation_time_ms'] ?? 0
-            ));
+        // Delegate to Security Audit Logger module (Phase 3.2)
+        if ($this->security_audit_logger) {
+            $this->security_audit_logger->log_status_validation_debug($event_type, $status_info, $debug_info);
         }
     }
 
@@ -1280,27 +1316,9 @@ class VD_License_Validator {
      * @return void
      */
     private function log_license_validation_success($license_key, $license) {
-        if (function_exists('vd_debug_log')) {
-            vd_debug_log(sprintf(
-                '[VD License Validator] Successful validation: %s (ID: %s, Product: %s, Source: %s)',
-                $license_key,
-                $license['id'] ?? 'unknown',
-                $license['product_id'] ?? 'unknown',
-                $license['lookup_source'] ?? 'unknown'
-            ));
-        }
-
-        // Integration với audit logger nếu available
-        if ($this->security_audit && method_exists($this->security_audit, 'log_security_event')) {
-            $this->security_audit->log_security_event(
-                'license_validation_success',
-                array(
-                    'license_key' => substr($license_key, 0, 8) . '***', // Masked for security
-                    'product_id' => $license['product_id'] ?? null,
-                    'lookup_source' => $license['lookup_source'] ?? null
-                ),
-                'info'
-            );
+        // Delegate to Security Audit Logger module (Phase 3.2)
+        if ($this->security_audit_logger) {
+            $this->security_audit_logger->log_license_validation_success($license_key, $license);
         }
     }
 
@@ -1314,13 +1332,9 @@ class VD_License_Validator {
      * @return void
      */
     private function log_automatic_status_update($license, $new_status) {
-        if (function_exists('vd_debug_log')) {
-            vd_debug_log(sprintf(
-                '[VD License Validator] Auto-updated license status: ID %s to %s (was: %s)',
-                $license['id'],
-                $new_status,
-                $license['status'] ?? 'unknown'
-            ));
+        // Delegate to Security Audit Logger module (Phase 3.2)
+        if ($this->security_audit_logger) {
+            $this->security_audit_logger->log_automatic_status_update($license, $new_status);
         }
     }
 
@@ -5374,640 +5388,101 @@ class VD_License_Validator {
      * @todo Add custom metadata hooks for extensibility
      */
     public function generate_context_metadata($base_context = array(), $options = array()) {
-        $generation_start = microtime(true);
-
-        // Default options
-        $default_options = array(
-            'include_user_context' => true,
-            'include_session_data' => true,
-            'include_environment' => true,
-            'include_request_data' => true
-        );
-        $options = array_merge($default_options, $options);
-
-        try {
-            // Sanitize base context first
-            $data_sanitizer = $this->utility_helper ? $this->utility_helper->get_data_sanitizer() : null;
-            $sanitized_base_context = $data_sanitizer ? $data_sanitizer::sanitize_context_data($base_context) : (is_array($base_context) ? array_map('sanitize_text_field', $base_context) : array());
-
-            // Initialize enhanced context structure
-            $enhanced_context = array(
-                'base_context' => $sanitized_base_context,
-                'metadata' => array(
-                    'generated_at' => current_time('c'), // ISO 8601 format
-                    'framework_version' => '4.2.4.5.3b',
-                    'generation_method' => 'generate_context_metadata'
-                )
-            );
-
-            // Add user context if requested
-            if ($options['include_user_context']) {
-                $enhanced_context['user_context'] = $this->detect_user_context();
-            }
-
-            // Add session data if requested
-            if ($options['include_session_data']) {
-                $enhanced_context['session_data'] = $this->generate_session_metadata();
-            }
-
-            // Add environment data if requested
-            if ($options['include_environment']) {
-                $enhanced_context['environment'] = $this->generate_environment_metadata();
-            }
-
-            // Add request data if requested
-            if ($options['include_request_data']) {
-                $enhanced_context['request_data'] = $this->generate_request_metadata();
-            }
-
-            $generation_end = microtime(true);
-            $enhanced_context['metadata']['generation_time_ms'] = round(($generation_end - $generation_start) * 1000, 2);
-
-            return $enhanced_context;
-
-        } catch (Exception $e) {
-            // Fallback to basic context on error
-            error_log('VD License Manager - Context generation error: ' . $e->getMessage());
-
-            return array(
-                'base_context' => isset($sanitized_base_context) ? $sanitized_base_context : $base_context,
-                'metadata' => array(
-                    'generated_at' => current_time('c'),
-                    'framework_version' => '4.2.4.5.3b',
-                    'generation_method' => 'generate_context_metadata',
-                    'generation_error' => $e->getMessage(),
-                    'fallback_mode' => true
-                )
-            );
+        // Phase 3.2 - Delegated to Context Enhancer module
+        if ($this->context_enhancer) {
+            return $this->context_enhancer->generate_context_metadata($base_context, $options);
         }
+
+        // Fallback if module not available
+        return array(
+            'base_context' => $base_context,
+            'metadata' => array(
+                'generated_at' => current_time('c'),
+                'framework_version' => '4.2.4.5.3b',
+                'generation_method' => 'generate_context_metadata',
+                'fallback_mode' => true,
+                'module_unavailable' => true
+            )
+        );
     }
 
     /**
      * Detect user context information
      *
-     * Step 4.2.4.5.3d - User Information Enhancement
-     * Enhanced comprehensive user context detection with behavioral and security analysis
-     *
+     * Phase 3.2 - Delegated to Context Enhancer module
      * @since 4.2.4.5.3d (Enhanced from 4.2.4.5.3b)
      * @return array Comprehensive user context data
      */
     public function detect_user_context() {
-        $start_time = microtime(true);
+        // Phase 3.2 - Delegated to Context Enhancer module
+        if ($this->context_enhancer) {
+            return $this->context_enhancer->detect_user_context();
+        }
 
-        $user_context = array(
+        // Fallback if module not available
+        return array(
             'is_logged_in' => is_user_logged_in(),
-            'user_id' => null,
-            'user_login' => null,
-            'user_roles' => array(),
-            'user_capabilities' => array(),
-            'user_registered' => null,
-            'enhanced_info' => array(),
-            'behavioral_context' => array(),
-            'security_context' => array(),
-            'license_context' => array(),
-            'session_context' => array(),
-            'detection_metadata' => array()
+            'fallback_mode' => true,
+            'module_unavailable' => true
         );
-
-        if (is_user_logged_in()) {
-            $current_user = wp_get_current_user();
-
-            // Basic user information (existing from Step 4.2.4.5.3b)
-            $user_context['user_id'] = $current_user->ID;
-            $user_context['user_login'] = $current_user->user_login;
-            $user_context['user_email'] = $current_user->user_email;
-            $user_context['user_roles'] = $current_user->roles;
-            $user_context['user_registered'] = $current_user->user_registered;
-
-            // Step 4.2.4.5.3d Enhancement 1: Enhanced User Information
-            $user_context['enhanced_info'] = $this->get_enhanced_user_information($current_user);
-
-            // Step 4.2.4.5.3d Enhancement 2: Comprehensive Capability Detection
-            $user_context['user_capabilities'] = $this->get_comprehensive_user_capabilities($current_user);
-
-            // Step 4.2.4.5.3d Enhancement 3: User Behavioral Context
-            $user_context['behavioral_context'] = $this->get_user_behavioral_context($current_user);
-
-            // Step 4.2.4.5.3d Enhancement 4: Security Context
-            $user_context['security_context'] = $this->get_user_security_context($current_user);
-
-            // Step 4.2.4.5.3d Enhancement 5: License Context
-            $user_context['license_context'] = $this->get_user_license_context($current_user);
-
-            // Step 4.2.4.5.3d Enhancement 6: Session Context
-            $user_context['session_context'] = $this->get_user_session_context($current_user);
-        } else {
-            // Step 4.2.4.5.3d Enhancement 7: Anonymous User Enhancement
-            $user_context['anonymous_context'] = $this->get_anonymous_user_context();
-        }
-
-        // Detection metadata
-        $end_time = microtime(true);
-        $user_context['detection_metadata'] = array(
-            'detection_time_ms' => round(($end_time - $start_time) * 1000, 3),
-            'detection_timestamp' => current_time('mysql'),
-            'framework_version' => '4.2.4.5.3d',
-            'enhancement_level' => 'comprehensive'
-        );
-
-        return $user_context;
     }
 
     // ==========================================
-    // Step 4.2.4.5.3d - User Information Enhancement Utilities
+    // Phase 3.2 - User Information Enhancement Utilities
+    // EXTRACTED TO: VD_License_Context_Enhancer module
     // ==========================================
 
-    /**
-     * Step 4.2.4.5.3d - Get Enhanced User Information
-     *
-     * Collect comprehensive user metadata and profile information
-     *
-     * @since 4.2.4.5.3d
-     * @param WP_User $user WordPress user object
-     * @return array Enhanced user information
-     */
-    private function get_enhanced_user_information($user) {
-        $enhanced_info = array(
-            'display_name' => $user->display_name,
-            'first_name' => $user->first_name,
-            'last_name' => $user->last_name,
-            'nickname' => $user->nickname,
-            'description' => $user->description,
-            'user_url' => $user->user_url,
-            'user_status' => $user->user_status,
-            'spam' => isset($user->spam) ? $user->spam : 0,
-            'account_type' => 'standard'
-        );
+    // Phase 3.2 - Removed get_comprehensive_user_capabilities() - moved to Context Enhancer
 
-        // Determine account type based on roles
-        if (in_array('administrator', $user->roles)) {
-            $enhanced_info['account_type'] = 'administrator';
-        } elseif (in_array('shop_manager', $user->roles)) {
-            $enhanced_info['account_type'] = 'shop_manager';
-        } elseif (in_array('customer', $user->roles)) {
-            $enhanced_info['account_type'] = 'customer';
-        }
+    // Phase 3.2 - Removed get_user_behavioral_context() - moved to Context Enhancer
 
-        // Account age calculation
-        if ($user->user_registered) {
-            $registered_date = new DateTime($user->user_registered);
-            $now = new DateTime();
-            $account_age = $now->diff($registered_date);
-            $enhanced_info['account_age_days'] = $account_age->days;
-            $enhanced_info['account_age_category'] = $this->categorize_account_age($account_age->days);
-        }
-
-        // User meta information (selective)
-        $useful_meta_keys = array(
-            'locale', 'rich_editing', 'syntax_highlighting', 'comment_shortcuts',
-            'admin_color', 'use_ssl', 'show_admin_bar_front'
-        );
-
-        $enhanced_info['user_preferences'] = array();
-        foreach ($useful_meta_keys as $meta_key) {
-            $meta_value = get_user_meta($user->ID, $meta_key, true);
-            if ($meta_value !== '') {
-                $enhanced_info['user_preferences'][$meta_key] = $meta_value;
-            }
-        }
-
-        return $enhanced_info;
-    }
-
-    /**
-     * Step 4.2.4.5.3d - Get Comprehensive User Capabilities
-     *
-     * Enhanced capability detection including VD License Manager specific capabilities
-     *
-     * @since 4.2.4.5.3d
-     * @param WP_User $user WordPress user object
-     * @return array Comprehensive capability analysis
-     */
-    private function get_comprehensive_user_capabilities($user) {
-        $capabilities = array(
-            'wordpress_core' => array(),
-            'woocommerce' => array(),
-            'vd_license_manager' => array(),
-            'custom_capabilities' => array(),
-            'capability_summary' => array()
-        );
-
-        // WordPress core capabilities
-        $core_capabilities = array(
-            'read', 'edit_posts', 'delete_posts', 'publish_posts', 'upload_files',
-            'manage_options', 'manage_categories', 'moderate_comments', 'manage_links',
-            'edit_others_posts', 'edit_published_posts', 'delete_others_posts',
-            'delete_published_posts', 'edit_pages', 'delete_pages', 'edit_others_pages',
-            'delete_others_pages', 'publish_pages', 'manage_categories'
-        );
-
-        foreach ($core_capabilities as $cap) {
-            $capabilities['wordpress_core'][$cap] = user_can($user, $cap);
-        }
-
-        // WooCommerce capabilities
-        $woocommerce_capabilities = array(
-            'manage_woocommerce', 'view_woocommerce_reports', 'edit_shop_orders',
-            'read_shop_orders', 'delete_shop_orders', 'edit_shop_coupons',
-            'delete_shop_coupons', 'edit_products', 'read_products', 'delete_products',
-            'publish_shop_orders', 'read_private_shop_orders', 'manage_woocommerce_terms'
-        );
-
-        foreach ($woocommerce_capabilities as $cap) {
-            $capabilities['woocommerce'][$cap] = user_can($user, $cap);
-        }
-
-        // VD License Manager capabilities
-        $vd_capabilities = array(
-            'vd_manage_licenses', 'vd_view_reports', 'vd_edit_licenses',
-            'vd_delete_licenses', 'vd_view_analytics', 'vd_manage_customers',
-            'vd_export_data', 'vd_import_data', 'vd_manage_settings'
-        );
-
-        foreach ($vd_capabilities as $cap) {
-            $capabilities['vd_license_manager'][$cap] = user_can($user, $cap);
-        }
-
-        // Check for custom capabilities
-        $all_caps = $user->get_role_caps();
-        foreach ($all_caps as $cap => $granted) {
-            if (!in_array($cap, $core_capabilities) &&
-                !in_array($cap, $woocommerce_capabilities) &&
-                !in_array($cap, $vd_capabilities)) {
-                $capabilities['custom_capabilities'][$cap] = $granted;
-            }
-        }
-
-        // Generate capability summary
-        $capabilities['capability_summary'] = array(
-            'is_administrator' => user_can($user, 'manage_options'),
-            'can_manage_shop' => user_can($user, 'manage_woocommerce'),
-            'can_manage_licenses' => user_can($user, 'vd_manage_licenses'),
-            'total_capabilities' => count(array_filter($all_caps)),
-            'permission_level' => $this->determine_permission_level($user)
-        );
-
-        return $capabilities;
-    }
-
-    /**
-     * Step 4.2.4.5.3d - Get User Behavioral Context
-     *
-     * Analyze user behavior patterns and activity
-     *
-     * @since 4.2.4.5.3d
-     * @param WP_User $user WordPress user object
-     * @return array User behavioral analysis
-     */
-    private function get_user_behavioral_context($user) {
-        $behavioral_context = array(
-            'login_activity' => array(),
-            'content_activity' => array(),
-            'ecommerce_activity' => array(),
-            'session_patterns' => array()
-        );
-
-        // Login activity analysis
-        $last_login = get_user_meta($user->ID, 'vd_last_login', true);
-        $login_count = get_user_meta($user->ID, 'vd_login_count', true);
-
-        $behavioral_context['login_activity'] = array(
-            'last_login' => $last_login ?: 'never',
-            'login_count' => $login_count ?: 0,
-            'login_frequency' => $this->calculate_login_frequency($user->ID),
-            'current_session_duration' => $this->estimate_session_duration()
-        );
-
-        // Content activity (posts, comments)
-        $behavioral_context['content_activity'] = array(
-            'post_count' => count_user_posts($user->ID),
-            'comment_count' => $this->get_user_comment_count($user->ID),
-            'last_activity' => $this->get_user_last_activity($user->ID)
-        );
-
-        // E-commerce activity (if WooCommerce active)
-        if (class_exists('WooCommerce')) {
-            $behavioral_context['ecommerce_activity'] = $this->get_user_ecommerce_activity($user->ID);
-        }
-
-        // Session patterns
-        $session_manager = WP_Session_Tokens::get_instance($user->ID);
-        $sessions = $session_manager->get_all();
-
-        $behavioral_context['session_patterns'] = array(
-            'active_sessions' => count($sessions),
-            'concurrent_logins' => count($sessions) > 1,
-            'session_devices' => $this->activation_rules ? $this->activation_rules->analyze_session_devices($sessions) : array('total_devices' => 0)
-        );
-
-        return $behavioral_context;
-    }
-
-    /**
-     * Step 4.2.4.5.3d - Get User Security Context
-     *
-     * Analyze user security status and risk factors
-     *
-     * @since 4.2.4.5.3d
-     * @param WP_User $user WordPress user object
-     * @return array User security analysis
-     */
-    private function get_user_security_context($user) {
-        $security_context = array(
-            'account_security' => array(),
-            'access_patterns' => array(),
-            'risk_assessment' => array(),
-            'security_features' => array()
-        );
-
-        // Account security status
-        $security_context['account_security'] = array(
-            'password_strength' => 'unknown', // Would need additional plugin integration
-            'two_factor_enabled' => $this->check_two_factor_status($user->ID),
-            'email_verified' => !empty($user->user_email),
-            'account_locked' => $this->check_account_lock_status($user->ID),
-            'suspicious_activity' => $this->activation_rules ? $this->activation_rules->check_suspicious_activity(array('user_id' => $user->ID)) : array('detected' => false)
-        );
-
-        // Access patterns
-        $security_context['access_patterns'] = array(
-            'admin_access' => is_admin(),
-            'failed_login_attempts' => get_user_meta($user->ID, 'vd_failed_logins', true) ?: 0,
-            'login_ip_consistency' => $this->activation_rules ? $this->activation_rules->analyze_login_ip_patterns(array('user_id' => $user->ID)) : array('inconsistent_patterns' => false),
-            'unusual_activity_detected' => false // Placeholder for advanced detection
-        );
-
-        // Risk assessment
-        $risk_factors = array();
-
-        if ($security_context['access_patterns']['failed_login_attempts'] > 3) {
-            $risk_factors[] = 'multiple_failed_logins';
-        }
-
-        if (count($user->roles) > 2) {
-            $risk_factors[] = 'multiple_roles';
-        }
-
-        if (user_can($user, 'manage_options') && !$security_context['account_security']['two_factor_enabled']) {
-            $risk_factors[] = 'admin_without_2fa';
-        }
-
-        $security_context['risk_assessment'] = array(
-            'risk_level' => count($risk_factors) > 2 ? 'high' : (count($risk_factors) > 0 ? 'medium' : 'low'),
-            'risk_factors' => $risk_factors,
-            'security_score' => $this->calculate_security_score($user, $risk_factors)
-        );
-
-        // Security features availability
-        $security_context['security_features'] = array(
-            'ssl_required' => get_user_meta($user->ID, 'use_ssl', true) === '1',
-            'admin_bar_disabled' => get_user_meta($user->ID, 'show_admin_bar_front', true) === 'false',
-            'password_reset_required' => get_user_meta($user->ID, 'vd_password_reset_required', true) === '1'
-        );
-
-        return $security_context;
-    }
-
-    /**
-     * Step 4.2.4.5.3d - Get User License Context
-     *
-     * VD License Manager specific user context
-     *
-     * @since 4.2.4.5.3d
-     * @param WP_User $user WordPress user object
-     * @return array User license context
-     */
-    private function get_user_license_context($user) {
-        $license_context = array(
-            'license_ownership' => array(),
-            'license_activity' => array(),
-            'purchase_history' => array(),
-            'support_context' => array()
-        );
-
-        // This would integrate with actual license data when database is available
-        // For now, we provide the structure
-
-        $license_context['license_ownership'] = array(
-            'total_licenses' => 0, // Placeholder - would query license database
-            'active_licenses' => 0,
-            'expired_licenses' => 0,
-            'suspended_licenses' => 0,
-            'license_types' => array() // Different license products owned
-        );
-
-        $license_context['license_activity'] = array(
-            'recent_activations' => array(), // Recent license activations
-            'recent_deactivations' => array(),
-            'support_requests' => 0,
-            'last_license_interaction' => null
-        );
-
-        $license_context['purchase_history'] = array(
-            'total_purchases' => 0,
-            'total_spent' => 0,
-            'first_purchase_date' => null,
-            'last_purchase_date' => null,
-            'customer_lifetime_value' => 0
-        );
-
-        $license_context['support_context'] = array(
-            'support_level' => 'standard', // based on license type
-            'priority_support' => false,
-            'support_history_count' => 0
-        );
-
-        return $license_context;
-    }
-
-    /**
-     * Step 4.2.4.5.3d - Get User Session Context
-     *
-     * Enhanced session analysis for logged-in users
-     *
-     * @since 4.2.4.5.3d
-     * @param WP_User $user WordPress user object
-     * @return array User session context
-     */
-    private function get_user_session_context($user) {
-        $session_manager = WP_Session_Tokens::get_instance($user->ID);
-        $sessions = $session_manager->get_all();
-        $current_session = wp_get_session_token();
-
-        $session_context = array(
-            'current_session' => array(),
-            'all_sessions' => array(),
-            'session_analysis' => array()
-        );
-
-        // Current session analysis
-        if ($current_session && isset($sessions[$current_session])) {
-            $current_session_data = $sessions[$current_session];
-            $session_context['current_session'] = array(
-                'login_time' => $current_session_data['login'],
-                'expiration' => $current_session_data['expiration'],
-                'ip_address' => $current_session_data['ip'] ?? 'unknown',
-                'user_agent' => $current_session_data['ua'] ?? 'unknown',
-                'session_duration' => time() - $current_session_data['login']
-            );
-        }
-
-        // All sessions summary
-        $session_context['all_sessions'] = array(
-            'total_sessions' => count($sessions),
-            'session_tokens' => array_keys($sessions),
-            'oldest_session' => !empty($sessions) ? min(array_column($sessions, 'login')) : null,
-            'newest_session' => !empty($sessions) ? max(array_column($sessions, 'login')) : null
-        );
-
-        // Session analysis
-        $session_context['session_analysis'] = array(
-            'concurrent_sessions' => count($sessions) > 1,
-            'long_running_sessions' => $this->count_long_running_sessions($sessions),
-            'cross_device_access' => $this->activation_rules ? $this->activation_rules->validate_cross_device_patterns(array('sessions' => $sessions)) : array('violations_detected' => false),
-            'session_security_score' => $this->activation_rules ? $this->activation_rules->check_activation_security(array('sessions' => $sessions)) : array('security_score' => 100)
-        );
-
-        return $session_context;
-    }
-
-    /**
-     * Step 4.2.4.5.3d - Get Anonymous User Context
-     *
-     * Enhanced context detection for non-logged-in users
-     *
-     * @since 4.2.4.5.3d
-     * @return array Anonymous user context
-     */
-    private function get_anonymous_user_context() {
-        $anonymous_context = array(
-            'visitor_identification' => array(),
-            'session_tracking' => array(),
-            'behavioral_tracking' => array(),
-            'conversion_context' => array()
-        );
-
-        // Visitor identification
-        $anonymous_context['visitor_identification'] = array(
-            'session_id' => session_id(),
-            'visitor_fingerprint' => $this->activation_rules ? $this->activation_rules->generate_visitor_fingerprint() : 'fingerprint_unavailable',
-            'ip_address' => $this->get_client_ip_for_anonymous(),
-            'user_agent' => sanitize_text_field($_SERVER['HTTP_USER_AGENT'] ?? 'unknown'),
-            'referer' => sanitize_url($_SERVER['HTTP_REFERER'] ?? '')
-        );
-
-        // Session tracking
-        $anonymous_context['session_tracking'] = array(
-            'session_duration' => $this->estimate_anonymous_session_duration(),
-            'page_views' => $this->get_anonymous_page_views(),
-            'bounce_risk' => $this->calculate_bounce_risk(),
-            'engagement_score' => $this->calculate_anonymous_engagement()
-        );
-
-        // Behavioral tracking
-        $anonymous_context['behavioral_tracking'] = array(
-            'landing_page' => $this->get_landing_page(),
-            'visited_pages' => $this->get_visited_pages_anonymous(),
-            'time_on_site' => $this->get_time_on_site_anonymous(),
-            'interaction_events' => array() // Placeholder for JS tracking integration
-        );
-
-        // Conversion context
-        $anonymous_context['conversion_context'] = array(
-            'conversion_potential' => 'unknown',
-            'cart_status' => $this->check_anonymous_cart_status(),
-            'registration_likelihood' => $this->estimate_registration_likelihood(),
-            'purchase_intent' => $this->analyze_purchase_intent_anonymous()
-        );
-
-        return $anonymous_context;
-    }
+    // Phase 3.2 - Removed 4 major user context utility methods - moved to Context Enhancer:
+    // - get_user_security_context() (~50 lines)
+    // - get_user_license_context() (~35 lines)
+    // - get_user_session_context() (~50 lines)
+    // - get_anonymous_user_context() (~45 lines)
+    // Total: ~180 lines extracted
 
     /**
      * Generate session metadata
      *
-     * Step 4.2.4.5.3b - Enhanced Context Processing utility
-     *
+     * Phase 3.2 - Delegated to Context Enhancer module
      * @since 4.2.4.5.3b
      * @return array Session metadata
      */
     private function generate_session_metadata() {
-        $session_data = array(
-            'session_id' => session_id(),
-            'session_started' => isset($_SESSION) ? true : false,
-            'wordpress_session' => array(
-                'is_admin' => is_admin(),
-                'is_ajax' => defined('DOING_AJAX') && DOING_AJAX,
-                'is_cron' => defined('DOING_CRON') && DOING_CRON,
-                'is_rest_api' => defined('REST_REQUEST') && REST_REQUEST
-            )
-        );
-
-        // Add WordPress user session info if available
-        if (is_user_logged_in()) {
-            $session_manager = WP_Session_Tokens::get_instance(get_current_user_id());
-            $session_data['wp_session_count'] = count($session_manager->get_all());
+        if ($this->context_enhancer) {
+            return $this->context_enhancer->generate_session_metadata();
         }
-
-        return $session_data;
+        return array('session_id' => session_id(), 'fallback_mode' => true);
     }
 
     /**
      * Generate environment metadata
      *
-     * Step 4.2.4.5.3b - Enhanced Context Processing utility
-     *
+     * Phase 3.2 - Delegated to Context Enhancer module
      * @since 4.2.4.5.3b
      * @return array Environment metadata
      */
     private function generate_environment_metadata() {
-        return array(
-            'php_version' => PHP_VERSION,
-            'wordpress_version' => get_bloginfo('version'),
-            'server_software' => isset($_SERVER['SERVER_SOFTWARE']) ? $_SERVER['SERVER_SOFTWARE'] : 'unknown',
-            'memory_usage' => array(
-                'current' => memory_get_usage(true),
-                'peak' => memory_get_peak_usage(true),
-                'limit' => ini_get('memory_limit')
-            ),
-            'timezone' => array(
-                'wp_timezone' => get_option('timezone_string'),
-                'gmt_offset' => get_option('gmt_offset'),
-                'server_timezone' => date_default_timezone_get()
-            )
-        );
+        if ($this->context_enhancer) {
+            return $this->context_enhancer->generate_environment_metadata();
+        }
+        return array('php_version' => PHP_VERSION, 'fallback_mode' => true);
     }
 
     /**
      * Generate request metadata
      *
-     * Step 4.2.4.5.3b - Enhanced Context Processing utility
-     *
+     * Phase 3.2 - Delegated to Context Enhancer module
      * @since 4.2.4.5.3b
      * @return array Request metadata
      */
     private function generate_request_metadata() {
-        $request_data = array(
-            'method' => isset($_SERVER['REQUEST_METHOD']) ? $_SERVER['REQUEST_METHOD'] : 'unknown',
-            'user_agent' => isset($_SERVER['HTTP_USER_AGENT']) ? $_SERVER['HTTP_USER_AGENT'] : '',
-            'referer' => isset($_SERVER['HTTP_REFERER']) ? $_SERVER['HTTP_REFERER'] : '',
-            'request_time' => isset($_SERVER['REQUEST_TIME']) ? $_SERVER['REQUEST_TIME'] : time(),
-            'request_uri' => isset($_SERVER['REQUEST_URI']) ? $_SERVER['REQUEST_URI'] : '',
-            'query_string' => isset($_SERVER['QUERY_STRING']) ? $_SERVER['QUERY_STRING'] : ''
-        );
-
-        // Sanitize sensitive data
-        if (strlen($request_data['user_agent']) > 500) {
-            $request_data['user_agent'] = substr($request_data['user_agent'], 0, 500) . '...';
+        if ($this->context_enhancer) {
+            return $this->context_enhancer->generate_request_metadata();
         }
-
-        // Remove potential sensitive query parameters
-        if (!empty($request_data['query_string'])) {
-            $data_sanitizer = $this->utility_helper ? $this->utility_helper->get_data_sanitizer() : null;
-            $request_data['query_string'] = $data_sanitizer ? $data_sanitizer::sanitize_query_string($request_data['query_string']) : sanitize_text_field($request_data['query_string']);
-        }
-
-        return $request_data;
+        return array('method' => $_SERVER['REQUEST_METHOD'] ?? 'unknown', 'fallback_mode' => true);
     }
 
     /**

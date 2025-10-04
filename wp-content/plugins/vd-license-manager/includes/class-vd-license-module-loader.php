@@ -286,6 +286,22 @@ class VD_License_Module_Loader {
                 'namespace' => 'VD\\LicenseManager\\UtilityHelper',
                 'dependencies' => array(),
                 'priority' => 1
+            ),
+
+            // Phase 3.2: Security Audit & Context Enhancement
+            'security.audit_logger' => array(
+                'file' => 'security-audit/class-vd-license-security-audit-logger.php',
+                'class' => 'VD\\LicenseManager\\SecurityAudit\\VD_License_Security_Audit_Logger',
+                'namespace' => 'VD\\LicenseManager\\SecurityAudit',
+                'dependencies' => array(),
+                'priority' => 2
+            ),
+            'security.context_enhancer' => array(
+                'file' => 'security-audit/class-vd-license-context-enhancer.php',
+                'class' => 'VD\\LicenseManager\\SecurityAudit\\VD_License_Context_Enhancer',
+                'namespace' => 'VD\\LicenseManager\\SecurityAudit',
+                'dependencies' => array('security.audit_logger'),
+                'priority' => 3
             )
         );
 
