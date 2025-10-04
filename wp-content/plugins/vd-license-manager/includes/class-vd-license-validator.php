@@ -348,6 +348,40 @@ class VD_License_Validator {
     }
 
     /**
+     * Get DateTimeHelper component method
+     *
+     * @since 2B.1.4
+     * @param string $method Method name to call
+     * @param mixed $data Data to pass to method
+     * @return mixed Method result or fallback value
+     */
+    private function get_datetime_helper_method($method, $data = null) {
+        if ($this->utility_helper) {
+            $datetime_helper = $this->utility_helper->get_datetime_helper();
+            if ($datetime_helper && method_exists($datetime_helper, $method)) {
+                return call_user_func(array($datetime_helper, $method), $data);
+            }
+        }
+
+        // If utility helper not available, use fallback implementation
+        if (defined('VD_DEBUG') && VD_DEBUG) {
+            error_log("VD License Validator: DateTimeHelper component not available for method: {$method}");
+        }
+
+        // Fallback implementations for critical methods
+        switch ($method) {
+            case 'is_valid_date':
+                return $this->legacy_is_valid_date($data);
+            case 'calculate_days_until_expiry':
+                return $this->legacy_calculate_days_until_expiry($data);
+            case 'format_grace_cutoff':
+                return $this->legacy_format_grace_cutoff($data);
+            default:
+                return null;
+        }
+    }
+
+    /**
      * Initialize validator modules
      *
      * @since 1.5.0-rc.1
@@ -4012,11 +4046,11 @@ class VD_License_Validator {
                 $errors[] = 'Group by must be one of: ' . implode(', ', $allowed_group_by);
             }
 
-            if (isset($options['date_from']) && !empty($options['date_from']) && !$this->is_valid_date($options['date_from'])) {
+            if (isset($options['date_from']) && !empty($options['date_from']) && !$this->get_datetime_helper_method('is_valid_date', $options['date_from'])) {
                 $errors[] = 'Date from must be a valid date format (Y-m-d)';
             }
 
-            if (isset($options['date_to']) && !empty($options['date_to']) && !$this->is_valid_date($options['date_to'])) {
+            if (isset($options['date_to']) && !empty($options['date_to']) && !$this->get_datetime_helper_method('is_valid_date', $options['date_to'])) {
                 $errors[] = 'Date to must be a valid date format (Y-m-d)';
             }
         }
@@ -4029,15 +4063,60 @@ class VD_License_Validator {
     }
 
     /**
+     * Legacy fallback for is_valid_date
+     *
+     * @deprecated Use DateTimeHelper component method instead
+     * @param string $date Date string to validate
+     * @return bool True if valid date format
+     */
+    private function legacy_is_valid_date($date) {
+        if (empty($date) || !is_string($date)) {
+            return false;
+        }
+        $d = DateTime::createFromFormat('Y-m-d', $date);
+        return $d && $d->format('Y-m-d') === $date;
+    }
+
+    /**
+     * Legacy fallback for calculate_days_until_expiry
+     *
+     * @deprecated Use DateTimeHelper component method instead
+     * @param string $expiry_date Expiry date string
+     * @return int Days until expiry
+     */
+    private function legacy_calculate_days_until_expiry($expiry_date) {
+        if (empty($expiry_date) || $expiry_date === '0000-00-00 00:00:00') {
+            return PHP_INT_MAX;
+        }
+        $expiry_timestamp = strtotime($expiry_date);
+        $current_timestamp = current_time('timestamp');
+        return ceil(($expiry_timestamp - $current_timestamp) / (24 * 3600));
+    }
+
+    /**
+     * Legacy fallback for format_grace_cutoff
+     *
+     * @deprecated Use DateTimeHelper component method instead
+     * @param int $grace_hours Grace period in hours
+     * @return string Formatted cutoff date
+     */
+    private function legacy_format_grace_cutoff($grace_hours) {
+        $grace_hours = (int) $grace_hours;
+        if ($grace_hours < 0) $grace_hours = 0;
+        $cutoff_timestamp = current_time('timestamp') - ($grace_hours * 3600);
+        return date('Y-m-d H:i:s', $cutoff_timestamp);
+    }
+
+    /**
      * Helper method to validate date format
      *
      * @since 4.2.4.5.1b
+     * @deprecated 2B.1.4 Use DateTimeHelper component instead
      * @param string $date Date string to validate
      * @return bool True if valid date format
      */
     private function is_valid_date($date) {
-        $d = DateTime::createFromFormat('Y-m-d', $date);
-        return $d && $d->format('Y-m-d') === $date;
+        return $this->get_datetime_helper_method('is_valid_date', $date);
     }
 
     /**

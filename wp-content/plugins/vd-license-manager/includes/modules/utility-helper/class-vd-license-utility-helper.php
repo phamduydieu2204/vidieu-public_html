@@ -159,6 +159,11 @@ class VD_License_Utility_Helper {
                 if (file_exists($interface_file)) {
                     require_once $interface_file;
                 }
+            } elseif ($component_name === 'datetime_helper') {
+                $interface_file = dirname(__FILE__) . '/interfaces/datetime-helper-interface.php';
+                if (file_exists($interface_file)) {
+                    require_once $interface_file;
+                }
             }
 
             require_once $file_path;
@@ -255,6 +260,26 @@ class VD_License_Utility_Helper {
 
         if ($this->is_component_loaded('response_builder')) {
             $component = $this->components['response_builder'];
+            if (class_exists($component['class'])) {
+                return $component['class'];
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Get DateTimeHelper component
+     *
+     * @return object|false DateTimeHelper class or false if not loaded
+     */
+    public function get_datetime_helper() {
+        if (!$this->is_component_loaded('datetime_helper')) {
+            $this->load_component('datetime_helper');
+        }
+
+        if ($this->is_component_loaded('datetime_helper')) {
+            $component = $this->components['datetime_helper'];
             if (class_exists($component['class'])) {
                 return $component['class'];
             }
