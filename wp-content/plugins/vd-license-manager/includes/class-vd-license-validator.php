@@ -7289,7 +7289,16 @@ class VD_License_Validator {
      * @param array $accumulated_errors All validation errors
      * @return array Error analysis
      */
-    private function analyze_validation_errors($accumulated_errors) {
+    private function analyze_validation_errors($accumulated_errors, $context = array()) {
+        // Step 4.3.3: Delegate to Validation Reporting & Analytics module
+        $module_loader = VD_License_Module_Loader::get_instance();
+        $validation_reporting = $module_loader->load_module('validation.reporting');
+
+        if ($validation_reporting && method_exists($validation_reporting, 'analyze_validation_errors')) {
+            return $validation_reporting->analyze_validation_errors($accumulated_errors, $context);
+        }
+
+        // Fallback implementation if module fails
         $analysis = array(
             'total_errors' => count($accumulated_errors),
             'error_categories' => array(
@@ -7298,10 +7307,12 @@ class VD_License_Validator {
                 'general' => 0
             ),
             'severity_distribution' => array(),
-            'common_issues' => array()
+            'common_issues' => array(),
+            'module_error' => true,
+            'fallback_used' => true
         );
 
-        // Basic error categorization
+        // Basic error categorization fallback
         foreach ($accumulated_errors as $error) {
             if (strpos($error, 'context') !== false) {
                 $analysis['error_categories']['context']++;
@@ -7324,18 +7335,43 @@ class VD_License_Validator {
      * @param array $accumulated_errors All validation errors
      * @return array Recommendations
      */
-    private function generate_validation_recommendations($license, $validation_pipeline, $accumulated_errors) {
-        $recommendations = array();
+    private function generate_validation_recommendations($license, $validation_pipeline, $accumulated_errors, $context = array()) {
+        // Step 4.3.3: Delegate to Validation Reporting & Analytics module
+        $module_loader = VD_License_Module_Loader::get_instance();
+        $validation_reporting = $module_loader->load_module('validation.reporting');
+
+        if ($validation_reporting && method_exists($validation_reporting, 'generate_validation_recommendations')) {
+            return $validation_reporting->generate_validation_recommendations($license, $validation_pipeline, $accumulated_errors, $context);
+        }
+
+        // Fallback implementation if module fails
+        $recommendations = array(
+            'immediate_actions' => array(),
+            'module_error' => true,
+            'fallback_used' => true
+        );
 
         if (!empty($accumulated_errors)) {
-            $recommendations[] = 'Review and fix validation errors before proceeding';
+            $recommendations['immediate_actions'][] = array(
+                'action' => 'Review and fix validation errors before proceeding',
+                'priority' => 'high',
+                'source' => 'fallback'
+            );
         }
 
         if (count($validation_pipeline) < 5) {
-            $recommendations[] = 'Complete all validation pipeline stages';
+            $recommendations['immediate_actions'][] = array(
+                'action' => 'Complete all validation pipeline stages',
+                'priority' => 'medium',
+                'source' => 'fallback'
+            );
         }
 
-        $recommendations[] = 'Regular validation monitoring recommended';
+        $recommendations['immediate_actions'][] = array(
+            'action' => 'Regular validation monitoring recommended',
+            'priority' => 'low',
+            'source' => 'fallback'
+        );
 
         return $recommendations;
     }

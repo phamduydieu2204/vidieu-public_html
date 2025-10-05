@@ -363,6 +363,14 @@ class VD_License_Module_Loader {
                 'namespace' => 'VD\\LicenseManager\\Validation',
                 'dependencies' => array('infrastructure.validation'),
                 'priority' => 10
+            ),
+            // Step 4.3.3: Validation Reporting & Analytics - Advanced reporting and analytics
+            'validation.reporting' => array(
+                'file' => 'validation/class-vd-license-validation-reporting.php',
+                'class' => 'VD\\LicenseManager\\Validation\\VD_License_Validation_Reporting',
+                'namespace' => 'VD\\LicenseManager\\Validation',
+                'dependencies' => array('validation.analyzer'),
+                'priority' => 11
             )
         );
 
