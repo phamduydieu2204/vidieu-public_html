@@ -371,6 +371,14 @@ class VD_License_Module_Loader {
                 'namespace' => 'VD\\LicenseManager\\Validation',
                 'dependencies' => array('validation.analyzer'),
                 'priority' => 11
+            ),
+            // Step 4.4.1: Compliance Validator - Comprehensive compliance management
+            'compliance.validator' => array(
+                'file' => 'compliance/class-vd-license-compliance-validator.php',
+                'class' => 'VD\\LicenseManager\\Compliance\\VD_License_Compliance_Validator',
+                'namespace' => 'VD\\LicenseManager\\Compliance',
+                'dependencies' => array('validation.reporting'),
+                'priority' => 12
             )
         );
 

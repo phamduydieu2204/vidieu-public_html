@@ -6774,21 +6774,30 @@ class VD_License_Validator {
      * @return array Compliance validation result
      */
     private function check_compliance_requirements($license, $context) {
+        // Step 4.4.1: Delegate to Compliance Validator module
+        $module_loader = VD_License_Module_Loader::get_instance();
+        $compliance_validator = $module_loader->load_module('compliance.validator');
+
+        if ($compliance_validator && method_exists($compliance_validator, 'check_compliance_requirements')) {
+            return $compliance_validator->check_compliance_requirements($license, $context);
+        }
+
+        // Fallback implementation if module fails
         $validation_errors = array();
 
-        // Business policy compliance
+        // Business policy compliance fallback
         $business_policy_validation = $this->validate_business_policies($license, $context);
         if (!$business_policy_validation['valid']) {
             $validation_errors = array_merge($validation_errors, $business_policy_validation['errors']);
         }
 
-        // Regulatory compliance (if applicable)
+        // Regulatory compliance fallback
         $regulatory_validation = $this->validate_regulatory_requirements($license, $context);
         if (!$regulatory_validation['valid']) {
             $validation_errors = array_merge($validation_errors, $regulatory_validation['errors']);
         }
 
-        // Security compliance validation
+        // Security compliance validation fallback
         if (!empty($context['user_context']['security_context'])) {
             $security_compliance = $this->validate_security_compliance($license, $context['user_context']['security_context']);
             if (!$security_compliance['valid']) {
@@ -6802,7 +6811,9 @@ class VD_License_Validator {
             'compliance_checks' => array(
                 'business_policies_validated' => $business_policy_validation['valid'],
                 'regulatory_requirements_checked' => $regulatory_validation['valid'],
-                'security_compliance_verified' => !empty($context['user_context']['security_context'])
+                'security_compliance_verified' => !empty($context['user_context']['security_context']),
+                'module_error' => true,
+                'fallback_used' => true
             )
         );
     }
@@ -7238,15 +7249,25 @@ class VD_License_Validator {
      * @return array Validation result
      */
     private function validate_business_policies($license, $context) {
-        // Step 4.2.2 - Delegated to Business Rules Validator module
+        // Step 4.4.1: Delegate to Compliance Validator module
+        $module_loader = VD_License_Module_Loader::get_instance();
+        $compliance_validator = $module_loader->load_module('compliance.validator');
+
+        if ($compliance_validator && method_exists($compliance_validator, 'validate_business_policies')) {
+            return $compliance_validator->validate_business_policies($license, $context);
+        }
+
+        // Step 4.2.2 - Fallback to Business Rules Validator module
         if ($this->business_rules_validator) {
             return $this->business_rules_validator->validate_business_policies($license, $context);
         }
 
-        // Fallback if module not available
+        // Final fallback if modules not available
         return array(
             'valid' => true,
-            'errors' => array()
+            'errors' => array(),
+            'module_error' => true,
+            'fallback_used' => true
         );
     }
 
@@ -7259,10 +7280,20 @@ class VD_License_Validator {
      * @return array Validation result
      */
     private function validate_regulatory_requirements($license, $context) {
-        // Mock regulatory validation
+        // Step 4.4.1: Delegate to Compliance Validator module
+        $module_loader = VD_License_Module_Loader::get_instance();
+        $compliance_validator = $module_loader->load_module('compliance.validator');
+
+        if ($compliance_validator && method_exists($compliance_validator, 'validate_regulatory_requirements')) {
+            return $compliance_validator->validate_regulatory_requirements($license, $context);
+        }
+
+        // Fallback implementation
         return array(
             'valid' => true,
-            'errors' => array()
+            'errors' => array(),
+            'module_error' => true,
+            'fallback_used' => true
         );
     }
 
@@ -7275,10 +7306,20 @@ class VD_License_Validator {
      * @return array Validation result
      */
     private function validate_security_compliance($license, $security_context) {
-        // Mock security compliance validation
+        // Step 4.4.1: Delegate to Compliance Validator module
+        $module_loader = VD_License_Module_Loader::get_instance();
+        $compliance_validator = $module_loader->load_module('compliance.validator');
+
+        if ($compliance_validator && method_exists($compliance_validator, 'validate_security_compliance')) {
+            return $compliance_validator->validate_security_compliance($license, $security_context);
+        }
+
+        // Fallback implementation
         return array(
             'valid' => true,
-            'errors' => array()
+            'errors' => array(),
+            'module_error' => true,
+            'fallback_used' => true
         );
     }
 
