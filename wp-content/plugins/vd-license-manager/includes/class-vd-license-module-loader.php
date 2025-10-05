@@ -345,6 +345,15 @@ class VD_License_Module_Loader {
                 'namespace' => 'VD\\LicenseManager\\ValidationRules',
                 'dependencies' => array('validation_rules.advanced_engine'),
                 'priority' => 8
+            ),
+
+            // Step 4.3.1: Validation Infrastructure
+            'infrastructure.validation' => array(
+                'file' => 'infrastructure/class-vd-license-validation-infrastructure.php',
+                'class' => 'VD\\LicenseManager\\Infrastructure\\VD_License_Validation_Infrastructure',
+                'namespace' => 'VD\\LicenseManager\\Infrastructure',
+                'dependencies' => array('validation_rules.business_rules'),
+                'priority' => 9
             )
         );
 

@@ -121,6 +121,14 @@ class VD_License_Validator {
     private $business_rules_validator = null;
 
     /**
+     * Validation infrastructure module instance
+     *
+     * @since 4.3.1
+     * @var VD\LicenseManager\Infrastructure\VD_License_Validation_Infrastructure|null
+     */
+    private $validation_infrastructure = null;
+
+    /**
      * Component cache for performance optimization
      *
      * @since 2B.1.8
@@ -436,6 +444,12 @@ class VD_License_Validator {
         $this->business_rules_validator = $loader->load_module('validation_rules.business_rules');
         if ($this->business_rules_validator && defined('VD_DEBUG') && VD_DEBUG) {
             error_log('VD License Validator: Business Rules Validator initialized successfully');
+        }
+
+        // Step 4.3.1: Initialize Validation Infrastructure
+        $this->validation_infrastructure = $loader->load_module('infrastructure.validation');
+        if ($this->validation_infrastructure && defined('VD_DEBUG') && VD_DEBUG) {
+            error_log('VD License Validator: Validation Infrastructure initialized successfully');
         }
     }
 
@@ -6435,6 +6449,12 @@ class VD_License_Validator {
      * @return string License key
      */
     private function extract_license_key($license) {
+        // Step 4.3.1 - Delegated to Validation Infrastructure module
+        if ($this->validation_infrastructure) {
+            return $this->validation_infrastructure->extract_license_key($license);
+        }
+
+        // Fallback if module not available
         if (is_string($license)) {
             return $license;
         }
@@ -6452,12 +6472,18 @@ class VD_License_Validator {
      * @return array Orchestrator options
      */
     private function transform_context_to_options($context, $license) {
+        // Step 4.3.1 - Delegated to Validation Infrastructure module
+        if ($this->validation_infrastructure) {
+            return $this->validation_infrastructure->transform_context_to_options($context, $license);
+        }
+
+        // Fallback if module not available
         return array_merge($context, array(
             'license_data' => $license,
             'validation_type' => 'advanced_rules',
             'include_warnings' => true,
             'generate_report' => true,
-            'framework_version' => '4.2.4.5.3e'
+            'framework_version' => '4.3.1'
         ));
     }
 
@@ -6470,6 +6496,12 @@ class VD_License_Validator {
      * @return array Legacy format result
      */
     private function map_orchestrator_result_to_legacy_format($orchestrator_result) {
+        // Step 4.3.1 - Delegated to Validation Infrastructure module
+        if ($this->validation_infrastructure) {
+            return $this->validation_infrastructure->map_orchestrator_result_to_legacy_format($orchestrator_result);
+        }
+
+        // Fallback if module not available
         return array(
             'valid' => $orchestrator_result['valid'],
             'validation_pipeline' => $orchestrator_result['validation_pipeline'] ?? array(),
@@ -6478,7 +6510,7 @@ class VD_License_Validator {
             'info' => array(), // Extracted from advanced_report if needed
             'validation_report' => $orchestrator_result['advanced_report'] ?? array(),
             'validation_time_ms' => $orchestrator_result['execution_time'] ?? 0,
-            'framework_version' => '4.2.4.5.3e-orchestrated',
+            'framework_version' => '4.3.1-orchestrated',
             'pipeline_stages' => count($orchestrator_result['validation_pipeline'] ?? array()),
             'total_checks' => $this->count_orchestrator_checks($orchestrator_result)
         );
@@ -6493,6 +6525,12 @@ class VD_License_Validator {
      * @return int Total number of checks
      */
     private function count_orchestrator_checks($orchestrator_result) {
+        // Step 4.3.1 - Delegated to Validation Infrastructure module
+        if ($this->validation_infrastructure) {
+            return $this->validation_infrastructure->count_orchestrator_checks($orchestrator_result);
+        }
+
+        // Fallback if module not available
         $total = 0;
         $pipeline = $orchestrator_result['validation_pipeline'] ?? array();
 
