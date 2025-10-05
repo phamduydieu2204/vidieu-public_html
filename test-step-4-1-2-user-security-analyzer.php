@@ -371,6 +371,11 @@ echo "<h2>🔗 Test 8: Integration with Main Validator</h2>\n";
 
 $total_tests++;
 try {
+    // Load main validator class
+    if (!class_exists('VD_License_Validator')) {
+        require_once(dirname(__FILE__) . '/wp-content/plugins/vd-license-manager/includes/class-vd-license-validator.php');
+    }
+
     // Load main validator
     if (class_exists('VD_License_Validator')) {
         $validator = VD_License_Validator::get_instance();
