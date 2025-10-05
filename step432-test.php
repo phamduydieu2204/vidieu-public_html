@@ -146,35 +146,127 @@ try {
 echo "<h2>4. Integration Test</h2>";
 
 try {
-    if (file_exists($plugin_dir . 'includes/class-vd-license-validator.php')) {
-        require_once $plugin_dir . 'includes/class-vd-license-validator.php';
+    // Load additional dependencies that validator might need
+    $validator_dependencies = array(
+        'includes/class-vd-database-manager.php',
+        'includes/class-vd-encryption-manager.php',
+        'includes/class-vd-license-core.php'
+    );
 
-        if (class_exists('VD_License_Validator')) {
-            $validator = VD_License_Validator::get_instance();
-            echo "✅ Main validator loaded<br>";
-
-            echo "<h3>Testing Delegation:</h3>";
-
-            // Test format validation delegation
-            $format_result = $validator->validate_license_key_format('H10D-DIJD-14RC-SOLE-6KUV30', true);
-            if (is_array($format_result)) {
-                echo "✅ Format validation delegation working<br>";
-            } else {
-                echo "❌ Format validation delegation issue<br>";
-            }
-
-            // Test expiry validation delegation
-            $expiry_result = $validator->validate_license_expiry('H10D-DIJD-14RC-SOLE-6KUV30');
-            if (is_array($expiry_result)) {
-                echo "✅ Expiry validation delegation working<br>";
-            } else {
-                echo "❌ Expiry validation delegation issue<br>";
-            }
-
+    echo "<h3>Loading Validator Dependencies:</h3>";
+    foreach ($validator_dependencies as $dep_file) {
+        $full_path = $plugin_dir . $dep_file;
+        if (file_exists($full_path)) {
+            require_once $full_path;
+            echo "✅ Loaded: " . basename($dep_file) . "<br>";
         } else {
-            echo "❌ Main validator class not available<br>";
+            echo "⚠️ Optional: " . basename($dep_file) . " (not found)<br>";
         }
     }
+
+    echo "<h3>Loading Main Validator:</h3>";
+    $validator_file = $plugin_dir . 'includes/class-vd-license-validator.php';
+    if (file_exists($validator_file)) {
+        // Check file content first
+        $file_content = file_get_contents($validator_file);
+        $has_class = strpos($file_content, 'class VD_License_Validator') !== false;
+        echo "✅ Validator file exists (" . number_format(filesize($validator_file)) . " bytes)<br>";
+        echo ($has_class ? "✅" : "❌") . " File contains VD_License_Validator class<br>";
+
+        // Try to include with error handling
+        try {
+            require_once $validator_file;
+            echo "✅ Validator file included<br>";
+
+            // Check if class exists after include
+            if (class_exists('VD_License_Validator')) {
+                echo "✅ VD_License_Validator class available<br>";
+
+                // Try to instantiate
+                try {
+                    $validator = VD_License_Validator::get_instance();
+                    echo "✅ Main validator instantiated<br>";
+
+                    echo "<h3>Testing Delegation:</h3>";
+
+                    // Test format validation delegation
+                    echo "<strong>Format Validation Delegation:</strong><br>";
+                    try {
+                        $format_result = $validator->validate_license_key_format('H10D-DIJD-14RC-SOLE-6KUV30', true);
+                        if (is_array($format_result)) {
+                            $status = $format_result['valid'] ? '✅' : '❌';
+                            echo "&nbsp;&nbsp;$status Format validation: " . ($format_result['valid'] ? 'Working' : 'Failed') . "<br>";
+                            echo "&nbsp;&nbsp;📋 Delegation result type: " . gettype($format_result) . "<br>";
+                            if (isset($format_result['module_error'])) {
+                                echo "&nbsp;&nbsp;⚠️ Module error detected<br>";
+                            }
+                        } else {
+                            echo "&nbsp;&nbsp;❌ Format validation returned: " . gettype($format_result) . "<br>";
+                        }
+                    } catch (Exception $e) {
+                        echo "&nbsp;&nbsp;❌ Format validation error: " . $e->getMessage() . "<br>";
+                    }
+
+                    // Test expiry validation delegation
+                    echo "<strong>Expiry Validation Delegation:</strong><br>";
+                    try {
+                        $expiry_result = $validator->validate_license_expiry('H10D-DIJD-14RC-SOLE-6KUV30');
+                        if (is_array($expiry_result)) {
+                            $status = $expiry_result['valid'] ? '✅' : '❌';
+                            echo "&nbsp;&nbsp;$status Expiry validation: " . ($expiry_result['valid'] ? 'Working' : 'Failed') . "<br>";
+                            echo "&nbsp;&nbsp;📋 Delegation result type: " . gettype($expiry_result) . "<br>";
+                            if (isset($expiry_result['module_error'])) {
+                                echo "&nbsp;&nbsp;⚠️ Module error detected<br>";
+                            }
+                        } else {
+                            echo "&nbsp;&nbsp;❌ Expiry validation returned: " . gettype($expiry_result) . "<br>";
+                        }
+                    } catch (Exception $e) {
+                        echo "&nbsp;&nbsp;❌ Expiry validation error: " . $e->getMessage() . "<br>";
+                    }
+
+                    // Test batch validation delegation
+                    echo "<strong>Batch Validation Delegation:</strong><br>";
+                    try {
+                        $batch_result = $validator->validate_license_keys_batch(array('H10D-DIJD-14RC-SOLE-6KUV30', 'TEST-KEY'));
+                        if (is_array($batch_result)) {
+                            echo "&nbsp;&nbsp;✅ Batch validation working<br>";
+                            echo "&nbsp;&nbsp;📋 Result type: " . gettype($batch_result) . "<br>";
+                            if (isset($batch_result['batch_size'])) {
+                                echo "&nbsp;&nbsp;📊 Batch size: " . $batch_result['batch_size'] . "<br>";
+                            }
+                            if (isset($batch_result['module_error'])) {
+                                echo "&nbsp;&nbsp;⚠️ Module error detected<br>";
+                            }
+                        } else {
+                            echo "&nbsp;&nbsp;❌ Batch validation returned: " . gettype($batch_result) . "<br>";
+                        }
+                    } catch (Exception $e) {
+                        echo "&nbsp;&nbsp;❌ Batch validation error: " . $e->getMessage() . "<br>";
+                    }
+
+                } catch (Exception $e) {
+                    echo "❌ Validator instantiation error: " . $e->getMessage() . "<br>";
+                }
+            } else {
+                echo "❌ VD_License_Validator class not available after include<br>";
+
+                // Debug: Show available classes
+                $all_classes = get_declared_classes();
+                $vd_classes = array_filter($all_classes, function($class) {
+                    return strpos($class, 'VD_') === 0;
+                });
+                echo "📋 Available VD classes: " . implode(', ', array_slice($vd_classes, 0, 10)) . "<br>";
+            }
+        } catch (ParseError $e) {
+            echo "❌ Parse error in validator: " . $e->getMessage() . "<br>";
+        } catch (Error $e) {
+            echo "❌ Fatal error in validator: " . $e->getMessage() . "<br>";
+        }
+    } else {
+        echo "❌ Validator file not found<br>";
+    }
+
 } catch (Exception $e) {
     echo "❌ Integration test error: " . $e->getMessage() . "<br>";
 }
