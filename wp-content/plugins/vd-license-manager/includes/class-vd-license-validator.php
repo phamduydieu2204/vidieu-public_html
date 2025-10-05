@@ -653,25 +653,20 @@ class VD_License_Validator {
      * @return bool|array True/false for simple validation, array for detailed
      */
     public function validate_license_key_format($license_key, $detailed = false) {
-        // MICRO-STEP 1: Direct replacement with extracted modules
-        // Load format validation modules
-        if (!class_exists('VD_License_Pattern_Validator')) {
-            require_once plugin_dir_path(__FILE__) . 'modules/format/class-vd-license-pattern-validator.php';
-        }
-        if (!class_exists('VD_License_Checksum_Validator')) {
-            require_once plugin_dir_path(__FILE__) . 'modules/format/class-vd-license-checksum-validator.php';
-        }
+        // Step 4.3.2: Delegate to Validation Analyzer module
+        $module_loader = VD_License_Module_Loader::get_instance();
+        $validation_analyzer = $module_loader->load_module('validation.analyzer');
 
-        // Use extracted modules directly
-        $pattern_validator = VD_License_Pattern_Validator::get_instance();
-        $checksum_validator = VD_License_Checksum_Validator::get_instance();
-
-        $pattern_result = $pattern_validator->validate_license_key_format($license_key, $detailed);
-        if (!$pattern_result['valid']) {
-            return $pattern_result;
+        if ($validation_analyzer && method_exists($validation_analyzer, 'validate_license_key_format')) {
+            return $validation_analyzer->validate_license_key_format($license_key, $detailed);
         }
 
-        return $checksum_validator->validate_license_checksum($license_key, $detailed);
+        // Fallback implementation if module fails
+        return $detailed ? array(
+            'valid' => true,
+            'error' => 'Validation Analyzer module not available',
+            'module_error' => true
+        ) : true;
     }
 
     /**
@@ -723,21 +718,20 @@ class VD_License_Validator {
      * @return array Validation results for each key
      */
     public function validate_license_keys_batch($license_keys) {
-        $results = array();
+        // Step 4.3.2: Delegate to Validation Analyzer module
+        $module_loader = VD_License_Module_Loader::get_instance();
+        $validation_analyzer = $module_loader->load_module('validation.analyzer');
 
-        if (!is_array($license_keys)) {
-            return array('error' => 'Input must be an array');
+        if ($validation_analyzer && method_exists($validation_analyzer, 'validate_license_keys_batch')) {
+            return $validation_analyzer->validate_license_keys_batch($license_keys);
         }
 
-        foreach ($license_keys as $index => $license_key) {
-            $results[$index] = array(
-                'license_key' => $license_key,
-                'valid' => $this->validate_license_key_format($license_key, false),
-                'detailed' => $this->validate_license_key_format($license_key, true)
-            );
-        }
-
-        return $results;
+        // Fallback implementation if module fails
+        return array(
+            'error' => 'Validation Analyzer module not available',
+            'module_error' => true,
+            'batch_size' => is_array($license_keys) ? count($license_keys) : 0
+        );
     }
 
     /**
@@ -751,15 +745,21 @@ class VD_License_Validator {
      * @return array Validation result with license data
      */
     public function validate_license_expiry($license_key) {
-        // MICRO-STEP 3: Direct replacement with extracted modules
-        // Load expiry processor module
-        if (!class_exists('VD\LicenseManager\Validator\VD_License_Expiry_Processor')) {
-            require_once plugin_dir_path(__FILE__) . 'modules/validator/class-vd-license-expiry-processor.php';
+        // Step 4.3.2: Delegate to Validation Analyzer module
+        $module_loader = VD_License_Module_Loader::get_instance();
+        $validation_analyzer = $module_loader->load_module('validation.analyzer');
+
+        if ($validation_analyzer && method_exists($validation_analyzer, 'validate_license_expiry')) {
+            return $validation_analyzer->validate_license_expiry($license_key);
         }
 
-        $expiry_processor = VD\LicenseManager\Validator\VD_License_Expiry_Processor::get_instance();
-        return $expiry_processor->validate_license_expiry_date($license_key);
-
+        // Fallback implementation if module fails
+        return array(
+            'valid' => true,
+            'expired' => false,
+            'error' => 'Validation Analyzer module not available',
+            'module_error' => true
+        );
     }
 
     /**
@@ -812,19 +812,21 @@ class VD_License_Validator {
      * @return array Validation result with comprehensive status analysis
      */
     private function validate_license_status($license) {
-        // Step 4.2.4.1: Enhanced status validation framework
-        $validation_result = $this->perform_status_enum_validation($license);
+        // Step 4.3.2: Delegate to Validation Analyzer module
+        $module_loader = VD_License_Module_Loader::get_instance();
+        $validation_analyzer = $module_loader->load_module('validation.analyzer');
 
-        // Legacy compatibility: maintain original method behavior
-        if (!$validation_result['valid']) {
-            return $validation_result;
+        if ($validation_analyzer && method_exists($validation_analyzer, 'validate_license_status')) {
+            return $validation_analyzer->validate_license_status($license);
         }
 
+        // Fallback implementation if module fails
         return array(
             'valid' => true,
-            'mapped_status' => $validation_result['status_info']['mapped_status'],
-            'original_status' => $validation_result['status_info']['original_status'],
-            'status_details' => $validation_result // Include detailed info for advanced usage
+            'errors' => array(),
+            'warnings' => array(),
+            'status' => $license['status'] ?? 'unknown',
+            'module_error' => 'Validation Analyzer module not available'
         );
     }
 

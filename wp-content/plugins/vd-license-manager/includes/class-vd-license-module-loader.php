@@ -354,6 +354,15 @@ class VD_License_Module_Loader {
                 'namespace' => 'VD\\LicenseManager\\Infrastructure',
                 'dependencies' => array('validation_rules.business_rules'),
                 'priority' => 9
+            ),
+
+            // Step 4.3.2: Validation Analyzer - Core validation analysis
+            'validation.analyzer' => array(
+                'file' => 'validation/class-vd-license-validation-analyzer.php',
+                'class' => 'VD\\LicenseManager\\Validation\\VD_License_Validation_Analyzer',
+                'namespace' => 'VD\\LicenseManager\\Validation',
+                'dependencies' => array('infrastructure.validation'),
+                'priority' => 10
             )
         );
 
