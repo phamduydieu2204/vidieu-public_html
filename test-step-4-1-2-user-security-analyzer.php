@@ -12,9 +12,9 @@
  * @author VD Team
  */
 
-// Prevent direct access
+// Load WordPress environment if not already loaded
 if (!defined('ABSPATH')) {
-    die('Direct access not permitted.');
+    require_once(dirname(__FILE__) . '/wp-config.php');
 }
 
 // Test configuration
@@ -64,9 +64,6 @@ $total_tests = 0;
 $passed_tests = 0;
 
 try {
-    // Load WordPress environment
-    require_once(dirname(__FILE__) . '/wp-config.php');
-
     // Load VD License Manager
     if (!class_exists('VD_License_Manager')) {
         require_once(dirname(__FILE__) . '/wp-content/plugins/vd-license-manager/vd-license-manager.php');
