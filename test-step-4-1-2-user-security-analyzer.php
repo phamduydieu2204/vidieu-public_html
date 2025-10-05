@@ -72,8 +72,8 @@ try {
     echo "<div class='success'>✅ WordPress environment loaded successfully</div>\n";
 
     // Get Module Loader
-    if (class_exists('VD\\LicenseManager\\Core\\VD_License_Module_Loader')) {
-        $loader = VD\LicenseManager\Core\VD_License_Module_Loader::get_instance();
+    if (class_exists('VD_License_Module_Loader')) {
+        $loader = VD_License_Module_Loader::get_instance();
         echo "<div class='success'>✅ Module Loader available</div>\n";
     } else {
         throw new Exception('Module Loader not found');
