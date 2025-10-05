@@ -105,6 +105,14 @@ class VD_License_Validator {
     private $user_security_analyzer = null;
 
     /**
+     * Advanced validation engine module instance
+     *
+     * @since 4.2.1
+     * @var VD\LicenseManager\ValidationRules\VD_License_Advanced_Validation_Engine|null
+     */
+    private $advanced_validation_engine = null;
+
+    /**
      * Component cache for performance optimization
      *
      * @since 2B.1.8
@@ -405,6 +413,15 @@ class VD_License_Validator {
         $this->user_security_analyzer = $loader->load_module('user_analytics.security_analyzer');
         if ($this->user_security_analyzer && defined('VD_DEBUG') && VD_DEBUG) {
             error_log('VD License Validator: User Security Analyzer initialized successfully');
+        }
+
+        // Step 4.2.1: Initialize Advanced Validation Engine
+        $this->advanced_validation_engine = $loader->load_module('validation_rules.advanced_engine');
+        if ($this->advanced_validation_engine) {
+            $this->advanced_validation_engine->set_validator_reference($this);
+            if (defined('VD_DEBUG') && VD_DEBUG) {
+                error_log('VD License Validator: Advanced Validation Engine initialized successfully');
+            }
         }
     }
 
@@ -6486,7 +6503,12 @@ class VD_License_Validator {
      * @return array Fallback validation result
      */
     private function apply_advanced_validation_rules_fallback($license, $context) {
-        // Delegate to constraint validation module if available
+        // Step 4.2.1 - Delegated to Advanced Validation Engine module
+        if ($this->advanced_validation_engine) {
+            return $this->advanced_validation_engine->apply_advanced_validation_rules_fallback($license, $context);
+        }
+
+        // Original fallback if module not available
         if ($this->constraint_validation) {
             return $this->constraint_validation->perform_conditional_state_validation($license, $context);
         }
@@ -6501,7 +6523,7 @@ class VD_License_Validator {
             'info' => array(),
             'validation_report' => array(),
             'validation_time_ms' => 0,
-            'framework_version' => '4.2.4.5.3e-fallback',
+            'framework_version' => '4.2.1-fallback',
             'pipeline_stages' => 0,
             'total_checks' => 0
         );
@@ -6518,6 +6540,12 @@ class VD_License_Validator {
      * @return array Enhanced validation result
      */
     private function perform_enhanced_basic_validation($license, $context) {
+        // Step 4.2.1 - Delegated to Advanced Validation Engine module
+        if ($this->advanced_validation_engine) {
+            return $this->advanced_validation_engine->perform_enhanced_basic_validation($license, $context);
+        }
+
+        // Fallback if module not available
         $validation_errors = array();
 
         // Use existing validation as foundation
@@ -6570,6 +6598,12 @@ class VD_License_Validator {
      * @return array Conditional validation result
      */
     private function perform_conditional_state_validation($license, $context) {
+        // Step 4.2.1 - Delegated to Advanced Validation Engine module
+        if ($this->advanced_validation_engine) {
+            return $this->advanced_validation_engine->perform_conditional_state_validation($license, $context);
+        }
+
+        // Fallback if module not available
         $validation_errors = array();
         $validation_warnings = array();
 
@@ -6629,6 +6663,12 @@ class VD_License_Validator {
      * @return array Cross-entity validation result
      */
     private function validate_license_relationships($license, $context) {
+        // Step 4.2.1 - Delegated to Advanced Validation Engine module
+        if ($this->advanced_validation_engine) {
+            return $this->advanced_validation_engine->validate_license_relationships($license, $context);
+        }
+
+        // Fallback if module not available
         $validation_errors = array();
 
         // User's other licenses validation

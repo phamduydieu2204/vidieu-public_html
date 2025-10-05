@@ -327,6 +327,15 @@ class VD_License_Module_Loader {
                 'namespace' => 'VD\\LicenseManager\\UserAnalytics',
                 'dependencies' => array('user_analytics.context_analyzer'),
                 'priority' => 6
+            ),
+
+            // Step 4.2.1: Advanced Validation Engine
+            'validation_rules.advanced_engine' => array(
+                'file' => 'validation-rules/class-vd-license-advanced-validation-engine.php',
+                'class' => 'VD\\LicenseManager\\ValidationRules\\VD_License_Advanced_Validation_Engine',
+                'namespace' => 'VD\\LicenseManager\\ValidationRules',
+                'dependencies' => array('user_analytics.context_analyzer', 'user_analytics.security_analyzer'),
+                'priority' => 7
             )
         );
 
