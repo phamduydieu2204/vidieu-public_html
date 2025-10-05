@@ -1,0 +1,74 @@
+name: Deploy plugin vd-license-manager only (root files)
+
+on:
+  push:
+    paths:
+      # Chỉ trigger khi file trực tiếp trong vd-license-manager thay đổi
+      - 'wp-content/plugins/vd-license-manager/*'
+      # Loại trừ thư mục con
+      - '!wp-content/plugins/vd-license-manager/**/*'
+  workflow_dispatch: {}
+
+concurrency:
+  group: deploy-plugin
+  cancel-in-progress: true
+
+jobs:
+  deploy-plugin:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2  # Cần để so sánh thay đổi
+
+      # Kiểm tra xem có file nào ở root level thay đổi không
+      - name: Check if root files changed
+        id: check_changes
+        run: |
+          # Lấy danh sách file thay đổi
+          CHANGED_FILES=$(git diff --name-only HEAD^ HEAD)
+          
+          # Kiểm tra xem có file nào trực tiếp trong vd-license-manager không
+          ROOT_FILES_CHANGED=$(echo "$CHANGED_FILES" | grep '^wp-content/plugins/vd-license-manager/[^/]*$' || true)
+          
+          if [ -n "$ROOT_FILES_CHANGED" ]; then
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+            echo "✅ Phát hiện thay đổi ở file root:"
+            echo "$ROOT_FILES_CHANGED"
+          else
+            echo "has_changes=false" >> $GITHUB_OUTPUT
+            echo "❌ Không có thay đổi ở file root, bỏ qua deploy"
+          fi
+
+      # Tạo thư mục tạm chỉ chứa file root
+      - name: Prepare root files only
+        if: steps.check_changes.outputs.has_changes == 'true'
+        run: |
+          # Tạo thư mục tạm
+          mkdir -p /tmp/deploy-temp
+          
+          # Copy CHỈ các file (không phải thư mục) ở root level
+          find wp-content/plugins/vd-license-manager/ -maxdepth 1 -type f -exec cp {} /tmp/deploy-temp/ \;
+          
+          echo "📦 Các file sẽ được deploy:"
+          ls -la /tmp/deploy-temp/
+
+      # Deploy chỉ các file root
+      - name: Deploy root files via FTP/FTPS
+        if: steps.check_changes.outputs.has_changes == 'true'
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          port: ${{ secrets.FTP_PORT }}
+          protocol: ftps
+          server-dir: /domains/vidieu.vn/public_html/wp-content/plugins/vd-license-manager/
+          local-dir: /tmp/deploy-temp/           # Deploy từ thư mục tạm chỉ chứa file root
+          state-name: .ftp-deploy-plugin-sync.json
+          log-level: verbose
+          
+          exclude: |
+            **/.git*
+            .DS_Store
