@@ -113,6 +113,14 @@ class VD_License_Validator {
     private $advanced_validation_engine = null;
 
     /**
+     * Business rules validator module instance
+     *
+     * @since 4.2.2
+     * @var VD\LicenseManager\ValidationRules\VD_License_Business_Rules_Validator|null
+     */
+    private $business_rules_validator = null;
+
+    /**
      * Component cache for performance optimization
      *
      * @since 2B.1.8
@@ -422,6 +430,12 @@ class VD_License_Validator {
             if (defined('VD_DEBUG') && VD_DEBUG) {
                 error_log('VD License Validator: Advanced Validation Engine initialized successfully');
             }
+        }
+
+        // Step 4.2.2: Initialize Business Rules Validator
+        $this->business_rules_validator = $loader->load_module('validation_rules.business_rules');
+        if ($this->business_rules_validator && defined('VD_DEBUG') && VD_DEBUG) {
+            error_log('VD License Validator: Business Rules Validator initialized successfully');
         }
     }
 
@@ -7021,7 +7035,12 @@ class VD_License_Validator {
      * @return array Rule execution result
      */
     private function execute_conditional_rule($license, $context, $rule) {
-        // Mock rule execution - would contain actual business logic
+        // Step 4.2.2 - Delegated to Business Rules Validator module
+        if ($this->business_rules_validator) {
+            return $this->business_rules_validator->execute_conditional_rule($license, $context, $rule);
+        }
+
+        // Fallback if module not available
         return array(
             'rule_id' => $rule['rule_id'],
             'executed' => true,
@@ -7041,6 +7060,12 @@ class VD_License_Validator {
      * @return array Validation result
      */
     private function validate_business_state_machine($license, $target_status, $context) {
+        // Step 4.2.2 - Delegated to Business Rules Validator module
+        if ($this->business_rules_validator) {
+            return $this->business_rules_validator->validate_business_state_machine($license, $target_status, $context);
+        }
+
+        // Fallback if module not available
         $validation_errors = array();
 
         // Valid status transitions
@@ -7075,6 +7100,12 @@ class VD_License_Validator {
      * @return array Validation result
      */
     private function validate_temporal_business_rules($license, $context) {
+        // Step 4.2.2 - Delegated to Business Rules Validator module
+        if ($this->business_rules_validator) {
+            return $this->business_rules_validator->validate_temporal_business_rules($license, $context);
+        }
+
+        // Fallback if module not available
         $validation_errors = array();
         $validation_warnings = array();
 
@@ -7167,7 +7198,12 @@ class VD_License_Validator {
      * @return array Validation result
      */
     private function validate_business_policies($license, $context) {
-        // Mock business policy validation
+        // Step 4.2.2 - Delegated to Business Rules Validator module
+        if ($this->business_rules_validator) {
+            return $this->business_rules_validator->validate_business_policies($license, $context);
+        }
+
+        // Fallback if module not available
         return array(
             'valid' => true,
             'errors' => array()

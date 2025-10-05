@@ -336,6 +336,15 @@ class VD_License_Module_Loader {
                 'namespace' => 'VD\\LicenseManager\\ValidationRules',
                 'dependencies' => array('user_analytics.context_analyzer', 'user_analytics.security_analyzer'),
                 'priority' => 7
+            ),
+
+            // Step 4.2.2: Business Rules Validator
+            'validation_rules.business_rules' => array(
+                'file' => 'validation-rules/class-vd-license-business-rules-validator.php',
+                'class' => 'VD\\LicenseManager\\ValidationRules\\VD_License_Business_Rules_Validator',
+                'namespace' => 'VD\\LicenseManager\\ValidationRules',
+                'dependencies' => array('validation_rules.advanced_engine'),
+                'priority' => 8
             )
         );
 
