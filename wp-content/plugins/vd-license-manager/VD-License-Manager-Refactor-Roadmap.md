@@ -274,17 +274,234 @@
 **Rollback Strategy**: Each micro-step can be independently rolled back
 **Testing Strategy**: Unit tests for each micro-step + Integration tests between steps
 
-### ⏳ Step 3.3: Advanced Threat Protection
-- **Status**: Not Started
-- **Dependencies**: Step 3.2 complete
-- **Estimated Duration**: 2 weeks
-- **Features**: ML-based threat detection, advanced analytics
+---
 
-### ⏳ Step 3.4: Compliance Framework
-- **Status**: Not Started
-- **Dependencies**: Step 3.2, Step 3.3
-- **Estimated Duration**: 1 week
-- **Features**: GDPR, CCPA, SOC2 compliance tools
+## 🧠 Phase 4: User Context & Analytics Extraction (0% ⏳)
+
+**Goal**: Extract user analytics, validation rules, và compliance modules để giảm validator file size xuống ~6,000 lines
+
+**Current Validator Size**: 7,133 lines
+**Target Reduction**: ~1,120 lines
+**Target Final Size**: ~6,000 lines
+**Total Duration**: 70-90 minutes (8 micro-steps)
+
+### 📊 **Phase 4.1: User Analytics Manager (20-25 phút)**
+
+#### ✅ **Step 4.1.1: User Context Analyzer**
+- **Status**: ✅ **COMPLETED**
+- **Duration**: 15-20 phút
+- **Priority**: 1 (Foundation for user analytics)
+- **File**: `modules/user-analytics/class-vd-license-user-context-analyzer.php`
+- **Class**: `VD_License_User_Context_Analyzer`
+- **Namespace**: `VD\LicenseManager\UserAnalytics`
+- **Estimated Lines**: 180-200 lines
+- **Dependencies**: None (standalone module)
+- **Actual Lines**: 268 lines
+- **Methods Extracted**:
+  - ✅ `categorize_account_age()` (line 5749) - User account age classification
+  - ✅ `determine_permission_level()` (line 5763) - User permission analysis
+  - ✅ `calculate_login_frequency()` (line 5778) - Login pattern analysis
+  - ✅ `get_user_comment_count()` (line 5834) - User engagement metrics
+  - ✅ `get_user_last_activity()` (line 5851) - Activity tracking
+  - ✅ `get_user_ecommerce_activity()` (line 5870) - E-commerce behavior analysis
+- **Features**:
+  - ✅ User account classification với age-based categorization
+  - ✅ Permission level analysis với role-based determination
+  - ✅ Login frequency calculation với pattern detection
+  - ✅ User engagement metrics với comment và activity tracking
+  - ✅ E-commerce behavior analysis với purchase history
+  - ✅ Health monitoring và debug capabilities
+  - ✅ Comprehensive user context analysis generation
+- **Test Coverage**: Comprehensive module testing implemented ✅
+- **Test Endpoint**: `https://vidieu.vn/test-step-4-1-1-user-context-analyzer.php`
+- **File Size Impact**: 268 lines extracted from validator
+- **Risk Level**: Low ✅ (user data analysis only)
+- **Implementation Date**: 2025-10-05
+
+#### ⏳ **Step 4.1.2: User Security Analyzer**
+- **Status**: Not Started ⏳
+- **Duration**: 15-20 phút
+- **Priority**: 2 (Security analysis layer)
+- **File**: `modules/user-analytics/class-vd-license-user-security-analyzer.php`
+- **Class**: `VD_License_User_Security_Analyzer`
+- **Namespace**: `VD\LicenseManager\UserAnalytics`
+- **Estimated Lines**: 150-180 lines
+- **Dependencies**: Step 4.1.1 (User Context Analyzer)
+- **Methods to Extract**:
+  - `check_two_factor_status()` (line 5892) - 2FA verification
+  - `check_account_lock_status()` (line 5909) - Account security status
+  - `calculate_security_score()` (line 5921) - Security risk scoring
+  - `count_long_running_sessions()` (line 5941) - Session security analysis
+  - `validate_user_security_context()` (line 6856) - Security context validation
+- **Features**:
+  - Two-factor authentication status checking
+  - Account lock và security status monitoring
+  - Security score calculation với risk assessment
+  - Session security analysis với long-running session detection
+  - Security context validation với comprehensive checks
+  - Security event logging integration
+- **Risk Level**: Medium (security-related functionality)
+
+### 🔧 **Phase 4.2: Validation Rules Manager (20-25 phút)**
+
+#### ⏳ **Step 4.2.1: Advanced Validation Engine**
+- **Status**: Not Started ⏳
+- **Duration**: 15-20 phút
+- **Priority**: 3 (Core validation logic)
+- **File**: `modules/validation-rules/class-vd-license-advanced-validation-engine.php`
+- **Class**: `VD_License_Advanced_Validation_Engine`
+- **Namespace**: `VD\LicenseManager\ValidationRules`
+- **Estimated Lines**: 180-200 lines
+- **Dependencies**: Phase 4.1 (User Analytics complete)
+- **Methods to Extract**:
+  - `apply_advanced_validation_rules()` (line 6285) - Advanced rule application
+  - `perform_enhanced_basic_validation()` (line 6433) - Enhanced validation
+  - `perform_conditional_state_validation()` (line 6485) - State validation
+  - `validate_license_relationships()` (line 6544) - Relationship validation
+- **Features**:
+  - Advanced validation rule engine với configurable rules
+  - Enhanced basic validation với improved checks
+  - Conditional state validation với business logic
+  - License relationship validation với dependency checks
+  - Performance optimization với caching support
+  - Validation result aggregation và reporting
+- **Risk Level**: High (core validation logic)
+
+#### ⏳ **Step 4.2.2: Business Rules Validator**
+- **Status**: Not Started ⏳
+- **Duration**: 15-20 phút
+- **Priority**: 4 (Business logic validation)
+- **File**: `modules/validation-rules/class-vd-license-business-rules-validator.php`
+- **Class**: `VD_License_Business_Rules_Validator`
+- **Namespace**: `VD\LicenseManager\ValidationRules`
+- **Estimated Lines**: 150-180 lines
+- **Dependencies**: Step 4.2.1 (Advanced Validation Engine)
+- **Methods to Extract**:
+  - `validate_business_state_machine()` (line 6910) - State machine validation
+  - `validate_temporal_business_rules()` (line 6944) - Time-based rules
+  - `validate_business_policies()` (line 7036) - Policy validation
+  - `execute_conditional_rule()` (line 6890) - Conditional rule execution
+- **Features**:
+  - Business state machine validation với workflow enforcement
+  - Temporal business rules với time-based constraints
+  - Business policy validation với configurable policies
+  - Conditional rule execution với dynamic rule processing
+  - Business logic consistency checking
+  - Policy compliance reporting
+- **Risk Level**: High (business logic validation)
+
+### 🏗️ **Phase 4.3: Infrastructure Manager (15-20 phút)**
+
+#### ⏳ **Step 4.3.1: Validation Infrastructure**
+- **Status**: Not Started ⏳
+- **Duration**: 10-15 phút
+- **Priority**: 5 (Supporting infrastructure)
+- **File**: `modules/infrastructure/class-vd-license-validation-infrastructure.php`
+- **Class**: `VD_License_Validation_Infrastructure`
+- **Namespace**: `VD\LicenseManager\Infrastructure`
+- **Estimated Lines**: 120-150 lines
+- **Dependencies**: Phase 4.2 (Validation Rules complete)
+- **Methods to Extract**:
+  - `extract_license_key()` (line 6319) - License key extraction
+  - `transform_context_to_options()` (line 6336) - Context transformation
+  - `map_orchestrator_result_to_legacy_format()` (line 6354) - Result mapping
+  - `count_orchestrator_checks()` (line 6377) - Check counting
+- **Features**:
+  - License key extraction với format normalization
+  - Context transformation với option mapping
+  - Result mapping với legacy format support
+  - Orchestrator check counting với statistics
+  - Data transformation utilities
+  - Format conversion tools
+- **Risk Level**: Low (infrastructure utilities)
+
+#### ⏳ **Step 4.3.2: Validation Analyzer**
+- **Status**: Not Started ⏳
+- **Duration**: 10-15 phút
+- **Priority**: 6 (Analysis và reporting)
+- **File**: `modules/infrastructure/class-vd-license-validation-analyzer.php`
+- **Class**: `VD_License_Validation_Analyzer`
+- **Namespace**: `VD\LicenseManager\Infrastructure`
+- **Estimated Lines**: 100-120 lines
+- **Dependencies**: Step 4.3.1 (Validation Infrastructure)
+- **Methods to Extract**:
+  - `analyze_validation_errors()` (line 7083) - Error analysis
+  - `generate_validation_recommendations()` (line 7118) - Recommendation generation
+- **Features**:
+  - Validation error analysis với categorization
+  - Validation recommendation generation với actionable insights
+  - Error pattern detection với trend analysis
+  - Performance metrics calculation
+  - Validation quality scoring
+  - Report generation capabilities
+- **Risk Level**: Low (analysis và reporting)
+
+### 🛡️ **Phase 4.4: Compliance & Security Manager (15-20 phút)**
+
+#### ⏳ **Step 4.4.1: Compliance Validator**
+- **Status**: Not Started ⏳
+- **Duration**: 10-15 phút
+- **Priority**: 7 (Compliance checking)
+- **File**: `modules/compliance/class-vd-license-compliance-validator.php`
+- **Class**: `VD_License_Compliance_Validator`
+- **Namespace**: `VD\LicenseManager\Compliance`
+- **Estimated Lines**: 120-140 lines
+- **Dependencies**: Phase 4.3 (Infrastructure complete)
+- **Methods to Extract**:
+  - `check_compliance_requirements()` (line 6595) - Compliance checking
+  - `validate_regulatory_requirements()` (line 7052) - Regulatory validation
+  - `validate_security_compliance()` (line 7068) - Security compliance
+- **Features**:
+  - Compliance requirement checking với multi-standard support
+  - Regulatory requirement validation với jurisdiction awareness
+  - Security compliance validation với security frameworks
+  - Compliance reporting với audit trail
+  - Regulatory change tracking
+  - Compliance scoring và recommendations
+- **Risk Level**: Medium (compliance-related functionality)
+
+#### ⏳ **Step 4.4.2: Context Validators**
+- **Status**: Not Started ⏳
+- **Duration**: 10-15 phút
+- **Priority**: 8 (Context validation layer)
+- **File**: `modules/compliance/class-vd-license-context-validators.php`
+- **Class**: `VD_License_Context_Validators`
+- **Namespace**: `VD\LicenseManager\Compliance`
+- **Estimated Lines**: 100-120 lines
+- **Dependencies**: Step 4.4.1 (Compliance Validator)
+- **Methods to Extract**:
+  - `validate_user_context_requirements()` (line 6767) - User context validation
+  - `validate_ip_context_requirements()` (line 6812) - IP context validation
+  - `validate_user_license_consistency()` (line 6986) - Consistency validation
+- **Features**:
+  - User context requirement validation với permission checking
+  - IP context requirement validation với geographical restrictions
+  - User-license consistency validation với relationship checking
+  - Context integrity verification
+  - Cross-context validation rules
+  - Context-based access control
+- **Risk Level**: Medium (access control functionality)
+
+### 📊 **Phase 4 Implementation Strategy**
+
+**Total Files Created**: 8 modules across 4 categories
+**Total Lines Extracted**: ~1,120 lines
+**Implementation Order**: 4.1.1 → 4.1.2 → 4.2.1 → 4.2.2 → 4.3.1 → 4.3.2 → 4.4.1 → 4.4.2
+**Rollback Strategy**: Each micro-step can be independently rolled back
+**Testing Strategy**: Individual module tests + Integration tests between modules
+
+**Sequential Dependencies**:
+- Phase 4.1: User Analytics (foundation layer)
+- Phase 4.2: Validation Rules (depends on 4.1 for user context)
+- Phase 4.3: Infrastructure (depends on 4.2 for validation support)
+- Phase 4.4: Compliance (depends on 4.3 for infrastructure support)
+
+**Expected Impact**:
+- **Validator Size**: 7,133 → ~6,000 lines (15% reduction)
+- **Modular Architecture**: 8 new specialized modules
+- **Code Organization**: Clear separation of concerns
+- **Maintainability**: Improved code maintainability và testability
+- **Performance**: Potential performance improvements through modular loading
 
 ---
 
@@ -918,10 +1135,27 @@
 - **Phase 1**: ✅ 100% Complete
 - **Phase 2**: ✅ 100% Complete
 - **Phase 3**: ✅ 100% Complete (All Step 3.2.x modules completed: 3.2.1 + 3.2.2 + 3.2.3 + 3.2.4 + 3.2.5 + 3.2.6 + **3.3 Domain Context Manager**)
-- **Phase 4**: ✅ 100% Complete (Step 4.1 REST API Framework + Step 4.2 Webhook System + Step 4.3 Third-party Integrations completed)
+- **Phase 4**: ⏳ 0% Complete (User Context & Analytics Extraction: 8 micro-steps planned)
+- **Phase 4 (API)**: ✅ 100% Complete (Step 4.1 REST API Framework + Step 4.2 Webhook System + Step 4.3 Third-party Integrations completed)
 - **Phase 5**: ⏳ 50% Complete (Steps 5.1.1-5.1.9 completed - Performance Testing Framework Ready)
 
 **Total Project Progress**: 88% Complete
+
+### 📊 **Validator File Reduction Progress**
+
+**Original Validator Size**: ~8,500 lines (estimated before refactoring)
+**Current Validator Size**: 7,133 lines
+**Total Lines Extracted**: 1,137 lines (Phase 2B.1 + 3.2 + 3.3)
+**Phase 4 Target**: Extract additional 1,120 lines
+**Final Target Size**: ~6,000 lines (30% total reduction)
+
+**Phases Breakdown**:
+- ✅ **Phase 2B.1**: 311 lines extracted
+- ✅ **Phase 3.2**: 264 lines extracted
+- ✅ **Phase 3.3**: 562 lines extracted
+- ⏳ **Phase 4**: 1,120 lines planned (8 micro-steps)
+
+**Total Reduction Achievement**: 13.4% completed, 30% target
 
 ---
 

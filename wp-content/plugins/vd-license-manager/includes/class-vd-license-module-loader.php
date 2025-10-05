@@ -311,6 +311,15 @@ class VD_License_Module_Loader {
                 'namespace' => 'VD\\LicenseManager\\DomainContext',
                 'dependencies' => array(),
                 'priority' => 4
+            ),
+
+            // Phase 4.1: User Analytics Management
+            'user_analytics.context_analyzer' => array(
+                'file' => 'user-analytics/class-vd-license-user-context-analyzer.php',
+                'class' => 'VD\\LicenseManager\\UserAnalytics\\VD_License_User_Context_Analyzer',
+                'namespace' => 'VD\\LicenseManager\\UserAnalytics',
+                'dependencies' => array(),
+                'priority' => 5
             )
         );
 

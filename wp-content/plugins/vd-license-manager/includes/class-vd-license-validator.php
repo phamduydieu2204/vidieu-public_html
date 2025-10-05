@@ -89,6 +89,14 @@ class VD_License_Validator {
     private $domain_context_manager = null;
 
     /**
+     * User context analyzer module instance
+     *
+     * @since 4.1.1
+     * @var VD\LicenseManager\UserAnalytics\VD_License_User_Context_Analyzer|null
+     */
+    private $user_context_analyzer = null;
+
+    /**
      * Component cache for performance optimization
      *
      * @since 2B.1.8
@@ -377,6 +385,12 @@ class VD_License_Validator {
         $this->domain_context_manager = $loader->load_module('domain.context_manager');
         if ($this->domain_context_manager && defined('VD_DEBUG') && VD_DEBUG) {
             error_log('VD License Validator: Domain Context Manager initialized successfully');
+        }
+
+        // Phase 4.1: Initialize User Context Analyzer
+        $this->user_context_analyzer = $loader->load_module('user_analytics.context_analyzer');
+        if ($this->user_context_analyzer && defined('VD_DEBUG') && VD_DEBUG) {
+            error_log('VD License Validator: User Context Analyzer initialized successfully');
         }
     }
 
@@ -5747,6 +5761,12 @@ class VD_License_Validator {
      * @return string Account age category
      */
     private function categorize_account_age($days) {
+        // Phase 4.1.1 - Delegated to User Context Analyzer module
+        if ($this->user_context_analyzer) {
+            return $this->user_context_analyzer->categorize_account_age($days);
+        }
+
+        // Fallback if module not available
         if ($days < 30) return 'new';
         if ($days < 90) return 'recent';
         if ($days < 365) return 'established';
@@ -5761,6 +5781,12 @@ class VD_License_Validator {
      * @return string Permission level
      */
     private function determine_permission_level($user) {
+        // Phase 4.1.1 - Delegated to User Context Analyzer module
+        if ($this->user_context_analyzer) {
+            return $this->user_context_analyzer->determine_permission_level($user);
+        }
+
+        // Fallback if module not available
         if (user_can($user, 'manage_options')) return 'administrator';
         if (user_can($user, 'manage_woocommerce')) return 'shop_manager';
         if (user_can($user, 'vd_manage_licenses')) return 'license_manager';
@@ -5776,6 +5802,12 @@ class VD_License_Validator {
      * @return string Login frequency category
      */
     private function calculate_login_frequency($user_id) {
+        // Phase 4.1.1 - Delegated to User Context Analyzer module
+        if ($this->user_context_analyzer) {
+            return $this->user_context_analyzer->calculate_login_frequency($user_id);
+        }
+
+        // Fallback if module not available
         $login_count = get_user_meta($user_id, 'vd_login_count', true) ?: 0;
         $user = get_user_by('ID', $user_id);
 
@@ -5832,6 +5864,12 @@ class VD_License_Validator {
      * @return int Comment count
      */
     private function get_user_comment_count($user_id) {
+        // Phase 4.1.1 - Delegated to User Context Analyzer module
+        if ($this->user_context_analyzer) {
+            return $this->user_context_analyzer->get_user_comment_count($user_id);
+        }
+
+        // Fallback if module not available
         global $wpdb;
 
         $count = $wpdb->get_var($wpdb->prepare(
@@ -5849,6 +5887,12 @@ class VD_License_Validator {
      * @return string Last activity timestamp
      */
     private function get_user_last_activity($user_id) {
+        // Phase 4.1.1 - Delegated to User Context Analyzer module
+        if ($this->user_context_analyzer) {
+            return $this->user_context_analyzer->get_user_last_activity($user_id);
+        }
+
+        // Fallback if module not available
         $last_activity = get_user_meta($user_id, 'vd_last_activity', true);
         if ($last_activity) return $last_activity;
 
@@ -5868,6 +5912,12 @@ class VD_License_Validator {
      * @return array Ecommerce activity data
      */
     private function get_user_ecommerce_activity($user_id) {
+        // Phase 4.1.1 - Delegated to User Context Analyzer module
+        if ($this->user_context_analyzer) {
+            return $this->user_context_analyzer->get_user_ecommerce_activity($user_id);
+        }
+
+        // Fallback if module not available
         if (!class_exists('WooCommerce')) {
             return array('woocommerce_not_active' => true);
         }
