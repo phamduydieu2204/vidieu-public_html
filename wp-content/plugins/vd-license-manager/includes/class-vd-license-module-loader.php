@@ -320,6 +320,13 @@ class VD_License_Module_Loader {
                 'namespace' => 'VD\\LicenseManager\\UserAnalytics',
                 'dependencies' => array(),
                 'priority' => 5
+            ),
+            'user_analytics.security_analyzer' => array(
+                'file' => 'user-analytics/class-vd-license-user-security-analyzer.php',
+                'class' => 'VD\\LicenseManager\\UserAnalytics\\VD_License_User_Security_Analyzer',
+                'namespace' => 'VD\\LicenseManager\\UserAnalytics',
+                'dependencies' => array('user_analytics.context_analyzer'),
+                'priority' => 6
             )
         );
 

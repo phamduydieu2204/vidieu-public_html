@@ -97,6 +97,14 @@ class VD_License_Validator {
     private $user_context_analyzer = null;
 
     /**
+     * User security analyzer module instance
+     *
+     * @since 4.1.2
+     * @var VD\LicenseManager\UserAnalytics\VD_License_User_Security_Analyzer|null
+     */
+    private $user_security_analyzer = null;
+
+    /**
      * Component cache for performance optimization
      *
      * @since 2B.1.8
@@ -391,6 +399,12 @@ class VD_License_Validator {
         $this->user_context_analyzer = $loader->load_module('user_analytics.context_analyzer');
         if ($this->user_context_analyzer && defined('VD_DEBUG') && VD_DEBUG) {
             error_log('VD License Validator: User Context Analyzer initialized successfully');
+        }
+
+        // Phase 4.1.2: Initialize User Security Analyzer
+        $this->user_security_analyzer = $loader->load_module('user_analytics.security_analyzer');
+        if ($this->user_security_analyzer && defined('VD_DEBUG') && VD_DEBUG) {
+            error_log('VD License Validator: User Security Analyzer initialized successfully');
         }
     }
 
@@ -5940,7 +5954,12 @@ class VD_License_Validator {
      * @return bool Two factor status
      */
     private function check_two_factor_status($user_id) {
-        // Check for common 2FA plugins
+        // Phase 4.1.2 - Delegated to User Security Analyzer module
+        if ($this->user_security_analyzer) {
+            return $this->user_security_analyzer->check_two_factor_status($user_id);
+        }
+
+        // Fallback if module not available
         if (class_exists('Two_Factor_Core')) {
             return !empty(Two_Factor_Core::get_enabled_providers_for_user($user_id));
         }
@@ -5957,6 +5976,12 @@ class VD_License_Validator {
      * @return bool Account lock status
      */
     private function check_account_lock_status($user_id) {
+        // Phase 4.1.2 - Delegated to User Security Analyzer module
+        if ($this->user_security_analyzer) {
+            return $this->user_security_analyzer->check_account_lock_status($user_id);
+        }
+
+        // Fallback if module not available
         $locked = get_user_meta($user_id, 'vd_account_locked', true);
         return !empty($locked);
     }
@@ -5969,6 +5994,12 @@ class VD_License_Validator {
      * @return int Security score (0-100)
      */
     private function calculate_security_score($user, $risk_factors) {
+        // Phase 4.1.2 - Delegated to User Security Analyzer module
+        if ($this->user_security_analyzer) {
+            return $this->user_security_analyzer->calculate_security_score($user, $risk_factors);
+        }
+
+        // Fallback if module not available
         $score = 100;
 
         // Deduct points for risk factors
@@ -5989,6 +6020,12 @@ class VD_License_Validator {
      * @return int Number of long running sessions
      */
     private function count_long_running_sessions($sessions) {
+        // Phase 4.1.2 - Delegated to User Security Analyzer module
+        if ($this->user_security_analyzer) {
+            return $this->user_security_analyzer->count_long_running_sessions($sessions);
+        }
+
+        // Fallback if module not available
         $long_running = 0;
         $long_session_threshold = 30 * 24 * 60 * 60; // 30 days
 
@@ -6904,6 +6941,12 @@ class VD_License_Validator {
      * @return array Validation result
      */
     private function validate_user_security_context($security_context) {
+        // Phase 4.1.2 - Delegated to User Security Analyzer module
+        if ($this->user_security_analyzer) {
+            return $this->user_security_analyzer->validate_user_security_context($security_context);
+        }
+
+        // Fallback if module not available
         $validation_errors = array();
 
         // Login method validation
