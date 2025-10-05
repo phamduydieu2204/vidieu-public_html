@@ -71,6 +71,11 @@ try {
 
     echo "<div class='success'>✅ WordPress environment loaded successfully</div>\n";
 
+    // Load Module Loader directly
+    if (!class_exists('VD_License_Module_Loader')) {
+        require_once(dirname(__FILE__) . '/wp-content/plugins/vd-license-manager/includes/class-vd-license-module-loader.php');
+    }
+
     // Get Module Loader
     if (class_exists('VD_License_Module_Loader')) {
         $loader = VD_License_Module_Loader::get_instance();
