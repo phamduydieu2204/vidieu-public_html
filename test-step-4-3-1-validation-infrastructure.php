@@ -1,319 +1,376 @@
 <?php
 /**
- * Test Endpoint for Step 4.3.1: Validation Infrastructure
- * Tests the extracted validation infrastructure module functionality
+ * Test Step 4.3.1: Validation Infrastructure
  *
- * Access: /test-step-4-3-1-validation-infrastructure.php
+ * Step 4.3.1 - Testing Validation Infrastructure module functionality
+ * Extracted from monolithic validator to provide infrastructure utilities
+ * for license key extraction, context transformation, result mapping, and check counting.
  *
- * @version 4.3.1
- * @since 2025-10-05
+ * @package VD_License_Manager
+ * @subpackage Tests
+ * @since 4.3.1
+ * @author VD Team
  */
 
-// WordPress environment setup
-$wp_config_path = __DIR__ . '/wp-config.php';
-if (file_exists($wp_config_path)) {
-    require_once $wp_config_path;
-    require_once ABSPATH . 'wp-load.php';
+// Load WordPress environment if not already loaded
+if (!defined('ABSPATH')) {
+    require_once(dirname(__FILE__) . '/wp-config.php');
 }
 
-// Test framework setup
-if (!class_exists('VD_Test_Framework')) {
-    require_once __DIR__ . '/wp-content/plugins/vd-license-manager/includes/class-vd-test-framework.php';
+// Test configuration
+$test_config = array(
+    'title' => 'Step 4.3.1: Validation Infrastructure Test',
+    'version' => '4.3.1',
+    'test_license_data' => array(
+        'id' => 12345,
+        'license_key' => 'VD-INFRASTRUCTURE-TEST-001',
+        'status' => 'active',
+        'product_id' => 100,
+        'user_id' => 1,
+        'expires_at' => date('Y-m-d H:i:s', strtotime('+30 days')),
+        'created_at' => date('Y-m-d H:i:s', strtotime('-5 days')),
+        'is_trial' => false,
+        'allowed_domains' => array('test.vidieu.vn', 'example.com')
+    ),
+    'test_context' => array(
+        'user_id' => 123,
+        'site_url' => 'https://test.vidieu.vn',
+        'request_type' => 'validation',
+        'client_version' => '4.3.1'
+    ),
+    'test_orchestrator_result' => array(
+        'is_valid' => true,
+        'checks_passed' => 8,
+        'checks_failed' => 2,
+        'checks_skipped' => 1,
+        'warnings' => array('Test warning 1', 'Test warning 2'),
+        'metadata' => array('version' => '4.3.1', 'timestamp' => time())
+    )
+);
+
+// Test results storage
+$test_results = array();
+$test_count = 0;
+$passed_count = 0;
+$failed_count = 0;
+
+// Helper functions
+function log_test_header($message) {
+    echo "<h2 style='color: #0073aa; border-bottom: 2px solid #0073aa; padding-bottom: 5px;'>$message</h2>\n";
 }
 
-class VD_Step_4_3_1_Infrastructure_Test extends VD_Test_Framework {
+function log_test_section($message) {
+    echo "<h3 style='color: #2271b1; margin-top: 20px;'>$message</h3>\n";
+}
 
-    private $validation_infrastructure;
-    private $validator;
+function log_test_info($message) {
+    echo "<p style='color: #555; margin: 5px 0;'>ℹ️ $message</p>\n";
+}
 
-    public function __construct() {
-        parent::__construct();
-        $this->test_name = 'Step 4.3.1 - Validation Infrastructure';
-        $this->test_version = '4.3.1';
+function log_test_success($message) {
+    echo "<p style='color: #008a00; font-weight: bold; margin: 5px 0;'>✅ $message</p>\n";
+}
+
+function log_test_error($message) {
+    echo "<p style='color: #d63638; font-weight: bold; margin: 5px 0;'>❌ $message</p>\n";
+}
+
+function assert_test($condition, $message) {
+    global $test_count, $passed_count, $failed_count;
+    $test_count++;
+
+    if ($condition) {
+        $passed_count++;
+        log_test_success("PASS: $message");
+        return true;
+    } else {
+        $failed_count++;
+        log_test_error("FAIL: $message");
+        return false;
+    }
+}
+
+function assert_equals($actual, $expected, $message) {
+    return assert_test($actual === $expected, "$message (Expected: $expected, Got: $actual)");
+}
+
+function assert_not_empty($value, $message) {
+    return assert_test(!empty($value), "$message (Value should not be empty)");
+}
+
+function assert_true($value, $message) {
+    return assert_test($value === true, "$message (Expected: true, Got: " . var_export($value, true) . ")");
+}
+
+// Initialize components
+function init_test_components() {
+    $components = array();
+
+    try {
+        // Load validator instance
+        if (class_exists('VD_License_Validator')) {
+            $components['validator'] = VD_License_Validator::get_instance();
+            log_test_info("Main validator loaded successfully");
+        } else {
+            log_test_error("VD_License_Validator class not found");
+        }
+
+        // Get infrastructure module instance
+        if (class_exists('VD\\LicenseManager\\Infrastructure\\VD_License_Validation_Infrastructure')) {
+            $components['infrastructure'] = VD\LicenseManager\Infrastructure\VD_License_Validation_Infrastructure::get_instance();
+            log_test_info("Validation Infrastructure module loaded successfully");
+        } else {
+            log_test_error("VD_License_Validation_Infrastructure class not found");
+        }
+
+    } catch (Exception $e) {
+        log_test_error("Component initialization failed: " . $e->getMessage());
+    }
+
+    return $components;
+}
+
+// Test functions
+function test_license_key_extraction($components, $test_config) {
+    global $test_count, $passed_count, $failed_count;
+
+    log_test_section("Testing License Key Extraction");
+
+    if (!isset($components['infrastructure'])) {
+        log_test_error("Infrastructure module not available");
+        return;
+    }
+
+    $infrastructure = $components['infrastructure'];
+
+    // Test string license
+    $string_license = "VD-TEST-KEY-12345";
+    $extracted = $infrastructure->extract_license_key($string_license);
+    assert_equals($extracted, $string_license, "String license extraction");
+
+    // Test array license
+    $array_license = ['key' => 'VD-ARRAY-KEY-67890'];
+    $extracted = $infrastructure->extract_license_key($array_license);
+    assert_equals($extracted, 'VD-ARRAY-KEY-67890', "Array license extraction");
+
+    // Test object license
+    $object_license = (object)['license_key' => 'VD-OBJECT-KEY-11111'];
+    $extracted = $infrastructure->extract_license_key($object_license);
+    assert_equals($extracted, 'VD-OBJECT-KEY-11111', "Object license extraction");
+
+    // Test empty/null
+    $extracted = $infrastructure->extract_license_key(null);
+    assert_equals($extracted, '', "Null license extraction");
+
+    log_test_success("License key extraction tests completed");
+}
+
+function test_context_transformation($components, $test_config) {
+    log_test_section("Testing Context Transformation");
+
+    if (!isset($components['infrastructure'])) {
+        log_test_error("Infrastructure module not available");
+        return;
+    }
+
+    $infrastructure = $components['infrastructure'];
+    $context = $test_config['test_context'];
+    $license = $test_config['test_license_data'];
+
+    $options = $infrastructure->transform_context_to_options($context, $license);
+
+    // Verify required fields
+    assert_not_empty($options['license_data'], "License data in options");
+    assert_equals($options['validation_type'], 'advanced_rules', "Validation type");
+    assert_true($options['include_warnings'], "Include warnings flag");
+    assert_true($options['generate_report'], "Generate report flag");
+    assert_not_empty($options['framework_version'], "Framework version");
+
+    // Verify context preservation
+    assert_equals($options['user_id'], 123, "Context user_id preserved");
+    assert_equals($options['site_url'], 'https://test.vidieu.vn', "Context site_url preserved");
+
+    log_test_success("Context transformation tests completed");
+}
+
+function test_result_mapping($components, $test_config) {
+    log_test_section("Testing Result Mapping");
+
+    if (!isset($components['infrastructure'])) {
+        log_test_error("Infrastructure module not available");
+        return;
+    }
+
+    $infrastructure = $components['infrastructure'];
+    $orchestrator_result = $test_config['test_orchestrator_result'];
+
+    $legacy_result = $infrastructure->map_orchestrator_result_to_legacy_format($orchestrator_result);
+
+    // Verify legacy format structure
+    assert_true(isset($legacy_result['success']), "Legacy success field");
+    assert_true(isset($legacy_result['message']), "Legacy message field");
+    assert_true(isset($legacy_result['data']), "Legacy data field");
+    assert_true(isset($legacy_result['warnings']), "Legacy warnings field");
+
+    // Verify mapping accuracy
+    assert_equals($legacy_result['success'], true, "Success mapping");
+    assert_equals(count($legacy_result['warnings']), 2, "Warnings count mapping");
+
+    log_test_success("Result mapping tests completed");
+}
+
+function test_orchestrator_counting($components, $test_config) {
+    log_test_section("Testing Orchestrator Check Counting");
+
+    if (!isset($components['infrastructure'])) {
+        log_test_error("Infrastructure module not available");
+        return;
+    }
+
+    $infrastructure = $components['infrastructure'];
+    $orchestrator_result = $test_config['test_orchestrator_result'];
+
+    $count = $infrastructure->count_orchestrator_checks($orchestrator_result);
+
+    // Verify counting
+    assert_equals($count['total'], 11, "Total checks count");
+    assert_equals($count['passed'], 8, "Passed checks count");
+    assert_equals($count['failed'], 2, "Failed checks count");
+    assert_equals($count['skipped'], 1, "Skipped checks count");
+
+    // Test success rate calculation
+    $expected_success_rate = (8 / 11) * 100;
+    assert_true(abs($count['success_rate'] - $expected_success_rate) < 0.1, "Success rate calculation");
+
+    log_test_success("Orchestrator counting tests completed");
+}
+
+function test_module_health_status($components, $test_config) {
+    log_test_section("Testing Module Health Status");
+
+    if (!isset($components['infrastructure'])) {
+        log_test_error("Infrastructure module not available");
+        return;
+    }
+
+    $infrastructure = $components['infrastructure'];
+
+    // Get module status
+    $status = $infrastructure->get_module_status();
+
+    // Verify status structure
+    assert_true(isset($status['module_loaded']), "Module loaded status");
+    assert_true(isset($status['version']), "Module version");
+    assert_true(isset($status['license_keys_extracted']), "License keys extracted count");
+    assert_true(isset($status['context_transformations']), "Context transformations count");
+
+    // Verify module is healthy
+    assert_true($status['module_loaded'], "Module is loaded");
+    assert_equals($status['version'], '4.3.1', "Module version correct");
+
+    log_test_success("Module health status tests completed");
+}
+
+function test_infrastructure_performance($components, $test_config) {
+    log_test_section("Testing Infrastructure Performance");
+
+    if (!isset($components['infrastructure'])) {
+        log_test_error("Infrastructure module not available");
+        return;
+    }
+
+    $infrastructure = $components['infrastructure'];
+    $iterations = 50;
+
+    // Performance test for license key extraction
+    $start_time = microtime(true);
+    for ($i = 0; $i < $iterations; $i++) {
+        $infrastructure->extract_license_key("VD-PERF-TEST-$i");
+    }
+    $extraction_time = microtime(true) - $start_time;
+    $avg_extraction_time = ($extraction_time / $iterations) * 1000;
+
+    log_test_info(sprintf("Average license extraction time: %.2f ms", $avg_extraction_time));
+    assert_true($avg_extraction_time < 5.0, "License extraction performance acceptable");
+
+    // Performance test for context transformation
+    $start_time = microtime(true);
+    $context = $test_config['test_context'];
+    $license = $test_config['test_license_data'];
+
+    for ($i = 0; $i < $iterations; $i++) {
+        $infrastructure->transform_context_to_options($context, $license);
+    }
+
+    $transform_time = microtime(true) - $start_time;
+    $avg_transform_time = ($transform_time / $iterations) * 1000;
+
+    log_test_info(sprintf("Average context transformation time: %.2f ms", $avg_transform_time));
+    assert_true($avg_transform_time < 10.0, "Context transformation performance acceptable");
+
+    log_test_success("Infrastructure performance tests completed");
+}
+
+function generate_test_summary($components, $test_config) {
+    global $test_count, $passed_count, $failed_count;
+
+    log_test_section("=== TEST SUMMARY ===");
+
+    if (isset($components['infrastructure'])) {
+        $status = $components['infrastructure']->get_module_status();
+        log_test_info("Module Version: " . $status['version']);
+        log_test_info("License Keys Extracted: " . $status['license_keys_extracted']);
+        log_test_info("Context Transformations: " . $status['context_transformations']);
+        log_test_info("Result Mappings: " . $status['result_mappings']);
+        log_test_info("Check Counts: " . $status['check_counts']);
+    }
+
+    log_test_info("Total Tests Run: " . $test_count);
+    log_test_info("Tests Passed: " . $passed_count);
+    log_test_info("Tests Failed: " . $failed_count);
+
+    if ($failed_count == 0) {
+        log_test_success("🎉 ALL STEP 4.3.1 VALIDATION INFRASTRUCTURE TESTS PASSED!");
+        log_test_success("✅ Infrastructure module is working correctly");
+        log_test_success("✅ Performance benchmarks are met");
+    } else {
+        log_test_error("❌ Some tests failed. Please review the results above.");
+    }
+}
+
+// HTML Setup
+?>
+<!DOCTYPE html>
+<html>
+<head>
+    <title><?php echo $test_config['title']; ?></title>
+    <meta charset="UTF-8">
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-container { max-width: 1000px; margin: 0 auto; }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <?php
+        log_test_header("=== STEP 4.3.1 VALIDATION INFRASTRUCTURE TESTS ===");
+        log_test_info("Test Version: " . $test_config['version']);
+        log_test_info("Test Date: " . date('Y-m-d H:i:s'));
 
         // Initialize components
-        $this->init_components();
-    }
-
-    private function init_components() {
-        try {
-            // Load validator instance
-            if (class_exists('VD_License_Validator')) {
-                $this->validator = VD_License_Validator::get_instance();
-                $this->log_info("Main validator loaded successfully");
-            }
-
-            // Get infrastructure module instance
-            if (class_exists('VD\\LicenseManager\\Infrastructure\\VD_License_Validation_Infrastructure')) {
-                $this->validation_infrastructure = VD\LicenseManager\Infrastructure\VD_License_Validation_Infrastructure::get_instance();
-                $this->log_info("Validation Infrastructure module loaded successfully");
-            }
-
-        } catch (Exception $e) {
-            $this->log_error("Component initialization failed: " . $e->getMessage());
-        }
-    }
-
-    public function run_tests() {
-        $this->log_header("=== STEP 4.3.1 VALIDATION INFRASTRUCTURE TESTS ===");
-
-        // Core infrastructure tests
-        $this->test_license_key_extraction();
-        $this->test_context_transformation();
-        $this->test_result_mapping();
-        $this->test_orchestrator_counting();
-
-        // Integration tests
-        $this->test_validator_delegation();
-        $this->test_module_health_status();
-
-        // Performance tests
-        $this->test_infrastructure_performance();
-
-        $this->generate_test_summary();
-    }
-
-    private function test_license_key_extraction() {
-        $this->log_section("Testing License Key Extraction");
-
-        if (!$this->validation_infrastructure) {
-            $this->log_error("Infrastructure module not available");
-            return;
-        }
-
-        // Test string license
-        $string_license = "VD-TEST-KEY-12345";
-        $extracted = $this->validation_infrastructure->extract_license_key($string_license);
-        $this->assert_equals($extracted, $string_license, "String license extraction");
-
-        // Test array license
-        $array_license = ['key' => 'VD-ARRAY-KEY-67890'];
-        $extracted = $this->validation_infrastructure->extract_license_key($array_license);
-        $this->assert_equals($extracted, 'VD-ARRAY-KEY-67890', "Array license extraction");
-
-        // Test object license
-        $object_license = (object)['license_key' => 'VD-OBJECT-KEY-11111'];
-        $extracted = $this->validation_infrastructure->extract_license_key($object_license);
-        $this->assert_equals($extracted, 'VD-OBJECT-KEY-11111', "Object license extraction");
-
-        // Test empty/null
-        $extracted = $this->validation_infrastructure->extract_license_key(null);
-        $this->assert_equals($extracted, '', "Null license extraction");
-
-        $this->log_success("License key extraction tests completed");
-    }
-
-    private function test_context_transformation() {
-        $this->log_section("Testing Context Transformation");
-
-        if (!$this->validation_infrastructure) {
-            $this->log_error("Infrastructure module not available");
-            return;
-        }
-
-        $context = [
-            'user_id' => 123,
-            'site_url' => 'https://test.vidieu.vn'
-        ];
-
-        $license = ['key' => 'VD-CONTEXT-TEST-99999'];
-
-        $options = $this->validation_infrastructure->transform_context_to_options($context, $license);
-
-        // Verify required fields
-        $this->assert_not_empty($options['license_data'], "License data in options");
-        $this->assert_equals($options['validation_type'], 'advanced_rules', "Validation type");
-        $this->assert_true($options['include_warnings'], "Include warnings flag");
-        $this->assert_true($options['generate_report'], "Generate report flag");
-        $this->assert_not_empty($options['framework_version'], "Framework version");
-
-        // Verify context preservation
-        $this->assert_equals($options['user_id'], 123, "Context user_id preserved");
-        $this->assert_equals($options['site_url'], 'https://test.vidieu.vn', "Context site_url preserved");
-
-        $this->log_success("Context transformation tests completed");
-    }
-
-    private function test_result_mapping() {
-        $this->log_section("Testing Result Mapping");
-
-        if (!$this->validation_infrastructure) {
-            $this->log_error("Infrastructure module not available");
-            return;
-        }
-
-        // Test orchestrator result
-        $orchestrator_result = [
-            'is_valid' => true,
-            'checks_passed' => 8,
-            'checks_failed' => 2,
-            'warnings' => ['Warning 1', 'Warning 2'],
-            'metadata' => ['version' => '4.3.1']
-        ];
-
-        $legacy_result = $this->validation_infrastructure->map_orchestrator_result_to_legacy_format($orchestrator_result);
-
-        // Verify legacy format structure
-        $this->assert_true(isset($legacy_result['success']), "Legacy success field");
-        $this->assert_true(isset($legacy_result['message']), "Legacy message field");
-        $this->assert_true(isset($legacy_result['data']), "Legacy data field");
-        $this->assert_true(isset($legacy_result['warnings']), "Legacy warnings field");
-
-        // Verify mapping accuracy
-        $this->assert_equals($legacy_result['success'], true, "Success mapping");
-        $this->assert_equals(count($legacy_result['warnings']), 2, "Warnings count mapping");
-
-        $this->log_success("Result mapping tests completed");
-    }
-
-    private function test_orchestrator_counting() {
-        $this->log_section("Testing Orchestrator Check Counting");
-
-        if (!$this->validation_infrastructure) {
-            $this->log_error("Infrastructure module not available");
-            return;
-        }
-
-        // Test with orchestrator result
-        $orchestrator_result = [
-            'checks_passed' => 15,
-            'checks_failed' => 3,
-            'checks_skipped' => 2
-        ];
-
-        $count = $this->validation_infrastructure->count_orchestrator_checks($orchestrator_result);
-
-        // Verify counting
-        $this->assert_equals($count['total'], 20, "Total checks count");
-        $this->assert_equals($count['passed'], 15, "Passed checks count");
-        $this->assert_equals($count['failed'], 3, "Failed checks count");
-        $this->assert_equals($count['skipped'], 2, "Skipped checks count");
-
-        // Test success rate calculation
-        $this->assert_equals($count['success_rate'], 75.0, "Success rate calculation");
-
-        $this->log_success("Orchestrator counting tests completed");
-    }
-
-    private function test_validator_delegation() {
-        $this->log_section("Testing Validator Delegation");
-
-        if (!$this->validator) {
-            $this->log_error("Main validator not available");
-            return;
-        }
-
-        // Test that validator delegates to infrastructure module
-        $test_license = "VD-DELEGATION-TEST-55555";
-
-        // Test extract_license_key delegation
-        $result = $this->call_private_method($this->validator, 'extract_license_key', [$test_license]);
-        $this->assert_equals($result, $test_license, "Validator delegates license key extraction");
-
-        // Test transform_context_to_options delegation
-        $context = ['test_context' => true];
-        $license = ['key' => 'VD-TRANSFORM-TEST'];
-
-        $options = $this->call_private_method($this->validator, 'transform_context_to_options', [$context, $license]);
-        $this->assert_not_empty($options, "Validator delegates context transformation");
-        $this->assert_true($options['test_context'], "Context preserved in delegation");
-
-        $this->log_success("Validator delegation tests completed");
-    }
-
-    private function test_module_health_status() {
-        $this->log_section("Testing Module Health Status");
-
-        if (!$this->validation_infrastructure) {
-            $this->log_error("Infrastructure module not available");
-            return;
-        }
-
-        // Get module status
-        $status = $this->validation_infrastructure->get_module_status();
-
-        // Verify status structure
-        $this->assert_true(isset($status['module_loaded']), "Module loaded status");
-        $this->assert_true(isset($status['version']), "Module version");
-        $this->assert_true(isset($status['license_keys_extracted']), "License keys extracted count");
-        $this->assert_true(isset($status['context_transformations']), "Context transformations count");
-
-        // Verify module is healthy
-        $this->assert_true($status['module_loaded'], "Module is loaded");
-        $this->assert_equals($status['version'], '4.3.1', "Module version correct");
-
-        $this->log_success("Module health status tests completed");
-    }
-
-    private function test_infrastructure_performance() {
-        $this->log_section("Testing Infrastructure Performance");
-
-        if (!$this->validation_infrastructure) {
-            $this->log_error("Infrastructure module not available");
-            return;
-        }
-
-        $iterations = 100;
-        $start_time = microtime(true);
-
-        // Performance test for license key extraction
-        for ($i = 0; $i < $iterations; $i++) {
-            $this->validation_infrastructure->extract_license_key("VD-PERF-TEST-$i");
-        }
-
-        $extraction_time = microtime(true) - $start_time;
-        $avg_extraction_time = ($extraction_time / $iterations) * 1000; // Convert to milliseconds
-
-        $this->log_info(sprintf("Average license extraction time: %.2f ms", $avg_extraction_time));
-        $this->assert_true($avg_extraction_time < 1.0, "License extraction performance acceptable");
-
-        // Performance test for context transformation
-        $start_time = microtime(true);
-        $context = ['user_id' => 123, 'site_url' => 'https://test.com'];
-        $license = ['key' => 'VD-PERF-TEST'];
-
-        for ($i = 0; $i < $iterations; $i++) {
-            $this->validation_infrastructure->transform_context_to_options($context, $license);
-        }
-
-        $transform_time = microtime(true) - $start_time;
-        $avg_transform_time = ($transform_time / $iterations) * 1000;
-
-        $this->log_info(sprintf("Average context transformation time: %.2f ms", $avg_transform_time));
-        $this->assert_true($avg_transform_time < 2.0, "Context transformation performance acceptable");
-
-        $this->log_success("Infrastructure performance tests completed");
-    }
-
-    private function generate_test_summary() {
-        $this->log_section("=== TEST SUMMARY ===");
-
-        $status = $this->validation_infrastructure ? $this->validation_infrastructure->get_module_status() : null;
-
-        if ($status) {
-            $this->log_info("Module Version: " . $status['version']);
-            $this->log_info("License Keys Extracted: " . $status['license_keys_extracted']);
-            $this->log_info("Context Transformations: " . $status['context_transformations']);
-            $this->log_info("Result Mappings: " . $status['result_mappings']);
-            $this->log_info("Check Counts: " . $status['check_counts']);
-        }
-
-        $this->log_info("Total Tests Run: " . $this->get_test_count());
-        $this->log_info("Tests Passed: " . $this->get_passed_count());
-        $this->log_info("Tests Failed: " . $this->get_failed_count());
-
-        if ($this->get_failed_count() == 0) {
-            $this->log_success("🎉 ALL STEP 4.3.1 VALIDATION INFRASTRUCTURE TESTS PASSED!");
-            $this->log_success("✅ Infrastructure module is working correctly");
-            $this->log_success("✅ Validator delegation is functioning properly");
-            $this->log_success("✅ Performance benchmarks are met");
-        } else {
-            $this->log_error("❌ Some tests failed. Please review the results above.");
-        }
-    }
-}
-
-// Initialize and run tests
-$test = new VD_Step_4_3_1_Infrastructure_Test();
-$test->run_tests();
-?>
+        $components = init_test_components();
+
+        // Run tests
+        test_license_key_extraction($components, $test_config);
+        test_context_transformation($components, $test_config);
+        test_result_mapping($components, $test_config);
+        test_orchestrator_counting($components, $test_config);
+        test_module_health_status($components, $test_config);
+        test_infrastructure_performance($components, $test_config);
+
+        // Generate summary
+        generate_test_summary($components, $test_config);
+        ?>
+    </div>
+</body>
+</html>
