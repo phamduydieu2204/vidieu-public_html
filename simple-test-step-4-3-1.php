@@ -42,11 +42,10 @@ if (file_exists($plugin_file)) {
     echo "❌ Main plugin file not found<br>";
 }
 
-// Load core dependencies
+// Load core dependencies in correct order with error checking
 $core_files = array(
     'includes/class-vd-license-manager.php',
-    'includes/class-vd-license-module-loader.php',
-    'includes/class-vd-license-validator.php'
+    'includes/class-vd-license-module-loader.php'
 );
 
 foreach ($core_files as $file) {
@@ -57,6 +56,35 @@ foreach ($core_files as $file) {
     } else {
         echo "❌ Not found: $file<br>";
     }
+}
+
+// Special handling for validator with error capture
+$validator_file = $plugin_dir . 'includes/class-vd-license-validator.php';
+if (file_exists($validator_file)) {
+    // Capture any errors during validator loading
+    ob_start();
+    $error_handler = set_error_handler(function($severity, $message, $file, $line) {
+        throw new ErrorException($message, 0, $severity, $file, $line);
+    });
+
+    try {
+        require_once $validator_file;
+        $output = ob_get_clean();
+        if ($output) {
+            echo "⚠️ Validator loading output: " . htmlspecialchars($output) . "<br>";
+        }
+        echo "✅ Loaded: includes/class-vd-license-validator.php<br>";
+    } catch (Exception $e) {
+        $output = ob_get_clean();
+        echo "❌ Validator loading error: " . $e->getMessage() . "<br>";
+        if ($output) {
+            echo "📋 Output: " . htmlspecialchars($output) . "<br>";
+        }
+    } finally {
+        set_error_handler($error_handler);
+    }
+} else {
+    echo "❌ Validator file not found<br>";
 }
 
 // Load Step 4.3.1 infrastructure module
@@ -103,42 +131,45 @@ try {
 
         echo "<h3>Testing Infrastructure Methods:</h3>";
 
-        // Test extract_license_key_from_payload
-        if (method_exists($infrastructure, 'extract_license_key_from_payload')) {
-            $test_payload = array(
+        // Test extract_license_key (correct method name)
+        if (method_exists($infrastructure, 'extract_license_key')) {
+            $test_license = array(
                 'license_key' => 'TEST-KEY-001',
                 'domain' => 'test.vidieu.vn'
             );
 
             try {
-                $extracted_key = $infrastructure->extract_license_key_from_payload($test_payload);
-                echo "✅ extract_license_key_from_payload: " . $extracted_key . "<br>";
+                $extracted_key = $infrastructure->extract_license_key($test_license);
+                echo "✅ extract_license_key: " . $extracted_key . "<br>";
             } catch (Exception $e) {
-                echo "⚠️ extract_license_key_from_payload error: " . $e->getMessage() . "<br>";
+                echo "⚠️ extract_license_key error: " . $e->getMessage() . "<br>";
             }
         } else {
-            echo "❌ extract_license_key_from_payload method not found<br>";
+            echo "❌ extract_license_key method not found<br>";
         }
 
-        // Test transform_context_parameters
-        if (method_exists($infrastructure, 'transform_context_parameters')) {
+        // Test transform_context_to_options (correct method name)
+        if (method_exists($infrastructure, 'transform_context_to_options')) {
             $test_context = array(
                 'user_id' => 123,
                 'site_url' => 'https://test.vidieu.vn'
             );
+            $test_license = array(
+                'license_key' => 'TEST-KEY-001'
+            );
 
             try {
-                $transformed = $infrastructure->transform_context_parameters($test_context);
-                echo "✅ transform_context_parameters: Transformed " . count($transformed) . " parameters<br>";
+                $transformed = $infrastructure->transform_context_to_options($test_context, $test_license);
+                echo "✅ transform_context_to_options: Transformed " . count($transformed) . " options<br>";
             } catch (Exception $e) {
-                echo "⚠️ transform_context_parameters error: " . $e->getMessage() . "<br>";
+                echo "⚠️ transform_context_to_options error: " . $e->getMessage() . "<br>";
             }
         } else {
-            echo "❌ transform_context_parameters method not found<br>";
+            echo "❌ transform_context_to_options method not found<br>";
         }
 
-        // Test map_orchestrator_result_to_response
-        if (method_exists($infrastructure, 'map_orchestrator_result_to_response')) {
+        // Test map_orchestrator_result_to_legacy_format (correct method name)
+        if (method_exists($infrastructure, 'map_orchestrator_result_to_legacy_format')) {
             $test_result = array(
                 'valid' => true,
                 'checks_passed' => 5,
@@ -146,13 +177,13 @@ try {
             );
 
             try {
-                $mapped = $infrastructure->map_orchestrator_result_to_response($test_result);
-                echo "✅ map_orchestrator_result_to_response: Mapped successfully<br>";
+                $mapped = $infrastructure->map_orchestrator_result_to_legacy_format($test_result);
+                echo "✅ map_orchestrator_result_to_legacy_format: Mapped successfully<br>";
             } catch (Exception $e) {
-                echo "⚠️ map_orchestrator_result_to_response error: " . $e->getMessage() . "<br>";
+                echo "⚠️ map_orchestrator_result_to_legacy_format error: " . $e->getMessage() . "<br>";
             }
         } else {
-            echo "❌ map_orchestrator_result_to_response method not found<br>";
+            echo "❌ map_orchestrator_result_to_legacy_format method not found<br>";
         }
 
         // Test count_orchestrator_checks
@@ -171,6 +202,57 @@ try {
             }
         } else {
             echo "❌ count_orchestrator_checks method not found<br>";
+        }
+
+        // Test additional Infrastructure methods
+        echo "<h4>Additional Infrastructure Methods:</h4>";
+
+        // Test get_validation_statistics
+        if (method_exists($infrastructure, 'get_validation_statistics')) {
+            try {
+                $stats = $infrastructure->get_validation_statistics();
+                echo "✅ get_validation_statistics: Retrieved statistics<br>";
+            } catch (Exception $e) {
+                echo "⚠️ get_validation_statistics error: " . $e->getMessage() . "<br>";
+            }
+        } else {
+            echo "❌ get_validation_statistics method not found<br>";
+        }
+
+        // Test get_status
+        if (method_exists($infrastructure, 'get_status')) {
+            try {
+                $status = $infrastructure->get_status();
+                echo "✅ get_status: " . $status . "<br>";
+            } catch (Exception $e) {
+                echo "⚠️ get_status error: " . $e->getMessage() . "<br>";
+            }
+        } else {
+            echo "❌ get_status method not found<br>";
+        }
+
+        // Test health_check
+        if (method_exists($infrastructure, 'health_check')) {
+            try {
+                $health = $infrastructure->health_check();
+                echo "✅ health_check: " . ($health ? 'Healthy' : 'Issues detected') . "<br>";
+            } catch (Exception $e) {
+                echo "⚠️ health_check error: " . $e->getMessage() . "<br>";
+            }
+        } else {
+            echo "❌ health_check method not found<br>";
+        }
+
+        // Test get_debug_info
+        if (method_exists($infrastructure, 'get_debug_info')) {
+            try {
+                $debug = $infrastructure->get_debug_info();
+                echo "✅ get_debug_info: Retrieved debug information<br>";
+            } catch (Exception $e) {
+                echo "⚠️ get_debug_info error: " . $e->getMessage() . "<br>";
+            }
+        } else {
+            echo "❌ get_debug_info method not found<br>";
         }
 
     } else {
