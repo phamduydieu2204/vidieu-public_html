@@ -15,6 +15,39 @@
 // Load WordPress environment if not already loaded
 if (!defined('ABSPATH')) {
     require_once(dirname(__FILE__) . '/wp-config.php');
+    require_once(ABSPATH . 'wp-load.php');
+}
+
+// Load VD License Manager plugin files manually
+$plugin_dir = dirname(__FILE__) . '/wp-content/plugins/vd-license-manager/';
+
+// 1. Load main plugin file
+$plugin_file = $plugin_dir . 'vd-license-manager.php';
+if (file_exists($plugin_file)) {
+    require_once $plugin_file;
+}
+
+// 2. Load module loader
+$module_loader_file = $plugin_dir . 'includes/class-vd-license-module-loader.php';
+if (file_exists($module_loader_file)) {
+    require_once $module_loader_file;
+}
+
+// 3. Load the validator class
+$validator_file = $plugin_dir . 'includes/class-vd-license-validator.php';
+if (file_exists($validator_file)) {
+    require_once $validator_file;
+}
+
+// 4. Load the infrastructure module
+$infrastructure_file = $plugin_dir . 'includes/modules/infrastructure/class-vd-license-validation-infrastructure.php';
+if (file_exists($infrastructure_file)) {
+    require_once $infrastructure_file;
+}
+
+// 5. Initialize the module loader to load dependencies
+if (class_exists('VD_License_Module_Loader')) {
+    VD_License_Module_Loader::get_instance();
 }
 
 // Test configuration
@@ -107,24 +140,57 @@ function init_test_components() {
     $components = array();
 
     try {
-        // Load validator instance
+        // Check and load validator instance
         if (class_exists('VD_License_Validator')) {
             $components['validator'] = VD_License_Validator::get_instance();
             log_test_info("Main validator loaded successfully");
         } else {
             log_test_error("VD_License_Validator class not found");
+            log_test_info("Checking if validator file exists...");
+            $validator_file = dirname(__FILE__) . '/wp-content/plugins/vd-license-manager/includes/class-vd-license-validator.php';
+            if (file_exists($validator_file)) {
+                log_test_info("Validator file exists at: " . $validator_file);
+            } else {
+                log_test_error("Validator file not found at: " . $validator_file);
+            }
         }
 
-        // Get infrastructure module instance
+        // Check and load infrastructure module instance
         if (class_exists('VD\\LicenseManager\\Infrastructure\\VD_License_Validation_Infrastructure')) {
             $components['infrastructure'] = VD\LicenseManager\Infrastructure\VD_License_Validation_Infrastructure::get_instance();
             log_test_info("Validation Infrastructure module loaded successfully");
         } else {
             log_test_error("VD_License_Validation_Infrastructure class not found");
+            log_test_info("Checking if infrastructure file exists...");
+            $infrastructure_file = dirname(__FILE__) . '/wp-content/plugins/vd-license-manager/includes/modules/infrastructure/class-vd-license-validation-infrastructure.php';
+            if (file_exists($infrastructure_file)) {
+                log_test_info("Infrastructure file exists at: " . $infrastructure_file);
+                // Try to include it manually
+                require_once $infrastructure_file;
+                if (class_exists('VD\\LicenseManager\\Infrastructure\\VD_License_Validation_Infrastructure')) {
+                    $components['infrastructure'] = VD\LicenseManager\Infrastructure\VD_License_Validation_Infrastructure::get_instance();
+                    log_test_success("Infrastructure module loaded after manual include");
+                }
+            } else {
+                log_test_error("Infrastructure file not found at: " . $infrastructure_file);
+            }
+        }
+
+        // Debug: List available classes
+        $declared_classes = get_declared_classes();
+        $vd_classes = array_filter($declared_classes, function($class) {
+            return strpos($class, 'VD_') === 0 || strpos($class, 'VD\\') === 0;
+        });
+
+        if (!empty($vd_classes)) {
+            log_test_info("Available VD classes: " . implode(', ', array_slice($vd_classes, 0, 10)));
+        } else {
+            log_test_error("No VD classes found in declared classes");
         }
 
     } catch (Exception $e) {
         log_test_error("Component initialization failed: " . $e->getMessage());
+        log_test_error("Error trace: " . $e->getTraceAsString());
     }
 
     return $components;
