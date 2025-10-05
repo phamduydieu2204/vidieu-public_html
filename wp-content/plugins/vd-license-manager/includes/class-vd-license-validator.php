@@ -6717,12 +6717,20 @@ class VD_License_Validator {
      * @return array Cross-entity validation result
      */
     private function validate_license_relationships($license, $context) {
-        // Step 4.2.1 - Delegated to Advanced Validation Engine module
+        // Step 4.4.2: Delegate to Context Validators module
+        $module_loader = VD_License_Module_Loader::get_instance();
+        $context_validators = $module_loader->load_module('compliance.context_validators');
+
+        if ($context_validators && method_exists($context_validators, 'validate_license_relationships')) {
+            return $context_validators->validate_license_relationships($license, $context);
+        }
+
+        // Step 4.2.1 - Fallback to Advanced Validation Engine module
         if ($this->advanced_validation_engine) {
             return $this->advanced_validation_engine->validate_license_relationships($license, $context);
         }
 
-        // Fallback if module not available
+        // Final fallback if modules not available
         $validation_errors = array();
 
         // User's other licenses validation
@@ -6759,7 +6767,9 @@ class VD_License_Validator {
                 'user_licenses_checked' => !empty($context['user_context']['user_id']),
                 'product_constraints_validated' => !empty($license['product_id']),
                 'global_limits_validated' => true
-            )
+            ),
+            'module_error' => true,
+            'fallback_used' => true
         );
     }
 
@@ -6957,9 +6967,18 @@ class VD_License_Validator {
      * @return array Validation result
      */
     private function validate_user_context_requirements($license, $user_context) {
+        // Step 4.4.2: Delegate to Context Validators module
+        $module_loader = VD_License_Module_Loader::get_instance();
+        $context_validators = $module_loader->load_module('compliance.context_validators');
+
+        if ($context_validators && method_exists($context_validators, 'validate_user_context_requirements')) {
+            return $context_validators->validate_user_context_requirements($license, $user_context);
+        }
+
+        // Fallback implementation if module fails
         $validation_errors = array();
 
-        // Basic user context validation
+        // Basic user context validation fallback
         if (empty($user_context['user_id'])) {
             $validation_errors[] = 'User context missing user_id';
         }
@@ -6989,7 +7008,9 @@ class VD_License_Validator {
 
         return array(
             'valid' => empty($validation_errors),
-            'errors' => $validation_errors
+            'errors' => $validation_errors,
+            'module_error' => true,
+            'fallback_used' => true
         );
     }
 
@@ -7002,9 +7023,18 @@ class VD_License_Validator {
      * @return array Validation result
      */
     private function validate_ip_context_requirements($license, $ip_context) {
+        // Step 4.4.2: Delegate to Context Validators module
+        $module_loader = VD_License_Module_Loader::get_instance();
+        $context_validators = $module_loader->load_module('compliance.context_validators');
+
+        if ($context_validators && method_exists($context_validators, 'validate_ip_context_requirements')) {
+            return $context_validators->validate_ip_context_requirements($license, $ip_context);
+        }
+
+        // Fallback implementation if module fails
         $validation_errors = array();
 
-        // Basic IP context validation
+        // Basic IP context validation fallback
         if (empty($ip_context['ip_address'])) {
             $validation_errors[] = 'IP context missing ip_address';
         }
@@ -7034,7 +7064,9 @@ class VD_License_Validator {
 
         return array(
             'valid' => empty($validation_errors),
-            'errors' => $validation_errors
+            'errors' => $validation_errors,
+            'module_error' => true,
+            'fallback_used' => true
         );
     }
 
@@ -7199,6 +7231,15 @@ class VD_License_Validator {
      * @return array Validation result
      */
     private function validate_user_license_consistency($license, $user_id, $context) {
+        // Step 4.4.2: Delegate to Context Validators module
+        $module_loader = VD_License_Module_Loader::get_instance();
+        $context_validators = $module_loader->load_module('compliance.context_validators');
+
+        if ($context_validators && method_exists($context_validators, 'validate_user_license_consistency')) {
+            return $context_validators->validate_user_license_consistency($license, $user_id, $context);
+        }
+
+        // Fallback implementation if module fails
         $validation_errors = array();
 
         // Check if license belongs to user
@@ -7211,7 +7252,9 @@ class VD_License_Validator {
 
         return array(
             'valid' => empty($validation_errors),
-            'errors' => $validation_errors
+            'errors' => $validation_errors,
+            'module_error' => true,
+            'fallback_used' => true
         );
     }
 
@@ -7233,10 +7276,20 @@ class VD_License_Validator {
      * @return array Validation result
      */
     private function validate_global_license_limits($license, $context) {
-        // Mock global limits validation
+        // Step 4.4.2: Delegate to Context Validators module
+        $module_loader = VD_License_Module_Loader::get_instance();
+        $context_validators = $module_loader->load_module('compliance.context_validators');
+
+        if ($context_validators && method_exists($context_validators, 'validate_global_license_limits')) {
+            return $context_validators->validate_global_license_limits($license, $context);
+        }
+
+        // Fallback implementation if module fails
         return array(
             'valid' => true,
-            'errors' => array()
+            'errors' => array(),
+            'module_error' => true,
+            'fallback_used' => true
         );
     }
 

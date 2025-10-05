@@ -379,6 +379,14 @@ class VD_License_Module_Loader {
                 'namespace' => 'VD\\LicenseManager\\Compliance',
                 'dependencies' => array('validation.reporting'),
                 'priority' => 12
+            ),
+            // Step 4.4.2: Context Validators - Advanced context validation layer
+            'compliance.context_validators' => array(
+                'file' => 'compliance/class-vd-license-context-validators.php',
+                'class' => 'VD\\LicenseManager\\Compliance\\VD_License_Context_Validators',
+                'namespace' => 'VD\\LicenseManager\\Compliance',
+                'dependencies' => array('compliance.validator'),
+                'priority' => 13
             )
         );
 
