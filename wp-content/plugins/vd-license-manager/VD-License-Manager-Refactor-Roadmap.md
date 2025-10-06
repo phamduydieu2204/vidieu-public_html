@@ -654,20 +654,139 @@
 - **Lines**: 200+ lines (foundation structure)
 - **Scope**: Foundation module structure với mock implementations
 
-#### **🔄 Step 4.4.3.2: Step Integration Core Logic**
-- **Duration**: 15-20 phút
-- **Lines**: ~150-180 lines
-- **Priority**: High (Core step integration validation)
+#### **🔄 Step 4.4.3.2: Step Integration Core Logic** - **DETAILED BREAKDOWN**
+
+**Overview**: Replace foundation mock implementation với real step integration logic
+**Total Duration**: 45-60 phút (4 sub-micro-steps)
+**Total Lines**: ~150-180 lines
+**Priority**: High (Core step integration validation)
+
+---
+
+##### **🔄 Step 4.4.3.2a: Step Detection Infrastructure**
+- **Duration**: 10-15 phút
+- **Lines**: ~40-50 lines
+- **Priority**: High (Detection foundation)
 - **Scope**:
-  - Replace mock `validate_step_integration()` với real logic
-  - Implement step integration detection algorithms
-  - Add step dependency validation
-  - Create step integration result structure
-  - Basic error handling cho step integration
+  - Create helper method `detect_available_steps()`
+  - Implement step discovery logic for existing validator steps
+  - Add step configuration array với step definitions
+  - Basic step existence checking
+- **Implementation Details**:
+  ```php
+  private function detect_available_steps() {
+      // Detect steps 4.2.4.5.3a through 4.2.4.5.3d
+      // Return array of available steps with metadata
+  }
+  ```
 - **Files Modified**: `class-vd-license-security-integration-validator.php`
 - **Dependencies**: Step 4.4.3.1 (foundation)
-- **Test Strategy**: Test integration với các existing steps
-- **Risk Level**: Medium (core logic implementation)
+- **Test Strategy**: Test step detection accuracy
+- **Risk Level**: Low (infrastructure only)
+
+##### **🔄 Step 4.4.3.2b: Step Integration Analysis**
+- **Duration**: 10-15 phút
+- **Lines**: ~50-60 lines
+- **Priority**: High (Core analysis logic)
+- **Scope**:
+  - Create method `analyze_step_integrations($steps)`
+  - Implement step dependency checking
+  - Add step integration completeness calculation
+  - Create step integration health assessment
+- **Implementation Details**:
+  ```php
+  private function analyze_step_integrations($detected_steps) {
+      // Analyze integration between detected steps
+      // Calculate completeness percentage
+      // Assess integration health
+  }
+  ```
+- **Files Modified**: `class-vd-license-security-integration-validator.php`
+- **Dependencies**: Step 4.4.3.2a (detection infrastructure)
+- **Test Strategy**: Test integration analysis accuracy
+- **Risk Level**: Medium (core logic)
+
+##### **🔄 Step 4.4.3.2c: Result Structure Enhancement**
+- **Duration**: 10-15 phút
+- **Lines**: ~30-40 lines
+- **Priority**: Medium (Result formatting)
+- **Scope**:
+  - Create method `format_integration_result($analysis)`
+  - Design enhanced result structure với detailed step info
+  - Add integration metadata và statistics
+  - Implement result validation
+- **Implementation Details**:
+  ```php
+  private function format_integration_result($analysis) {
+      // Format analysis into standardized result structure
+      // Add metadata and statistics
+      // Ensure backward compatibility
+  }
+  ```
+- **Files Modified**: `class-vd-license-security-integration-validator.php`
+- **Dependencies**: Step 4.4.3.2b (analysis logic)
+- **Test Strategy**: Test result structure format
+- **Risk Level**: Low (formatting only)
+
+##### **🔄 Step 4.4.3.2d: Integration Logic Assembly**
+- **Duration**: 10-15 phút
+- **Lines**: ~30-40 lines
+- **Priority**: Critical (Final integration)
+- **Scope**:
+  - Replace mock implementation trong `validate_step_integration()`
+  - Integrate all helper methods
+  - Add comprehensive error handling
+  - Update method documentation
+- **Implementation Details**:
+  ```php
+  public function validate_step_integration($license, $context) {
+      try {
+          $steps = $this->detect_available_steps();
+          $analysis = $this->analyze_step_integrations($steps);
+          return $this->format_integration_result($analysis);
+      } catch (Exception $e) {
+          // Error handling
+      }
+  }
+  ```
+- **Files Modified**: `class-vd-license-security-integration-validator.php`
+- **Dependencies**: Steps 4.4.3.2a, 4.4.3.2b, 4.4.3.2c
+- **Test Strategy**: End-to-end integration testing
+- **Risk Level**: Medium (method replacement)
+
+---
+
+### **📊 Step 4.4.3.2 Sub-Dependencies & Timeline**
+
+```
+Step 4.4.3.2a (Detection Infrastructure - 10-15 min)
+    ↓
+Step 4.4.3.2b (Integration Analysis - 10-15 min)
+    ↓
+Step 4.4.3.2c (Result Structure - 10-15 min)
+    ↓
+Step 4.4.3.2d (Logic Assembly - 10-15 min)
+```
+
+**Total Timeline**: 4 sub-steps × 10-15 min = **40-60 phút**
+
+### **🎯 Sub-Implementation Guidelines**
+
+#### **Code Size Limits**
+- **Maximum per sub-step**: 60 lines
+- **Target per sub-step**: 30-50 lines
+- **Cumulative target**: 150-200 lines total
+
+#### **Time Limits**
+- **Maximum per sub-step**: 15 phút
+- **Target per sub-step**: 10-12 phút
+- **Cumulative target**: 40-50 phút
+
+#### **Quality Requirements**
+- **Incremental Testing**: Test after each sub-step
+- **Helper Methods**: Each sub-step creates focused helper methods
+- **Error Handling**: Progressive error handling improvement
+- **Documentation**: Update inline docs với each sub-step
 
 #### **🔒 Step 4.4.3.3: User Security Context Enhancement**
 - **Duration**: 15-20 phút
