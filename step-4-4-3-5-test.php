@@ -18,6 +18,22 @@ if (!current_user_can('manage_options')) {
     wp_die('Unauthorized access');
 }
 
+// Load VD License Manager classes
+if (!class_exists('VD_License_Validator')) {
+    $validator_file = WP_PLUGIN_DIR . '/vd-license-manager/includes/class-vd-license-validator.php';
+    if (file_exists($validator_file)) {
+        require_once $validator_file;
+    }
+}
+
+// Load Module Loader if needed
+if (!class_exists('VD_License_Module_Loader')) {
+    $module_loader_file = WP_PLUGIN_DIR . '/vd-license-manager/includes/class-vd-license-module-loader.php';
+    if (file_exists($module_loader_file)) {
+        require_once $module_loader_file;
+    }
+}
+
 ?>
 <!DOCTYPE html>
 <html>
@@ -68,7 +84,21 @@ if (file_exists($main_validator_file)) {
         echo '<div class="success">✅ VD_License_Validator class available</div>';
     } else {
         echo '<div class="error">❌ VD_License_Validator class not found</div>';
-        exit;
+        echo '<div class="info">🔄 Attempting to load validator class...</div>';
+
+        $validator_file = WP_PLUGIN_DIR . '/vd-license-manager/includes/class-vd-license-validator.php';
+        if (file_exists($validator_file)) {
+            require_once $validator_file;
+            if (class_exists('VD_License_Validator')) {
+                echo '<div class="success">✅ VD_License_Validator class loaded successfully</div>';
+            } else {
+                echo '<div class="error">❌ Failed to load VD_License_Validator class</div>';
+                exit;
+            }
+        } else {
+            echo '<div class="error">❌ Validator file not found at: ' . $validator_file . '</div>';
+            exit;
+        }
     }
 } else {
     echo '<div class="error">❌ Main validator file not found</div>';
