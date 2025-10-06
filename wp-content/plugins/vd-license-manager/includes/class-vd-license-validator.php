@@ -1517,7 +1517,7 @@ class VD_License_Validator {
     public function update_expired_license_statuses($options = array()) {
         // MICRO-STEP 3: Direct replacement with extracted modules
         // Load expiry processor module
-        if (!class_exists('VD\LicenseManager\Validator\VD_License_Expiry_Processor')) {
+        if (!class_exists('VD\\LicenseManager\\Validator\\VD_License_Expiry_Processor')) {
             require_once plugin_dir_path(__FILE__) . 'modules/validator/class-vd-license-expiry-processor.php';
         }
 
@@ -2200,7 +2200,7 @@ class VD_License_Validator {
     public function schedule_automatic_updates($schedule_options = array()) {
         // MICRO-STEP 3: Direct replacement with extracted modules
         // Load expiry processor module
-        if (!class_exists('VD\LicenseManager\Validator\VD_License_Expiry_Processor')) {
+        if (!class_exists('VD\\LicenseManager\\Validator\\VD_License_Expiry_Processor')) {
             require_once plugin_dir_path(__FILE__) . 'modules/validator/class-vd-license-expiry-processor.php';
         }
 
@@ -2230,7 +2230,7 @@ class VD_License_Validator {
     public function send_status_change_notification($license, $old_status, $new_status, $context = array()) {
         // MICRO-STEP 4: Direct replacement with extracted modules
         // Load status transition controller module
-        if (!class_exists('VD\LicenseManager\Validator\VD_License_Status_Transition_Controller')) {
+        if (!class_exists('VD\\LicenseManager\\Validator\\VD_License_Status_Transition_Controller')) {
             require_once plugin_dir_path(__FILE__) . 'modules/validator/class-vd-license-status-transition-controller.php';
         }
 
@@ -2345,7 +2345,7 @@ class VD_License_Validator {
     public function track_status_history($license, $old_status, $new_status, $context = array()) {
         // MICRO-STEP 4: Direct replacement with extracted modules
         // Load status transition controller module
-        if (!class_exists('VD\LicenseManager\Validator\VD_License_Status_Transition_Controller')) {
+        if (!class_exists('VD\\LicenseManager\\Validator\\VD_License_Status_Transition_Controller')) {
             require_once plugin_dir_path(__FILE__) . 'modules/validator/class-vd-license-status-transition-controller.php';
         }
 
@@ -2425,7 +2425,7 @@ class VD_License_Validator {
     public function get_status_history($license_id, $options = array()) {
         // MICRO-STEP 4: Direct replacement with extracted modules
         // Load status transition controller module
-        if (!class_exists('VD\LicenseManager\Validator\VD_License_Status_Transition_Controller')) {
+        if (!class_exists('VD\\LicenseManager\\Validator\\VD_License_Status_Transition_Controller')) {
             require_once plugin_dir_path(__FILE__) . 'modules/validator/class-vd-license-status-transition-controller.php';
         }
 
