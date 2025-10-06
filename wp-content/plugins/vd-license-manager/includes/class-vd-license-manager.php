@@ -114,11 +114,15 @@ class VD_License_Manager {
      * @since 1.0.0
      */
     public function init() {
+        error_log("VD_License_Manager: init() method called");
+
         // Load text domain for translations
         add_action('init', [$this, 'load_textdomain']);
 
         // Load dependencies
+        error_log("VD_License_Manager: About to call load_dependencies()");
         $this->load_dependencies();
+        error_log("VD_License_Manager: load_dependencies() completed");
 
         // Setup hooks
         $this->setup_hooks();
@@ -191,7 +195,24 @@ class VD_License_Manager {
         require_once VD_LM_PATH . 'includes/class-vd-api-router.php';
 
         // Step 4.2.1 - Load License Validator class
-        require_once VD_LM_PATH . 'includes/class-vd-license-validator.php';
+        $validator_file = VD_LM_PATH . 'includes/class-vd-license-validator.php';
+        error_log("VD_License_Manager: Attempting to load validator file: " . $validator_file);
+        error_log("VD_License_Manager: File exists: " . (file_exists($validator_file) ? 'Yes' : 'No'));
+
+        if (file_exists($validator_file)) {
+            error_log("VD_License_Manager: About to require_once validator file");
+            try {
+                require_once $validator_file;
+                error_log("VD_License_Manager: require_once completed successfully");
+                error_log("VD_License_Manager: VD_License_Validator class exists after require: " . (class_exists('VD_License_Validator') ? 'Yes' : 'No'));
+            } catch (Exception $e) {
+                error_log("VD_License_Manager: Exception during require_once: " . $e->getMessage());
+            } catch (Error $e) {
+                error_log("VD_License_Manager: Fatal error during require_once: " . $e->getMessage());
+            }
+        } else {
+            error_log("VD_License_Manager: ERROR - Validator file does not exist");
+        }
 
         // Step 3.4.6.2 - Safe Variable Declaration (security audit file path)
         $security_audit_file = VD_LM_PATH . 'includes/class-vd-security-audit.php';
