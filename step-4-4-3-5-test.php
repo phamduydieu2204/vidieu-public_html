@@ -75,6 +75,40 @@ echo '<div class="info">📄 Main validator file path: ' . $main_validator_file 
 echo '<div class="info">🔧 VD_License_Manager class loaded: ' . (class_exists('VD_License_Manager') ? 'Yes' : 'No') . '</div>';
 echo '<div class="info">🔧 Plugin initialization function exists: ' . (function_exists('vd_license_manager_init') ? 'Yes' : 'No') . '</div>';
 
+// Debug: Try to trace the plugin loading issue
+if (class_exists('VD_License_Manager') && !class_exists('VD_License_Validator')) {
+    echo '<div class="warning">🔍 Debugging: VD_License_Manager exists but VD_License_Validator does not</div>';
+
+    // Check if VD_LM_PATH is defined
+    echo '<div class="info">📂 VD_LM_PATH defined: ' . (defined('VD_LM_PATH') ? 'Yes (' . VD_LM_PATH . ')' : 'No') . '</div>';
+
+    if (defined('VD_LM_PATH')) {
+        $expected_validator_file = VD_LM_PATH . 'includes/class-vd-license-validator.php';
+        echo '<div class="info">📄 Expected validator path: ' . $expected_validator_file . '</div>';
+        echo '<div class="info">📄 Expected validator exists: ' . (file_exists($expected_validator_file) ? 'Yes' : 'No') . '</div>';
+
+        // Try to manually trigger VD_License_Manager initialization
+        echo '<div class="info">🔄 Attempting manual VD_License_Manager initialization...</div>';
+        try {
+            $manager = VD_License_Manager::get_instance();
+            if ($manager) {
+                // Use reflection to check if init was called
+                $reflection = new ReflectionClass($manager);
+                echo '<div class="info">✅ VD_License_Manager instance obtained</div>';
+
+                // Call init manually
+                $manager->init();
+                echo '<div class="info">✅ VD_License_Manager init() called manually</div>';
+
+                // Check again if VD_License_Validator is now loaded
+                echo '<div class="info">🔍 VD_License_Validator now exists: ' . (class_exists('VD_License_Validator') ? 'Yes' : 'No') . '</div>';
+            }
+        } catch (Exception $e) {
+            echo '<div class="error">❌ Error during manual initialization: ' . $e->getMessage() . '</div>';
+        }
+    }
+}
+
 if (file_exists($main_validator_file)) {
     echo '<div class="success">✅ Main validator file exists</div>';
     $file_size = filesize($main_validator_file);
