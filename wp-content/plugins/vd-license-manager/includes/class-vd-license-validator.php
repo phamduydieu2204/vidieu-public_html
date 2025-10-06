@@ -1521,7 +1521,7 @@ class VD_License_Validator {
             require_once plugin_dir_path(__FILE__) . 'modules/validator/class-vd-license-expiry-processor.php';
         }
 
-        $expiry_processor = VD\LicenseManager\Validator\VD_License_Expiry_Processor::get_instance();
+        $expiry_processor = VD\\LicenseManager\\Validator\\VD_License_Expiry_Processor::get_instance();
         return $expiry_processor->update_expired_license_statuses($options);
 
     }
@@ -2204,7 +2204,7 @@ class VD_License_Validator {
             require_once plugin_dir_path(__FILE__) . 'modules/validator/class-vd-license-expiry-processor.php';
         }
 
-        $expiry_processor = VD\LicenseManager\Validator\VD_License_Expiry_Processor::get_instance();
+        $expiry_processor = VD\\LicenseManager\\Validator\\VD_License_Expiry_Processor::get_instance();
         return $expiry_processor->schedule_automatic_updates($schedule_options);
 
     }
@@ -2234,7 +2234,7 @@ class VD_License_Validator {
             require_once plugin_dir_path(__FILE__) . 'modules/validator/class-vd-license-status-transition-controller.php';
         }
 
-        $status_controller = VD\LicenseManager\Validator\VD_License_Status_Transition_Controller::get_instance();
+        $status_controller = VD\\LicenseManager\\Validator\\VD_License_Status_Transition_Controller::get_instance();
         return $status_controller->send_status_change_notification($license, $old_status, $new_status, $context);
 
     }
@@ -2349,7 +2349,7 @@ class VD_License_Validator {
             require_once plugin_dir_path(__FILE__) . 'modules/validator/class-vd-license-status-transition-controller.php';
         }
 
-        $status_controller = VD\LicenseManager\Validator\VD_License_Status_Transition_Controller::get_instance();
+        $status_controller = VD\\LicenseManager\\Validator\\VD_License_Status_Transition_Controller::get_instance();
         return $status_controller->track_status_history($license, $old_status, $new_status, $context);
 
     }
@@ -2429,7 +2429,7 @@ class VD_License_Validator {
             require_once plugin_dir_path(__FILE__) . 'modules/validator/class-vd-license-status-transition-controller.php';
         }
 
-        $status_controller = VD\LicenseManager\Validator\VD_License_Status_Transition_Controller::get_instance();
+        $status_controller = VD\\LicenseManager\\Validator\\VD_License_Status_Transition_Controller::get_instance();
         return $status_controller->get_status_history($license_id, $options);
 
     }
@@ -6424,7 +6424,7 @@ class VD_License_Validator {
         }
 
         try {
-            $orchestrator = \VD\LicenseManager\Validator\VD_License_Validation_Orchestrator::get_instance();
+            $orchestrator = \\VD\\LicenseManager\\Validator\\VD_License_Validation_Orchestrator::get_instance();
 
             // Transform input parameters
             $license_key = $this->extract_license_key($license);
@@ -6842,7 +6842,7 @@ class VD_License_Validator {
     private function validate_step_integration($license, $context) {
         // Delegate to enhanced Security Integration Validator (Step 4.4.3.2d)
         try {
-            $security_validator = VD\LicenseManager\Compliance\VD_License_Security_Integration_Validator::get_instance();
+            $security_validator = VD\\LicenseManager\\Compliance\\VD_License_Security_Integration_Validator::get_instance();
             if ($security_validator && method_exists($security_validator, 'enhanced_validate_step_integration')) {
                 return $security_validator->enhanced_validate_step_integration($license, $context);
             }
