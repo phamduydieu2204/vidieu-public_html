@@ -144,30 +144,590 @@ class VD_License_Security_Integration_Validator {
     }
 
     /**
-     * Validate user security context - Foundation implementation
+     * Step 4.4.3.3 - Validate user security context (Enhanced Implementation)
      *
-     * @since 1.0.0
+     * Enhanced user security context validation with comprehensive analysis
+     *
+     * @since 1.0.0 (Enhanced in Step 4.4.3.3)
      * @param array $security_context Security context data
-     * @return array Validation result
+     * @return array Enhanced validation result
      */
     public function validate_user_security_context($security_context) {
-        // Foundation implementation - returns safe defaults
+        try {
+            // Enhanced user security context validation
+            $validation_result = array(
+                'valid' => true,
+                'status' => 'enhanced_security_validation',
+                'message' => 'Step 4.4.3.3 - Enhanced user security context validation',
+                'validation_timestamp' => current_time('mysql'),
+                'errors' => array(),
+                'warnings' => array(),
+                'security_score' => 0,
+                'security_assessment' => array(),
+                'authentication_analysis' => array(),
+                'session_analysis' => array(),
+                'device_analysis' => array(),
+                'risk_analysis' => array()
+            );
+
+            // Step 1: Authentication Context Analysis
+            $auth_analysis = $this->analyze_authentication_context($security_context);
+            $validation_result['authentication_analysis'] = $auth_analysis;
+
+            // Step 2: Session Security Validation
+            $session_analysis = $this->validate_session_security($security_context);
+            $validation_result['session_analysis'] = $session_analysis;
+
+            // Step 3: Device Tracking and Analysis
+            $device_analysis = $this->analyze_device_context($security_context);
+            $validation_result['device_analysis'] = $device_analysis;
+
+            // Step 4: Risk Analysis and Scoring
+            $risk_analysis = $this->perform_risk_analysis($security_context, $auth_analysis, $session_analysis, $device_analysis);
+            $validation_result['risk_analysis'] = $risk_analysis;
+
+            // Step 5: Calculate Overall Security Score
+            $security_score = $this->calculate_user_security_score($auth_analysis, $session_analysis, $device_analysis, $risk_analysis);
+            $validation_result['security_score'] = $security_score;
+
+            // Step 6: Security Assessment Summary
+            $validation_result['security_assessment'] = $this->generate_security_assessment($security_score, $auth_analysis, $session_analysis, $device_analysis);
+
+            // Step 7: Validation Status Determination
+            $validation_result = $this->determine_validation_status($validation_result);
+
+            return $validation_result;
+
+        } catch (Exception $e) {
+            // Fallback to foundation mode on error
+            $this->log_error('Enhanced user security context validation failed', $e);
+            return $this->validate_user_security_context_foundation($security_context);
+        }
+    }
+
+    /**
+     * Analyze authentication context
+     *
+     * @since 1.0.0 (Step 4.4.3.3)
+     * @param array $security_context Security context data
+     * @return array Authentication analysis
+     */
+    private function analyze_authentication_context($security_context) {
+        $auth_analysis = array(
+            'login_method' => 'unknown',
+            'login_method_score' => 0,
+            'two_factor_enabled' => false,
+            'two_factor_score' => 0,
+            'authentication_strength' => 'weak',
+            'authentication_issues' => array()
+        );
+
+        // Login method analysis
+        if (!empty($security_context['login_method'])) {
+            $method = $security_context['login_method'];
+            $auth_analysis['login_method'] = $method;
+
+            $method_scores = array(
+                'wordpress_native' => 60,
+                'oauth' => 80,
+                'ldap' => 85,
+                'saml' => 90,
+                'custom' => 50
+            );
+
+            $auth_analysis['login_method_score'] = isset($method_scores[$method]) ? $method_scores[$method] : 30;
+
+            if (!in_array($method, array_keys($method_scores))) {
+                $auth_analysis['authentication_issues'][] = 'Unknown or unsupported login method';
+            }
+        } else {
+            $auth_analysis['authentication_issues'][] = 'Login method not specified';
+        }
+
+        // Two-factor authentication analysis
+        if (!empty($security_context['two_factor_auth'])) {
+            $two_factor = $security_context['two_factor_auth'];
+
+            if (is_array($two_factor)) {
+                $auth_analysis['two_factor_enabled'] = !empty($two_factor['enabled']);
+
+                if ($auth_analysis['two_factor_enabled']) {
+                    $method_type = isset($two_factor['method']) ? $two_factor['method'] : 'unknown';
+
+                    $two_factor_scores = array(
+                        'sms' => 70,
+                        'email' => 60,
+                        'totp' => 90,
+                        'app' => 85,
+                        'hardware' => 95
+                    );
+
+                    $auth_analysis['two_factor_score'] = isset($two_factor_scores[$method_type]) ? $two_factor_scores[$method_type] : 50;
+                    $auth_analysis['two_factor_method'] = $method_type;
+                } else {
+                    $auth_analysis['authentication_issues'][] = 'Two-factor authentication is disabled';
+                }
+            } elseif ($two_factor === true || $two_factor === 'enabled') {
+                $auth_analysis['two_factor_enabled'] = true;
+                $auth_analysis['two_factor_score'] = 75; // Default score for enabled 2FA
+            }
+        } else {
+            $auth_analysis['authentication_issues'][] = 'Two-factor authentication status unknown';
+        }
+
+        // Determine authentication strength
+        $total_auth_score = ($auth_analysis['login_method_score'] + $auth_analysis['two_factor_score']) / 2;
+
+        if ($total_auth_score >= 80) {
+            $auth_analysis['authentication_strength'] = 'strong';
+        } elseif ($total_auth_score >= 60) {
+            $auth_analysis['authentication_strength'] = 'medium';
+        } else {
+            $auth_analysis['authentication_strength'] = 'weak';
+        }
+
+        $auth_analysis['total_authentication_score'] = $total_auth_score;
+
+        return $auth_analysis;
+    }
+
+    /**
+     * Validate session security
+     *
+     * @since 1.0.0 (Step 4.4.3.3)
+     * @param array $security_context Security context data
+     * @return array Session security analysis
+     */
+    private function validate_session_security($security_context) {
+        $session_analysis = array(
+            'session_security_level' => 'unknown',
+            'session_score' => 0,
+            'session_timeout' => 'default',
+            'session_encryption' => 'unknown',
+            'concurrent_sessions' => 0,
+            'session_issues' => array()
+        );
+
+        // Session security level analysis
+        if (!empty($security_context['session_security'])) {
+            $session_level = $security_context['session_security'];
+            $session_analysis['session_security_level'] = $session_level;
+
+            $level_scores = array(
+                'low' => 40,
+                'medium' => 70,
+                'high' => 90,
+                'maximum' => 95
+            );
+
+            $session_analysis['session_score'] = isset($level_scores[$session_level]) ? $level_scores[$session_level] : 30;
+
+            if (!in_array($session_level, array_keys($level_scores))) {
+                $session_analysis['session_issues'][] = 'Invalid session security level';
+            }
+        } else {
+            $session_analysis['session_issues'][] = 'Session security level not specified';
+        }
+
+        // Session timeout analysis
+        if (!empty($security_context['session_timeout'])) {
+            $timeout = $security_context['session_timeout'];
+            $session_analysis['session_timeout'] = $timeout;
+
+            // Convert to minutes for analysis
+            $timeout_minutes = is_numeric($timeout) ? (int)$timeout : 60; // Default 60 min
+
+            if ($timeout_minutes > 480) { // 8 hours
+                $session_analysis['session_issues'][] = 'Session timeout too long (security risk)';
+            } elseif ($timeout_minutes < 15) {
+                $session_analysis['session_issues'][] = 'Session timeout very short (usability issue)';
+            }
+        }
+
+        // Session encryption analysis
+        if (!empty($security_context['session_encryption'])) {
+            $encryption = $security_context['session_encryption'];
+            $session_analysis['session_encryption'] = $encryption;
+
+            if ($encryption === false || $encryption === 'none') {
+                $session_analysis['session_issues'][] = 'Session encryption disabled (security risk)';
+            }
+        }
+
+        // Concurrent sessions analysis
+        if (isset($security_context['concurrent_sessions'])) {
+            $concurrent = (int)$security_context['concurrent_sessions'];
+            $session_analysis['concurrent_sessions'] = $concurrent;
+
+            if ($concurrent > 10) {
+                $session_analysis['session_issues'][] = 'High number of concurrent sessions (potential abuse)';
+            }
+        }
+
+        return $session_analysis;
+    }
+
+    /**
+     * Analyze device context
+     *
+     * @since 1.0.0 (Step 4.4.3.3)
+     * @param array $security_context Security context data
+     * @return array Device analysis
+     */
+    private function analyze_device_context($security_context) {
+        $device_analysis = array(
+            'device_tracked' => false,
+            'device_score' => 0,
+            'device_fingerprint' => 'unknown',
+            'device_trust_level' => 'unknown',
+            'device_location' => 'unknown',
+            'device_issues' => array()
+        );
+
+        // Device tracking analysis
+        if (!empty($security_context['device_tracking'])) {
+            $device_tracking = $security_context['device_tracking'];
+
+            if (is_array($device_tracking)) {
+                $device_analysis['device_tracked'] = !empty($device_tracking['enabled']);
+
+                if ($device_analysis['device_tracked']) {
+                    $device_analysis['device_score'] = 75;
+
+                    // Device fingerprint analysis
+                    if (!empty($device_tracking['fingerprint'])) {
+                        $device_analysis['device_fingerprint'] = 'present';
+                        $device_analysis['device_score'] += 10;
+                    }
+
+                    // Device trust level
+                    if (!empty($device_tracking['trust_level'])) {
+                        $trust_level = $device_tracking['trust_level'];
+                        $device_analysis['device_trust_level'] = $trust_level;
+
+                        $trust_scores = array(
+                            'trusted' => 20,
+                            'known' => 10,
+                            'new' => 0,
+                            'suspicious' => -20
+                        );
+
+                        $device_analysis['device_score'] += isset($trust_scores[$trust_level]) ? $trust_scores[$trust_level] : 0;
+
+                        if ($trust_level === 'suspicious') {
+                            $device_analysis['device_issues'][] = 'Device marked as suspicious';
+                        }
+                    }
+                } else {
+                    $device_analysis['device_issues'][] = 'Device tracking disabled';
+                }
+            } elseif ($device_tracking === true || $device_tracking === 'enabled') {
+                $device_analysis['device_tracked'] = true;
+                $device_analysis['device_score'] = 60;
+            }
+        } else {
+            $device_analysis['device_issues'][] = 'Device tracking information not available';
+        }
+
+        // Device location analysis
+        if (!empty($security_context['device_location'])) {
+            $location = $security_context['device_location'];
+            $device_analysis['device_location'] = $location;
+
+            // Add location-based scoring logic here if needed
+        }
+
+        return $device_analysis;
+    }
+
+    /**
+     * Perform comprehensive risk analysis
+     *
+     * @since 1.0.0 (Step 4.4.3.3)
+     * @param array $security_context Security context data
+     * @param array $auth_analysis Authentication analysis
+     * @param array $session_analysis Session analysis
+     * @param array $device_analysis Device analysis
+     * @return array Risk analysis
+     */
+    private function perform_risk_analysis($security_context, $auth_analysis, $session_analysis, $device_analysis) {
+        $risk_analysis = array(
+            'overall_risk_level' => 'medium',
+            'risk_score' => 0,
+            'risk_factors' => array(),
+            'mitigation_recommendations' => array()
+        );
+
+        $risk_factors = array();
+
+        // Authentication risk factors
+        if ($auth_analysis['authentication_strength'] === 'weak') {
+            $risk_factors[] = array(
+                'type' => 'authentication',
+                'severity' => 'high',
+                'description' => 'Weak authentication method',
+                'impact' => 30
+            );
+        }
+
+        if (!$auth_analysis['two_factor_enabled']) {
+            $risk_factors[] = array(
+                'type' => 'authentication',
+                'severity' => 'medium',
+                'description' => 'Two-factor authentication not enabled',
+                'impact' => 20
+            );
+        }
+
+        // Session risk factors
+        if ($session_analysis['session_security_level'] === 'low') {
+            $risk_factors[] = array(
+                'type' => 'session',
+                'severity' => 'medium',
+                'description' => 'Low session security level',
+                'impact' => 15
+            );
+        }
+
+        if ($session_analysis['concurrent_sessions'] > 5) {
+            $risk_factors[] = array(
+                'type' => 'session',
+                'severity' => 'medium',
+                'description' => 'High number of concurrent sessions',
+                'impact' => 10
+            );
+        }
+
+        // Device risk factors
+        if (!$device_analysis['device_tracked']) {
+            $risk_factors[] = array(
+                'type' => 'device',
+                'severity' => 'low',
+                'description' => 'Device tracking not enabled',
+                'impact' => 10
+            );
+        }
+
+        if ($device_analysis['device_trust_level'] === 'suspicious') {
+            $risk_factors[] = array(
+                'type' => 'device',
+                'severity' => 'high',
+                'description' => 'Suspicious device detected',
+                'impact' => 40
+            );
+        }
+
+        // Calculate overall risk score
+        $total_risk_impact = array_sum(array_column($risk_factors, 'impact'));
+        $risk_analysis['risk_score'] = min(100, $total_risk_impact);
+        $risk_analysis['risk_factors'] = $risk_factors;
+
+        // Determine risk level
+        if ($risk_analysis['risk_score'] >= 50) {
+            $risk_analysis['overall_risk_level'] = 'high';
+        } elseif ($risk_analysis['risk_score'] >= 25) {
+            $risk_analysis['overall_risk_level'] = 'medium';
+        } else {
+            $risk_analysis['overall_risk_level'] = 'low';
+        }
+
+        // Generate mitigation recommendations
+        $risk_analysis['mitigation_recommendations'] = $this->generate_risk_mitigation_recommendations($risk_factors);
+
+        return $risk_analysis;
+    }
+
+    /**
+     * Calculate overall user security score
+     *
+     * @since 1.0.0 (Step 4.4.3.3)
+     * @param array $auth_analysis Authentication analysis
+     * @param array $session_analysis Session analysis
+     * @param array $device_analysis Device analysis
+     * @param array $risk_analysis Risk analysis
+     * @return float Security score (0-100)
+     */
+    private function calculate_user_security_score($auth_analysis, $session_analysis, $device_analysis, $risk_analysis) {
+        // Weighted scoring system
+        $auth_weight = 0.4;      // 40% - Authentication is most important
+        $session_weight = 0.3;   // 30% - Session security
+        $device_weight = 0.2;    // 20% - Device tracking
+        $risk_weight = 0.1;      // 10% - Risk factors (negative impact)
+
+        $auth_score = isset($auth_analysis['total_authentication_score']) ? $auth_analysis['total_authentication_score'] : 0;
+        $session_score = $session_analysis['session_score'];
+        $device_score = $device_analysis['device_score'];
+        $risk_penalty = $risk_analysis['risk_score'];
+
+        $weighted_score = ($auth_score * $auth_weight) +
+                         ($session_score * $session_weight) +
+                         ($device_score * $device_weight) -
+                         ($risk_penalty * $risk_weight);
+
+        return max(0, min(100, round($weighted_score, 2)));
+    }
+
+    /**
+     * Generate security assessment summary
+     *
+     * @since 1.0.0 (Step 4.4.3.3)
+     * @param float $security_score Overall security score
+     * @param array $auth_analysis Authentication analysis
+     * @param array $session_analysis Session analysis
+     * @param array $device_analysis Device analysis
+     * @return array Security assessment
+     */
+    private function generate_security_assessment($security_score, $auth_analysis, $session_analysis, $device_analysis) {
+        $assessment = array(
+            'overall_rating' => 'poor',
+            'login_method' => $auth_analysis['login_method'],
+            'session_security' => $session_analysis['session_security_level'],
+            'two_factor' => $auth_analysis['two_factor_enabled'] ? 'enabled' : 'disabled',
+            'device_tracking' => $device_analysis['device_tracked'] ? 'enabled' : 'disabled',
+            'authentication_strength' => $auth_analysis['authentication_strength'],
+            'recommendations' => array()
+        );
+
+        // Determine overall rating
+        if ($security_score >= 80) {
+            $assessment['overall_rating'] = 'excellent';
+        } elseif ($security_score >= 65) {
+            $assessment['overall_rating'] = 'good';
+        } elseif ($security_score >= 50) {
+            $assessment['overall_rating'] = 'fair';
+        } else {
+            $assessment['overall_rating'] = 'poor';
+        }
+
+        // Generate recommendations
+        if (!$auth_analysis['two_factor_enabled']) {
+            $assessment['recommendations'][] = 'Enable two-factor authentication';
+        }
+
+        if ($session_analysis['session_security_level'] === 'low') {
+            $assessment['recommendations'][] = 'Increase session security level';
+        }
+
+        if (!$device_analysis['device_tracked']) {
+            $assessment['recommendations'][] = 'Enable device tracking';
+        }
+
+        return $assessment;
+    }
+
+    /**
+     * Generate risk mitigation recommendations
+     *
+     * @since 1.0.0 (Step 4.4.3.3)
+     * @param array $risk_factors Risk factors array
+     * @return array Mitigation recommendations
+     */
+    private function generate_risk_mitigation_recommendations($risk_factors) {
+        $recommendations = array();
+
+        foreach ($risk_factors as $factor) {
+            switch ($factor['type']) {
+                case 'authentication':
+                    if (strpos($factor['description'], 'Weak authentication') !== false) {
+                        $recommendations[] = 'Upgrade to stronger authentication method (OAuth, SAML)';
+                    }
+                    if (strpos($factor['description'], 'Two-factor') !== false) {
+                        $recommendations[] = 'Enable and configure two-factor authentication';
+                    }
+                    break;
+
+                case 'session':
+                    if (strpos($factor['description'], 'Low session security') !== false) {
+                        $recommendations[] = 'Increase session security level to medium or high';
+                    }
+                    if (strpos($factor['description'], 'concurrent sessions') !== false) {
+                        $recommendations[] = 'Review and limit concurrent session policy';
+                    }
+                    break;
+
+                case 'device':
+                    if (strpos($factor['description'], 'Device tracking') !== false) {
+                        $recommendations[] = 'Enable device tracking and fingerprinting';
+                    }
+                    if (strpos($factor['description'], 'Suspicious device') !== false) {
+                        $recommendations[] = 'Review device access and consider blocking suspicious devices';
+                    }
+                    break;
+            }
+        }
+
+        return array_unique($recommendations);
+    }
+
+    /**
+     * Determine final validation status
+     *
+     * @since 1.0.0 (Step 4.4.3.3)
+     * @param array $validation_result Validation result array
+     * @return array Updated validation result
+     */
+    private function determine_validation_status($validation_result) {
+        $security_score = $validation_result['security_score'];
+        $risk_level = $validation_result['risk_analysis']['overall_risk_level'];
+
+        // Determine if validation passes
+        if ($security_score >= 60 && $risk_level !== 'high') {
+            $validation_result['valid'] = true;
+            $validation_result['message'] = 'User security context validation passed';
+        } else {
+            $validation_result['valid'] = false;
+            $validation_result['message'] = 'User security context validation failed - security requirements not met';
+
+            if ($security_score < 60) {
+                $validation_result['errors'][] = 'Security score below minimum threshold (60)';
+            }
+
+            if ($risk_level === 'high') {
+                $validation_result['errors'][] = 'High risk level detected';
+            }
+        }
+
+        return $validation_result;
+    }
+
+    /**
+     * Foundation fallback method
+     *
+     * @since 1.0.0 (Step 4.4.3.3)
+     * @param array $security_context Security context data
+     * @return array Foundation validation result
+     */
+    private function validate_user_security_context_foundation($security_context) {
+        // Simple foundation validation (original logic)
+        $validation_errors = array();
+
+        // Login method validation
+        if (!empty($security_context['login_method'])) {
+            $allowed_methods = array('wordpress_native', 'oauth', 'ldap', 'custom');
+            if (!in_array($security_context['login_method'], $allowed_methods)) {
+                $validation_errors[] = 'Invalid login method in security context';
+            }
+        }
+
+        // Session security validation
+        if (!empty($security_context['session_security'])) {
+            $allowed_levels = array('low', 'medium', 'high');
+            if (!in_array($security_context['session_security'], $allowed_levels)) {
+                $validation_errors[] = 'Invalid session security level';
+            }
+        }
+
         return array(
-            'valid' => true,
+            'valid' => empty($validation_errors),
             'status' => 'foundation_mode',
-            'message' => 'Step 4.4.3.1 Foundation - Basic security context validation',
-            'security_score' => 85,
+            'message' => 'Foundation mode - basic security context validation',
+            'errors' => $validation_errors,
+            'security_score' => 75, // Default foundation score
             'security_assessment' => array(
-                'login_method' => 'standard',
-                'session_security' => 'good',
-                'two_factor' => 'not_configured',
-                'device_tracking' => 'basic'
-            ),
-            'foundation_info' => array(
-                'module' => 'Security Integration Validator',
-                'version' => $this->version,
-                'step' => '4.4.3.1',
-                'mode' => 'foundation'
+                'login_method' => isset($security_context['login_method']) ? $security_context['login_method'] : 'unknown',
+                'session_security' => isset($security_context['session_security']) ? $security_context['session_security'] : 'unknown',
+                'two_factor' => 'unknown',
+                'device_tracking' => 'unknown'
             )
         );
     }
