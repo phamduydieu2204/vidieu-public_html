@@ -465,6 +465,323 @@ $accounts = $wpdb->get_results(
 □ No PHP errors/warnings
 ```
 
+
+---
+
+## 🔄 GIT WORKFLOW
+
+### **MANDATORY: Push to GitHub after EVERY completed task**
+
+After completing ANY task (file creation, modification, bug fix, feature), you MUST:
+
+```bash
+# Step 1: Check status
+git status
+
+# Step 2: Add changes
+git add .
+
+# Step 3: Commit with descriptive message
+git commit -m "Type: Brief description
+
+- Detail 1
+- Detail 2
+- Detail 3"
+
+# Step 4: Push to GitHub
+git push origin main
+```
+
+### **Commit Message Format:**
+
+```
+Type: Brief description (max 50 chars)
+
+- Detailed change 1
+- Detailed change 2
+- Related files/classes affected
+
+[Optional: Breaking changes, notes, references]
+```
+
+### **Commit Types:**
+
+```
+feat:     New feature
+fix:      Bug fix
+refactor: Code refactoring
+docs:     Documentation changes
+style:    Code formatting
+perf:     Performance improvement
+test:     Testing related
+chore:    Maintenance tasks
+db:       Database changes
+security: Security fixes
+```
+
+### **Examples:**
+
+```bash
+# Example 1: New feature
+git commit -m "feat: Add license verification API endpoint
+
+- Created class-vd-api-device-verify.php
+- Implemented rate limiting
+- Added device fingerprint validation
+- Total: 3 files, 245 lines"
+
+# Example 2: Bug fix
+git commit -m "fix: Resolve SQL injection in account search
+
+- Sanitized user input in class-vd-admin-accounts-list.php
+- Added prepared statements
+- Updated security documentation"
+
+# Example 3: Refactoring
+git commit -m "refactor: Split admin accounts class (280→3 files)
+
+- class-vd-admin-accounts-list.php (150 lines)
+- class-vd-admin-accounts-add.php (170 lines)  
+- class-vd-admin-accounts-edit.php (130 lines)
+- Complies with 250-line rule"
+
+# Example 4: Database
+git commit -m "db: Create device tracking tables
+
+- Added 3 new tables via class-vd-db-devices.php
+- device_fingerprints
+- device_history
+- device_locations"
+```
+
+### **Before Every Commit - Checklist:**
+
+```
+✓ All files ≤ 300 lines (ideally ≤ 250)
+✓ All methods ≤ 60 lines (ideally ≤ 40)
+✓ No PHP errors/warnings
+✓ Security checks passed:
+  ✓ Input sanitized
+  ✓ Output escaped
+  ✓ Nonces verified
+  ✓ Capabilities checked
+  ✓ Prepared statements used
+✓ PHPDoc complete
+✓ Code formatted per WPCS
+✓ Manually tested functionality
+```
+
+### **Workflow Pattern:**
+
+```
+┌─────────────────────────────────────────────┐
+│ 1. RECEIVE TASK                             │
+│    "Implement license verification API"     │
+└─────────────────┬───────────────────────────┘
+                  │
+                  ▼
+┌─────────────────────────────────────────────┐
+│ 2. PLAN & CODE                              │
+│    - Read requirements                      │
+│    - Create files (≤250 lines each)         │
+│    - Follow all coding rules                │
+└─────────────────┬───────────────────────────┘
+                  │
+                  ▼
+┌─────────────────────────────────────────────┐
+│ 3. TEST & VERIFY                            │
+│    - Run code                               │
+│    - Check for errors                       │
+│    - Verify security                        │
+└─────────────────┬───────────────────────────┘
+                  │
+                  ▼
+┌─────────────────────────────────────────────┐
+│ 4. COMMIT & PUSH (MANDATORY)                │
+│    git add .                                │
+│    git commit -m "feat: License API"        │
+│    git push origin main                     │
+└─────────────────┬───────────────────────────┘
+                  │
+                  ▼
+┌─────────────────────────────────────────────┐
+│ 5. REPORT COMPLETION                        │
+│    "✅ Task completed and pushed to GitHub" │
+└─────────────────────────────────────────────┘
+```
+
+### **Git Configuration (First Time Setup):**
+
+```bash
+# Set user identity
+git config --global user.name "Your Name"
+git config --global user.email "your.email@example.com"
+
+# Set default branch
+git config --global init.defaultBranch main
+
+# Set default editor (optional)
+git config --global core.editor "nano"
+```
+
+### **GitHub Repository Setup:**
+
+```bash
+# Initialize repository (if new project)
+git init
+git add .
+git commit -m "chore: Initial project setup"
+
+# Connect to GitHub
+git remote add origin https://github.com/username/vd-license-manager.git
+git branch -M main
+git push -u origin main
+```
+
+### **Common Git Operations:**
+
+```bash
+# View commit history
+git log --oneline --graph --decorate --all
+
+# View changes before commit
+git diff
+
+# View staged changes
+git diff --cached
+
+# Undo last commit (keep changes)
+git reset --soft HEAD~1
+
+# Discard local changes
+git checkout -- filename.php
+
+# Pull latest changes
+git pull origin main
+
+# Create and switch to new branch
+git checkout -b feature/new-feature
+
+# Switch back to main
+git checkout main
+```
+
+### **Branch Strategy (Optional for Features):**
+
+For complex features, use feature branches:
+
+```bash
+# Create feature branch
+git checkout -b feature/rate-limiting
+
+# Work on feature...
+# Commit regularly
+
+# When complete, merge to main
+git checkout main
+git merge feature/rate-limiting
+git push origin main
+
+# Delete feature branch
+git branch -d feature/rate-limiting
+```
+
+### **What to Commit:**
+
+✅ **DO commit:**
+- All .php files
+- All .js, .css files
+- README.md, documentation
+- Configuration files
+- Database migration files
+
+❌ **DON'T commit:**
+- wp-config.php (sensitive data)
+- .env files (credentials)
+- /vendor/ (Composer dependencies)
+- /node_modules/ (NPM dependencies)
+- .DS_Store, Thumbs.db
+- IDE files (.idea/, .vscode/)
+- Log files (*.log)
+
+### **.gitignore Template:**
+
+Create `.gitignore` in project root:
+
+```gitignore
+# WordPress
+wp-config.php
+wp-content/uploads/
+wp-content/cache/
+
+# Dependencies
+vendor/
+node_modules/
+
+# Environment
+.env
+.env.local
+
+# IDE
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+
+# OS
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+
+# Logs
+*.log
+error_log
+debug.log
+
+# Temporary
+*.tmp
+*.bak
+*~
+```
+
+### **CRITICAL RULE:**
+
+```
+╔═══════════════════════════════════════════════╗
+║  🚨 NEVER SKIP GIT PUSH                      ║
+║                                               ║
+║  After EVERY completed task:                 ║
+║  1. git add .                                 ║
+║  2. git commit -m "message"                   ║
+║  3. git push origin main                      ║
+║                                               ║
+║  NO EXCEPTIONS!                               ║
+╚═══════════════════════════════════════════════╝
+```
+
+### **Task Completion Report Template:**
+
+```
+✅ Task Completed: [Task Name]
+
+📝 Changes Made:
+- File 1: [description] ([line count] lines)
+- File 2: [description] ([line count] lines)
+- File 3: [description] ([line count] lines)
+
+✓ All files ≤ 250 lines
+✓ Security checks passed
+✓ PHPDoc complete
+✓ Manually tested
+✓ Pushed to GitHub
+
+🔗 Commit: [commit hash]
+📊 Files changed: [number]
+📈 Lines added: [number]
+📉 Lines deleted: [number]
+```
+
 ---
 
 ## 🚨 VIOLATIONS
@@ -513,6 +830,7 @@ $accounts = $wpdb->get_results(
 │  3. ONE FILE = ONE CLASS                    │
 │  4. SPLIT FILES WHEN NEEDED                 │
 │  5. CODE MUST BE READABLE & MAINTAINABLE    │
+│  6. PUSH TO GITHUB AFTER EVERY TASK         │
 │                                             │
 │  🔒 SECURITY                                │
 │  • Sanitize input                           │
