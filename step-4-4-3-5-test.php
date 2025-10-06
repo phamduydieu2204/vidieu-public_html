@@ -18,19 +18,18 @@ if (!current_user_can('manage_options')) {
     wp_die('Unauthorized access');
 }
 
-// Load VD License Manager classes
-if (!class_exists('VD_License_Validator')) {
-    $validator_file = WP_PLUGIN_DIR . '/vd-license-manager/includes/class-vd-license-validator.php';
-    if (file_exists($validator_file)) {
-        require_once $validator_file;
-    }
-}
+// Initialize VD License Manager plugin manually
+if (!class_exists('VD_License_Manager')) {
+    // Check if plugin is installed
+    $plugin_main_file = WP_PLUGIN_DIR . '/vd-license-manager/vd-license-manager.php';
+    if (file_exists($plugin_main_file)) {
+        // Load plugin main file which includes all necessary constants and functions
+        require_once $plugin_main_file;
 
-// Load Module Loader if needed
-if (!class_exists('VD_License_Module_Loader')) {
-    $module_loader_file = WP_PLUGIN_DIR . '/vd-license-manager/includes/class-vd-license-module-loader.php';
-    if (file_exists($module_loader_file)) {
-        require_once $module_loader_file;
+        // Manually trigger plugin initialization if not already done
+        if (function_exists('vd_license_manager_init') && !class_exists('VD_License_Validator')) {
+            vd_license_manager_init();
+        }
     }
 }
 
@@ -73,6 +72,8 @@ $main_validator_file = WP_PLUGIN_DIR . '/vd-license-manager/includes/class-vd-li
 echo '<div class="info">🔍 Debug Info:</div>';
 echo '<div class="info">📁 WP_PLUGIN_DIR: ' . WP_PLUGIN_DIR . '</div>';
 echo '<div class="info">📄 Main validator file path: ' . $main_validator_file . '</div>';
+echo '<div class="info">🔧 VD_License_Manager class loaded: ' . (class_exists('VD_License_Manager') ? 'Yes' : 'No') . '</div>';
+echo '<div class="info">🔧 Plugin initialization function exists: ' . (function_exists('vd_license_manager_init') ? 'Yes' : 'No') . '</div>';
 
 if (file_exists($main_validator_file)) {
     echo '<div class="success">✅ Main validator file exists</div>';
