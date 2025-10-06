@@ -245,6 +245,75 @@ class VD_License_Security_Integration_Validator {
     }
 
     /**
+     * Step 4.4.3.2a - Detect Available Steps (Step Detection Infrastructure)
+     *
+     * Detect existing validator steps and return metadata about their availability
+     *
+     * @since 1.0.0 (Step 4.4.3.2a)
+     * @return array Array of detected steps with metadata
+     */
+    private function detect_available_steps() {
+        // Step configuration array with step definitions
+        $step_config = $this->get_step_configuration();
+        $detected_steps = array();
+
+        foreach ($step_config as $step_id => $step_info) {
+            $is_available = method_exists('VD_License_Validator', $step_info['method']);
+
+            $detected_steps[$step_id] = array(
+                'id' => $step_id,
+                'name' => $step_info['name'],
+                'method' => $step_info['method'],
+                'available' => $is_available,
+                'priority' => $step_info['priority'],
+                'critical' => $step_info['critical'],
+                'status' => $is_available ? 'integrated' : 'missing'
+            );
+        }
+
+        return $detected_steps;
+    }
+
+    /**
+     * Get step configuration array with step definitions
+     *
+     * @since 1.0.0 (Step 4.4.3.2a)
+     * @return array Step configuration
+     */
+    private function get_step_configuration() {
+        return array(
+            'step_4_2_4_5_3a' => array(
+                'name' => 'Validation Infrastructure',
+                'method' => 'validate_and_structure_history_record',
+                'priority' => 1,
+                'critical' => true,
+                'description' => 'Step 4.2.4.5.3a - Validation Infrastructure'
+            ),
+            'step_4_2_4_5_3b' => array(
+                'name' => 'Enhanced Context Processing',
+                'method' => 'generate_context_metadata',
+                'priority' => 2,
+                'critical' => true,
+                'description' => 'Step 4.2.4.5.3b - Enhanced Context Processing'
+            ),
+            'step_4_2_4_5_3c' => array(
+                'name' => 'IP Detection Framework',
+                'method' => 'detect_client_ip',
+                'priority' => 3,
+                'critical' => true,
+                'description' => 'Step 4.2.4.5.3c - IP Detection Framework'
+            ),
+            'step_4_2_4_5_3d' => array(
+                'name' => 'User Information Enhancement',
+                'method' => 'detect_user_context',
+                'priority' => 4,
+                'critical' => true,
+                'description' => 'Step 4.2.4.5.3d - User Information Enhancement'
+            )
+        );
+    }
+
+    /**
      * Prevent cloning
      */
     private function __clone() {}
