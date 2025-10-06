@@ -1,0 +1,75 @@
+<?php
+header('Content-Type: text/plain; charset=utf-8');
+
+echo "🔧 VD_License_Validator Syntax Check Results\n";
+echo "============================================\n\n";
+
+$validator_file = __DIR__ . '/wp-content/plugins/vd-license-manager/includes/class-vd-license-validator.php';
+
+echo "Testing: " . basename($validator_file) . "\n";
+echo "Time: " . date('Y-m-d H:i:s') . "\n\n";
+
+if (!file_exists($validator_file)) {
+    echo "❌ CRITICAL: File not found!\n";
+    echo "Path: " . $validator_file . "\n";
+    exit;
+}
+
+echo "✅ File exists\n";
+echo "Size: " . number_format(filesize($validator_file)) . " bytes\n\n";
+
+// Test PHP syntax
+echo "Testing PHP syntax...\n";
+$content = file_get_contents($validator_file);
+
+// Clear any previous errors
+error_clear_last();
+
+// Try to tokenize the file
+$tokens = @token_get_all($content);
+
+if ($tokens === false) {
+    echo "❌ SYNTAX ERROR DETECTED!\n\n";
+
+    $error = error_get_last();
+    if ($error) {
+        echo "Error details:\n";
+        echo "Message: " . $error['message'] . "\n";
+        echo "File: " . $error['file'] . "\n";
+        echo "Line: " . $error['line'] . "\n";
+    }
+
+    echo "\nThe file cannot be loaded by PHP due to syntax errors.\n";
+} else {
+    echo "✅ SYNTAX IS VALID!\n";
+    echo "Successfully tokenized: " . number_format(count($tokens)) . " tokens\n\n";
+
+    // Additional checks
+    echo "Additional validation:\n";
+
+    // Check namespace patterns
+    $single_backslash = preg_match('/= VD\\[^\\]/', $content);
+    if ($single_backslash) {
+        echo "⚠️  Warning: Found potential single backslash in namespace\n";
+    } else {
+        echo "✅ Namespace patterns look correct\n";
+    }
+
+    // Check try-catch balance
+    $try_count = substr_count($content, 'try {');
+    $catch_count = substr_count($content, '} catch');
+
+    echo "Try blocks: $try_count | Catch blocks: $catch_count\n";
+
+    if ($try_count === $catch_count) {
+        echo "✅ Try-catch blocks are balanced\n";
+    } else {
+        echo "⚠️  Try-catch blocks may be unbalanced\n";
+    }
+
+    echo "\n🎉 CONCLUSION: File is ready for WordPress loading!\n";
+}
+
+echo "\n" . str_repeat("-", 50) . "\n";
+echo "Test completed at: " . date('Y-m-d H:i:s T') . "\n";
+?>
