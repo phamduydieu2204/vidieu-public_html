@@ -45,6 +45,10 @@ define('VD_GEO_CACHE_DURATION', 7 * DAY_IN_SECONDS);
 define('VD_RATE_LIMIT_WINDOW', 300);        // 5 minutes
 define('VD_RATE_LIMIT_MAX_HITS', 10);
 
+// Define API constants
+define('VD_CORS_ENABLED', false);
+define('VD_CORS_ORIGINS', '*');
+
 /**
  * Main plugin class
  *
