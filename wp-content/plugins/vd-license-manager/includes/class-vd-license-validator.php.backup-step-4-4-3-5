@@ -7362,89 +7362,20 @@ class VD_License_Validator {
      * @return array Validation result
      */
     private function validate_security_compliance($license, $security_context) {
-        // Step 4.4.3.5: Enhanced Integration with Security Integration Validator
-        try {
-            // Load Enhanced Security Integration Validator if not already loaded
-            if (!class_exists('VD\\LicenseManager\\Compliance\\VD_License_Security_Integration_Validator')) {
-                $validator_file = plugin_dir_path(__FILE__) . 'modules/compliance/class-vd-license-security-integration-validator.php';
-                if (file_exists($validator_file)) {
-                    require_once $validator_file;
-                }
-            }
-
-            // Primary delegation to Enhanced Security Integration Validator (Step 4.4.3.4)
-            $security_validator = VD\LicenseManager\Compliance\VD_License_Security_Integration_Validator::get_instance();
-            if ($security_validator && method_exists($security_validator, 'validate_security_compliance')) {
-                $validation_result = $security_validator->validate_security_compliance($license, $security_context);
-
-                // Enhanced result validation and metrics tracking
-                if (is_array($validation_result) && isset($validation_result['valid'])) {
-                    // Add integration metadata for Step 4.4.3.5
-                    $validation_result['integration_info'] = array(
-                        'delegated_to' => 'Security Integration Validator',
-                        'integration_step' => '4.4.3.5',
-                        'integration_timestamp' => current_time('mysql'),
-                        'delegation_method' => 'direct_instance',
-                        'fallback_available' => true
-                    );
-
-                    return $validation_result;
-                }
-            }
-        } catch (Exception $e) {
-            // Log integration error but continue to fallback
-            if (method_exists($this, 'log_validation_error')) {
-                $this->log_validation_error('security_compliance_integration', $e->getMessage());
-            }
-        }
-
-        // Step 4.4.1: Fallback to generic Compliance Validator module
+        // Step 4.4.1: Delegate to Compliance Validator module
         $module_loader = VD_License_Module_Loader::get_instance();
         $compliance_validator = $module_loader->load_module('compliance.validator');
 
         if ($compliance_validator && method_exists($compliance_validator, 'validate_security_compliance')) {
-            $fallback_result = $compliance_validator->validate_security_compliance($license, $security_context);
-
-            // Add fallback metadata
-            if (is_array($fallback_result)) {
-                $fallback_result['integration_info'] = array(
-                    'delegated_to' => 'Generic Compliance Validator',
-                    'integration_step' => '4.4.1',
-                    'fallback_reason' => 'Enhanced validator unavailable',
-                    'delegation_method' => 'module_loader'
-                );
-            }
-
-            return $fallback_result;
+            return $compliance_validator->validate_security_compliance($license, $security_context);
         }
 
-        // Final fallback implementation with enhanced metadata
+        // Fallback implementation
         return array(
             'valid' => true,
             'errors' => array(),
-            'compliance_score' => 70,
-            'status' => 'fallback_mode',
-            'message' => 'Security compliance validation using fallback implementation',
-            'compliance_checks' => array(
-                'policy_compliance' => true,
-                'regulatory_compliance' => true,
-                'security_standards' => true,
-                'audit_requirements' => true
-            ),
-            'integration_info' => array(
-                'delegated_to' => 'Main Validator Fallback',
-                'integration_step' => '4.4.3.5',
-                'fallback_reason' => 'All external validators unavailable',
-                'delegation_method' => 'internal_fallback',
-                'risk_level' => 'medium'
-            ),
-            'step_4_4_3_5_info' => array(
-                'integration_status' => 'fallback_active',
-                'primary_validator' => 'Security Integration Validator (unavailable)',
-                'secondary_validator' => 'Generic Compliance Validator (unavailable)',
-                'fallback_validator' => 'Main Validator Internal',
-                'timestamp' => current_time('mysql')
-            )
+            'module_error' => true,
+            'fallback_used' => true
         );
     }
 
