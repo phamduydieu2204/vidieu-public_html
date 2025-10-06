@@ -6831,8 +6831,7 @@ class VD_License_Validator {
     /**
      * Step 4.2.4.5.3e - Step Integration Validation
      *
-     * DELEGATED TO: VD_License_Security_Integration_Validator (Step 4.4.3.2d)
-     * Enhanced method now available via Security Integration Validator module
+     * Validate integration with previous validation steps
      *
      * @since 4.2.4.5.3e
      * @param array $license License data
@@ -6840,40 +6839,38 @@ class VD_License_Validator {
      * @return array Integration validation result
      */
     private function validate_step_integration($license, $context) {
-        // Delegate to enhanced Security Integration Validator (Step 4.4.3.2d)
-        try {
-            $security_validator = VD\LicenseManager\Compliance\VD_License_Security_Integration_Validator::get_instance();
-            if ($security_validator && method_exists($security_validator, 'enhanced_validate_step_integration')) {
-                return $security_validator->enhanced_validate_step_integration($license, $context);
-            }
-        } catch (Exception $e) {
-            // Fallback to foundation mode if delegation fails
-            error_log('VD License Manager: Step integration delegation failed, using foundation mode: ' . $e->getMessage());
-        }
+        $integration_info = array();
 
-        // Foundation fallback mode (original simple implementation)
-        $integration_info = array(
-            'step_4_2_4_5_3a_integrated' => method_exists($this, 'validate_and_structure_history_record'),
-            'step_4_2_4_5_3b_integrated' => method_exists($this, 'generate_context_metadata'),
-            'step_4_2_4_5_3c_integrated' => method_exists($this, 'detect_client_ip'),
-            'step_4_2_4_5_3d_integrated' => method_exists($this, 'detect_user_context')
-        );
+        // Integration with Step 4.2.4.5.3a (Validation Infrastructure)
+        $validation_infrastructure_integration = method_exists($this, 'validate_and_structure_history_record');
+        $integration_info['step_4_2_4_5_3a_integrated'] = $validation_infrastructure_integration;
 
+        // Integration with Step 4.2.4.5.3b (Enhanced Context Processing)
+        $context_processing_integration = method_exists($this, 'generate_context_metadata');
+        $integration_info['step_4_2_4_5_3b_integrated'] = $context_processing_integration;
+
+        // Integration with Step 4.2.4.5.3c (IP Detection Framework)
+        $ip_detection_integration = method_exists($this, 'detect_client_ip');
+        $integration_info['step_4_2_4_5_3c_integrated'] = $ip_detection_integration;
+
+        // Integration with Step 4.2.4.5.3d (User Information Enhancement)
+        $user_enhancement_integration = method_exists($this, 'detect_user_context');
+        $integration_info['step_4_2_4_5_3d_integrated'] = $user_enhancement_integration;
+
+        // Integration status summary
         $total_integrations = array_sum($integration_info);
         $integration_info['total_step_integrations'] = $total_integrations;
         $integration_info['integration_completeness'] = $total_integrations . '/4 steps integrated';
 
         return array(
-            'valid' => true,
-            'status' => 'foundation_mode',
-            'message' => 'Foundation mode - basic step integration validation',
+            'valid' => true, // Integration validation is informational
             'info' => $integration_info,
             'integration_summary' => array(
                 'all_previous_steps_integrated' => $total_integrations === 4,
-                'validation_infrastructure_available' => $integration_info['step_4_2_4_5_3a_integrated'],
-                'enhanced_context_available' => $integration_info['step_4_2_4_5_3b_integrated'],
-                'ip_detection_available' => $integration_info['step_4_2_4_5_3c_integrated'],
-                'user_enhancement_available' => $integration_info['step_4_2_4_5_3d_integrated']
+                'validation_infrastructure_available' => $validation_infrastructure_integration,
+                'enhanced_context_available' => $context_processing_integration,
+                'ip_detection_available' => $ip_detection_integration,
+                'user_enhancement_available' => $user_enhancement_integration
             )
         );
     }
