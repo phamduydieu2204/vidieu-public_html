@@ -35,6 +35,16 @@ define('VD_PLUGIN_BASENAME', plugin_basename(__FILE__));
 global $wpdb;
 define('VD_TABLE_PREFIX', $wpdb->prefix);
 
+// Define security constants
+define('VD_FINGERPRINT_SALT', 'vd_fp_salt_2025');
+
+// Define cache constants
+define('VD_GEO_CACHE_DURATION', 7 * DAY_IN_SECONDS);
+
+// Define rate limiting constants
+define('VD_RATE_LIMIT_WINDOW', 300);        // 5 minutes
+define('VD_RATE_LIMIT_MAX_HITS', 10);
+
 /**
  * Main plugin class
  *
@@ -132,15 +142,28 @@ class VD_License_Manager {
      */
     public static function activate() {
         // Prevent direct activation if requirements not met
-        if (!self::check_requirements()) {
+        if (version_compare(PHP_VERSION, '7.4', '<')) {
             wp_die(
-                esc_html__('VD License Manager requires WordPress 5.0+ and PHP 7.4+', 'vd-license-manager'),
+                esc_html__('VD License Manager requires PHP 7.4+. Current version: ' . PHP_VERSION, 'vd-license-manager'),
                 esc_html__('Plugin Activation Error', 'vd-license-manager'),
                 array('back_link' => true)
             );
         }
 
-        // Set activation flag for future use
+        global $wp_version;
+        if (version_compare($wp_version, '5.0', '<')) {
+            wp_die(
+                esc_html__('VD License Manager requires WordPress 5.0+. Current version: ' . $wp_version, 'vd-license-manager'),
+                esc_html__('Plugin Activation Error', 'vd-license-manager'),
+                array('back_link' => true)
+            );
+        }
+
+        // Load and run activator
+        require_once VD_PLUGIN_PATH . 'includes/class-vd-activator.php';
+        VD_Activator::activate();
+
+        // Set activation flag
         update_option('vd_license_manager_activated', time());
 
         // Trigger activation action
@@ -153,42 +176,11 @@ class VD_License_Manager {
      * @since 1.0.0
      */
     public static function deactivate() {
-        // Clean up temporary data
-        delete_option('vd_license_manager_activated');
-
-        // Trigger deactivation action
-        do_action('vd_license_manager_deactivate');
+        // Load deactivator class
+        require_once VD_PLUGIN_PATH . 'includes/class-vd-deactivator.php';
+        VD_Deactivator::deactivate();
     }
 
-    /**
-     * Check plugin requirements
-     *
-     * @since 1.0.0
-     * @return bool
-     */
-    private static function check_requirements() {
-        global $wp_version;
-
-        // Check WordPress version
-        if (version_compare($wp_version, '5.0', '<')) {
-            return false;
-        }
-
-        // Check PHP version
-        if (version_compare(PHP_VERSION, '7.4', '<')) {
-            return false;
-        }
-
-        // Check required PHP extensions
-        $required_extensions = array('mysqli', 'curl', 'mbstring', 'json');
-        foreach ($required_extensions as $extension) {
-            if (!extension_loaded($extension)) {
-                return false;
-            }
-        }
-
-        return true;
-    }
 }
 
 /**
