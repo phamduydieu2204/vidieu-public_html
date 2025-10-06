@@ -1,0 +1,1144 @@
+🎯 TỔNG QUAN DỰ ÁN
+Mục đích
+Xây dựng hệ thống quản lý và phân phối license cho phép:
+
+Bán license WooCommerce với thời hạn (VD: 30 ngày)
+Mỗi license được cấp quyền truy cập thông tin tài khoản từ pool accounts
+Kiểm soát thiết bị, chống lạm dụng
+Khách hàng luôn nhận thông tin MỚI NHẤT khi admin cập nhật
+Linh hoạt cấu hình: mỗi sản phẩm chia sẻ thông tin khác nhau (cookie/email/password/2FA...)
+
+Mô hình kinh doanh
+Bạn mua: 1 tài khoản Helium10 Diamond ($279/tháng)
+          ↓
+Chia sẻ cho: 5 khách hàng × $80 = $400/tháng
+          ↓
+Lợi nhuận: $121/tháng/account
+
+🏗️ KIẾN TRÚC HỆ THỐNG
+Luồng hoạt động chính
+┌─────────────────────────────────────────────────────────────┐
+│  1. ADMIN                                                   │
+│     • Tạo provider accounts (Helium10, Freepik...)          │
+│     • Nhập thông tin: cookie, email, password, 2FA...       │
+│     • Tạo product pools (gom accounts cho 1 sản phẩm)       │
+│     • Cấu hình: sản phẩm A chia sẻ gì cho khách             │
+└──────────────────────┬──────────────────────────────────────┘
+                       ↓
+┌─────────────────────────────────────────────────────────────┐
+│  2. KHÁCH MUA LICENSE                                       │
+│     • Mua sản phẩm WooCommerce                              │
+│     • Nhận license key (VD: XXXX-XXXX-XXXX)                 │
+│     • License có thời hạn 30 ngày                           │
+└──────────────────────┬──────────────────────────────────────┘
+                       ↓
+┌─────────────────────────────────────────────────────────────┐
+│  3. HỆ THỐNG TỰ ĐỘNG GÁN                                    │
+│     • License → Pool → Chọn Account (theo strategy)         │
+│     • Ghi nhận: license #123 dùng account #5                │
+└──────────────────────┬──────────────────────────────────────┘
+                       ↓
+┌─────────────────────────────────────────────────────────────┐
+│  4. KHÁCH TRUY CẬP PORTAL                                   │
+│     • Vào trang portal, nhập license key                    │
+│     • Xác thực thiết bị (fingerprint)                       │
+│     • Nếu approved → hiển thị thông tin account             │
+│     • Chỉ hiển thị fields theo cấu hình sản phẩm            │
+└──────────────────────┬──────────────────────────────────────┘
+                       ↓
+┌─────────────────────────────────────────────────────────────┐
+│  5. KHÁCH SỬ DỤNG                                           │
+│     • Copy cookie/email/password                            │
+│     • Đăng nhập dịch vụ (Helium10, Freepik...)              │
+│     • Sử dụng trong thời hạn license                        │
+└──────────────────────┬──────────────────────────────────────┘
+                       ↓
+┌─────────────────────────────────────────────────────────────┐
+│  6. ADMIN CẬP NHẬT                                          │
+│     • Đổi cookie mới khi hết hạn                            │
+│     • Đổi password nếu bị lộ                                │
+│     • Update bất cứ lúc nào                                 │
+│     → Khách tự động nhận thông tin mới khi refresh          │
+└─────────────────────────────────────────────────────────────┘
+
+📊 CẤU TRÚC DATABASE
+1. Quản lý Accounts & Pools
+vd_provider_accounts - Tài khoản gốc
+sqlCREATE TABLE vd_provider_accounts (
+  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  
+  -- Thông tin cơ bản
+  provider VARCHAR(64) NOT NULL,              -- 'helium10', 'freepik'...
+  account_login VARCHAR(191) NOT NULL,        -- Email đăng nhập gốc
+  display_name VARCHAR(191) NOT NULL,         -- 'Helium10 Slot #1'
+  status ENUM('active','suspended','expired') DEFAULT 'active',
+  capacity INT UNSIGNED NOT NULL DEFAULT 1,   -- Bao nhiêu license chia sẻ
+  
+  -- THÔNG TIN TÀI KHOẢN (plaintext)
+  cookie TEXT NULL,
+  cookie_format ENUM('json','netscape','headers') DEFAULT 'json',
+  cookie_updated_at DATETIME NULL,
+  
+  login_email VARCHAR(255) NULL,
+  login_password VARCHAR(255) NULL,
+  totp_secret VARCHAR(100) NULL,              -- Mã 2FA
+  recovery_email VARCHAR(255) NULL,
+  recovery_phone VARCHAR(50) NULL,
+  
+  notes TEXT NULL,
+  meta JSON NULL,
+  
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  
+  UNIQUE KEY uq_provider_login (provider, account_login)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+Ví dụ dữ liệu:
+sqlINSERT INTO vd_provider_accounts VALUES (
+  NULL,
+  'helium10',
+  'account1@example.com',
+  'Helium10 Diamond #1',
+  'active',
+  5,  -- Cho phép 5 licenses chia sẻ
+  '{"session":"abc123","token":"xyz789"}',  -- Cookie
+  'json',
+  '2025-10-05 14:30:00',
+  'account1@example.com',      -- Email
+  'SecurePass123!',            -- Password
+  'JBSWY3DPEHPK3PXP',          -- 2FA secret
+  'recovery@gmail.com',
+  '+84901234567',
+  'Account VIP, không động vào',
+  NULL,
+  NOW(),
+  NOW()
+);
+
+vd_product_pools - Nhóm accounts cho sản phẩm
+sqlCREATE TABLE vd_product_pools (
+  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  product_id BIGINT UNSIGNED NOT NULL,        -- WooCommerce product ID
+  name VARCHAR(191) NOT NULL,                 -- 'Pool Helium10 Platinum'
+  strategy ENUM('sticky','weighted','priority') DEFAULT 'sticky',
+  
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  
+  UNIQUE KEY uq_product_pool (product_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+Chiến lược phân bổ:
+
+sticky: License gắn cố định 1 account (ổn định)
+weighted: Phân bổ theo capacity (account lớn nhận nhiều hơn)
+priority: Theo thứ tự ưu tiên (A đầy → B → C...)
+
+
+vd_pool_accounts - Liên kết accounts vào pool
+sqlCREATE TABLE vd_pool_accounts (
+  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  pool_id BIGINT UNSIGNED NOT NULL,           -- → vd_product_pools
+  provider_account_id BIGINT UNSIGNED NOT NULL, -- → vd_provider_accounts
+  
+  capacity_override INT NULL,                 -- Ghi đè capacity nếu cần
+  weight INT NULL,                            -- Dùng cho weighted strategy
+  priority TINYINT NULL,                      -- Dùng cho priority strategy
+  
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  
+  INDEX (pool_id),
+  INDEX (provider_account_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+vd_cookie_assignments - Gán license → account
+sqlCREATE TABLE vd_cookie_assignments (
+  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  license_id BIGINT UNSIGNED NOT NULL,        -- → lmfwc_licenses.id
+  provider_account_id BIGINT UNSIGNED NOT NULL, -- → vd_provider_accounts
+  
+  strategy ENUM('sticky','round_robin','priority') DEFAULT 'sticky',
+  assigned_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  status ENUM('active','paused','migrating','revoked') DEFAULT 'active',
+  notes TEXT NULL,
+  
+  UNIQUE KEY uq_license_assignment (license_id, status),
+  INDEX (provider_account_id, status)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+Ý nghĩa:
+
+Bản đồ: License #123 đang dùng Account #5
+Admin có thể đổi account cho license (migrate)
+Chỉ có 1 assignment active mỗi lúc
+
+
+2. Cấu hình chia sẻ theo sản phẩm
+vd_product_share_configs - Cấu hình fields chia sẻ
+sqlCREATE TABLE vd_product_share_configs (
+  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  product_id BIGINT UNSIGNED NOT NULL,
+  
+  share_fields JSON NOT NULL,                 -- ["cookie","login_email"]
+  display_format ENUM('portal','file','api') DEFAULT 'portal',
+  instructions TEXT NULL,                     -- Hướng dẫn cho khách
+  
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  
+  UNIQUE KEY uq_product_config (product_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+Ví dụ:
+sql-- Sản phẩm A: Chỉ chia sẻ cookie
+INSERT INTO vd_product_share_configs VALUES (
+  NULL, 101,
+  '["cookie"]',
+  'portal',
+  'Import cookie vào extension để sử dụng ngay',
+  NOW(), NOW()
+);
+
+-- Sản phẩm B: Email + Password
+INSERT INTO vd_product_share_configs VALUES (
+  NULL, 102,
+  '["login_email","login_password"]',
+  'portal',
+  'Đăng nhập bằng email và mật khẩu được cung cấp',
+  NOW(), NOW()
+);
+
+-- Sản phẩm C: Full thông tin
+INSERT INTO vd_product_share_configs VALUES (
+  NULL, 103,
+  '["cookie","login_email","login_password","totp_secret","recovery_email"]',
+  'portal',
+  'Dùng email/password để đăng nhập. Nếu yêu cầu 2FA, dùng mã TOTP.',
+  NOW(), NOW()
+);
+
+3. Kiểm soát thiết bị
+vd_device_fingerprints - Danh bạ thiết bị
+sqlCREATE TABLE vd_device_fingerprints (
+  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  fp_hash CHAR(64) NOT NULL UNIQUE,           -- SHA-256 hash
+  
+  first_seen DATETIME DEFAULT CURRENT_TIMESTAMP,
+  last_seen DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  
+  ua VARCHAR(512) NULL,                       -- User-Agent
+  os VARCHAR(64) NULL,                        -- Windows 10, Android...
+  browser VARCHAR(64) NULL,                   -- Chrome, Safari...
+  device_model VARCHAR(64) NULL,              -- iPhone 13...
+  
+  meta JSON NULL                              -- screen, lang, tz...
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+vd_license_devices - Allowlist thiết bị cho license
+sqlCREATE TABLE vd_license_devices (
+  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  license_id BIGINT UNSIGNED NOT NULL,
+  device_fp CHAR(64) NOT NULL,                -- → fp_hash
+  
+  status ENUM('pending','approved','blocked') DEFAULT 'pending',
+  approved_by BIGINT UNSIGNED NULL,           -- Admin user ID
+  approved_at DATETIME NULL,
+  last_used_at DATETIME NULL,
+  
+  notes TEXT NULL,
+  
+  UNIQUE KEY uq_license_device (license_id, device_fp),
+  INDEX (license_id, status),
+  INDEX (device_fp)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+vd_license_device_limits - Hạn mức thiết bị
+sqlCREATE TABLE vd_license_device_limits (
+  license_id BIGINT UNSIGNED PRIMARY KEY,     -- 1 license = 1 config
+  
+  max_devices INT UNSIGNED NOT NULL DEFAULT 1, -- Tối đa bao nhiêu thiết bị
+  rotation_cooldown_seconds INT UNSIGNED DEFAULT 86400, -- 24h cooldown
+  
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+Ví dụ:
+sql-- License VIP: 3 thiết bị, cooldown 12h
+INSERT INTO vd_license_device_limits VALUES (123, 3, 43200, NOW());
+
+-- License thường: 1 thiết bị, cooldown 24h
+INSERT INTO vd_license_device_limits VALUES (456, 1, 86400, NOW());
+
+4. Logging & Audit Trail
+vd_account_fetch_log - Lịch sử lấy thông tin
+sqlCREATE TABLE vd_account_fetch_log (
+  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  license_id BIGINT UNSIGNED NOT NULL,
+  device_fp CHAR(64) NOT NULL,
+  provider_account_id BIGINT UNSIGNED NOT NULL,
+  
+  fetched_fields JSON NOT NULL,               -- ["cookie","login_email"]
+  
+  fetched_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  ip_address VARCHAR(45) NULL,
+  user_agent TEXT NULL,
+  status ENUM('success','fail','blocked','rate_limited') DEFAULT 'success',
+  reason TEXT NULL,
+  
+  INDEX (license_id, fetched_at),
+  INDEX (device_fp, fetched_at),
+  INDEX (provider_account_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+vd_license_access_log - Lịch sử verify device
+sqlCREATE TABLE vd_license_access_log (
+  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  license_id BIGINT UNSIGNED NOT NULL,
+  device_fp CHAR(64) NOT NULL,
+  
+  action ENUM('verify','approve','block','rotate') NOT NULL,
+  status ENUM('success','fail','pending','blocked') NOT NULL,
+  reason TEXT NULL,
+  
+  ip_address VARCHAR(45) NULL,
+  ip_country CHAR(2) NULL,
+  ip_city VARCHAR(100) NULL,
+  
+  accessed_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  
+  INDEX (license_id, accessed_at),
+  INDEX (device_fp, accessed_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+vd_license_rate_limits - Chống spam request
+sqlCREATE TABLE vd_license_rate_limits (
+  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  license_id BIGINT UNSIGNED NOT NULL,
+  
+  window_seconds INT UNSIGNED NOT NULL DEFAULT 300,  -- 5 phút
+  max_hits INT UNSIGNED NOT NULL DEFAULT 10,         -- 10 lần
+  last_reset DATETIME DEFAULT CURRENT_TIMESTAMP,
+  
+  UNIQUE KEY uq_license_window (license_id, window_seconds)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+🔌 REST API
+1. POST /wp-json/vd/v1/device/verify
+Mục đích: Xác thực license + thiết bị
+Request:
+httpPOST /wp-json/vd/v1/device/verify
+Content-Type: application/json
+
+{
+  "license_key": "XXXX-XXXX-XXXX",
+  "fp": "sha256_fingerprint",
+  "ua": "Mozilla/5.0...",
+  "os": "Windows 10",
+  "screen": "1920x1080"
+}
+Response:
+json{
+  "ok": true,
+  "deviceStatus": "approved",
+  "remainingSlots": 2,
+  "cooldownEndsAt": null,
+  "license": {
+    "expires_at": "2025-11-06T00:00:00Z",
+    "days_remaining": 30
+  }
+}
+Trường hợp lỗi:
+json{
+  "ok": false,
+  "deviceStatus": "blocked",
+  "reason": "Device not in allowlist"
+}
+
+2. GET /wp-json/vd/v1/account/info
+Mục đích: Lấy thông tin tài khoản (cookie/email/password...)
+Request:
+httpGET /wp-json/vd/v1/account/info
+Authorization: Bearer XXXX-XXXX-XXXX
+X-Device-Fingerprint: sha256_hash
+Response (Sản phẩm A - chỉ cookie):
+json{
+  "ok": true,
+  "license": {
+    "key": "XXXX-XXXX-XXXX",
+    "product_name": "Helium10 Platinum 30 ngày",
+    "expires_at": "2025-11-06T00:00:00Z",
+    "days_remaining": 30
+  },
+  "account_info": {
+    "cookie": {
+      "value": "{\"session\":\"abc123\",\"token\":\"xyz789\"}",
+      "format": "json",
+      "updated_at": "2025-10-05T14:30:00Z"
+    }
+  },
+  "instructions": "Import cookie vào extension để sử dụng ngay"
+}
+Response (Sản phẩm B - email + password):
+json{
+  "ok": true,
+  "license": {
+    "key": "YYYY-YYYY-YYYY",
+    "product_name": "Freepik Premium 30 ngày",
+    "expires_at": "2025-11-06T00:00:00Z",
+    "days_remaining": 30
+  },
+  "account_info": {
+    "login_email": "account2@example.com",
+    "login_password": "SecurePass456!"
+  },
+  "instructions": "Đăng nhập bằng email và mật khẩu"
+}
+Response (Sản phẩm C - full info):
+json{
+  "ok": true,
+  "license": {
+    "key": "ZZZZ-ZZZZ-ZZZZ",
+    "product_name": "MidJourney Pro 30 ngày",
+    "expires_at": "2025-11-06T00:00:00Z",
+    "days_remaining": 30
+  },
+  "account_info": {
+    "cookie": {
+      "value": "{\"session\":\"def456\"}",
+      "format": "json",
+      "updated_at": "2025-10-05T14:30:00Z"
+    },
+    "login_email": "account3@example.com",
+    "login_password": "StrongPass789!",
+    "totp_secret": "JBSWY3DPEHPK3PXP",
+    "recovery_email": "backup@gmail.com"
+  },
+  "instructions": "Dùng email/password để đăng nhập. Nếu yêu cầu 2FA, dùng mã TOTP."
+}
+
+3. GET /wp-json/vd/v1/history
+Mục đích: Lịch sử truy cập + fetch
+Request:
+httpGET /wp-json/vd/v1/history?license_key=XXXX-XXXX-XXXX&limit=20
+Response:
+json{
+  "ok": true,
+  "timeline": [
+    {
+      "type": "fetch",
+      "timestamp": "2025-10-06T10:30:00Z",
+      "device": {
+        "fp": "sha256...",
+        "os": "Windows 10",
+        "browser": "Chrome"
+      },
+      "ip": "103.xxx.xxx.xxx",
+      "location": "Hai Phong, Vietnam",
+      "fields": ["cookie"],
+      "status": "success"
+    },
+    {
+      "type": "verify",
+      "timestamp": "2025-10-06T10:29:45Z",
+      "device": {
+        "fp": "sha256...",
+        "os": "Windows 10",
+        "browser": "Chrome"
+      },
+      "ip": "103.xxx.xxx.xxx",
+      "location": "Hai Phong, Vietnam",
+      "action": "verify",
+      "status": "approved"
+    },
+    {
+      "type": "fetch",
+      "timestamp": "2025-10-05T08:15:00Z",
+      "device": {
+        "fp": "sha256...",
+        "os": "Android 14",
+        "browser": "Chrome Mobile"
+      },
+      "ip": "14.xxx.xxx.xxx",
+      "location": "Hanoi, Vietnam",
+      "fields": ["cookie"],
+      "status": "success"
+    }
+  ]
+}
+
+4. POST /wp-json/vd/v1/device/rotate
+Mục đích: Yêu cầu đổi thiết bị
+Request:
+httpPOST /wp-json/vd/v1/device/rotate
+Content-Type: application/json
+
+{
+  "license_key": "XXXX-XXXX-XXXX",
+  "old_device_fp": "sha256_old",
+  "new_device_fp": "sha256_new",
+  "reason": "Mất máy cũ"
+}
+Response (thành công):
+json{
+  "ok": true,
+  "message": "Device rotation successful",
+  "cooldown_until": "2025-10-07T10:30:00Z"
+}
+Response (bị cooldown):
+json{
+  "ok": false,
+  "error": "Cooldown not passed",
+  "cooldown_ends_at": "2025-10-07T10:30:00Z",
+  "hours_remaining": 18
+}
+
+🎨 GIAO DIỆN PORTAL
+Shortcode: [vd_license_portal]
+Màn hình đăng nhập
+╔═══════════════════════════════════════╗
+║       TRUY CẬP TÀI KHOẢN              ║
+╚═══════════════════════════════════════╝
+
+Nhập license key của bạn:
+┌─────────────────────────────────────┐
+│ XXXX-XXXX-XXXX-XXXX                 │
+└─────────────────────────────────────┘
+
+[Truy cập]
+
+Màn hình chính (3 cột)
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃  LICENSE: XXXX-XXXX-XXXX  |  Helium10 Platinum 30 ngày             ┃
+┃  Còn lại: 25 ngày  |  Hết hạn: 06/11/2025                          ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+
+┌─────────────────────┬────────────────────────┬──────────────────────┐
+│   LỊCH SỬ TRUY CẬP  │   THÔNG TIN TÀI KHOẢN  │  THIẾT BỊ CỦA TÔI    │
+├─────────────────────┼────────────────────────┼──────────────────────┤
+│                     │                        │                      │
+│ 📅 06/10 10:30      │ ╔═══════════════════╗  │ 🖥️ Thiết bị hiện tại │
+│ 🌍 Hai Phong, VN    │ ║   COOKIE INFO     ║  │ ✅ Đang hoạt động    │
+│ 💻 Windows 10       │ ╚═══════════════════╝  │                      │
+│ ✅ Lấy cookie       │                        │ OS: Windows 10       │
+│                     │ ℹ️ Import cookie vào   │ Browser: Chrome      │
+│ 📅 05/10 08:15      │    extension để dùng   │ Last used: 10:30     │
+│ 🌍 Hanoi, VN        │                        │                      │
+│ 📱 Android 14       │ Cookie (JSON):         │ ────────────────     │
+│ ✅ Lấy cookie       │ ┌──────────────────┐   │                      │
+│                     │ │{"session":"abc"} │   │ 📱 Thiết bị phụ      │
+│ 📅 04/10 14:20      │ │{"token":"xyz789"}│   │ ⏳ Chờ duyệt         │
+│ 🌍 Da Nang, VN      │ └──────────────────┘   │                      │
+│ 💻 MacOS            │                        │ OS: Android 14       │
+│ ✅ Xác thực TB      │ 📅 Cập nhật:           │ Browser: Chrome      │
+│                     │    05/10/2025 14:30    │                      │
+│ 📅 03/10 09:45      │                        │ [🔄 Đổi thiết bị]    │
+│ 🌍 HCMC, VN         │ [📋 Copy Cookie]       │                      │
+│ 💻 Windows 11       │ [📥 Tải file]          │ ⚠️ Giới hạn: 2 TB    │
+│ ✅ Lấy cookie       │ [🔄 Làm mới]           │ ⏱️ Cooldown: 24h     │
+│                     │                        │                      │
+│ [Xem thêm...]       │                        │                      │
+└─────────────────────┴────────────────────────┴──────────────────────┘
+
+🔔 Thông tin tài khoản có thể thay đổi. Luôn lấy phiên bản mới nhất!
+
+Màn hình sản phẩm khác (Email + Password)
+┌──────────────────────────────────────┐
+│       THÔNG TIN TÀI KHOẢN            │
+└──────────────────────────────────────┘
+
+ℹ️ Đăng nhập bằng email và mật khẩu
+
+Email đăng nhập:
+┌─────────────────────────────────────┐
+│ account2@example.com                 │
+└─────────────────────────────────────┘
+[📋 Copy]
+
+Mật khẩu:
+┌─────────────────────────────────────┐
+│ ●●●●●●●●●●●●        [👁 Hiện]      │
+└─────────────────────────────────────┘
+[📋 Copy] [🔄 Làm mới]
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🔔 Thông tin có thể thay đổi bất cứ lúc nào
+
+Màn hình Full Info
+┌──────────────────────────────────────┐
+│       THÔNG TIN TÀI KHOẢN            │
+└──────────────────────────────────────┘
+
+ℹ️ Dùng email/password để đăng nhập.
+   Nếu yêu cầu 2FA, dùng mã TOTP.
+
+━━━━━ COOKIE ━━━━━
+┌─────────────────────────────────────┐
+│ {"session":"def456","token":"..."}  │
+└─────────────────────────────────────┘
+📅 Cập nhật: 05/10/2025 14:30
+[📋 Copy] [📥 Tải file]
+
+━━━━━ ĐĂNG NHẬP ━━━━━
+Email:
+┌─────────────────────────────────────┐
+│ account3@example.com                 │
+└─────────────────────────────────────┘
+[📋 Copy]
+
+Mật khẩu:
+┌─────────────────────────────────────┐
+│ ●●●●●●●●●●●●        [👁 Hiện]      │
+└─────────────────────────────────────┘
+[📋 Copy]
+
+━━━━━ XÁC THỰC 2 BƯỚC ━━━━━
+TOTP Secret:
+┌─────────────────────────────────────┐
+│ JBSWY3DPEHPK3PXP                    │
+└─────────────────────────────────────┘
+[📋 Copy] [📱 Mở app 2FA]
+
+Mã hiện tại: 123 456
+(Còn 25 giây)
+
+━━━━━ KHÔI PHỤC ━━━━━
+Email khôi phục: backup@gmail.com
+
+[🔄 Làm mới tất cả]
+
+⚙️ ADMIN UI
+1. Dashboard
+╔═══════════════════════════════════════════════════════════╗
+║            VIDIEU LICENSE PORTAL - DASHBOARD              ║
+╚═══════════════════════════════════════════════════════════╝
+
+┌─────────────────┬─────────────────┬─────────────────────┐
+│ 📊 TỔNG QUAN    │ 🔢 SỐ LIỆU      │ ⚠️ CẢNH BÁO         │
+├─────────────────┼─────────────────┼─────────────────────┤
+│                 │                 │                     │
+│ Accounts: 15    │ Licenses: 67    │ • 3 accounts gần    │
+│ Active: 12      │ Active: 52      │   hết hạn           │
+│ Suspended: 2    │ Expired: 15     │ • 5 licenses vượt   │
+│ Expired: 1      │                 │   hạn mức thiết bị  │
+│                 │ Capacity: 78%   │ • 2 devices bị      │
+│ Pools: 8        │ (52/67 slots)   │   block hôm nay     │
+│                 │                 │                     │
+└─────────────────┴─────────────────┴─────────────────────┘
+
+2. Quản lý Accounts
+╔═══════════════════════════════════════════════════════════╗
+║               QUẢN LÝ PROVIDER ACCOUNTS                   ║
+╚═══════════════════════════════════════════════════════════╝
+
+[➕ Thêm Account mới]  [🔄 Refresh]  [📥 Import CSV]
+
+┌──────────────────────────────────────────────────────────┐
+│ Lọc: [Helium10 ▼] [Active ▼]     🔍 [Tìm kiếm...]       │
+└──────────────────────────────────────────────────────────┘
+
+╔════╤════════════════════╤══════════╤══════════╤═════════╗
+║ ID │ Tên hiển thị       │ Provider │ Capacity │ Status  ║
+╠════╪════════════════════╪══════════╪══════════╪═════════╣
+║ 1  │ Helium10 Diamond#1 │ helium10 │ 5 (3/5)  │ ● Active║
+║    │ account1@ex.com    │          │          │ [Edit]  ║
+╟────┼────────────────────┼──────────┼──────────┼─────────╢
+║ 2  │ Freepik Pro #1     │ freepik  │ 1 (1/1)  │ ● Active║
+║    │ freepik@ex.com     │          │          │ [Edit]  ║
+╟────┼────────────────────┼──────────┼──────────┼─────────╢
+║ 3  │ MidJourney Pro #2  │ midjourn │ 3 (2/3)  │ ⚠ Near  ║
+║    │ mid2@ex.com        │          │          │ Exp.    ║
+║    │                    │          │          │ [Edit]  ║
+╚════╧════════════════════╧══════════╧══════════╧═════════╝
+
+3. Chỉnh sửa Account
+╔═══════════════════════════════════════════════════════════╗
+║           CHỈNH SỬA: Helium10 Diamond #1                 ║
+╚═══════════════════════════════════════════════════════════╝
+
+┌─── THÔNG TIN CƠ BẢN ────────────────────────────────────┐
+│                                                          │
+│ Provider: [Helium10 ▼]                                   │
+│                                                          │
+│ Tên hiển thị:                                            │
+│ ┌────────────────────────────────────────────────────┐   │
+│ │ Helium10 Diamond #1                                │   │
+│ └────────────────────────────────────────────────────┘   │
+│                                                          │
+│ Account Login (Email gốc):                               │
+│ ┌────────────────────────────────────────────────────┐   │
+│ │ account1@example.com                               │   │
+│ └────────────────────────────────────────────────────┘   │
+│                                                          │
+│ Capacity: [5] licenses                                   │
+│ Status: [● Active ▼]                                     │
+│                                                          │
+└──────────────────────────────────────────────────────────┘
+
+┌─── THÔNG TIN TÀI KHOẢN ─────────────────────────────────┐
+│                                                          │
+│ ━━━ COOKIE ━━━                                           │
+│ Format: [JSON ▼]                                         │
+│ ┌────────────────────────────────────────────────────┐   │
+│ │ {                                                  │   │
+│ │   "session": "abc123",                             │   │
+│ │   "token": "xyz789",                               │   │
+│ │   "user_id": "12345"                               │   │
+│ │ }                                                  │   │
+│ └────────────────────────────────────────────────────┘   │
+│ Cập nhật lần cuối: 05/10/2025 14:30                      │
+│ [🔄 Update Cookie]                                       │
+│                                                          │
+│ ━━━ ĐĂNG NHẬP ━━━                                        │
+│ Email:                                                   │
+│ ┌────────────────────────────────────────────────────┐   │
+│ │ account1@example.com                               │   │
+│ └────────────────────────────────────────────────────┘   │
+│                                                          │
+│ Mật khẩu:                                                │
+│ ┌────────────────────────────────────────────────────┐   │
+│ │ SecurePass123!                 [👁 Hiện/Ẩn]        │   │
+│ └────────────────────────────────────────────────────┘   │
+│                                                          │
+│ ━━━ XÁC THỰC 2 BƯỚC ━━━                                  │
+│ TOTP Secret:                                             │
+│ ┌────────────────────────────────────────────────────┐   │
+│ │ JBSWY3DPEHPK3PXP                                   │   │
+│ └────────────────────────────────────────────────────┘   │
+│ [📱 Hiển thị QR Code] [🔢 Mã hiện tại: 123 456]         │
+│                                                          │
+│ ━━━ KHÔI PHỤC ━━━                                        │
+│ Email khôi phục:                                         │
+│ ┌────────────────────────────────────────────────────┐   │
+│ │ recovery@gmail.com                                 │   │
+│ └────────────────────────────────────────────────────┘   │
+│                                                          │
+│ Số điện thoại:                                           │
+│ ┌────────────────────────────────────────────────────┐   │
+│ │ +84901234567                                       │   │
+│ └────────────────────────────────────────────────────┘   │
+│                                                          │
+└──────────────────────────────────────────────────────────┘
+
+┌─── GHI CHÚ ─────────────────────────────────────────────┐
+│ ┌────────────────────────────────────────────────────┐   │
+│ │ Account VIP, không động vào trừ khi cần thiết     │   │
+│ │                                                    │   │
+│ └────────────────────────────────────────────────────┘   │
+└──────────────────────────────────────────────────────────┘
+
+┌─── LICENSES ĐANG SỬ DỤNG (3/5) ────────────────────────┐
+│                                                          │
+│ #LIC-001 | Nguyễn Văn A | Còn 25 ngày | ● Active        │
+│ #LIC-045 | Trần B       | Còn 12 ngày | ● Active        │
+│ #LIC-089 | Lê C         | Còn 3 ngày  | ⚠ Near Exp.     │
+│                                                          │
+└──────────────────────────────────────────────────────────┘
+
+[💾 Lưu thay đổi] [🧪 Test đăng nhập] [🗑️ Xóa Account]
+
+4. Cấu hình sản phẩm
+╔═══════════════════════════════════════════════════════════╗
+║        CẤU HÌNH CHIA SẺ: Helium10 Platinum 30 ngày       ║
+╚═══════════════════════════════════════════════════════════╝
+
+Sản phẩm WooCommerce: Helium10 Platinum 30 ngày (ID: 101)
+
+┌─── THÔNG TIN CHIA SẺ CHO KHÁCH ─────────────────────────┐
+│                                                          │
+│ Chọn thông tin muốn chia sẻ:                             │
+│                                                          │
+│ ☑ Cookie                                                 │
+│ ☐ Email đăng nhập                                        │
+│ ☐ Mật khẩu đăng nhập                                     │
+│ ☐ Mã 2FA (TOTP Secret)                                   │
+│ ☐ Email khôi phục                                        │
+│ ☐ Số điện thoại khôi phục                                │
+│                                                          │
+└──────────────────────────────────────────────────────────┘
+
+┌─── HƯỚNG DẪN CHO KHÁCH ─────────────────────────────────┐
+│ ┌────────────────────────────────────────────────────┐   │
+│ │ Import cookie vào extension EditThisCookie hoặc   │   │
+│ │ Cookie Editor để sử dụng ngay mà không cần đăng   │   │
+│ │ nhập.                                              │   │
+│ │                                                    │   │
+│ │ Hướng dẫn chi tiết:                                │   │
+│ │ 1. Tải extension Cookie Editor                     │   │
+│ │ 2. Mở trang helium10.com                           │   │
+│ │ 3. Click icon extension                            │   │
+│ │ 4. Import cookie đã copy                           │   │
+│ │ 5. Refresh trang                                   │   │
+│ └────────────────────────────────────────────────────┘   │
+└──────────────────────────────────────────────────────────┘
+
+┌─── HIỂN THỊ ────────────────────────────────────────────┐
+│                                                          │
+│ Format: ○ Portal  ○ File tải về  ○ API endpoint         │
+│                                                          │
+└──────────────────────────────────────────────────────────┘
+
+[💾 Lưu cấu hình]
+
+5. Quản lý Pools
+╔═══════════════════════════════════════════════════════════╗
+║                  QUẢN LÝ PRODUCT POOLS                    ║
+╚═══════════════════════════════════════════════════════════╝
+
+[➕ Tạo Pool mới]
+
+╔════╤═══════════════════════╤═══════════╤═════════════════╗
+║ ID │ Tên Pool              │ Sản phẩm  │ Strategy        ║
+╠════╪═══════════════════════╪═══════════╪═════════════════╣
+║ 1  │ Pool Helium10 Plat.   │ Helium10  │ Sticky          ║
+║    │ 3 accounts, 15 cap.   │ Platinum  │ [5 active]      ║
+║    │                       │           │ [Edit]          ║
+╟────┼───────────────────────┼───────────┼─────────────────╢
+║ 2  │ Pool Freepik Premium  │ Freepik   │ Priority        ║
+║    │ 2 accounts, 2 cap.    │ Premium   │ [2 active]      ║
+║    │                       │           │ [Edit]          ║
+╚════╧═══════════════════════╧═══════════╧═════════════════╝
+
+6. Chi tiết Pool
+╔═══════════════════════════════════════════════════════════╗
+║            POOL: Helium10 Platinum                        ║
+╚═══════════════════════════════════════════════════════════╝
+
+Sản phẩm: Helium10 Platinum 30 ngày
+Strategy: Sticky (license gắn cố định account)
+
+┌─── ACCOUNTS TRONG POOL ─────────────────────────────────┐
+│                                                          │
+│ ☑ Helium10 Diamond #1  │ Capacity: 5  │ Active: 3/5    │
+│   Weight: 2            │ Priority: 1  │                 │
+│                                                          │
+│ ☑ Helium10 Diamond #2  │ Capacity: 5  │ Active: 4/5    │
+│   Weight: 2            │ Priority: 2  │                 │
+│                                                          │
+│ ☑ Helium10 Platinum #1 │ Capacity: 5  │ Active: 2/5    │
+│   Weight: 1            │ Priority: 3  │                 │
+│                                                          │
+│ [➕ Thêm Account vào Pool]                               │
+│                                                          │
+└──────────────────────────────────────────────────────────┘
+
+┌─── USAGE STATISTICS ────────────────────────────────────┐
+│                                                          │
+│ Total Capacity: 15 slots                                 │
+│ Active Licenses: 9 (60%)                                 │
+│ Available: 6 slots                                       │
+│                                                          │
+│ ■■■■■■■■■□□□□□□ 60%                                     │
+│                                                          │
+└──────────────────────────────────────────────────────────┘
+
+[💾 Lưu] [🔄 Re-balance licenses]
+
+💻 CODE LOGIC CHÍNH
+Hàm lấy thông tin account cho license
+php<?php
+/**
+ * Lấy thông tin account cho license
+ * Luôn trả về thông tin MỚI NHẤT từ database
+ */
+function vd_get_account_info_for_license($license_key, $device_fp) {
+    global $wpdb;
+    
+    // 1. Verify license + device
+    $license = vd_verify_license($license_key, $device_fp);
+    if (!$license['ok']) {
+        return $license; // Trả về lỗi
+    }
+    
+    // 2. Check rate limit
+    if (!vd_check_rate_limit($license['license_id'])) {
+        return [
+            'ok' => false,
+            'error' => 'Rate limit exceeded',
+            'retry_after' => 300
+        ];
+    }
+    
+    // 3. Lấy assignment (license -> provider_account)
+    $assignment = $wpdb->get_row($wpdb->prepare("
+        SELECT provider_account_id 
+        FROM vd_cookie_assignments 
+        WHERE license_id = %d AND status = 'active'
+        LIMIT 1
+    ", $license['license_id']));
+    
+    if (!$assignment) {
+        return [
+            'ok' => false,
+            'error' => 'No account assigned to this license'
+        ];
+    }
+    
+    // 4. Lấy thông tin account MỚI NHẤT
+    $account = $wpdb->get_row($wpdb->prepare("
+        SELECT * 
+        FROM vd_provider_accounts 
+        WHERE id = %d AND status = 'active'
+    ", $assignment->provider_account_id), ARRAY_A);
+    
+    if (!$account) {
+        return [
+            'ok' => false,
+            'error' => 'Account not found or inactive'
+        ];
+    }
+    
+    // 5. Lấy cấu hình chia sẻ của sản phẩm
+    $config = $wpdb->get_row($wpdb->prepare("
+        SELECT share_fields, instructions, display_format
+        FROM vd_product_share_configs 
+        WHERE product_id = %d
+    ", $license['product_id']));
+    
+    if (!$config) {
+        // Nếu chưa cấu hình, mặc định chỉ chia sẻ cookie
+        $share_fields = ['cookie'];
+        $instructions = 'Sử dụng cookie được cung cấp';
+    } else {
+        $share_fields = json_decode($config->share_fields, true);
+        $instructions = $config->instructions;
+    }
+    
+    // 6. Filter chỉ lấy fields được phép
+    $account_info = [];
+    
+    if (in_array('cookie', $share_fields) && !empty($account['cookie'])) {
+        $account_info['cookie'] = [
+            'value' => $account['cookie'],
+            'format' => $account['cookie_format'],
+            'updated_at' => $account['cookie_updated_at']
+        ];
+    }
+    
+    if (in_array('login_email', $share_fields) && !empty($account['login_email'])) {
+        $account_info['login_email'] = $account['login_email'];
+    }
+    
+    if (in_array('login_password', $share_fields) && !empty($account['login_password'])) {
+        $account_info['login_password'] = $account['login_password'];
+    }
+    
+    if (in_array('totp_secret', $share_fields) && !empty($account['totp_secret'])) {
+        $account_info['totp_secret'] = $account['totp_secret'];
+    }
+    
+    if (in_array('recovery_email', $share_fields) && !empty($account['recovery_email'])) {
+        $account_info['recovery_email'] = $account['recovery_email'];
+    }
+    
+    if (in_array('recovery_phone', $share_fields) && !empty($account['recovery_phone'])) {
+        $account_info['recovery_phone'] = $account['recovery_phone'];
+    }
+    
+    // 7. Log lại lần fetch
+    vd_log_account_fetch(
+        $license['license_id'],
+        $device_fp,
+        $assignment->provider_account_id,
+        $share_fields
+    );
+    
+    // 8. Trả về kết quả
+    return [
+        'ok' => true,
+        'license' => [
+            'key' => $license_key,
+            'product_name' => get_the_title($license['product_id']),
+            'expires_at' => $license['expires_at'],
+            'days_remaining' => $license['days_remaining']
+        ],
+        'account_info' => $account_info,
+        'instructions' => $instructions
+    ];
+}
+
+/**
+ * Verify license + device
+ */
+function vd_verify_license($license_key, $device_fp) {
+    global $wpdb;
+    
+    // Lấy license từ LMfWC
+    $license = lmfwc_get_license($license_key);
+    
+    if (!$license) {
+        return ['ok' => false, 'error' => 'Invalid license key'];
+    }
+    
+    // Check expire
+    $expires_at = strtotime($license->expires_at);
+    $now = time();
+    
+    if ($expires_at < $now) {
+        return ['ok' => false, 'error' => 'License expired'];
+    }
+    
+    // Check device
+    $device = $wpdb->get_row($wpdb->prepare("
+        SELECT status 
+        FROM vd_license_devices 
+        WHERE license_id = %d AND device_fp = %s
+    ", $license->id, $device_fp));
+    
+    if (!$device) {
+        // Device chưa có trong DB → tạo mới với status pending
+        $wpdb->insert('vd_license_devices', [
+            'license_id' => $license->id,
+            'device_fp' => $device_fp,
+            'status' => 'pending'
+        ]);
+        
+        return [
+            'ok' => false,
+            'error' => 'Device not approved',
+            'device_status' => 'pending'
+        ];
+    }
+    
+    if ($device->status !== 'approved') {
+        return [
+            'ok' => false,
+            'error' => 'Device not approved',
+            'device_status' => $device->status
+        ];
+    }
+    
+    // Update last_used_at
+    $wpdb->update('vd_license_devices', 
+        ['last_used_at' => current_time('mysql')],
+        ['license_id' => $license->id, 'device_fp' => $device_fp]
+    );
+    
+    // Success
+    return [
+        'ok' => true,
+        'license_id' => $license->id,
+        'product_id' => $license->product_id,
+        'expires_at' => $license->expires_at,
+        'days_remaining' => ceil(($expires_at - $now) / 86400)
+    ];
+}
+
+/**
+ * Check rate limit
+ */
+function vd_check_rate_limit($license_id) {
+    global $wpdb;
+    
+    $limit = $wpdb->get_row($wpdb->prepare("
+        SELECT window_seconds, max_hits, last_reset 
+        FROM vd_license_rate_limits 
+        WHERE license_id = %d
+    ", $license_id));
+    
+    if (!$limit) {
+        // Chưa có config → cho phép
+        return true;
+    }
+    
+    $now = time();
+    $last_reset = strtotime($limit->last_reset);
+    $elapsed = $now - $last_reset;
+    
+    if ($elapsed > $limit->window_seconds) {
+        // Reset window
+        $wpdb->update('vd_license_rate_limits',
+            ['last_reset' => current_time('mysql')],
+            ['license_id' => $license_id]
+        );
+        return true;
+    }
+    
+    // Check số lần gọi trong window
+    $hits = $wpdb->get_var($wpdb->prepare("
+        SELECT COUNT(*) 
+        FROM vd_account_fetch_log 
+        WHERE license_id = %d 
+          AND fetched_at > %s
+    ", $license_id, date('Y-m-d H:i:s', $last_reset)));
+    
+    return $hits < $limit->max_hits;
+}
+
+/**
+ * Log fetch
+ */
+function vd_log_account_fetch($license_id, $device_fp, $provider_account_id, $fields) {
+    global $wpdb;
+    
+    $wpdb->insert('vd_account_fetch_log', [
+        'license_id' => $license_id,
+        'device_fp' => $device_fp,
+        'provider_account_id' => $provider_account_id,
+        'fetched_fields' => json_encode($fields),
+        'fetched_at' => current_time('mysql'),
+        'ip_address' => $_SERVER['REMOTE_ADDR'],
+        'user_agent' => $_SERVER['HTTP_USER_AGENT'],
+        'status' => 'success'
+    ]);
+}
+
+✅ CHECKLIST TRIỂN KHAI ĐẦY ĐỦ
+Phase 1: Database Setup (Ngày 1)
+
+ Tạo plugin vidieu-license-portal
+ Migration: 11 bảng chính
+ Seed data mẫu để test
+
+Phase 2: Core Logic (Ngày 2-3)
+
+ Fingerprint client (JS)
+ Verify license + device (PHP)
+ Get account info logic
+ Rate limiting
+ Logging
+
+Phase 3: REST API (Ngày 4)
+
+ Endpoint /device/verify
+ Endpoint /account/info
+ Endpoint /history
+ Endpoint /device/rotate
+ Authentication & CORS
+
+Phase 4: Admin UI (Ngày 5-7)
+
+ Dashboard
+ Quản lý Accounts
+ Quản lý Pools
+ Cấu hình sản phẩm
+ Quản lý Devices
+ Thống kê & Reports
+
+Phase 5: Portal UI (Ngày 8-9)
+
+ Shortcode [vd_license_portal]
+ Màn hình đăng nhập
+ Layout 3 cột
+ Hiển thị động theo config
+ Copy/Download functions
+
+Phase 6: Testing & Polish (Ngày 10)
+
+ Unit tests
+ Integration tests
+ Security audit
+ Performance optimization
+ Documentation
+
+
+🎯 KẾT LUẬN
+Điểm mạnh hệ thống:
+✅ Linh hoạt: Mỗi sản phẩm cấu hình riêng fields chia sẻ
+✅ Real-time: Khách luôn nhận thông tin MỚI NHẤT
+✅ An toàn: Kiểm soát thiết bị, rate limit, audit trail
+✅ Scalable: Dễ thêm provider/pool mới
+✅ User-friendly: Portal trực quan, minh bạch
+Trade-offs (do bỏ mã hóa):
+⚠️ Bảo mật thấp hơn: Credentials lưu plaintext
+💡 Giải pháp: Bảo vệ database, backup encrypted, access control chặt
+Thời gian triển khai:
+
+MVP (chức năng cơ bản): 5-7 ngày
+Full features: 10-14 ngày
+Production-ready: 3 tuần
