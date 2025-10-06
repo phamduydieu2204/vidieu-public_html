@@ -255,6 +255,14 @@ class VD_License_Validator {
     private $status_business = null;
 
     /**
+     * Status Transition Controller instance
+     *
+     * @since 1.6.0 - Step 5.1.4
+     * @var VD\LicenseManager\Validator\VD_License_Status_Transition_Controller|null
+     */
+    private $status_transition_controller = null;
+
+    /**
      * Activation rules module instance
      *
      * @since 1.5.0-rc.2
@@ -331,6 +339,9 @@ class VD_License_Validator {
 
         // Initialize pattern validator module
         $this->init_pattern_validator();
+
+        // Initialize Status Transition Controller - Step 5.1.4
+        $this->init_status_transition_controller();
 
         $this->initialized = true;
     }
@@ -618,6 +629,32 @@ class VD_License_Validator {
         // Set pattern validator dependency for checksum validator
         if ($this->checksum_validator && $this->pattern_validator) {
             $this->checksum_validator->set_pattern_validator($this->pattern_validator);
+        }
+    }
+
+    /**
+     * Initialize Status Transition Controller
+     * Step 5.1.4 - Status Transition Controller initialization
+     *
+     * @since 1.6.0
+     * @return void
+     */
+    private function init_status_transition_controller() {
+        try {
+            // Load the Status Transition Controller class
+            $status_controller_file = plugin_dir_path(__FILE__) . 'modules/validator/class-vd-license-status-transition-controller.php';
+
+            if (file_exists($status_controller_file)) {
+                require_once $status_controller_file;
+
+                // Check if class exists with namespace
+                if (class_exists('VD\\LicenseManager\\Validator\\VD_License_Status_Transition_Controller')) {
+                    $this->status_transition_controller = VD\LicenseManager\Validator\VD_License_Status_Transition_Controller::get_instance();
+                }
+            }
+        } catch (Exception $e) {
+            // Log error but don't break execution
+            error_log('VD License Manager: Failed to initialize Status Transition Controller: ' . $e->getMessage());
         }
     }
 
@@ -966,39 +1003,55 @@ class VD_License_Validator {
     }
 
     /**
-     * Step 4.2.4.1 - Get valid status enums (delegated to status enum module)
+     * Step 4.2.4.1 - Get valid status enums (delegated to Status Transition Controller)
+     * Step 5.1.4 - Now delegates to Status Transition Controller
      * Define all valid license status enums
      *
      * @since 4.2.4.1
+     * @updated 1.6.0 Step 5.1.4
      * @return array Valid status enums
      */
     private function get_valid_status_enums() {
+        // Step 5.1.4: Delegate to Status Transition Controller
+        if ($this->status_transition_controller) {
+            return $this->status_transition_controller->get_valid_status_enums();
+        }
+
+        // Fallback to status enum module
         if ($this->status_enum) {
             return $this->status_enum->get_valid_status_enums();
         }
 
-        // Fallback if module not available
+        // Final fallback if no modules available
         return array('active', 'inactive', 'suspended', 'expired', 'revoked', 'pending');
     }
 
     /**
-     * Step 4.2.4.1 - Status transition validation
+     * Step 4.2.4.1 - Status transition validation (delegated to Status Transition Controller)
+     * Step 5.1.4 - Now delegates to Status Transition Controller
      * Validate if status transition is allowed
      *
      * @since 4.2.4.1
+     * @updated 1.6.0 Step 5.1.4
      * @param string $from_status Previous status
      * @param string $to_status New status
      * @return array Transition validation result
      */
     private function validate_status_transition($from_status, $to_status) {
+        // Step 5.1.4: Delegate to Status Transition Controller
+        if ($this->status_transition_controller) {
+            return $this->status_transition_controller->validate_status_transition($from_status, $to_status);
+        }
+
+        // Fallback to status enum module
         if ($this->status_enum) {
             return $this->status_enum->validate_status_transition($from_status, $to_status);
         }
 
-        // Fallback if module not available
+        // Final fallback if no modules available
         return array(
             'valid' => false,
-            'error' => 'Status enum module not initialized',
+            'error' => 'Status validation modules not initialized',
             'error_code' => 'module_not_available'
         );
     }
@@ -3487,7 +3540,12 @@ class VD_License_Validator {
      * $result = $validator->track_status_history($license, 'active', 'inactive', $context);
      */
     public function track_status_history($license, $old_status, $new_status, $context = array()) {
-        // Step 4.2.4.5.1b - Basic Parameter Validation Structure
+        // Step 5.1.4: Delegate to Status Transition Controller first
+        if ($this->status_transition_controller) {
+            return $this->status_transition_controller->track_status_history($license, $old_status, $new_status, $context);
+        }
+
+        // Step 4.2.4.5.1b - Basic Parameter Validation Structure (fallback)
         $validation_result = $this->validate_track_status_history_parameters($license, $old_status, $new_status, $context);
         if (!$validation_result['valid']) {
             // Step 4.2.4.5.1c - Use standardized error response structure
@@ -3675,7 +3733,12 @@ class VD_License_Validator {
      * $result = $validator->get_status_history(456, $options);
      */
     public function get_status_history($license_id, $options = array()) {
-        // Step 4.2.4.5.1b - Basic Parameter Validation Structure
+        // Step 5.1.4: Delegate to Status Transition Controller first
+        if ($this->status_transition_controller) {
+            return $this->status_transition_controller->get_status_history($license_id, $options);
+        }
+
+        // Step 4.2.4.5.1b - Basic Parameter Validation Structure (fallback)
         $validation_result = $this->validate_get_status_history_parameters($license_id, $options);
         if (!$validation_result['valid']) {
             // Step 4.2.4.5.1c - Use standardized error response structure
