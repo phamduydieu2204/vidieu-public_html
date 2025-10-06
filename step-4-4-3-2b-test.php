@@ -52,12 +52,31 @@ echo '<h2>1. Module Loading Test</h2>';
 // Check if module file exists
 $module_file = WP_PLUGIN_DIR . '/vd-license-manager/includes/modules/compliance/class-vd-license-security-integration-validator.php';
 
+echo '<div class="info">🔍 Debug Info:</div>';
+echo '<div class="info">📁 WP_PLUGIN_DIR: ' . WP_PLUGIN_DIR . '</div>';
+echo '<div class="info">📄 Module file path: ' . $module_file . '</div>';
+
 if (file_exists($module_file)) {
     echo '<div class="success">✅ Security Integration Validator module file exists</div>';
-    echo '<div class="info">📋 File size: ' . number_format(filesize($module_file)) . ' bytes</div>';
+    $file_size = filesize($module_file);
+    echo '<div class="info">📋 File size: ' . number_format($file_size) . ' bytes</div>';
+
+    if ($file_size === 0) {
+        echo '<div class="error">⚠️ Warning: File is empty (0 bytes)</div>';
+        exit;
+    }
 } else {
-    echo '<div class="error">❌ Module file not found</div>';
-    exit;
+    echo '<div class="error">❌ Module file not found at: ' . $module_file . '</div>';
+    // Try alternative path
+    $alt_module_file = dirname(__FILE__) . '/wp-content/plugins/vd-license-manager/includes/modules/compliance/class-vd-license-security-integration-validator.php';
+    echo '<div class="info">🔄 Trying alternative path: ' . $alt_module_file . '</div>';
+    if (file_exists($alt_module_file)) {
+        echo '<div class="success">✅ Found module at alternative path</div>';
+        $module_file = $alt_module_file;
+    } else {
+        echo '<div class="error">❌ Module file not found at alternative path either</div>';
+        exit;
+    }
 }
 
 // Load the module
