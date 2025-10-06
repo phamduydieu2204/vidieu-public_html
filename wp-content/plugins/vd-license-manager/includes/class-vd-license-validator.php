@@ -7373,7 +7373,11 @@ class VD_License_Validator {
             }
 
             // Primary delegation to Enhanced Security Integration Validator (Step 4.4.3.4)
-            $security_validator = VD\LicenseManager\Compliance\VD_License_Security_Integration_Validator::get_instance();
+            if (class_exists('VD\\LicenseManager\\Compliance\\VD_License_Security_Integration_Validator')) {
+                $security_validator = VD\LicenseManager\Compliance\VD_License_Security_Integration_Validator::get_instance();
+            } else {
+                $security_validator = null;
+            }
             if ($security_validator && method_exists($security_validator, 'validate_security_compliance')) {
                 $validation_result = $security_validator->validate_security_compliance($license, $security_context);
 
