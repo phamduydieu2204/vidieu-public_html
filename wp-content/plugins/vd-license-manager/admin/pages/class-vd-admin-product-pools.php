@@ -183,17 +183,23 @@ class VD_Admin_Product_Pools {
 			wp_die(__('You do not have sufficient permissions to access this page.', 'vd-license-manager'));
 		}
 
-		// Handle actions FIRST, before any output
+		// Process form submission FIRST
+		require_once VD_PLUGIN_PATH . 'admin/pages/pools/class-vd-pools-form-handler.php';
+		$form_result = VD_Pools_Form_Handler::process();
+
+		// Handle other actions
 		self::handle_actions();
 
 		// Determine which view to show
 		$action = isset($_GET['action']) ? sanitize_text_field($_GET['action']) : 'list';
 
 		switch ($action) {
-			case 'edit':
 			case 'add':
-				// Will be implemented in Sprint 4.4
-				self::render_form_placeholder();
+				self::render_add_form($form_result);
+				break;
+
+			case 'edit':
+				self::render_edit_form($form_result);
 				break;
 
 			case 'list':
@@ -204,20 +210,53 @@ class VD_Admin_Product_Pools {
 	}
 
 	/**
-	 * Render placeholder for form (Sprint 4.4)
+	 * Render add form
 	 *
 	 * @since 1.0.0
+	 * @param array|null $form_result Form processing result
 	 */
-	private static function render_form_placeholder() {
-		?>
-		<div class="wrap">
-			<h1><?php _e('Pool Form', 'vd-license-manager'); ?></h1>
-			<div class="notice notice-info">
-				<p><?php _e('Form functionality sẽ được triển khai trong Sprint 4.4 - Pools Form UI.', 'vd-license-manager'); ?></p>
-				<p><a href="<?php echo admin_url('admin.php?page=vd-product-pools'); ?>" class="button"><?php _e('← Quay lại danh sách', 'vd-license-manager'); ?></a></p>
-			</div>
-		</div>
-		<?php
+	private static function render_add_form($form_result) {
+		require_once VD_PLUGIN_PATH . 'admin/pages/pools/class-vd-pools-form-view.php';
+
+		$errors = $form_result && !$form_result['success'] ? $form_result['errors'] : null;
+
+		$view = new VD_Pools_Form_View(null, $errors);
+		$view->render();
+	}
+
+	/**
+	 * Render edit form
+	 *
+	 * @since 1.0.0
+	 * @param array|null $form_result Form processing result
+	 */
+	private static function render_edit_form($form_result) {
+		if (!isset($_GET['pool'])) {
+			wp_die(__('Pool ID là bắt buộc.', 'vd-license-manager'));
+		}
+
+		$pool_id = intval($_GET['pool']);
+
+		require_once VD_PLUGIN_PATH . 'admin/pages/pools/class-vd-pools-form-handler.php';
+
+		// Validate access
+		$access_check = VD_Pools_Form_Handler::validate_edit_access($pool_id);
+		if ($access_check) {
+			wp_die($access_check['message']);
+		}
+
+		$pool = VD_Pools_Form_Handler::get_pool_for_edit($pool_id);
+
+		if (!$pool) {
+			wp_die(__('Pool không tồn tại.', 'vd-license-manager'));
+		}
+
+		require_once VD_PLUGIN_PATH . 'admin/pages/pools/class-vd-pools-form-view.php';
+
+		$errors = $form_result && !$form_result['success'] ? $form_result['errors'] : null;
+
+		$view = new VD_Pools_Form_View($pool, $errors);
+		$view->render();
 	}
 
 	/**
