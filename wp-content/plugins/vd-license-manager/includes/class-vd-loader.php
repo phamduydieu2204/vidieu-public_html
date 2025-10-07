@@ -92,6 +92,7 @@ class VD_Loader {
             'VD_Admin_Provider_Accounts' => $base_path . 'admin/pages/class-vd-admin-provider-accounts.php',
             'VD_Accounts_List_Table'     => $base_path . 'admin/pages/accounts/class-vd-accounts-list-table.php',
             'VD_Accounts_List_View'      => $base_path . 'admin/pages/accounts/class-vd-accounts-list-view.php',
+            'VD_Accounts_Form_View'      => $base_path . 'admin/pages/accounts/class-vd-accounts-form-view.php',
 
             // Public classes
             'VD_Portal_Main'            => $base_path . 'public/pages/class-vd-portal-main.php',
