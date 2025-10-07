@@ -159,6 +159,27 @@ $test_account_id = null;
 	// TEST 3: Test Insert Account
 	echo '<h2>TEST 3: Insert New Account</h2>';
 
+	// First, check if table exists
+	global $wpdb;
+	$table_exists = $wpdb->get_var("SHOW TABLES LIKE 'bz_vd_provider_accounts'");
+	if ($table_exists) {
+		echo '<p style="color: green;">✅ Table bz_vd_provider_accounts exists</p>';
+	} else {
+		echo '<p style="color: red;">❌ Table bz_vd_provider_accounts does NOT exist</p>';
+		echo '<p><strong>Available tables with bz_vd prefix:</strong></p>';
+		$tables = $wpdb->get_results("SHOW TABLES LIKE 'bz_vd_%'");
+		if ($tables) {
+			echo '<ul>';
+			foreach ($tables as $table) {
+				$name = array_values((array)$table)[0];
+				echo '<li>' . $name . '</li>';
+			}
+			echo '</ul>';
+		} else {
+			echo '<p>No tables found with bz_vd prefix</p>';
+		}
+	}
+
 	$test_account_data = array(
 		'provider' => 'netflix',
 		'account_login' => 'test_' . time() . '@example.com',
@@ -170,10 +191,15 @@ $test_account_id = null;
 		'notes' => 'Created by automated test'
 	);
 
+	echo '<p><strong>Data to insert:</strong></p>';
+	echo '<pre>' . print_r($test_account_data, true) . '</pre>';
+
 	$account_id = VD_Accounts_Repository::insert_account($test_account_data);
 
 	if (is_wp_error($account_id)) {
 		echo '<p style="color: red;">❌ FAILED: ' . $account_id->get_error_message() . '</p>';
+		echo '<p><strong>WordPress Database Error:</strong> ' . $wpdb->last_error . '</p>';
+		echo '<p><strong>Last Query:</strong> ' . $wpdb->last_query . '</p>';
 	} else {
 		echo '<p style="color: green;">✅ PASSED: Account created with ID: ' . $account_id . '</p>';
 		$test_account_id = $account_id;

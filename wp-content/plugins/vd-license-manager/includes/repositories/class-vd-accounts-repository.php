@@ -46,7 +46,7 @@ class VD_Accounts_Repository {
 
 		$args = wp_parse_args($args, $defaults);
 
-		$table = $wpdb->prefix . 'bz_vd_provider_accounts';
+		$table = 'bz_vd_provider_accounts';
 		$where_clauses = array();
 		$where_values = array();
 
@@ -114,7 +114,7 @@ class VD_Accounts_Repository {
 			return null;
 		}
 
-		$table = $wpdb->prefix . 'bz_vd_provider_accounts';
+		$table = 'bz_vd_provider_accounts';
 		$sql = "SELECT * FROM {$table} WHERE id = %d";
 
 		$result = $wpdb->get_row($wpdb->prepare($sql, $account_id));
@@ -137,7 +137,7 @@ class VD_Accounts_Repository {
 	public static function get_total_count($args = array()) {
 		global $wpdb;
 
-		$table = $wpdb->prefix . 'bz_vd_provider_accounts';
+		$table = 'bz_vd_provider_accounts';
 		$where_clauses = array();
 		$where_values = array();
 
@@ -210,15 +210,27 @@ class VD_Accounts_Repository {
 			'updated_at'      => current_time('mysql')
 		);
 
-		$table = $wpdb->prefix . 'bz_vd_provider_accounts';
+		$table = 'bz_vd_provider_accounts';
+
+		// Debug logging
+		error_log('VD License Manager: Attempting to insert into table: ' . $table);
+		error_log('VD License Manager: Insert data: ' . print_r($insert_data, true));
+
 		$result = $wpdb->insert($table, $insert_data);
 
 		if ($result === false) {
 			error_log('VD License Manager: Database error in insert_account - ' . $wpdb->last_error);
-			return new WP_Error('db_insert_error', 'Failed to create account');
+			error_log('VD License Manager: Last query: ' . $wpdb->last_query);
+			return new WP_Error('db_insert_error', 'Failed to create account: ' . $wpdb->last_error);
 		}
 
-		return $wpdb->insert_id;
+		if ($wpdb->insert_id) {
+			error_log('VD License Manager: Account created successfully with ID: ' . $wpdb->insert_id);
+			return $wpdb->insert_id;
+		} else {
+			error_log('VD License Manager: Insert succeeded but no insert_id returned');
+			return new WP_Error('no_insert_id', 'Account may have been created but ID not returned');
+		}
 	}
 
 	/**
@@ -271,7 +283,7 @@ class VD_Accounts_Repository {
 
 		$update_data['updated_at'] = current_time('mysql');
 
-		$table = $wpdb->prefix . 'bz_vd_provider_accounts';
+		$table = 'bz_vd_provider_accounts';
 		$result = $wpdb->update($table, $update_data, array('id' => $account_id));
 
 		if ($result === false) {
@@ -302,7 +314,7 @@ class VD_Accounts_Repository {
 			return new WP_Error('has_assignments', 'Cannot delete account with active license assignments');
 		}
 
-		$table = $wpdb->prefix . 'bz_vd_provider_accounts';
+		$table = 'bz_vd_provider_accounts';
 		$result = $wpdb->delete($table, array('id' => $account_id), array('%d'));
 
 		if ($result === false) {
@@ -328,7 +340,7 @@ class VD_Accounts_Repository {
 	public static function account_exists($provider, $account_login) {
 		global $wpdb;
 
-		$table = $wpdb->prefix . 'bz_vd_provider_accounts';
+		$table = 'bz_vd_provider_accounts';
 		$sql = "SELECT id FROM {$table} WHERE provider = %s AND account_login = %s";
 
 		$result = $wpdb->get_var($wpdb->prepare($sql,
@@ -350,7 +362,7 @@ class VD_Accounts_Repository {
 		global $wpdb;
 
 		$account_id = intval($account_id);
-		$table = $wpdb->prefix . 'bz_vd_cookie_assignments';
+		$table = 'bz_vd_cookie_assignments';
 		$sql = "SELECT COUNT(*) FROM {$table} WHERE provider_account_id = %d AND status = 'active'";
 
 		$count = $wpdb->get_var($wpdb->prepare($sql, $account_id));
@@ -367,7 +379,7 @@ class VD_Accounts_Repository {
 	public static function get_providers() {
 		global $wpdb;
 
-		$table = $wpdb->prefix . 'bz_vd_provider_accounts';
+		$table = 'bz_vd_provider_accounts';
 		$sql = "SELECT DISTINCT provider FROM {$table} ORDER BY provider";
 
 		$results = $wpdb->get_col($sql);
@@ -386,7 +398,7 @@ class VD_Accounts_Repository {
 		global $wpdb;
 
 		$account_id = intval($account_id);
-		$table = $wpdb->prefix . 'bz_vd_cookie_assignments';
+		$table = 'bz_vd_cookie_assignments';
 		$sql = "SELECT COUNT(*) FROM {$table} WHERE provider_account_id = %d AND status = 'active'";
 
 		$used = intval($wpdb->get_var($wpdb->prepare($sql, $account_id)));
