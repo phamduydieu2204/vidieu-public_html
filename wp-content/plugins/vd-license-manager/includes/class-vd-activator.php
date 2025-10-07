@@ -117,6 +117,7 @@ class VD_Activator {
 
         // DROP all existing tables first (clean slate)
         $tables_to_drop = array(
+            'bz_vd_page_sidebar_mappings',      // Old table from previous version
             'bz_vd_license_rate_limits',
             'bz_vd_license_access_log',
             'bz_vd_account_fetch_log',
