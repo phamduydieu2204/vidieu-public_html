@@ -176,7 +176,7 @@ class VD_Admin_Product_Pools {
 	 *
 	 * @since 1.0.0
 	 */
-	public function render_page() {
+	public function render() {
 		// Determine which view to show
 		$action = isset($_GET['action']) ? sanitize_text_field($_GET['action']) : 'list';
 
