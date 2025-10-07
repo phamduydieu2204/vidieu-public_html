@@ -133,6 +133,7 @@ class VD_Account_Validator {
 	 * @param WP_Error $errors Error object to add errors to
 	 */
 	private static function validate_optional_fields($data, $errors) {
+		// Original field validations
 		// Validate capacity
 		if (isset($data['capacity'])) {
 			$capacity = intval($data['capacity']);
@@ -178,6 +179,89 @@ class VD_Account_Validator {
 			$cookie_validation = self::validate_cookie($data['cookie'], $format);
 			if (is_wp_error($cookie_validation)) {
 				$errors->add('invalid_cookie', $cookie_validation->get_error_message());
+			}
+		}
+
+		// NEW FIELD VALIDATIONS (15 fields)
+
+		// Subscription Management validations
+		if (!empty($data['subscription_start_date'])) {
+			$date_validation = self::validate_date($data['subscription_start_date'], 'Subscription Start Date');
+			if (is_wp_error($date_validation)) {
+				$errors->add('invalid_subscription_start_date', $date_validation->get_error_message());
+			}
+		}
+
+		if (!empty($data['subscription_end_date'])) {
+			$date_validation = self::validate_date($data['subscription_end_date'], 'Subscription End Date');
+			if (is_wp_error($date_validation)) {
+				$errors->add('invalid_subscription_end_date', $date_validation->get_error_message());
+			}
+		}
+
+		if (isset($data['subscription_cost'])) {
+			$cost = floatval($data['subscription_cost']);
+			if ($cost < 0) {
+				$errors->add('invalid_subscription_cost', 'Subscription cost cannot be negative');
+			}
+		}
+
+		if (!empty($data['currency'])) {
+			$currency_validation = self::validate_currency($data['currency']);
+			if (is_wp_error($currency_validation)) {
+				$errors->add('invalid_currency', $currency_validation->get_error_message());
+			}
+		}
+
+		// Account Details validations
+		if (isset($data['profile_limit'])) {
+			$limit = intval($data['profile_limit']);
+			if ($limit < 1 || $limit > 10) {
+				$errors->add('invalid_profile_limit', 'Profile limit must be between 1 and 10');
+			}
+		}
+
+		if (!empty($data['video_quality'])) {
+			$quality_validation = self::validate_video_quality($data['video_quality']);
+			if (is_wp_error($quality_validation)) {
+				$errors->add('invalid_video_quality', $quality_validation->get_error_message());
+			}
+		}
+
+		// Security validations
+		if (!empty($data['last_password_changed'])) {
+			$datetime_validation = self::validate_datetime($data['last_password_changed'], 'Last Password Changed');
+			if (is_wp_error($datetime_validation)) {
+				$errors->add('invalid_last_password_changed', $datetime_validation->get_error_message());
+			}
+		}
+
+		if (!empty($data['security_level'])) {
+			$security_validation = self::validate_security_level($data['security_level']);
+			if (is_wp_error($security_validation)) {
+				$errors->add('invalid_security_level', $security_validation->get_error_message());
+			}
+		}
+
+		// Business Intelligence validations
+		if (isset($data['total_revenue'])) {
+			$revenue = floatval($data['total_revenue']);
+			if ($revenue < 0) {
+				$errors->add('invalid_total_revenue', 'Total revenue cannot be negative');
+			}
+		}
+
+		if (isset($data['total_licenses_served'])) {
+			$licenses = intval($data['total_licenses_served']);
+			if ($licenses < 0) {
+				$errors->add('invalid_total_licenses_served', 'Total licenses served cannot be negative');
+			}
+		}
+
+		if (isset($data['success_rate'])) {
+			$rate = floatval($data['success_rate']);
+			if ($rate < 0 || $rate > 100) {
+				$errors->add('invalid_success_rate', 'Success rate must be between 0 and 100');
 			}
 		}
 	}
@@ -334,5 +418,92 @@ class VD_Account_Validator {
 		$providers = array('netflix', 'spotify', 'youtube', 'disney', 'hbo', 'amazon', 'hulu', 'other');
 
 		return apply_filters('vd_allowed_providers', $providers);
+	}
+
+	/**
+	 * Validate date field
+	 *
+	 * @since 1.0.0
+	 * @param string $date       Date string
+	 * @param string $field_name Field name for error messages
+	 * @return bool|WP_Error True if valid, WP_Error on failure
+	 */
+	private static function validate_date($date, $field_name) {
+		if (empty($date)) return true;
+
+		$parsed = strtotime($date);
+		if ($parsed === false) {
+			return new WP_Error('invalid_date', sprintf(__('%s must be a valid date.', 'vd-license-manager'), $field_name));
+		}
+		return true;
+	}
+
+	/**
+	 * Validate datetime field
+	 *
+	 * @since 1.0.0
+	 * @param string $datetime   Datetime string
+	 * @param string $field_name Field name for error messages
+	 * @return bool|WP_Error True if valid, WP_Error on failure
+	 */
+	private static function validate_datetime($datetime, $field_name) {
+		if (empty($datetime)) return true;
+
+		$parsed = strtotime($datetime);
+		if ($parsed === false) {
+			return new WP_Error('invalid_datetime', sprintf(__('%s must be a valid datetime.', 'vd-license-manager'), $field_name));
+		}
+		return true;
+	}
+
+	/**
+	 * Validate currency code
+	 *
+	 * @since 1.0.0
+	 * @param string $currency Currency code
+	 * @return bool|WP_Error True if valid, WP_Error on failure
+	 */
+	private static function validate_currency($currency) {
+		if (empty($currency)) return true;
+
+		$allowed = array('USD', 'VND', 'EUR', 'GBP', 'JPY');
+		if (!in_array(strtoupper($currency), $allowed)) {
+			return new WP_Error('invalid_currency', __('Invalid currency code.', 'vd-license-manager'));
+		}
+		return true;
+	}
+
+	/**
+	 * Validate video quality
+	 *
+	 * @since 1.0.0
+	 * @param string $quality Video quality
+	 * @return bool|WP_Error True if valid, WP_Error on failure
+	 */
+	private static function validate_video_quality($quality) {
+		if (empty($quality)) return true;
+
+		$allowed = array('SD', 'HD', '4K', '8K');
+		if (!in_array(strtoupper($quality), $allowed)) {
+			return new WP_Error('invalid_video_quality', __('Invalid video quality.', 'vd-license-manager'));
+		}
+		return true;
+	}
+
+	/**
+	 * Validate security level
+	 *
+	 * @since 1.0.0
+	 * @param string $level Security level
+	 * @return bool|WP_Error True if valid, WP_Error on failure
+	 */
+	private static function validate_security_level($level) {
+		if (empty($level)) return true;
+
+		$allowed = array('low', 'medium', 'high');
+		if (!in_array(strtolower($level), $allowed)) {
+			return new WP_Error('invalid_security_level', __('Invalid security level.', 'vd-license-manager'));
+		}
+		return true;
 	}
 }

@@ -91,13 +91,40 @@ class VD_DB_Core {
             recovery_email varchar(255),
             recovery_phone varchar(50),
             notes text,
+
+            -- Subscription Management
+            subscription_start_date DATE NULL COMMENT 'Ngày bắt đầu đăng ký',
+            subscription_end_date DATE NULL COMMENT 'Ngày hết hạn đăng ký',
+            subscription_cost DECIMAL(10,2) NULL DEFAULT 0.00 COMMENT 'Số tiền đăng ký',
+            currency VARCHAR(3) NULL DEFAULT 'USD' COMMENT 'Đơn vị tiền tệ',
+            auto_renewal TINYINT(1) NULL DEFAULT 0 COMMENT 'Tự động gia hạn',
+
+            -- Account Details
+            plan_type VARCHAR(50) NULL COMMENT 'Loại gói dịch vụ',
+            profile_limit INT NULL DEFAULT 1 COMMENT 'Số profile tối đa',
+            video_quality ENUM('SD','HD','4K','8K') NULL COMMENT 'Chất lượng video',
+            account_region VARCHAR(5) NULL COMMENT 'Vùng tài khoản',
+
+            -- Security
+            last_password_changed DATETIME NULL COMMENT 'Lần đổi password cuối',
+            has_2fa TINYINT(1) NULL DEFAULT 0 COMMENT 'Có 2FA không',
+            security_level ENUM('low','medium','high') NULL DEFAULT 'medium' COMMENT 'Mức bảo mật',
+
+            -- Business Intelligence
+            total_revenue DECIMAL(10,2) NULL DEFAULT 0.00 COMMENT 'Tổng doanh thu',
+            total_licenses_served INT NULL DEFAULT 0 COMMENT 'Tổng licenses phục vụ',
+            success_rate DECIMAL(5,2) NULL DEFAULT 0.00 COMMENT 'Tỷ lệ thành công',
+
             expires_at datetime,
             created_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
             updated_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
             PRIMARY KEY  (id),
             KEY idx_provider (provider),
             KEY idx_status (status),
-            KEY idx_account_login (account_login)
+            KEY idx_account_login (account_login),
+            KEY idx_subscription_dates (subscription_start_date, subscription_end_date),
+            KEY idx_plan_type (plan_type),
+            KEY idx_account_region (account_region)
         ) $charset_collate;";
 
         // Table 2: Product Pools

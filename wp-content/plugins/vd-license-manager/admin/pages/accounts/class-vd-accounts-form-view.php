@@ -234,8 +234,263 @@ class VD_Accounts_Form_View {
 							<textarea name="notes" id="notes" rows="4" cols="50" class="large-text"></textarea>
 						</td>
 					</tr>
+
+					<!-- Subscription Information Section -->
+					<tr>
+						<td colspan="2">
+							<h3 style="margin-top: 20px; margin-bottom: 10px; cursor: pointer;" onclick="toggleSection('subscription-section')">
+								<span class="dashicons dashicons-arrow-down-alt2"></span>
+								<?php echo esc_html__('Subscription Information', 'vd-license-manager'); ?>
+							</h3>
+						</td>
+					</tr>
+				</tbody>
+
+				<tbody id="subscription-section" style="display: none;">
+					<!-- Subscription Start Date -->
+					<tr>
+						<th scope="row">
+							<label for="subscription_start_date"><?php echo esc_html__('Subscription Start Date', 'vd-license-manager'); ?></label>
+						</th>
+						<td>
+							<input type="date" name="subscription_start_date" id="subscription_start_date" value="">
+							<p class="description"><?php echo esc_html__('Ngày bắt đầu đăng ký dịch vụ', 'vd-license-manager'); ?></p>
+						</td>
+					</tr>
+
+					<!-- Subscription End Date -->
+					<tr>
+						<th scope="row">
+							<label for="subscription_end_date"><?php echo esc_html__('Subscription End Date', 'vd-license-manager'); ?></label>
+						</th>
+						<td>
+							<input type="date" name="subscription_end_date" id="subscription_end_date" value="">
+							<p class="description"><?php echo esc_html__('Ngày hết hạn đăng ký', 'vd-license-manager'); ?></p>
+						</td>
+					</tr>
+
+					<!-- Subscription Cost -->
+					<tr>
+						<th scope="row">
+							<label for="subscription_cost"><?php echo esc_html__('Subscription Cost', 'vd-license-manager'); ?></label>
+						</th>
+						<td>
+							<input type="number" step="0.01" name="subscription_cost" id="subscription_cost" class="small-text" value="0.00">
+							<select name="currency" id="currency" style="margin-left: 10px;">
+								<option value="USD">USD</option>
+								<option value="VND">VND</option>
+								<option value="EUR">EUR</option>
+								<option value="GBP">GBP</option>
+								<option value="JPY">JPY</option>
+							</select>
+							<p class="description"><?php echo esc_html__('Số tiền đăng ký và đơn vị tiền tệ', 'vd-license-manager'); ?></p>
+						</td>
+					</tr>
+
+					<!-- Auto Renewal -->
+					<tr>
+						<th scope="row">
+							<label for="auto_renewal"><?php echo esc_html__('Auto Renewal', 'vd-license-manager'); ?></label>
+						</th>
+						<td>
+							<label>
+								<input type="checkbox" name="auto_renewal" id="auto_renewal" value="1">
+								<?php echo esc_html__('Tự động gia hạn khi hết hạn', 'vd-license-manager'); ?>
+							</label>
+						</td>
+					</tr>
+				</tbody>
+
+				<tbody>
+					<!-- Account Details Section -->
+					<tr>
+						<td colspan="2">
+							<h3 style="margin-top: 20px; margin-bottom: 10px; cursor: pointer;" onclick="toggleSection('account-details-section')">
+								<span class="dashicons dashicons-arrow-down-alt2"></span>
+								<?php echo esc_html__('Account Details', 'vd-license-manager'); ?>
+							</h3>
+						</td>
+					</tr>
+				</tbody>
+
+				<tbody id="account-details-section" style="display: none;">
+					<!-- Plan Type -->
+					<tr>
+						<th scope="row">
+							<label for="plan_type"><?php echo esc_html__('Plan Type', 'vd-license-manager'); ?></label>
+						</th>
+						<td>
+							<select name="plan_type" id="plan_type" class="regular-text">
+								<option value=""><?php echo esc_html__('Select Plan', 'vd-license-manager'); ?></option>
+								<option value="Premium">Premium</option>
+								<option value="Basic">Basic</option>
+								<option value="Family">Family</option>
+								<option value="Student">Student</option>
+								<option value="Standard">Standard</option>
+							</select>
+							<p class="description"><?php echo esc_html__('Loại gói dịch vụ', 'vd-license-manager'); ?></p>
+						</td>
+					</tr>
+
+					<!-- Profile Limit -->
+					<tr>
+						<th scope="row">
+							<label for="profile_limit"><?php echo esc_html__('Profile Limit', 'vd-license-manager'); ?></label>
+						</th>
+						<td>
+							<input type="number" name="profile_limit" id="profile_limit" class="small-text" min="1" max="10" value="1">
+							<p class="description"><?php echo esc_html__('Số lượng profile tối đa', 'vd-license-manager'); ?></p>
+						</td>
+					</tr>
+
+					<!-- Video Quality -->
+					<tr>
+						<th scope="row">
+							<label for="video_quality"><?php echo esc_html__('Video Quality', 'vd-license-manager'); ?></label>
+						</th>
+						<td>
+							<select name="video_quality" id="video_quality" class="regular-text">
+								<option value=""><?php echo esc_html__('Select Quality', 'vd-license-manager'); ?></option>
+								<option value="SD">SD (480p)</option>
+								<option value="HD">HD (720p/1080p)</option>
+								<option value="4K">4K (2160p)</option>
+								<option value="8K">8K (4320p)</option>
+							</select>
+							<p class="description"><?php echo esc_html__('Chất lượng video tối đa', 'vd-license-manager'); ?></p>
+						</td>
+					</tr>
+
+					<!-- Account Region -->
+					<tr>
+						<th scope="row">
+							<label for="account_region"><?php echo esc_html__('Account Region', 'vd-license-manager'); ?></label>
+						</th>
+						<td>
+							<select name="account_region" id="account_region" class="regular-text">
+								<option value=""><?php echo esc_html__('Select Region', 'vd-license-manager'); ?></option>
+								<option value="US">🇺🇸 United States</option>
+								<option value="UK">🇬🇧 United Kingdom</option>
+								<option value="VN">🇻🇳 Vietnam</option>
+								<option value="JP">🇯🇵 Japan</option>
+								<option value="KR">🇰🇷 Korea</option>
+								<option value="SG">🇸🇬 Singapore</option>
+							</select>
+							<p class="description"><?php echo esc_html__('Vùng/quốc gia của tài khoản', 'vd-license-manager'); ?></p>
+						</td>
+					</tr>
+				</tbody>
+
+				<tbody>
+					<!-- Security Settings Section -->
+					<tr>
+						<td colspan="2">
+							<h3 style="margin-top: 20px; margin-bottom: 10px; cursor: pointer;" onclick="toggleSection('security-section')">
+								<span class="dashicons dashicons-arrow-down-alt2"></span>
+								<?php echo esc_html__('Security Settings', 'vd-license-manager'); ?>
+							</h3>
+						</td>
+					</tr>
+				</tbody>
+
+				<tbody id="security-section" style="display: none;">
+					<!-- Last Password Changed -->
+					<tr>
+						<th scope="row">
+							<label for="last_password_changed"><?php echo esc_html__('Last Password Changed', 'vd-license-manager'); ?></label>
+						</th>
+						<td>
+							<input type="datetime-local" name="last_password_changed" id="last_password_changed" value="">
+							<p class="description"><?php echo esc_html__('Lần đổi password gần nhất', 'vd-license-manager'); ?></p>
+						</td>
+					</tr>
+
+					<!-- Has 2FA -->
+					<tr>
+						<th scope="row">
+							<label for="has_2fa"><?php echo esc_html__('Two-Factor Authentication', 'vd-license-manager'); ?></label>
+						</th>
+						<td>
+							<label>
+								<input type="checkbox" name="has_2fa" id="has_2fa" value="1">
+								<?php echo esc_html__('Tài khoản có bật 2FA', 'vd-license-manager'); ?>
+							</label>
+						</td>
+					</tr>
+
+					<!-- Security Level -->
+					<tr>
+						<th scope="row">
+							<label for="security_level"><?php echo esc_html__('Security Level', 'vd-license-manager'); ?></label>
+						</th>
+						<td>
+							<select name="security_level" id="security_level" class="regular-text">
+								<option value="low">🟡 Low</option>
+								<option value="medium" selected>🟠 Medium</option>
+								<option value="high">🔴 High</option>
+							</select>
+							<p class="description"><?php echo esc_html__('Mức độ bảo mật của tài khoản', 'vd-license-manager'); ?></p>
+						</td>
+					</tr>
+				</tbody>
+
+				<tbody>
+					<!-- Business Metrics Section (Read-only) -->
+					<tr>
+						<td colspan="2">
+							<h3 style="margin-top: 20px; margin-bottom: 10px; cursor: pointer;" onclick="toggleSection('business-section')">
+								<span class="dashicons dashicons-arrow-down-alt2"></span>
+								<?php echo esc_html__('Business Metrics', 'vd-license-manager'); ?>
+								<small style="color: #999;">(<?php echo esc_html__('Auto-calculated', 'vd-license-manager'); ?>)</small>
+							</h3>
+						</td>
+					</tr>
+				</tbody>
+
+				<tbody id="business-section" style="display: none;">
+					<!-- Total Revenue -->
+					<tr>
+						<th scope="row">
+							<label for="total_revenue"><?php echo esc_html__('Total Revenue', 'vd-license-manager'); ?></label>
+						</th>
+						<td>
+							<input type="number" step="0.01" name="total_revenue" id="total_revenue" class="regular-text" readonly value="0.00" style="background: #f5f5f5;">
+							<p class="description"><?php echo esc_html__('Tổng doanh thu đã tạo ra (tự động tính)', 'vd-license-manager'); ?></p>
+						</td>
+					</tr>
+
+					<!-- Total Licenses Served -->
+					<tr>
+						<th scope="row">
+							<label for="total_licenses_served"><?php echo esc_html__('Total Licenses Served', 'vd-license-manager'); ?></label>
+						</th>
+						<td>
+							<input type="number" name="total_licenses_served" id="total_licenses_served" class="small-text" readonly value="0" style="background: #f5f5f5;">
+							<p class="description"><?php echo esc_html__('Tổng số licenses đã phục vụ (tự động tính)', 'vd-license-manager'); ?></p>
+						</td>
+					</tr>
+
+					<!-- Success Rate -->
+					<tr>
+						<th scope="row">
+							<label for="success_rate"><?php echo esc_html__('Success Rate', 'vd-license-manager'); ?></label>
+						</th>
+						<td>
+							<input type="number" step="0.01" name="success_rate" id="success_rate" class="small-text" readonly value="0.00" style="background: #f5f5f5;">
+							<span>%</span>
+							<p class="description"><?php echo esc_html__('Tỷ lệ thành công (tự động tính)', 'vd-license-manager'); ?></p>
+						</td>
+					</tr>
 				</tbody>
 			</table>
+
+			<script>
+			function toggleSection(sectionId) {
+				var section = document.getElementById(sectionId);
+				if (section) {
+					section.style.display = section.style.display === 'none' ? 'table-row-group' : 'none';
+				}
+			}
+			</script>
 
 			<?php submit_button(__('Add Account', 'vd-license-manager')); ?>
 		</form>

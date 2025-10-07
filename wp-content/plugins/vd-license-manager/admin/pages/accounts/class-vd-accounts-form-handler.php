@@ -160,6 +160,7 @@ class VD_Accounts_Form_Handler {
 	 */
 	private static function get_form_data() {
 		return array(
+			// Original fields
 			'provider'        => sanitize_text_field($_POST['provider'] ?? ''),
 			'account_login'   => sanitize_text_field($_POST['account_login'] ?? ''),
 			'display_name'    => sanitize_text_field($_POST['display_name'] ?? ''),
@@ -172,7 +173,31 @@ class VD_Accounts_Form_Handler {
 			'totp_secret'     => sanitize_text_field($_POST['totp_secret'] ?? ''),
 			'recovery_email'  => sanitize_email($_POST['recovery_email'] ?? ''),
 			'recovery_phone'  => sanitize_text_field($_POST['recovery_phone'] ?? ''),
-			'notes'           => sanitize_textarea_field($_POST['notes'] ?? '')
+			'notes'           => sanitize_textarea_field($_POST['notes'] ?? ''),
+
+			// NEW FIELDS (15 additional)
+			// Subscription Management (5 fields)
+			'subscription_start_date' => sanitize_text_field($_POST['subscription_start_date'] ?? ''),
+			'subscription_end_date'   => sanitize_text_field($_POST['subscription_end_date'] ?? ''),
+			'subscription_cost'       => floatval($_POST['subscription_cost'] ?? 0.00),
+			'currency'                => sanitize_text_field($_POST['currency'] ?? 'USD'),
+			'auto_renewal'            => intval($_POST['auto_renewal'] ?? 0),
+
+			// Account Details (4 fields)
+			'plan_type'               => sanitize_text_field($_POST['plan_type'] ?? ''),
+			'profile_limit'           => intval($_POST['profile_limit'] ?? 1),
+			'video_quality'           => sanitize_text_field($_POST['video_quality'] ?? ''),
+			'account_region'          => sanitize_text_field($_POST['account_region'] ?? ''),
+
+			// Security (3 fields)
+			'last_password_changed'   => sanitize_text_field($_POST['last_password_changed'] ?? ''),
+			'has_2fa'                 => intval($_POST['has_2fa'] ?? 0),
+			'security_level'          => sanitize_text_field($_POST['security_level'] ?? 'medium'),
+
+			// Business Intelligence (3 fields) - Usually readonly, but include for completeness
+			'total_revenue'           => floatval($_POST['total_revenue'] ?? 0.00),
+			'total_licenses_served'   => intval($_POST['total_licenses_served'] ?? 0),
+			'success_rate'            => floatval($_POST['success_rate'] ?? 0.00)
 		);
 	}
 
