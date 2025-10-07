@@ -493,12 +493,104 @@ class VD_Accounts_Form_View {
 	 * @param object $account Account object
 	 */
 	private static function render_edit_form($account) {
-		// Note: Edit form will be implemented in Sprint 3
-		// For now, show a message
 		?>
-		<div class="notice notice-info">
-			<p><?php _e('Edit functionality will be implemented in Sprint 3.', 'vd-license-manager'); ?></p>
+		<!-- Helper Info Box -->
+		<div class="notice notice-info" style="margin: 20px 0; padding: 10px 15px;">
+			<p><strong>💡 Giải thích một số trường quan trọng:</strong></p>
+			<ul style="margin: 10px 0 10px 20px; list-style: disc;">
+				<li>
+					<strong>Account Login</strong> = Username/email CHÍNH để đăng nhập vào Netflix/Spotify<br>
+					<strong>Login Email</strong> = Email PHỤ để recovery/2FA (có thể khác Account Login)
+				</li>
+				<li>
+					<strong>Capacity</strong> = Số KHÁCH HÀNG bạn muốn chia sẻ tài khoản này (do bạn quyết định)<br>
+					<strong>Profile Limit</strong> = Số PROFILE trong tài khoản (do Netflix/Spotify quy định)
+				</li>
+			</ul>
+			<p style="margin: 5px 0 0 0; color: #666; font-size: 12px;">
+				<em>Di chuột vào từng trường để xem giải thích chi tiết bằng tiếng Việt.</em>
+			</p>
 		</div>
+
+		<form method="post" action="<?php echo esc_url(admin_url('admin.php?page=vd-provider-accounts&action=save')); ?>">
+			<?php wp_nonce_field('vd_save_account', 'vd_account_nonce'); ?>
+			<input type="hidden" name="account_id" value="<?php echo esc_attr($account->id); ?>">
+
+			<table class="form-table" role="presentation">
+				<tbody>
+					<tr>
+						<th scope="row">
+							<label for="provider"><?php _e('Provider', 'vd-license-manager'); ?> <span class="required">*</span></label>
+						</th>
+						<td>
+							<input type="text" name="provider" id="provider" class="regular-text" required
+								   title="<?php echo esc_attr__('Tên nhà cung cấp dịch vụ streaming (Netflix, Spotify, YouTube Premium, v.v.). Bạn có thể nhập tự do.', 'vd-license-manager'); ?>"
+								   value="<?php echo esc_attr($account->provider); ?>"
+								   placeholder="<?php _e('e.g., Netflix, Spotify, YouTube...', 'vd-license-manager'); ?>" />
+							<p class="description"><?php _e('Nhà cung cấp dịch vụ (có thể nhập tự do)', 'vd-license-manager'); ?></p>
+						</td>
+					</tr>
+					<tr>
+						<th scope="row">
+							<label for="account_login"><?php _e('Account Login', 'vd-license-manager'); ?> <span class="required">*</span></label>
+						</th>
+						<td>
+							<input type="text" name="account_login" id="account_login" class="regular-text" required
+								   title="<?php echo esc_attr__('Username hoặc email CHÍNH để đăng nhập vào dịch vụ streaming. Ví dụ: demo@netflix.com hoặc john_smith. ĐÂY LÀ TÀI KHOẢN LOGIN THẬT của Netflix/Spotify.', 'vd-license-manager'); ?>"
+								   value="<?php echo esc_attr($account->account_login); ?>" />
+							<p class="description"><?php echo esc_html__('Username hoặc email CHÍNH để đăng nhập (ví dụ: demo@netflix.com). Đây là tài khoản LOGIN THẬT.', 'vd-license-manager'); ?></p>
+						</td>
+					</tr>
+					<tr>
+						<th scope="row">
+							<label for="display_name"><?php _e('Display Name', 'vd-license-manager'); ?> <span class="required">*</span></label>
+						</th>
+						<td>
+							<input type="text" name="display_name" id="display_name" class="regular-text" required
+								   title="<?php echo esc_attr__('Tên hiển thị thân thiện để dễ nhận biết trong danh sách. Ví dụ: \'Tài khoản Netflix Premium Việt Nam\' hoặc \'Spotify Family - Chính\'.', 'vd-license-manager'); ?>"
+								   value="<?php echo esc_attr($account->display_name); ?>" />
+							<p class="description"><?php echo esc_html__('Tên hiển thị để dễ nhận biết trong danh sách', 'vd-license-manager'); ?></p>
+						</td>
+					</tr>
+					<tr>
+						<th scope="row">
+							<label for="capacity"><?php _e('Capacity', 'vd-license-manager'); ?> <span class="required">*</span></label>
+						</th>
+						<td>
+							<input type="number" name="capacity" id="capacity" class="small-text" min="1" required
+								   title="<?php echo esc_attr__('Số lượng khách hàng/licenses tối đa có thể CHIA SẺ tài khoản này. Ví dụ: Capacity = 5 nghĩa là chia cho 5 khách hàng. KHÁC với Profile Limit (số profile trong tài khoản).', 'vd-license-manager'); ?>"
+								   value="<?php echo esc_attr($account->capacity); ?>" />
+							<p class="description"><?php echo esc_html__('Số khách hàng có thể sử dụng tài khoản này. Không có giới hạn tối đa. Khác với Profile Limit (số profile trong account).', 'vd-license-manager'); ?></p>
+						</td>
+					</tr>
+					<tr>
+						<th scope="row">
+							<label for="status"><?php _e('Status', 'vd-license-manager'); ?></label>
+						</th>
+						<td>
+							<select name="status" id="status"
+									title="<?php echo esc_attr__('Trạng thái hiện tại của tài khoản: Active (hoạt động), Suspended (tạm khóa), hoặc Expired (hết hạn).', 'vd-license-manager'); ?>">
+								<option value="active" <?php selected($account->status, 'active'); ?>><?php _e('Active', 'vd-license-manager'); ?></option>
+								<option value="suspended" <?php selected($account->status, 'suspended'); ?>><?php _e('Suspended', 'vd-license-manager'); ?></option>
+								<option value="expired" <?php selected($account->status, 'expired'); ?>><?php _e('Expired', 'vd-license-manager'); ?></option>
+							</select>
+							<p class="description"><?php echo esc_html__('Trạng thái hoạt động của tài khoản', 'vd-license-manager'); ?></p>
+						</td>
+					</tr>
+
+					<?php submit_button(__('Cập nhật tài khoản', 'vd-license-manager')); ?>
+				</tbody>
+			</table>
+		</form>
+
+		<script>
+		function toggleSection(sectionId) {
+			var section = document.getElementById(sectionId);
+			if (section) {
+				section.style.display = section.style.display === 'none' ? 'table-row-group' : 'none';
+			}
+		}
+		</script>
 		<?php
 	}
 
