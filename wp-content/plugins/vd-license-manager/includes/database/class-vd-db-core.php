@@ -47,7 +47,7 @@ class VD_DB_Core {
      */
     public function __construct() {
         global $wpdb;
-        $this->table_prefix = $wpdb->prefix;
+        $this->table_prefix = 'bz_';
         $this->charset_collate = $wpdb->get_charset_collate();
 
         // Override to use utf8mb4 explicitly per environment config
@@ -228,14 +228,19 @@ class VD_DB_Core {
         $table_name = $this->table_prefix . 'vd_product_pools';
 
         return "CREATE TABLE $table_name (
-            id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-            product_id BIGINT UNSIGNED NOT NULL,
-            name VARCHAR(191) NOT NULL,
-            strategy ENUM('sticky','weighted','priority') DEFAULT 'sticky',
-            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-            UNIQUE KEY uq_product_pool (product_id)
-        ) ENGINE=InnoDB $this->charset_collate;";
+            id bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT,
+            product_id bigint(20) UNSIGNED NOT NULL COMMENT 'WooCommerce Product ID',
+            account_id bigint(20) UNSIGNED NOT NULL COMMENT 'Provider Account ID',
+            priority int(11) NOT NULL DEFAULT 0 COMMENT 'Thứ tự ưu tiên sử dụng',
+            is_active tinyint(1) NOT NULL DEFAULT 1 COMMENT 'Có đang hoạt động',
+            created_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            updated_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            PRIMARY KEY (id),
+            UNIQUE KEY unique_product_account (product_id, account_id),
+            KEY idx_product_id (product_id),
+            KEY idx_account_id (account_id),
+            KEY idx_is_active (is_active)
+        ) ENGINE=InnoDB $this->charset_collate COMMENT='Product Pools - Gán accounts vào products';";
     }
 
     /**
