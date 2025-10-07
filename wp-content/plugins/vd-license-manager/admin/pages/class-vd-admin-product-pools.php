@@ -17,7 +17,7 @@ if (!defined('ABSPATH')) {
 /**
  * Product Pools Admin Controller Class
  *
- * Manages admin interface for product pools
+ * Manages admin interface for product pools using static methods
  *
  * @package VD_License_Manager
  * @since 1.0.0
@@ -25,34 +25,13 @@ if (!defined('ABSPATH')) {
 class VD_Admin_Product_Pools {
 
 	/**
-	 * Single instance of the class
-	 *
-	 * @since 1.0.0
-	 * @var VD_Admin_Product_Pools
-	 */
-	private static $instance = null;
-
-	/**
-	 * Initialize the controller
+	 * Initialize hooks
 	 *
 	 * @since 1.0.0
 	 */
-	private function __construct() {
-		add_action('admin_menu', array($this, 'add_menu_page'));
-		add_action('admin_init', array($this, 'handle_actions'));
-	}
-
-	/**
-	 * Get singleton instance
-	 *
-	 * @since 1.0.0
-	 * @return VD_Admin_Product_Pools
-	 */
-	public static function get_instance() {
-		if (null === self::$instance) {
-			self::$instance = new self();
-		}
-		return self::$instance;
+	public static function init() {
+		add_action('admin_menu', array(__CLASS__, 'add_menu_page'));
+		add_action('admin_init', array(__CLASS__, 'handle_actions'));
 	}
 
 	/**
@@ -60,14 +39,14 @@ class VD_Admin_Product_Pools {
 	 *
 	 * @since 1.0.0
 	 */
-	public function add_menu_page() {
+	public static function add_menu_page() {
 		add_submenu_page(
 			'vd-license-manager',           // Parent slug
 			__('Product Pools', 'vd-license-manager'),
 			__('Product Pools', 'vd-license-manager'),
 			'manage_options',
 			'vd-product-pools',
-			array($this, 'render')
+			array(__CLASS__, 'render')
 		);
 	}
 
@@ -76,7 +55,7 @@ class VD_Admin_Product_Pools {
 	 *
 	 * @since 1.0.0
 	 */
-	public function handle_actions() {
+	public static function handle_actions() {
 		// Only process on our admin page
 		if (!isset($_GET['page']) || $_GET['page'] !== 'vd-product-pools') {
 			return;
@@ -84,12 +63,12 @@ class VD_Admin_Product_Pools {
 
 		// Handle delete action
 		if (isset($_GET['action']) && $_GET['action'] === 'delete' && isset($_GET['pool'])) {
-			$this->handle_delete();
+			self::handle_delete();
 		}
 
 		// Handle bulk delete action
 		if (isset($_POST['action']) && $_POST['action'] === 'bulk-delete') {
-			$this->handle_bulk_delete();
+			self::handle_bulk_delete();
 		}
 	}
 
@@ -98,7 +77,7 @@ class VD_Admin_Product_Pools {
 	 *
 	 * @since 1.0.0
 	 */
-	private function handle_delete() {
+	private static function handle_delete() {
 		// Verify nonce
 		if (!isset($_GET['_wpnonce']) || !wp_verify_nonce($_GET['_wpnonce'], 'delete-pool_' . $_GET['pool'])) {
 			wp_die(__('Kiểm tra bảo mật thất bại.', 'vd-license-manager'));
@@ -134,7 +113,7 @@ class VD_Admin_Product_Pools {
 	 *
 	 * @since 1.0.0
 	 */
-	private function handle_bulk_delete() {
+	private static function handle_bulk_delete() {
 		// Verify nonce
 		if (!isset($_POST['_wpnonce']) || !wp_verify_nonce($_POST['_wpnonce'], 'bulk-pools')) {
 			wp_die(__('Kiểm tra bảo mật thất bại.', 'vd-license-manager'));
@@ -197,7 +176,12 @@ class VD_Admin_Product_Pools {
 	 *
 	 * @since 1.0.0
 	 */
-	public function render() {
+	public static function render() {
+		// Check user capabilities
+		if (!current_user_can('manage_options')) {
+			wp_die(__('You do not have sufficient permissions to access this page.', 'vd-license-manager'));
+		}
+
 		// Determine which view to show
 		$action = isset($_GET['action']) ? sanitize_text_field($_GET['action']) : 'list';
 
@@ -205,12 +189,12 @@ class VD_Admin_Product_Pools {
 			case 'edit':
 			case 'add':
 				// Will be implemented in Sprint 4.4
-				$this->render_form_placeholder();
+				self::render_form_placeholder();
 				break;
 
 			case 'list':
 			default:
-				$this->render_list_page();
+				self::render_list_page();
 				break;
 		}
 	}
@@ -220,7 +204,7 @@ class VD_Admin_Product_Pools {
 	 *
 	 * @since 1.0.0
 	 */
-	private function render_form_placeholder() {
+	private static function render_form_placeholder() {
 		?>
 		<div class="wrap">
 			<h1><?php _e('Pool Form', 'vd-license-manager'); ?></h1>
@@ -237,7 +221,7 @@ class VD_Admin_Product_Pools {
 	 *
 	 * @since 1.0.0
 	 */
-	private function render_list_page() {
+	private static function render_list_page() {
 		// Load list view
 		require_once VD_PLUGIN_PATH . 'admin/pages/pools/class-vd-pools-list-view.php';
 
@@ -247,4 +231,4 @@ class VD_Admin_Product_Pools {
 }
 
 // Initialize the controller
-VD_Admin_Product_Pools::get_instance();
+VD_Admin_Product_Pools::init();
