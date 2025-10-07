@@ -116,10 +116,10 @@ class VD_Admin_Provider_Accounts {
 	 * @since 1.0.0
 	 */
 	private static function handle_save() {
-		// This will be implemented in Sprint 3
-		// For now, just add a TODO comment
+		// Load form handler class
+		require_once VD_PLUGIN_PATH . 'admin/pages/accounts/class-vd-accounts-form-handler.php';
 
-		// TODO: Implement form handler in Sprint 3
-		wp_die(__('Form handler not yet implemented.', 'vd-license-manager'));
+		// Process form submission
+		VD_Accounts_Form_Handler::handle_save();
 	}
 }

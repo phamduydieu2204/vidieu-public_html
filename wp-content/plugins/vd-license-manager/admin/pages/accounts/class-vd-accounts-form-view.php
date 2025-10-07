@@ -109,7 +109,7 @@ class VD_Accounts_Form_View {
 	private static function render_add_form() {
 		?>
 		<form method="post" action="<?php echo esc_url(admin_url('admin.php?page=vd-provider-accounts&action=save')); ?>">
-			<?php wp_nonce_field('vd_add_account', 'vd_account_nonce'); ?>
+			<?php wp_nonce_field('vd_save_account', 'vd_account_nonce'); ?>
 
 			<table class="form-table" role="presentation">
 				<tbody>
