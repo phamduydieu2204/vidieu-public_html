@@ -108,93 +108,137 @@ class VD_Accounts_Form_View {
 	 */
 	private static function render_add_form() {
 		?>
-		<div class="notice notice-info">
-			<p><strong><?php _e('Sprint 2 Notice:', 'vd-license-manager'); ?></strong>
-			<?php _e('Add/Edit forms will be implemented in Sprint 3. This page serves as a placeholder for now.', 'vd-license-manager'); ?></p>
-		</div>
-
-		<div style="background: #fff; border: 1px solid #ccd0d4; padding: 20px; margin: 20px 0;">
-			<h2><?php _e('Add New Provider Account', 'vd-license-manager'); ?></h2>
-			<p><?php _e('This form will include the following fields:', 'vd-license-manager'); ?></p>
+		<form method="post" action="<?php echo esc_url(admin_url('admin.php?page=vd-provider-accounts&action=save')); ?>">
+			<?php wp_nonce_field('vd_add_account', 'vd_account_nonce'); ?>
 
 			<table class="form-table" role="presentation">
 				<tbody>
 					<tr>
-						<th scope="row"><?php _e('Provider', 'vd-license-manager'); ?></th>
+						<th scope="row">
+							<label for="provider"><?php _e('Provider', 'vd-license-manager'); ?> <span class="required">*</span></label>
+						</th>
 						<td>
-							<select disabled>
-								<option><?php _e('Select Provider...', 'vd-license-manager'); ?></option>
-								<option>🎬 Netflix</option>
-								<option>🎵 Spotify</option>
-								<option>📺 YouTube</option>
-								<option>🏰 Disney+</option>
-								<option>📽️ HBO Max</option>
-								<option>📦 Amazon Prime</option>
-								<option>🟢 Hulu</option>
+							<select name="provider" id="provider" required>
+								<option value=""><?php _e('Select Provider...', 'vd-license-manager'); ?></option>
+								<option value="netflix">Netflix</option>
+								<option value="spotify">Spotify</option>
+								<option value="youtube">YouTube</option>
+								<option value="disney">Disney+</option>
+								<option value="hbo">HBO Max</option>
+								<option value="amazon">Amazon Prime</option>
+								<option value="hulu">Hulu</option>
 							</select>
-							<p class="description"><?php _e('Select the streaming service provider', 'vd-license-manager'); ?></p>
 						</td>
 					</tr>
 					<tr>
-						<th scope="row"><?php _e('Display Name', 'vd-license-manager'); ?></th>
+						<th scope="row">
+							<label for="account_login"><?php _e('Account Login', 'vd-license-manager'); ?> <span class="required">*</span></label>
+						</th>
 						<td>
-							<input type="text" class="regular-text" disabled placeholder="<?php esc_attr_e('e.g., Premium Netflix Account', 'vd-license-manager'); ?>" />
-							<p class="description"><?php _e('Friendly name for this account', 'vd-license-manager'); ?></p>
+							<input type="text" name="account_login" id="account_login" class="regular-text" required />
 						</td>
 					</tr>
 					<tr>
-						<th scope="row"><?php _e('Account Login', 'vd-license-manager'); ?></th>
+						<th scope="row">
+							<label for="display_name"><?php _e('Display Name', 'vd-license-manager'); ?> <span class="required">*</span></label>
+						</th>
 						<td>
-							<input type="email" class="regular-text" disabled placeholder="<?php esc_attr_e('account@example.com', 'vd-license-manager'); ?>" />
-							<p class="description"><?php _e('Login email for the provider account', 'vd-license-manager'); ?></p>
+							<input type="text" name="display_name" id="display_name" class="regular-text" required />
 						</td>
 					</tr>
 					<tr>
-						<th scope="row"><?php _e('Account Password', 'vd-license-manager'); ?></th>
+						<th scope="row">
+							<label for="capacity"><?php _e('Capacity', 'vd-license-manager'); ?> <span class="required">*</span></label>
+						</th>
 						<td>
-							<input type="password" class="regular-text" disabled />
-							<p class="description"><?php _e('Password for the provider account', 'vd-license-manager'); ?></p>
+							<input type="number" name="capacity" id="capacity" class="small-text" min="1" max="100" required />
 						</td>
 					</tr>
 					<tr>
-						<th scope="row"><?php _e('Capacity', 'vd-license-manager'); ?></th>
+						<th scope="row">
+							<label for="status"><?php _e('Status', 'vd-license-manager'); ?></label>
+						</th>
 						<td>
-							<input type="number" class="small-text" disabled min="1" max="100" placeholder="5" />
-							<p class="description"><?php _e('Maximum number of users that can use this account', 'vd-license-manager'); ?></p>
-						</td>
-					</tr>
-					<tr>
-						<th scope="row"><?php _e('Status', 'vd-license-manager'); ?></th>
-						<td>
-							<select disabled>
+							<select name="status" id="status">
 								<option value="active"><?php _e('Active', 'vd-license-manager'); ?></option>
 								<option value="suspended"><?php _e('Suspended', 'vd-license-manager'); ?></option>
 								<option value="expired"><?php _e('Expired', 'vd-license-manager'); ?></option>
 							</select>
-							<p class="description"><?php _e('Current status of the account', 'vd-license-manager'); ?></p>
+						</td>
+					</tr>
+					<tr>
+						<th scope="row">
+							<label for="cookie"><?php _e('Cookie', 'vd-license-manager'); ?></label>
+						</th>
+						<td>
+							<textarea name="cookie" id="cookie" rows="8" cols="50" class="large-text"></textarea>
+						</td>
+					</tr>
+					<tr>
+						<th scope="row">
+							<label for="cookie_format"><?php _e('Cookie Format', 'vd-license-manager'); ?></label>
+						</th>
+						<td>
+							<select name="cookie_format" id="cookie_format">
+								<option value="json">JSON</option>
+								<option value="netscape">Netscape</option>
+								<option value="headers">Headers</option>
+							</select>
+						</td>
+					</tr>
+					<tr>
+						<th scope="row">
+							<label for="login_email"><?php _e('Login Email', 'vd-license-manager'); ?></label>
+						</th>
+						<td>
+							<input type="email" name="login_email" id="login_email" class="regular-text" />
+						</td>
+					</tr>
+					<tr>
+						<th scope="row">
+							<label for="login_password"><?php _e('Login Password', 'vd-license-manager'); ?></label>
+						</th>
+						<td>
+							<input type="password" name="login_password" id="login_password" class="regular-text" />
+						</td>
+					</tr>
+					<tr>
+						<th scope="row">
+							<label for="totp_secret"><?php _e('TOTP Secret', 'vd-license-manager'); ?></label>
+						</th>
+						<td>
+							<input type="text" name="totp_secret" id="totp_secret" class="regular-text" />
+						</td>
+					</tr>
+					<tr>
+						<th scope="row">
+							<label for="recovery_email"><?php _e('Recovery Email', 'vd-license-manager'); ?></label>
+						</th>
+						<td>
+							<input type="email" name="recovery_email" id="recovery_email" class="regular-text" />
+						</td>
+					</tr>
+					<tr>
+						<th scope="row">
+							<label for="recovery_phone"><?php _e('Recovery Phone', 'vd-license-manager'); ?></label>
+						</th>
+						<td>
+							<input type="tel" name="recovery_phone" id="recovery_phone" class="regular-text" />
+						</td>
+					</tr>
+					<tr>
+						<th scope="row">
+							<label for="notes"><?php _e('Notes', 'vd-license-manager'); ?></label>
+						</th>
+						<td>
+							<textarea name="notes" id="notes" rows="4" cols="50" class="large-text"></textarea>
 						</td>
 					</tr>
 				</tbody>
 			</table>
 
-			<p class="submit">
-				<input type="submit" name="submit" id="submit" class="button button-primary" disabled value="<?php esc_attr_e('Add Account', 'vd-license-manager'); ?>">
-				<a href="<?php echo esc_url(admin_url('admin.php?page=vd-provider-accounts')); ?>" class="button">
-					<?php _e('Cancel', 'vd-license-manager'); ?>
-				</a>
-			</p>
-		</div>
-
-		<div class="notice notice-warning">
-			<p><strong><?php _e('Coming in Sprint 3:', 'vd-license-manager'); ?></strong></p>
-			<ul>
-				<li><?php _e('✅ Form validation with VD_Account_Validator', 'vd-license-manager'); ?></li>
-				<li><?php _e('✅ Data processing and saving', 'vd-license-manager'); ?></li>
-				<li><?php _e('✅ Success/error message handling', 'vd-license-manager'); ?></li>
-				<li><?php _e('✅ AJAX form submission', 'vd-license-manager'); ?></li>
-				<li><?php _e('✅ Field-specific validation feedback', 'vd-license-manager'); ?></li>
-			</ul>
-		</div>
+			<?php submit_button(__('Add Account', 'vd-license-manager')); ?>
+		</form>
 		<?php
 	}
 
@@ -205,76 +249,11 @@ class VD_Accounts_Form_View {
 	 * @param object $account Account object
 	 */
 	private static function render_edit_form($account) {
+		// Note: Edit form will be implemented in Sprint 3
+		// For now, show a message
 		?>
 		<div class="notice notice-info">
-			<p><strong><?php _e('Sprint 2 Notice:', 'vd-license-manager'); ?></strong>
-			<?php _e('Add/Edit forms will be implemented in Sprint 3. This page serves as a placeholder for now.', 'vd-license-manager'); ?></p>
-		</div>
-
-		<div style="background: #fff; border: 1px solid #ccd0d4; padding: 20px; margin: 20px 0;">
-			<h2><?php _e('Edit Provider Account', 'vd-license-manager'); ?></h2>
-			<p><?php printf(__('Editing account: <strong>%s</strong> (ID: %d)', 'vd-license-manager'), esc_html($account->display_name), $account->id); ?></p>
-
-			<table class="form-table" role="presentation">
-				<tbody>
-					<tr>
-						<th scope="row"><?php _e('Provider', 'vd-license-manager'); ?></th>
-						<td>
-							<select disabled>
-								<option selected><?php echo esc_html(ucfirst($account->provider)); ?></option>
-							</select>
-							<p class="description"><?php _e('Provider cannot be changed after creation', 'vd-license-manager'); ?></p>
-						</td>
-					</tr>
-					<tr>
-						<th scope="row"><?php _e('Display Name', 'vd-license-manager'); ?></th>
-						<td>
-							<input type="text" class="regular-text" disabled value="<?php echo esc_attr($account->display_name); ?>" />
-						</td>
-					</tr>
-					<tr>
-						<th scope="row"><?php _e('Account Login', 'vd-license-manager'); ?></th>
-						<td>
-							<input type="email" class="regular-text" disabled value="<?php echo esc_attr($account->account_login); ?>" />
-						</td>
-					</tr>
-					<tr>
-						<th scope="row"><?php _e('Capacity', 'vd-license-manager'); ?></th>
-						<td>
-							<input type="number" class="small-text" disabled value="<?php echo esc_attr($account->capacity); ?>" />
-						</td>
-					</tr>
-					<tr>
-						<th scope="row"><?php _e('Status', 'vd-license-manager'); ?></th>
-						<td>
-							<select disabled>
-								<option value="active" <?php selected($account->status, 'active'); ?>><?php _e('Active', 'vd-license-manager'); ?></option>
-								<option value="suspended" <?php selected($account->status, 'suspended'); ?>><?php _e('Suspended', 'vd-license-manager'); ?></option>
-								<option value="expired" <?php selected($account->status, 'expired'); ?>><?php _e('Expired', 'vd-license-manager'); ?></option>
-							</select>
-						</td>
-					</tr>
-					<tr>
-						<th scope="row"><?php _e('Created', 'vd-license-manager'); ?></th>
-						<td>
-							<span><?php echo esc_html($account->created_at); ?></span>
-						</td>
-					</tr>
-					<tr>
-						<th scope="row"><?php _e('Last Updated', 'vd-license-manager'); ?></th>
-						<td>
-							<span><?php echo esc_html($account->updated_at); ?></span>
-						</td>
-					</tr>
-				</tbody>
-			</table>
-
-			<p class="submit">
-				<input type="submit" name="submit" id="submit" class="button button-primary" disabled value="<?php esc_attr_e('Update Account', 'vd-license-manager'); ?>">
-				<a href="<?php echo esc_url(admin_url('admin.php?page=vd-provider-accounts')); ?>" class="button">
-					<?php _e('Cancel', 'vd-license-manager'); ?>
-				</a>
-			</p>
+			<p><?php _e('Edit functionality will be implemented in Sprint 3.', 'vd-license-manager'); ?></p>
 		</div>
 		<?php
 	}
