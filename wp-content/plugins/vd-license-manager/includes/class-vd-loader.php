@@ -88,6 +88,7 @@ class VD_Loader {
             'VD_Admin_Accounts_Add'     => $base_path . 'admin/pages/class-vd-admin-accounts-add.php',
             'VD_Admin_Accounts_Edit'    => $base_path . 'admin/pages/class-vd-admin-accounts-edit.php',
             'VD_Admin_Pools'            => $base_path . 'admin/pages/class-vd-admin-pools.php',
+            'VD_Admin_Product_Pools'    => $base_path . 'admin/pages/class-vd-admin-product-pools.php',
             'VD_Admin_Devices'          => $base_path . 'admin/pages/class-vd-admin-devices.php',
 
             // Admin account pages
