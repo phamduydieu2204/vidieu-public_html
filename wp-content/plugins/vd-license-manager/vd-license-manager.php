@@ -122,6 +122,32 @@ class VD_License_Manager {
      * @since 1.0.0
      */
     public function init() {
+        // Initialize admin interface (only in admin)
+        if (is_admin()) {
+            require_once VD_PLUGIN_PATH . 'admin/class-vd-admin.php';
+            new VD_Admin();
+        }
+
+        // Initialize REST API (always loaded)
+        require_once VD_PLUGIN_PATH . 'includes/api/class-vd-rest-api.php';
+        new VD_REST_API();
+
+        // Initialize public portal (only on frontend)
+        if (!is_admin()) {
+            require_once VD_PLUGIN_PATH . 'public/class-vd-public-portal.php';
+            new VD_Public_Portal();
+        }
+
+        // Initialize WooCommerce integration if WooCommerce is active
+        if (class_exists('WooCommerce')) {
+            require_once VD_PLUGIN_PATH . 'includes/integrations/class-vd-woocommerce.php';
+            new VD_WooCommerce();
+        }
+
+        // Initialize cron jobs
+        require_once VD_PLUGIN_PATH . 'includes/class-vd-cron.php';
+        new VD_Cron();
+
         // Initialize plugin components after WordPress is loaded
         do_action('vd_license_manager_init');
     }
