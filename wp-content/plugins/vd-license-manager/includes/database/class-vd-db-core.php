@@ -77,13 +77,12 @@ class VD_DB_Core {
         // Table 1: Provider Accounts
         $sql1 = "CREATE TABLE bz_vd_provider_accounts (
             id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-            provider varchar(50) NOT NULL,
+            provider varchar(100) NOT NULL COMMENT 'Nhà cung cấp dịch vụ (user can type freely)',
             account_login varchar(255) NOT NULL,
             display_name varchar(255) NOT NULL,
             capacity int(11) NOT NULL DEFAULT 5,
             status varchar(20) NOT NULL DEFAULT 'active',
             cookie longtext,
-            cookie_format varchar(20) DEFAULT 'json',
             cookie_updated_at datetime,
             login_email varchar(255),
             login_password varchar(255),
@@ -92,28 +91,25 @@ class VD_DB_Core {
             recovery_phone varchar(50),
             notes text,
 
-            -- Subscription Management
+            -- Subscription Management (4 fields)
             subscription_start_date DATE NULL COMMENT 'Ngày bắt đầu đăng ký',
             subscription_end_date DATE NULL COMMENT 'Ngày hết hạn đăng ký',
             subscription_cost DECIMAL(10,2) NULL DEFAULT 0.00 COMMENT 'Số tiền đăng ký',
             currency VARCHAR(3) NULL DEFAULT 'USD' COMMENT 'Đơn vị tiền tệ',
             auto_renewal TINYINT(1) NULL DEFAULT 0 COMMENT 'Tự động gia hạn',
 
-            -- Account Details
-            plan_type VARCHAR(50) NULL COMMENT 'Loại gói dịch vụ',
+            -- Account Details (3 fields)
+            plan_type VARCHAR(100) NULL COMMENT 'Loại gói dịch vụ (user can type freely)',
             profile_limit INT NULL DEFAULT 1 COMMENT 'Số profile tối đa',
-            video_quality ENUM('SD','HD','4K','8K') NULL COMMENT 'Chất lượng video',
             account_region VARCHAR(5) NULL COMMENT 'Vùng tài khoản',
 
-            -- Security
+            -- Security (2 fields)
             last_password_changed DATETIME NULL COMMENT 'Lần đổi password cuối',
             has_2fa TINYINT(1) NULL DEFAULT 0 COMMENT 'Có 2FA không',
-            security_level ENUM('low','medium','high') NULL DEFAULT 'medium' COMMENT 'Mức bảo mật',
 
-            -- Business Intelligence
+            -- Business Intelligence (2 fields)
             total_revenue DECIMAL(10,2) NULL DEFAULT 0.00 COMMENT 'Tổng doanh thu',
             total_licenses_served INT NULL DEFAULT 0 COMMENT 'Tổng licenses phục vụ',
-            success_rate DECIMAL(5,2) NULL DEFAULT 0.00 COMMENT 'Tỷ lệ thành công',
 
             expires_at datetime,
             created_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,

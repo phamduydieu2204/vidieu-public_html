@@ -118,16 +118,8 @@ class VD_Accounts_Form_View {
 							<label for="provider"><?php _e('Provider', 'vd-license-manager'); ?> <span class="required">*</span></label>
 						</th>
 						<td>
-							<select name="provider" id="provider" required>
-								<option value=""><?php _e('Select Provider...', 'vd-license-manager'); ?></option>
-								<option value="netflix">Netflix</option>
-								<option value="spotify">Spotify</option>
-								<option value="youtube">YouTube</option>
-								<option value="disney">Disney+</option>
-								<option value="hbo">HBO Max</option>
-								<option value="amazon">Amazon Prime</option>
-								<option value="hulu">Hulu</option>
-							</select>
+							<input type="text" name="provider" id="provider" class="regular-text" required placeholder="<?php _e('e.g., Netflix, Spotify, YouTube...', 'vd-license-manager'); ?>" />
+							<p class="description"><?php _e('Nhà cung cấp dịch vụ (có thể nhập tự do)', 'vd-license-manager'); ?></p>
 						</td>
 					</tr>
 					<tr>
@@ -176,18 +168,6 @@ class VD_Accounts_Form_View {
 					</tr>
 					<tr>
 						<th scope="row">
-							<label for="cookie_format"><?php _e('Cookie Format', 'vd-license-manager'); ?></label>
-						</th>
-						<td>
-							<select name="cookie_format" id="cookie_format">
-								<option value="json">JSON</option>
-								<option value="netscape">Netscape</option>
-								<option value="headers">Headers</option>
-							</select>
-						</td>
-					</tr>
-					<tr>
-						<th scope="row">
 							<label for="login_email"><?php _e('Login Email', 'vd-license-manager'); ?></label>
 						</th>
 						<td>
@@ -199,7 +179,7 @@ class VD_Accounts_Form_View {
 							<label for="login_password"><?php _e('Login Password', 'vd-license-manager'); ?></label>
 						</th>
 						<td>
-							<input type="password" name="login_password" id="login_password" class="regular-text" />
+							<input type="text" name="login_password" id="login_password" class="regular-text" />
 						</td>
 					</tr>
 					<tr>
@@ -320,14 +300,7 @@ class VD_Accounts_Form_View {
 							<label for="plan_type"><?php echo esc_html__('Plan Type', 'vd-license-manager'); ?></label>
 						</th>
 						<td>
-							<select name="plan_type" id="plan_type" class="regular-text">
-								<option value=""><?php echo esc_html__('Select Plan', 'vd-license-manager'); ?></option>
-								<option value="Premium">Premium</option>
-								<option value="Basic">Basic</option>
-								<option value="Family">Family</option>
-								<option value="Student">Student</option>
-								<option value="Standard">Standard</option>
-							</select>
+							<input type="text" name="plan_type" id="plan_type" class="regular-text" placeholder="<?php echo esc_attr__('e.g., Premium, Family, Basic...', 'vd-license-manager'); ?>" />
 							<p class="description"><?php echo esc_html__('Loại gói dịch vụ', 'vd-license-manager'); ?></p>
 						</td>
 					</tr>
@@ -343,22 +316,6 @@ class VD_Accounts_Form_View {
 						</td>
 					</tr>
 
-					<!-- Video Quality -->
-					<tr>
-						<th scope="row">
-							<label for="video_quality"><?php echo esc_html__('Video Quality', 'vd-license-manager'); ?></label>
-						</th>
-						<td>
-							<select name="video_quality" id="video_quality" class="regular-text">
-								<option value=""><?php echo esc_html__('Select Quality', 'vd-license-manager'); ?></option>
-								<option value="SD">SD (480p)</option>
-								<option value="HD">HD (720p/1080p)</option>
-								<option value="4K">4K (2160p)</option>
-								<option value="8K">8K (4320p)</option>
-							</select>
-							<p class="description"><?php echo esc_html__('Chất lượng video tối đa', 'vd-license-manager'); ?></p>
-						</td>
-					</tr>
 
 					<!-- Account Region -->
 					<tr>
@@ -417,20 +374,6 @@ class VD_Accounts_Form_View {
 						</td>
 					</tr>
 
-					<!-- Security Level -->
-					<tr>
-						<th scope="row">
-							<label for="security_level"><?php echo esc_html__('Security Level', 'vd-license-manager'); ?></label>
-						</th>
-						<td>
-							<select name="security_level" id="security_level" class="regular-text">
-								<option value="low">🟡 Low</option>
-								<option value="medium" selected>🟠 Medium</option>
-								<option value="high">🔴 High</option>
-							</select>
-							<p class="description"><?php echo esc_html__('Mức độ bảo mật của tài khoản', 'vd-license-manager'); ?></p>
-						</td>
-					</tr>
 				</tbody>
 
 				<tbody>
@@ -469,17 +412,6 @@ class VD_Accounts_Form_View {
 						</td>
 					</tr>
 
-					<!-- Success Rate -->
-					<tr>
-						<th scope="row">
-							<label for="success_rate"><?php echo esc_html__('Success Rate', 'vd-license-manager'); ?></label>
-						</th>
-						<td>
-							<input type="number" step="0.01" name="success_rate" id="success_rate" class="small-text" readonly value="0.00" style="background: #f5f5f5;">
-							<span>%</span>
-							<p class="description"><?php echo esc_html__('Tỷ lệ thành công (tự động tính)', 'vd-license-manager'); ?></p>
-						</td>
-					</tr>
 				</tbody>
 			</table>
 

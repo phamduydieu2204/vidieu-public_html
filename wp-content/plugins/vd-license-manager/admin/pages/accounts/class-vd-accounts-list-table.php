@@ -189,29 +189,44 @@ class VD_Accounts_List_Table extends WP_List_Table {
 	}
 
 	/**
-	 * Provider column with icon
+	 * Provider column with icon (supports free-text providers)
 	 *
 	 * @since 1.0.0
 	 * @param object $item The current item
 	 * @return string
 	 */
 	public function column_provider($item) {
+		// Icon mapping for known providers (case-insensitive)
 		$icons = array(
-			'netflix' => '🎬',
-			'spotify' => '🎵',
-			'youtube' => '📺',
-			'disney'  => '🏰',
-			'hbo'     => '📽️',
-			'amazon'  => '📦',
-			'hulu'    => '🟢'
+			'netflix'        => '🎬',
+			'spotify'        => '🎵',
+			'youtube'        => '📺',
+			'disney'         => '🏰',
+			'disney+'        => '🏰',
+			'hbo'            => '📽️',
+			'hbo max'        => '📽️',
+			'amazon'         => '📦',
+			'amazon prime'   => '📦',
+			'hulu'           => '🟢',
+			'apple'          => '🍎',
+			'apple tv'       => '🍎',
+			'paramount'      => '⭐',
+			'peacock'        => '🦚',
+			'tiktok'         => '🎤',
+			'twitch'         => '🎮',
+			'canva'          => '🎨',
+			'other'          => '📌'
 		);
 
-		$icon = isset($icons[$item->provider]) ? $icons[$item->provider] : '📌';
+		// Get provider name and normalize for icon lookup
+		$provider_name = strtolower(trim($item->provider));
+		$icon = isset($icons[$provider_name]) ? $icons[$provider_name] : '📌';
 
 		return sprintf(
-			'<span>%s %s</span>',
+			'<span title="%s">%s %s</span>',
+			esc_attr($item->provider), // Tooltip shows full provider name
 			$icon,
-			esc_html(ucfirst($item->provider))
+			esc_html($item->provider) // Display provider name as-is (preserve case)
 		);
 	}
 
@@ -315,7 +330,7 @@ class VD_Accounts_List_Table extends WP_List_Table {
 				<option value=""><?php _e('All Providers', 'vd-license-manager'); ?></option>
 				<?php foreach ($providers as $provider): ?>
 					<option value="<?php echo esc_attr($provider); ?>" <?php selected($selected_provider, $provider); ?>>
-						<?php echo esc_html(ucfirst($provider)); ?>
+						<?php echo esc_html($provider); ?>
 					</option>
 				<?php endforeach; ?>
 			</select>

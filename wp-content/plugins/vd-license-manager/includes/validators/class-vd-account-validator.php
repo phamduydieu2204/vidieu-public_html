@@ -173,18 +173,17 @@ class VD_Account_Validator {
 			}
 		}
 
-		// Validate cookie
+		// Validate cookie (simple validation - just check not empty if provided)
 		if (!empty($data['cookie'])) {
-			$format = isset($data['cookie_format']) ? $data['cookie_format'] : 'json';
-			$cookie_validation = self::validate_cookie($data['cookie'], $format);
-			if (is_wp_error($cookie_validation)) {
-				$errors->add('invalid_cookie', $cookie_validation->get_error_message());
+			// Simple validation - just ensure it's not empty
+			if (strlen(trim($data['cookie'])) === 0) {
+				$errors->add('empty_cookie', 'Cookie data cannot be empty if provided');
 			}
 		}
 
-		// NEW FIELD VALIDATIONS (15 fields)
+		// NEW FIELD VALIDATIONS (11 fields)
 
-		// Subscription Management validations
+		// Subscription Management validations (4 fields)
 		if (!empty($data['subscription_start_date'])) {
 			$date_validation = self::validate_date($data['subscription_start_date'], 'Subscription Start Date');
 			if (is_wp_error($date_validation)) {
@@ -213,7 +212,21 @@ class VD_Account_Validator {
 			}
 		}
 
-		// Account Details validations
+		if (!empty($data['auto_renewal'])) {
+			$renewal = intval($data['auto_renewal']);
+			if ($renewal !== 0 && $renewal !== 1) {
+				$errors->add('invalid_auto_renewal', 'Auto renewal must be 0 or 1');
+			}
+		}
+
+		// Account Details validations (3 fields)
+		if (!empty($data['plan_type'])) {
+			$plan = sanitize_text_field($data['plan_type']);
+			if (strlen($plan) > 100) {
+				$errors->add('plan_type_too_long', 'Plan type must be 100 characters or less');
+			}
+		}
+
 		if (isset($data['profile_limit'])) {
 			$limit = intval($data['profile_limit']);
 			if ($limit < 1 || $limit > 10) {
@@ -221,14 +234,14 @@ class VD_Account_Validator {
 			}
 		}
 
-		if (!empty($data['video_quality'])) {
-			$quality_validation = self::validate_video_quality($data['video_quality']);
-			if (is_wp_error($quality_validation)) {
-				$errors->add('invalid_video_quality', $quality_validation->get_error_message());
+		if (!empty($data['account_region'])) {
+			$region = sanitize_text_field($data['account_region']);
+			if (strlen($region) > 5) {
+				$errors->add('region_too_long', 'Account region must be 5 characters or less');
 			}
 		}
 
-		// Security validations
+		// Security validations (2 fields)
 		if (!empty($data['last_password_changed'])) {
 			$datetime_validation = self::validate_datetime($data['last_password_changed'], 'Last Password Changed');
 			if (is_wp_error($datetime_validation)) {
@@ -236,14 +249,14 @@ class VD_Account_Validator {
 			}
 		}
 
-		if (!empty($data['security_level'])) {
-			$security_validation = self::validate_security_level($data['security_level']);
-			if (is_wp_error($security_validation)) {
-				$errors->add('invalid_security_level', $security_validation->get_error_message());
+		if (!empty($data['has_2fa'])) {
+			$twofa = intval($data['has_2fa']);
+			if ($twofa !== 0 && $twofa !== 1) {
+				$errors->add('invalid_has_2fa', 'Two-factor auth must be 0 or 1');
 			}
 		}
 
-		// Business Intelligence validations
+		// Business Intelligence validations (2 fields)
 		if (isset($data['total_revenue'])) {
 			$revenue = floatval($data['total_revenue']);
 			if ($revenue < 0) {
@@ -257,27 +270,20 @@ class VD_Account_Validator {
 				$errors->add('invalid_total_licenses_served', 'Total licenses served cannot be negative');
 			}
 		}
-
-		if (isset($data['success_rate'])) {
-			$rate = floatval($data['success_rate']);
-			if ($rate < 0 || $rate > 100) {
-				$errors->add('invalid_success_rate', 'Success rate must be between 0 and 100');
-			}
-		}
 	}
 
 	/**
-	 * Check if provider is in allowed list
+	 * Validate provider (free text input)
 	 *
 	 * @since 1.0.0
 	 * @param string $provider Provider name
 	 * @return bool|WP_Error True if valid, WP_Error on failure
 	 */
 	public static function validate_provider($provider) {
-		$allowed_providers = self::get_allowed_providers();
-
-		if (!in_array($provider, $allowed_providers)) {
-			return new WP_Error('invalid_provider', 'Invalid provider selected');
+		// Allow free text input for provider
+		// Just validate length (max 100 characters as per database schema)
+		if (strlen($provider) > 100) {
+			return new WP_Error('provider_too_long', 'Provider name must be 100 characters or less');
 		}
 
 		return true;
@@ -320,51 +326,6 @@ class VD_Account_Validator {
 		return true;
 	}
 
-	/**
-	 * Validate cookie based on format
-	 *
-	 * @since 1.0.0
-	 * @param string $cookie Cookie data
-	 * @param string $format Cookie format (json, netscape, headers)
-	 * @return bool|WP_Error True if valid, WP_Error on failure
-	 */
-	public static function validate_cookie($cookie, $format) {
-		switch ($format) {
-			case 'json':
-				$decoded = json_decode($cookie, true);
-				if (json_last_error() !== JSON_ERROR_NONE) {
-					return new WP_Error('invalid_json', 'Invalid JSON format in cookie');
-				}
-				break;
-
-			case 'netscape':
-				// Basic netscape format check (tab-separated values)
-				$lines = explode("\n", trim($cookie));
-				foreach ($lines as $line) {
-					$line = trim($line);
-					if (empty($line) || strpos($line, '#') === 0) {
-						continue; // Skip empty lines and comments
-					}
-					$parts = explode("\t", $line);
-					if (count($parts) < 6) {
-						return new WP_Error('invalid_netscape', 'Invalid Netscape cookie format');
-					}
-				}
-				break;
-
-			case 'headers':
-				// Headers format - just check it's not empty
-				if (empty(trim($cookie))) {
-					return new WP_Error('empty_headers', 'Headers format cookie cannot be empty');
-				}
-				break;
-
-			default:
-				return new WP_Error('unknown_format', 'Unknown cookie format');
-		}
-
-		return true;
-	}
 
 	/**
 	 * Sanitize all account data fields
@@ -387,7 +348,6 @@ class VD_Account_Validator {
 			'recovery_email'  => 'sanitize_email',
 			'recovery_phone'  => 'sanitize_text_field',
 			'notes'           => 'sanitize_textarea_field',
-			'cookie_format'   => 'sanitize_text_field'
 		);
 
 		foreach ($field_map as $field => $sanitize_func) {
@@ -408,17 +368,6 @@ class VD_Account_Validator {
 		return $sanitized;
 	}
 
-	/**
-	 * Get list of allowed providers
-	 *
-	 * @since 1.0.0
-	 * @return array Array of provider names
-	 */
-	public static function get_allowed_providers() {
-		$providers = array('netflix', 'spotify', 'youtube', 'disney', 'hbo', 'amazon', 'hulu', 'other');
-
-		return apply_filters('vd_allowed_providers', $providers);
-	}
 
 	/**
 	 * Validate date field
@@ -473,37 +422,4 @@ class VD_Account_Validator {
 		return true;
 	}
 
-	/**
-	 * Validate video quality
-	 *
-	 * @since 1.0.0
-	 * @param string $quality Video quality
-	 * @return bool|WP_Error True if valid, WP_Error on failure
-	 */
-	private static function validate_video_quality($quality) {
-		if (empty($quality)) return true;
-
-		$allowed = array('SD', 'HD', '4K', '8K');
-		if (!in_array(strtoupper($quality), $allowed)) {
-			return new WP_Error('invalid_video_quality', __('Invalid video quality.', 'vd-license-manager'));
-		}
-		return true;
-	}
-
-	/**
-	 * Validate security level
-	 *
-	 * @since 1.0.0
-	 * @param string $level Security level
-	 * @return bool|WP_Error True if valid, WP_Error on failure
-	 */
-	private static function validate_security_level($level) {
-		if (empty($level)) return true;
-
-		$allowed = array('low', 'medium', 'high');
-		if (!in_array(strtolower($level), $allowed)) {
-			return new WP_Error('invalid_security_level', __('Invalid security level.', 'vd-license-manager'));
-		}
-		return true;
-	}
 }

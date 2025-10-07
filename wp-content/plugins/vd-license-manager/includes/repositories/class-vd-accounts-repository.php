@@ -193,13 +193,13 @@ class VD_Accounts_Repository {
 
 		// Prepare insert data
 		$insert_data = array(
+			// Original fields
 			'provider'        => sanitize_text_field($data['provider']),
 			'account_login'   => sanitize_text_field($data['account_login']),
 			'display_name'    => sanitize_text_field($data['display_name']),
 			'capacity'        => isset($data['capacity']) ? intval($data['capacity']) : 5,
 			'status'          => isset($data['status']) ? sanitize_text_field($data['status']) : 'active',
 			'cookie'          => isset($data['cookie']) ? wp_kses_post($data['cookie']) : null,
-			'cookie_format'   => isset($data['cookie_format']) ? sanitize_text_field($data['cookie_format']) : 'json',
 			'login_email'     => isset($data['login_email']) ? sanitize_email($data['login_email']) : null,
 			'login_password'  => isset($data['login_password']) ? sanitize_text_field($data['login_password']) : null,
 			'totp_secret'     => isset($data['totp_secret']) ? sanitize_text_field($data['totp_secret']) : null,
@@ -207,6 +207,7 @@ class VD_Accounts_Repository {
 			'recovery_phone'  => isset($data['recovery_phone']) ? sanitize_text_field($data['recovery_phone']) : null,
 			'notes'           => isset($data['notes']) ? wp_kses_post($data['notes']) : null,
 
+			// NEW FIELDS (11 fields)
 			// Subscription Management (5 fields)
 			'subscription_start_date' => isset($data['subscription_start_date']) && !empty($data['subscription_start_date']) ? sanitize_text_field($data['subscription_start_date']) : null,
 			'subscription_end_date'   => isset($data['subscription_end_date']) && !empty($data['subscription_end_date']) ? sanitize_text_field($data['subscription_end_date']) : null,
@@ -214,21 +215,18 @@ class VD_Accounts_Repository {
 			'currency'                => isset($data['currency']) ? sanitize_text_field($data['currency']) : 'USD',
 			'auto_renewal'            => isset($data['auto_renewal']) ? intval($data['auto_renewal']) : 0,
 
-			// Account Details (4 fields)
+			// Account Details (3 fields)
 			'plan_type'               => isset($data['plan_type']) && !empty($data['plan_type']) ? sanitize_text_field($data['plan_type']) : null,
 			'profile_limit'           => isset($data['profile_limit']) ? intval($data['profile_limit']) : 1,
-			'video_quality'           => isset($data['video_quality']) && !empty($data['video_quality']) ? sanitize_text_field($data['video_quality']) : null,
 			'account_region'          => isset($data['account_region']) && !empty($data['account_region']) ? sanitize_text_field($data['account_region']) : null,
 
-			// Security (3 fields)
+			// Security (2 fields)
 			'last_password_changed'   => isset($data['last_password_changed']) && !empty($data['last_password_changed']) ? sanitize_text_field($data['last_password_changed']) : null,
 			'has_2fa'                 => isset($data['has_2fa']) ? intval($data['has_2fa']) : 0,
-			'security_level'          => isset($data['security_level']) ? sanitize_text_field($data['security_level']) : 'medium',
 
-			// Business Intelligence (3 fields) - Default to 0 for new accounts
+			// Business Intelligence (2 fields) - Default to 0 for new accounts
 			'total_revenue'           => isset($data['total_revenue']) ? floatval($data['total_revenue']) : 0.00,
 			'total_licenses_served'   => isset($data['total_licenses_served']) ? intval($data['total_licenses_served']) : 0,
-			'success_rate'            => isset($data['success_rate']) ? floatval($data['success_rate']) : 0.00,
 
 			'created_at'      => current_time('mysql'),
 			'updated_at'      => current_time('mysql')
@@ -284,19 +282,19 @@ class VD_Accounts_Repository {
 
 		// Original fields
 		$fields = array('provider', 'account_login', 'display_name', 'capacity', 'status',
-		               'cookie', 'cookie_format', 'login_email', 'login_password',
+		               'cookie', 'login_email', 'login_password',
 		               'totp_secret', 'recovery_email', 'recovery_phone', 'notes');
 
-		// New fields (15 additional)
+		// New fields (11 additional)
 		$new_fields = array(
-			// Subscription Management
+			// Subscription Management (5 fields)
 			'subscription_start_date', 'subscription_end_date', 'subscription_cost', 'currency', 'auto_renewal',
-			// Account Details
-			'plan_type', 'profile_limit', 'video_quality', 'account_region',
-			// Security
-			'last_password_changed', 'has_2fa', 'security_level',
-			// Business Intelligence
-			'total_revenue', 'total_licenses_served', 'success_rate'
+			// Account Details (3 fields)
+			'plan_type', 'profile_limit', 'account_region',
+			// Security (2 fields)
+			'last_password_changed', 'has_2fa',
+			// Business Intelligence (2 fields)
+			'total_revenue', 'total_licenses_served'
 		);
 
 		$all_fields = array_merge($fields, $new_fields);
@@ -313,7 +311,6 @@ class VD_Accounts_Repository {
 						break;
 					case 'subscription_cost':
 					case 'total_revenue':
-					case 'success_rate':
 						$update_data[$field] = floatval($data[$field]);
 						break;
 					case 'login_email':
@@ -331,7 +328,6 @@ class VD_Accounts_Repository {
 						$update_data[$field] = !empty($data[$field]) ? sanitize_text_field($data[$field]) : null;
 						break;
 					case 'plan_type':
-					case 'video_quality':
 					case 'account_region':
 						// Optional text fields - allow empty to set NULL
 						$update_data[$field] = !empty($data[$field]) ? sanitize_text_field($data[$field]) : null;
