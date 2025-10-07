@@ -25,13 +25,34 @@ if (!defined('ABSPATH')) {
 class VD_Admin_Product_Pools {
 
 	/**
+	 * Single instance of the class
+	 *
+	 * @since 1.0.0
+	 * @var VD_Admin_Product_Pools
+	 */
+	private static $instance = null;
+
+	/**
 	 * Initialize the controller
 	 *
 	 * @since 1.0.0
 	 */
-	public function __construct() {
+	private function __construct() {
 		add_action('admin_menu', array($this, 'add_menu_page'));
 		add_action('admin_init', array($this, 'handle_actions'));
+	}
+
+	/**
+	 * Get singleton instance
+	 *
+	 * @since 1.0.0
+	 * @return VD_Admin_Product_Pools
+	 */
+	public static function get_instance() {
+		if (null === self::$instance) {
+			self::$instance = new self();
+		}
+		return self::$instance;
 	}
 
 	/**
@@ -46,7 +67,7 @@ class VD_Admin_Product_Pools {
 			__('Product Pools', 'vd-license-manager'),
 			'manage_options',
 			'vd-product-pools',
-			array($this, 'render_page')
+			array($this, 'render')
 		);
 	}
 
@@ -224,3 +245,6 @@ class VD_Admin_Product_Pools {
 		$view->render();
 	}
 }
+
+// Initialize the controller
+VD_Admin_Product_Pools::get_instance();
