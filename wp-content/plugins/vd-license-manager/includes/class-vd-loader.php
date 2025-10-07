@@ -88,6 +88,11 @@ class VD_Loader {
             'VD_Admin_Pools'            => $base_path . 'admin/pages/class-vd-admin-pools.php',
             'VD_Admin_Devices'          => $base_path . 'admin/pages/class-vd-admin-devices.php',
 
+            // Admin account pages
+            'VD_Admin_Provider_Accounts' => $base_path . 'admin/pages/class-vd-admin-provider-accounts.php',
+            'VD_Accounts_List_Table'     => $base_path . 'admin/pages/accounts/class-vd-accounts-list-table.php',
+            'VD_Accounts_List_View'      => $base_path . 'admin/pages/accounts/class-vd-accounts-list-view.php',
+
             // Public classes
             'VD_Portal_Main'            => $base_path . 'public/pages/class-vd-portal-main.php',
             'VD_Portal_Account_Info'    => $base_path . 'public/pages/class-vd-portal-account-info.php'
@@ -149,6 +154,7 @@ class VD_Loader {
             VD_PLUGIN_PATH . 'includes/core/',
             VD_PLUGIN_PATH . 'includes/api/',
             VD_PLUGIN_PATH . 'admin/pages/',
+            VD_PLUGIN_PATH . 'admin/pages/accounts/',
             VD_PLUGIN_PATH . 'public/pages/'
         );
 
