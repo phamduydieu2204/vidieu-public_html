@@ -125,15 +125,19 @@ class VD_DB_Core {
 
         // Table 2: Product Pools
         $sql2 = "CREATE TABLE bz_vd_product_pools (
-            id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-            product_id bigint(20) unsigned NOT NULL,
-            name varchar(255) NOT NULL,
-            strategy varchar(20) NOT NULL DEFAULT 'sticky',
+            id bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT,
+            product_id bigint(20) UNSIGNED NOT NULL COMMENT 'WooCommerce Product ID',
+            account_id bigint(20) UNSIGNED NOT NULL COMMENT 'Provider Account ID',
+            priority int(11) NOT NULL DEFAULT 0 COMMENT 'Thứ tự ưu tiên sử dụng',
+            is_active tinyint(1) NOT NULL DEFAULT 1 COMMENT 'Có đang hoạt động',
             created_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
             updated_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-            PRIMARY KEY  (id),
-            KEY idx_product (product_id)
-        ) $charset_collate;";
+            PRIMARY KEY (id),
+            UNIQUE KEY unique_product_account (product_id, account_id),
+            KEY idx_product_id (product_id),
+            KEY idx_account_id (account_id),
+            KEY idx_is_active (is_active)
+        ) $charset_collate COMMENT='Product Pools - Gán accounts vào products';";
 
         // Table 3: Pool Accounts
         $sql3 = "CREATE TABLE bz_vd_pool_accounts (
