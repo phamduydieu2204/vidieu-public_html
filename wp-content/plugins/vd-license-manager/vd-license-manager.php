@@ -125,7 +125,7 @@ class VD_License_Manager {
         // Initialize admin interface (only in admin)
         if (is_admin()) {
             require_once VD_PLUGIN_PATH . 'admin/class-vd-admin.php';
-            new VD_Admin();
+            new VD_License_Admin();
         }
 
         // Initialize REST API (always loaded)

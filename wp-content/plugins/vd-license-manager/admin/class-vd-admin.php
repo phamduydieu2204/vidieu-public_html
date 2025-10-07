@@ -22,7 +22,7 @@ if (!defined('ABSPATH')) {
  * @package VD_License_Manager
  * @since 1.0.0
  */
-class VD_Admin {
+class VD_License_Admin {
 
     /**
      * Constructor
