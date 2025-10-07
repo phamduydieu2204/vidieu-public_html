@@ -31,7 +31,6 @@ class VD_Admin_Product_Pools {
 	 */
 	public static function init() {
 		add_action('admin_menu', array(__CLASS__, 'add_menu_page'));
-		add_action('admin_init', array(__CLASS__, 'handle_actions'));
 	}
 
 	/**
@@ -64,11 +63,13 @@ class VD_Admin_Product_Pools {
 		// Handle delete action
 		if (isset($_GET['action']) && $_GET['action'] === 'delete' && isset($_GET['pool'])) {
 			self::handle_delete();
+			return; // handle_delete() will redirect, this is just safety
 		}
 
 		// Handle bulk delete action
 		if (isset($_POST['action']) && $_POST['action'] === 'bulk-delete') {
 			self::handle_bulk_delete();
+			return; // handle_bulk_delete() will redirect
 		}
 	}
 
@@ -181,6 +182,9 @@ class VD_Admin_Product_Pools {
 		if (!current_user_can('manage_options')) {
 			wp_die(__('You do not have sufficient permissions to access this page.', 'vd-license-manager'));
 		}
+
+		// Handle actions FIRST, before any output
+		self::handle_actions();
 
 		// Determine which view to show
 		$action = isset($_GET['action']) ? sanitize_text_field($_GET['action']) : 'list';
