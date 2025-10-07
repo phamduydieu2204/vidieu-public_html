@@ -56,6 +56,12 @@ class VD_Loader {
             'VD_DB_Devices'             => $base_path . 'includes/database/class-vd-db-devices.php',
             'VD_DB_Logs'                => $base_path . 'includes/database/class-vd-db-logs.php',
 
+            // Repository classes
+            'VD_Accounts_Repository'    => $base_path . 'includes/repositories/class-vd-accounts-repository.php',
+
+            // Validator classes
+            'VD_Account_Validator'      => $base_path . 'includes/validators/class-vd-account-validator.php',
+
             // Helper classes
             'VD_Security'               => $base_path . 'includes/helpers/class-vd-security.php',
             'VD_Data'                   => $base_path . 'includes/helpers/class-vd-data.php',
@@ -137,6 +143,8 @@ class VD_Loader {
         $search_paths = array(
             VD_PLUGIN_PATH . 'includes/',
             VD_PLUGIN_PATH . 'includes/database/',
+            VD_PLUGIN_PATH . 'includes/repositories/',
+            VD_PLUGIN_PATH . 'includes/validators/',
             VD_PLUGIN_PATH . 'includes/helpers/',
             VD_PLUGIN_PATH . 'includes/core/',
             VD_PLUGIN_PATH . 'includes/api/',
