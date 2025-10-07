@@ -183,7 +183,7 @@ class VD_Account_Validator {
 
 		// NEW FIELD VALIDATIONS (11 fields)
 
-		// Subscription Management validations (4 fields)
+		// Subscription Management validations (5 fields)
 		if (!empty($data['subscription_start_date'])) {
 			$date_validation = self::validate_date($data['subscription_start_date'], 'Subscription Start Date');
 			if (is_wp_error($date_validation)) {
@@ -337,6 +337,7 @@ class VD_Account_Validator {
 	public static function sanitize_account_data($data) {
 		$sanitized = array();
 
+		// Core fields (12 original fields)
 		$field_map = array(
 			'provider'        => 'sanitize_text_field',
 			'account_login'   => 'sanitize_text_field',
@@ -349,6 +350,27 @@ class VD_Account_Validator {
 			'recovery_phone'  => 'sanitize_text_field',
 			'notes'           => 'sanitize_textarea_field',
 		);
+
+		// NEW FIELDS (11 additional fields)
+		// Subscription Management (5 fields)
+		$field_map['subscription_start_date'] = 'sanitize_text_field';
+		$field_map['subscription_end_date'] = 'sanitize_text_field';
+		$field_map['subscription_cost'] = 'floatval';
+		$field_map['currency'] = 'sanitize_text_field';
+		$field_map['auto_renewal'] = 'intval';
+
+		// Account Details (3 fields)
+		$field_map['plan_type'] = 'sanitize_text_field';
+		$field_map['profile_limit'] = 'intval';
+		$field_map['account_region'] = 'sanitize_text_field';
+
+		// Security (2 fields)
+		$field_map['last_password_changed'] = 'sanitize_text_field';
+		$field_map['has_2fa'] = 'intval';
+
+		// Business Intelligence (2 fields) - Usually read-only
+		$field_map['total_revenue'] = 'floatval';
+		$field_map['total_licenses_served'] = 'intval';
 
 		foreach ($field_map as $field => $sanitize_func) {
 			if (isset($data[$field])) {

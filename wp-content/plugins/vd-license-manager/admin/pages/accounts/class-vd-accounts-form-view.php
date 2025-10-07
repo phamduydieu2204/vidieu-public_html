@@ -62,7 +62,7 @@ class VD_Accounts_Form_View {
 		// Get account data
 		$account = VD_Accounts_Repository::get_account($account_id);
 		if (!$account) {
-			wp_die(__('Account not found.', 'vd-license-manager'));
+			wp_die(__('Không tìm thấy tài khoản.', 'vd-license-manager'));
 		}
 
 		// Render messages
@@ -487,7 +487,7 @@ class VD_Accounts_Form_View {
 	}
 
 	/**
-	 * Render edit form
+	 * Render edit form - reuse add form with data population
 	 *
 	 * @since 1.0.0
 	 * @param object $account Account object
@@ -577,10 +577,301 @@ class VD_Accounts_Form_View {
 							<p class="description"><?php echo esc_html__('Trạng thái hoạt động của tài khoản', 'vd-license-manager'); ?></p>
 						</td>
 					</tr>
+					<tr>
+						<th scope="row">
+							<label for="cookie"><?php _e('Cookie', 'vd-license-manager'); ?></label>
+						</th>
+						<td>
+							<textarea name="cookie" id="cookie" rows="8" cols="50" class="large-text"
+									  title="<?php echo esc_attr__('Cookie dạng JSON hoặc text từ trình duyệt. Dùng để tự động login mà không cần nhập password. Copy từ browser extension.', 'vd-license-manager'); ?>"><?php echo esc_textarea($account->cookie ?? ''); ?></textarea>
+							<p class="description"><?php echo esc_html__('Cookie dạng JSON để tự động đăng nhập', 'vd-license-manager'); ?></p>
+						</td>
+					</tr>
+					<tr>
+						<th scope="row">
+							<label for="login_email"><?php _e('Login Email', 'vd-license-manager'); ?></label>
+						</th>
+						<td>
+							<input type="email" name="login_email" id="login_email" class="regular-text"
+								   title="<?php echo esc_attr__('Email PHỤ để nhận mã khôi phục hoặc xác thực 2FA. KHÁC với Account Login (username đăng nhập chính). Có thể để trống.', 'vd-license-manager'); ?>"
+								   value="<?php echo esc_attr($account->login_email ?? ''); ?>" />
+							<p class="description"><?php echo esc_html__('Email PHỤ để recovery/2FA. Có thể khác với Account Login. Để trống nếu không có.', 'vd-license-manager'); ?></p>
+						</td>
+					</tr>
+					<tr>
+						<th scope="row">
+							<label for="login_password"><?php _e('Login Password', 'vd-license-manager'); ?></label>
+						</th>
+						<td>
+							<input type="text" name="login_password" id="login_password" class="regular-text"
+								   title="<?php echo esc_attr__('Mật khẩu để đăng nhập vào tài khoản streaming. Hiển thị dạng text rõ ràng (không ẩn) để dễ copy/paste.', 'vd-license-manager'); ?>"
+								   value="<?php echo esc_attr($account->login_password ?? ''); ?>" />
+							<p class="description"><?php echo esc_html__('Mật khẩu đăng nhập (hiển thị rõ để dễ copy)', 'vd-license-manager'); ?></p>
+						</td>
+					</tr>
+					<tr>
+						<th scope="row">
+							<label for="totp_secret"><?php _e('TOTP Secret', 'vd-license-manager'); ?></label>
+						</th>
+						<td>
+							<input type="text" name="totp_secret" id="totp_secret" class="regular-text"
+								   title="<?php echo esc_attr__('Mã bí mật TOTP cho xác thực 2 bước (2FA). Dùng với Google Authenticator hoặc Authy. Ví dụ: JBSWY3DPEHPK3PXP.', 'vd-license-manager'); ?>"
+								   value="<?php echo esc_attr($account->totp_secret ?? ''); ?>" />
+							<p class="description"><?php echo esc_html__('Mã bí mật TOTP cho 2FA (Google Authenticator)', 'vd-license-manager'); ?></p>
+						</td>
+					</tr>
+					<tr>
+						<th scope="row">
+							<label for="recovery_email"><?php _e('Recovery Email', 'vd-license-manager'); ?></label>
+						</th>
+						<td>
+							<input type="email" name="recovery_email" id="recovery_email" class="regular-text"
+								   title="<?php echo esc_attr__('Email dự phòng để khôi phục tài khoản khi quên mật khẩu. Thường khác với Login Email.', 'vd-license-manager'); ?>"
+								   value="<?php echo esc_attr($account->recovery_email ?? ''); ?>" />
+							<p class="description"><?php echo esc_html__('Email dự phòng để khôi phục tài khoản', 'vd-license-manager'); ?></p>
+						</td>
+					</tr>
+					<tr>
+						<th scope="row">
+							<label for="recovery_phone"><?php _e('Recovery Phone', 'vd-license-manager'); ?></label>
+						</th>
+						<td>
+							<input type="tel" name="recovery_phone" id="recovery_phone" class="regular-text"
+								   title="<?php echo esc_attr__('Số điện thoại để nhận mã OTP khôi phục tài khoản. Định dạng: +84901234567 hoặc 0901234567.', 'vd-license-manager'); ?>"
+								   value="<?php echo esc_attr($account->recovery_phone ?? ''); ?>" />
+							<p class="description"><?php echo esc_html__('Số điện thoại nhận mã OTP khôi phục', 'vd-license-manager'); ?></p>
+						</td>
+					</tr>
+					<tr>
+						<th scope="row">
+							<label for="notes"><?php _e('Notes', 'vd-license-manager'); ?></label>
+						</th>
+						<td>
+							<textarea name="notes" id="notes" rows="4" cols="50" class="large-text"
+									  title="<?php echo esc_attr__('Ghi chú nội bộ về tài khoản này. Ví dụ: nguồn mua, lịch sử thay đổi, vấn đề gặp phải, v.v.', 'vd-license-manager'); ?>"><?php echo esc_textarea($account->notes ?? ''); ?></textarea>
+							<p class="description"><?php echo esc_html__('Ghi chú nội bộ về tài khoản', 'vd-license-manager'); ?></p>
+						</td>
+					</tr>
 
-					<?php submit_button(__('Cập nhật tài khoản', 'vd-license-manager')); ?>
+					<!-- Subscription Information Section -->
+					<tr>
+						<td colspan="2">
+							<h3 style="margin-top: 20px; margin-bottom: 10px; cursor: pointer;" onclick="toggleSection('subscription-section')">
+								<span class="dashicons dashicons-arrow-down-alt2"></span>
+								<?php echo esc_html__('Subscription Information', 'vd-license-manager'); ?>
+							</h3>
+						</td>
+					</tr>
+				</tbody>
+
+				<tbody id="subscription-section" style="display: none;">
+					<!-- Subscription Start Date -->
+					<tr>
+						<th scope="row">
+							<label for="subscription_start_date"><?php echo esc_html__('Subscription Start Date', 'vd-license-manager'); ?></label>
+						</th>
+						<td>
+							<input type="date" name="subscription_start_date" id="subscription_start_date"
+								   title="<?php echo esc_attr__('Ngày bắt đầu gói đăng ký dịch vụ. Ví dụ: 2025-01-01. Để trống nếu không rõ.', 'vd-license-manager'); ?>"
+								   value="<?php echo esc_attr($account->subscription_start_date ?? ''); ?>">
+							<p class="description"><?php echo esc_html__('Ngày bắt đầu đăng ký dịch vụ', 'vd-license-manager'); ?></p>
+						</td>
+					</tr>
+
+					<!-- Subscription End Date -->
+					<tr>
+						<th scope="row">
+							<label for="subscription_end_date"><?php echo esc_html__('Subscription End Date', 'vd-license-manager'); ?></label>
+						</th>
+						<td>
+							<input type="date" name="subscription_end_date" id="subscription_end_date"
+								   title="<?php echo esc_attr__('Ngày hết hạn gói đăng ký. Ví dụ: 2025-12-31. Dùng để theo dõi khi nào cần gia hạn.', 'vd-license-manager'); ?>"
+								   value="<?php echo esc_attr($account->subscription_end_date ?? ''); ?>">
+							<p class="description"><?php echo esc_html__('Ngày hết hạn đăng ký', 'vd-license-manager'); ?></p>
+						</td>
+					</tr>
+
+					<!-- Subscription Cost -->
+					<tr>
+						<th scope="row">
+							<label for="subscription_cost"><?php echo esc_html__('Subscription Cost', 'vd-license-manager'); ?></label>
+						</th>
+						<td>
+							<input type="number" step="0.01" name="subscription_cost" id="subscription_cost" class="small-text"
+								   title="<?php echo esc_attr__('Số tiền đã trả cho gói đăng ký này. Ví dụ: 15.99 USD hoặc 350000 VND. Dùng để tính lợi nhuận.', 'vd-license-manager'); ?>"
+								   value="<?php echo esc_attr($account->subscription_cost ?? '0.00'); ?>">
+							<select name="currency" id="currency" style="margin-left: 10px;"
+									title="<?php echo esc_attr__('Đơn vị tiền tệ của giá đăng ký: USD ($), VND (₫), EUR (€), GBP (£), JPY (¥).', 'vd-license-manager'); ?>">
+								<option value="USD" <?php selected($account->currency ?? 'USD', 'USD'); ?>>USD</option>
+								<option value="VND" <?php selected($account->currency ?? 'USD', 'VND'); ?>>VND</option>
+								<option value="EUR" <?php selected($account->currency ?? 'USD', 'EUR'); ?>>EUR</option>
+								<option value="GBP" <?php selected($account->currency ?? 'USD', 'GBP'); ?>>GBP</option>
+								<option value="JPY" <?php selected($account->currency ?? 'USD', 'JPY'); ?>>JPY</option>
+							</select>
+							<p class="description"><?php echo esc_html__('Số tiền đăng ký và đơn vị tiền tệ', 'vd-license-manager'); ?></p>
+						</td>
+					</tr>
+
+					<!-- Auto Renewal -->
+					<tr>
+						<th scope="row">
+							<label for="auto_renewal"><?php echo esc_html__('Auto Renewal', 'vd-license-manager'); ?></label>
+						</th>
+						<td>
+							<label title="<?php echo esc_attr__('Đánh dấu nếu tài khoản tự động gia hạn khi hết hạn. Dùng để nhắc nhở thanh toán.', 'vd-license-manager'); ?>">
+								<input type="checkbox" name="auto_renewal" id="auto_renewal" value="1" <?php checked($account->auto_renewal ?? 0, 1); ?>>
+								<?php echo esc_html__('Tự động gia hạn khi hết hạn', 'vd-license-manager'); ?>
+							</label>
+							<p class="description"><?php echo esc_html__('Tự động gia hạn đăng ký', 'vd-license-manager'); ?></p>
+						</td>
+					</tr>
+				</tbody>
+
+				<tbody>
+					<!-- Account Details Section -->
+					<tr>
+						<td colspan="2">
+							<h3 style="margin-top: 20px; margin-bottom: 10px; cursor: pointer;" onclick="toggleSection('account-details-section')">
+								<span class="dashicons dashicons-arrow-down-alt2"></span>
+								<?php echo esc_html__('Account Details', 'vd-license-manager'); ?>
+							</h3>
+						</td>
+					</tr>
+				</tbody>
+
+				<tbody id="account-details-section" style="display: none;">
+					<!-- Plan Type -->
+					<tr>
+						<th scope="row">
+							<label for="plan_type"><?php echo esc_html__('Plan Type', 'vd-license-manager'); ?></label>
+						</th>
+						<td>
+							<input type="text" name="plan_type" id="plan_type" class="regular-text"
+								   placeholder="<?php echo esc_attr__('e.g., Premium, Family, Basic...', 'vd-license-manager'); ?>"
+								   title="<?php echo esc_attr__('Loại gói dịch vụ: Premium, Basic, Family, Student, v.v. Bạn có thể nhập tự do theo tên gói thực tế.', 'vd-license-manager'); ?>"
+								   value="<?php echo esc_attr($account->plan_type ?? ''); ?>" />
+							<p class="description"><?php echo esc_html__('Loại gói dịch vụ (nhập tự do)', 'vd-license-manager'); ?></p>
+						</td>
+					</tr>
+
+					<!-- Profile Limit -->
+					<tr>
+						<th scope="row">
+							<label for="profile_limit"><?php echo esc_html__('Profile Limit', 'vd-license-manager'); ?></label>
+						</th>
+						<td>
+							<input type="number" name="profile_limit" id="profile_limit" class="small-text" min="1"
+								   title="<?php echo esc_attr__('Số lượng profile tối đa mà dịch vụ CHO PHÉP tạo TRONG tài khoản. Ví dụ: Netflix Premium = 4 profiles. KHÁC với Capacity (số khách hàng chia sẻ).', 'vd-license-manager'); ?>"
+								   value="<?php echo esc_attr($account->profile_limit ?? '1'); ?>">
+							<p class="description"><?php echo esc_html__('Số profile tối đa do dịch vụ cho phép (ví dụ: Netflix Premium = 4). Khác với Capacity (số khách chia sẻ).', 'vd-license-manager'); ?></p>
+						</td>
+					</tr>
+
+					<!-- Account Region -->
+					<tr>
+						<th scope="row">
+							<label for="account_region"><?php echo esc_html__('Account Region', 'vd-license-manager'); ?></label>
+						</th>
+						<td>
+							<select name="account_region" id="account_region" class="regular-text"
+									title="<?php echo esc_attr__('Vùng/quốc gia đăng ký tài khoản. Ví dụ: US (Mỹ), VN (Việt Nam), JP (Nhật). Ảnh hưởng đến nội dung có sẵn.', 'vd-license-manager'); ?>">
+								<option value=""><?php echo esc_html__('Select Region', 'vd-license-manager'); ?></option>
+								<option value="US" <?php selected($account->account_region ?? '', 'US'); ?>>🇺🇸 United States</option>
+								<option value="VN" <?php selected($account->account_region ?? '', 'VN'); ?>>🇻🇳 Việt Nam</option>
+								<option value="UK" <?php selected($account->account_region ?? '', 'UK'); ?>>🇬🇧 United Kingdom</option>
+								<option value="JP" <?php selected($account->account_region ?? '', 'JP'); ?>>🇯🇵 Japan</option>
+								<option value="KR" <?php selected($account->account_region ?? '', 'KR'); ?>>🇰🇷 South Korea</option>
+								<option value="SG" <?php selected($account->account_region ?? '', 'SG'); ?>>🇸🇬 Singapore</option>
+							</select>
+							<p class="description"><?php echo esc_html__('Vùng/quốc gia đăng ký tài khoản', 'vd-license-manager'); ?></p>
+						</td>
+					</tr>
+				</tbody>
+
+				<tbody>
+					<!-- Security Settings Section -->
+					<tr>
+						<td colspan="2">
+							<h3 style="margin-top: 20px; margin-bottom: 10px; cursor: pointer;" onclick="toggleSection('security-section')">
+								<span class="dashicons dashicons-arrow-down-alt2"></span>
+								<?php echo esc_html__('Security Settings', 'vd-license-manager'); ?>
+							</h3>
+						</td>
+					</tr>
+				</tbody>
+
+				<tbody id="security-section" style="display: none;">
+					<!-- Last Password Changed -->
+					<tr>
+						<th scope="row">
+							<label for="last_password_changed"><?php echo esc_html__('Last Password Changed', 'vd-license-manager'); ?></label>
+						</th>
+						<td>
+							<input type="datetime-local" name="last_password_changed" id="last_password_changed"
+								   title="<?php echo esc_attr__('Thời gian thay đổi mật khẩu gần nhất. Dùng để theo dõi bảo mật. Ví dụ: 2025-01-06 14:30.', 'vd-license-manager'); ?>"
+								   value="<?php echo esc_attr($account->last_password_changed ?? ''); ?>">
+							<p class="description"><?php echo esc_html__('Lần đổi password cuối cùng', 'vd-license-manager'); ?></p>
+						</td>
+					</tr>
+
+					<!-- Has 2FA -->
+					<tr>
+						<th scope="row">
+							<label for="has_2fa"><?php echo esc_html__('Two-Factor Authentication', 'vd-license-manager'); ?></label>
+						</th>
+						<td>
+							<label title="<?php echo esc_attr__('Đánh dấu nếu tài khoản có BẬT xác thực 2 bước (2FA). Tăng cường bảo mật nhưng phức tạp hơn khi chia sẻ.', 'vd-license-manager'); ?>">
+								<input type="checkbox" name="has_2fa" id="has_2fa" value="1" <?php checked($account->has_2fa ?? 0, 1); ?>>
+								<?php echo esc_html__('Tài khoản có bật 2FA', 'vd-license-manager'); ?>
+							</label>
+							<p class="description"><?php echo esc_html__('Tài khoản có bắt 2FA không', 'vd-license-manager'); ?></p>
+						</td>
+					</tr>
+				</tbody>
+
+				<tbody>
+					<!-- Business Metrics Section (Read-only) -->
+					<tr>
+						<td colspan="2">
+							<h3 style="margin-top: 20px; margin-bottom: 10px; cursor: pointer;" onclick="toggleSection('business-section')">
+								<span class="dashicons dashicons-arrow-down-alt2"></span>
+								<?php echo esc_html__('Business Metrics', 'vd-license-manager'); ?>
+								<small style="color: #999;">(<?php echo esc_html__('Auto-calculated', 'vd-license-manager'); ?>)</small>
+							</h3>
+						</td>
+					</tr>
+				</tbody>
+
+				<tbody id="business-section" style="display: none;">
+					<!-- Total Revenue -->
+					<tr>
+						<th scope="row">
+							<label for="total_revenue"><?php echo esc_html__('Total Revenue', 'vd-license-manager'); ?></label>
+						</th>
+						<td>
+							<input type="number" step="0.01" name="total_revenue" id="total_revenue" class="regular-text" readonly style="background: #f5f5f5;"
+								   title="<?php echo esc_attr__('Tổng doanh thu đã tạo ra từ tài khoản này (tự động tính từ các đơn hàng). Chỉ xem, không chỉnh sỮa.', 'vd-license-manager'); ?>"
+								   value="<?php echo esc_attr($account->total_revenue ?? '0.00'); ?>">
+							<p class="description"><?php echo esc_html__('Tổng doanh thu đã tạo ra (tự động tính)', 'vd-license-manager'); ?></p>
+						</td>
+					</tr>
+
+					<!-- Total Licenses Served -->
+					<tr>
+						<th scope="row">
+							<label for="total_licenses_served"><?php echo esc_html__('Total Licenses Served', 'vd-license-manager'); ?></label>
+						</th>
+						<td>
+							<input type="number" name="total_licenses_served" id="total_licenses_served" class="small-text" readonly style="background: #f5f5f5;"
+								   title="<?php echo esc_attr__('Tổng số lần đã cấp license/chia sẻ tài khoản này cho khách hàng (tự động tính). Chỉ xem, không chỉnh sỮa.', 'vd-license-manager'); ?>"
+								   value="<?php echo esc_attr($account->total_licenses_served ?? '0'); ?>">
+							<p class="description"><?php echo esc_html__('Tổng số licenses đã phục vụ (tự động tính)', 'vd-license-manager'); ?></p>
+						</td>
+					</tr>
 				</tbody>
 			</table>
+
+			<?php submit_button(__('Cập nhật tài khoản', 'vd-license-manager')); ?>
 		</form>
 
 		<script>
