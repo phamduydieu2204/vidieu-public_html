@@ -115,26 +115,32 @@ class VD_Activator {
 
         error_log('VD License Manager: Starting database table creation...');
 
-        // DROP all existing tables first (clean slate)
-        $tables_to_drop = array(
-            'bz_vd_page_sidebar_mappings',      // Old table from previous version
-            'bz_vd_license_rate_limits',
-            'bz_vd_license_access_log',
-            'bz_vd_account_fetch_log',
-            'bz_vd_product_share_configs',
-            'bz_vd_license_device_limits',
-            'bz_vd_license_devices',
-            'bz_vd_device_fingerprints',
-            'bz_vd_cookie_assignments',
-            'bz_vd_pool_accounts',
-            'bz_vd_product_pools',
-            'bz_vd_provider_accounts'
-        );
+        // Check if tables already exist to preserve data
+        $preserve_data = get_option('vd_preserve_data_on_reactivation', true);
 
-        foreach ($tables_to_drop as $table) {
-            $wpdb->query("DROP TABLE IF EXISTS $table");
+        if (!$preserve_data) {
+            // Only DROP if explicitly requested (for clean reinstall)
+            $tables_to_drop = array(
+                'bz_vd_license_rate_limits',
+                'bz_vd_license_access_log',
+                'bz_vd_account_fetch_log',
+                'bz_vd_product_share_configs',
+                'bz_vd_license_device_limits',
+                'bz_vd_license_devices',
+                'bz_vd_device_fingerprints',
+                'bz_vd_cookie_assignments',
+                'bz_vd_pool_accounts',
+                'bz_vd_product_pools',
+                'bz_vd_provider_accounts'
+            );
+
+            foreach ($tables_to_drop as $table) {
+                $wpdb->query("DROP TABLE IF EXISTS $table");
+            }
+            error_log('VD License Manager: Dropped existing tables for clean install');
+        } else {
+            error_log('VD License Manager: Preserving existing data, creating tables if not exist');
         }
-        error_log('VD License Manager: Dropped existing tables');
 
         // Load database classes
         require_once VD_PLUGIN_PATH . 'includes/database/class-vd-db-core.php';
