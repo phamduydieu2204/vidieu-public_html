@@ -111,51 +111,55 @@ class VD_Activator {
      * @return bool|WP_Error True on success, WP_Error on failure
      */
     private static function create_database_tables() {
+        global $wpdb;
+
+        error_log('VD License Manager: Starting database table creation...');
+
+        // DROP all existing tables first (clean slate)
+        $tables_to_drop = array(
+            'bz_vd_license_rate_limits',
+            'bz_vd_license_access_log',
+            'bz_vd_account_fetch_log',
+            'bz_vd_product_share_configs',
+            'bz_vd_license_device_limits',
+            'bz_vd_license_devices',
+            'bz_vd_device_fingerprints',
+            'bz_vd_cookie_assignments',
+            'bz_vd_pool_accounts',
+            'bz_vd_product_pools',
+            'bz_vd_provider_accounts'
+        );
+
+        foreach ($tables_to_drop as $table) {
+            $wpdb->query("DROP TABLE IF EXISTS $table");
+        }
+        error_log('VD License Manager: Dropped existing tables');
+
         // Load database classes
         require_once VD_PLUGIN_PATH . 'includes/database/class-vd-db-core.php';
         require_once VD_PLUGIN_PATH . 'includes/database/class-vd-db-devices.php';
         require_once VD_PLUGIN_PATH . 'includes/database/class-vd-db-logs.php';
 
-        $success = true;
-        $errors = array();
+        // Create tables fresh
+        VD_DB_Core::create_tables();
+        VD_DB_Devices::create_tables();
+        VD_DB_Logs::create_tables();
 
-        // Create core tables
-        $db_core = new VD_DB_Core();
-        if (!$db_core->create_tables()) {
-            $success = false;
-            $errors[] = 'Failed to create core database tables';
-        }
-
-        // Create device tables
-        $db_devices = new VD_DB_Devices();
-        if (!$db_devices->create_tables()) {
-            $success = false;
-            $errors[] = 'Failed to create device database tables';
-        }
-
-        // Create logs and config tables
-        $db_logs = new VD_DB_Logs();
-        if (!$db_logs->create_tables()) {
-            $success = false;
-            $errors[] = 'Failed to create logs and config database tables';
-        }
-
-        // Verify tables created
-        global $wpdb;
+        // Verify table count
         $tables = $wpdb->get_results("SHOW TABLES LIKE 'bz_vd_%'");
         $count = count($tables);
 
         if ($count === 11) {
-            error_log("VD License Manager: All 11 tables created successfully");
+            error_log("VD License Manager: ✅ All 11 tables created successfully");
         } else {
-            error_log("VD License Manager: WARNING - Expected 11 tables, created $count");
+            error_log("VD License Manager: ⚠️ Expected 11 tables, created $count");
+            foreach ($tables as $table) {
+                $name = array_values((array)$table)[0];
+                error_log("  Table: $name");
+            }
         }
 
-        if (!$success) {
-            return new WP_Error('database_creation', implode('. ', $errors));
-        }
-
-        return true;
+        return $count === 11 ? true : new WP_Error('database_creation', "Expected 11 tables, created $count");
     }
 
     /**

@@ -68,34 +68,84 @@ class VD_DB_Core {
      * @since 1.0.0
      * @return bool True on success, false on failure
      */
-    public function create_tables() {
+    public static function create_tables() {
+        global $wpdb;
         require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
 
-        $success = true;
-        $tables = $this->get_table_definitions();
+        $charset_collate = $wpdb->get_charset_collate();
 
-        try {
-            foreach ($tables as $table_name => $sql) {
-                $result = dbDelta($sql);
+        // Table 1: Provider Accounts
+        $sql1 = "CREATE TABLE bz_vd_provider_accounts (
+            id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+            provider varchar(50) NOT NULL,
+            account_login varchar(255) NOT NULL,
+            display_name varchar(255) NOT NULL,
+            capacity int(11) NOT NULL DEFAULT 5,
+            status varchar(20) NOT NULL DEFAULT 'active',
+            cookie longtext,
+            cookie_format varchar(20) DEFAULT 'json',
+            cookie_updated_at datetime,
+            login_email varchar(255),
+            login_password varchar(255),
+            totp_secret varchar(255),
+            recovery_email varchar(255),
+            recovery_phone varchar(50),
+            notes text,
+            expires_at datetime,
+            created_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            updated_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            PRIMARY KEY  (id),
+            KEY idx_provider (provider),
+            KEY idx_status (status),
+            KEY idx_account_login (account_login)
+        ) $charset_collate;";
 
-                if (empty($result)) {
-                    error_log("VD License Manager: Failed to create {$table_name} table");
-                    $success = false;
-                }
-            }
+        // Table 2: Product Pools
+        $sql2 = "CREATE TABLE bz_vd_product_pools (
+            id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+            product_id bigint(20) unsigned NOT NULL,
+            name varchar(255) NOT NULL,
+            strategy varchar(20) NOT NULL DEFAULT 'sticky',
+            created_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            updated_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            PRIMARY KEY  (id),
+            KEY idx_product (product_id)
+        ) $charset_collate;";
 
-            if ($success) {
-                error_log('VD License Manager: Core database tables created successfully');
-            } else {
-                error_log('VD License Manager: Some core database tables failed to create');
-            }
+        // Table 3: Pool Accounts
+        $sql3 = "CREATE TABLE bz_vd_pool_accounts (
+            id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+            pool_id bigint(20) unsigned NOT NULL,
+            provider_account_id bigint(20) unsigned NOT NULL,
+            weight int(11) DEFAULT 1,
+            priority int(11) DEFAULT 0,
+            added_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            PRIMARY KEY  (id),
+            KEY idx_pool (pool_id),
+            KEY idx_account (provider_account_id)
+        ) $charset_collate;";
 
-        } catch (Exception $e) {
-            error_log('VD License Manager DB Error: ' . $e->getMessage());
-            $success = false;
-        }
+        // Table 4: Cookie Assignments
+        $sql4 = "CREATE TABLE bz_vd_cookie_assignments (
+            id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+            license_id bigint(20) unsigned NOT NULL,
+            provider_account_id bigint(20) unsigned NOT NULL,
+            status varchar(20) NOT NULL DEFAULT 'active',
+            assigned_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            revoked_at datetime,
+            notes text,
+            PRIMARY KEY  (id),
+            KEY idx_license (license_id),
+            KEY idx_account (provider_account_id),
+            KEY idx_status (status)
+        ) $charset_collate;";
 
-        return $success;
+        dbDelta($sql1);
+        dbDelta($sql2);
+        dbDelta($sql3);
+        dbDelta($sql4);
+
+        error_log('VD License Manager: Core database tables created successfully');
     }
 
     /**

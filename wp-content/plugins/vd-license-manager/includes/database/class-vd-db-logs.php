@@ -59,8 +59,7 @@ class VD_DB_Logs {
     /**
      * Create all logs and configuration tables
      *
-     * Creates the 4 final tables:
-     * - bz_vd_product_share_configs: Product sharing configuration
+     * Creates the 3 final tables:
      * - bz_vd_account_fetch_log: Account info fetch audit trail
      * - bz_vd_license_access_log: License access audit trail
      * - bz_vd_license_rate_limits: API rate limiting configuration
@@ -68,34 +67,78 @@ class VD_DB_Logs {
      * @since 1.0.0
      * @return bool True on success, false on failure
      */
-    public function create_tables() {
+    public static function create_tables() {
+        global $wpdb;
         require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
 
-        $success = true;
-        $tables = $this->get_table_definitions();
+        $charset_collate = $wpdb->get_charset_collate();
 
-        try {
-            foreach ($tables as $table_name => $sql) {
-                $result = dbDelta($sql);
+        // Table 1: Product Share Configs
+        $sql1 = "CREATE TABLE bz_vd_product_share_configs (
+            id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+            product_id bigint(20) unsigned NOT NULL,
+            share_fields longtext NOT NULL,
+            instructions text,
+            created_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            updated_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            PRIMARY KEY  (id),
+            UNIQUE KEY idx_product (product_id)
+        ) $charset_collate;";
 
-                if (empty($result)) {
-                    error_log("VD License Manager: Failed to create {$table_name} table");
-                    $success = false;
-                }
-            }
+        // Table 2: Account Fetch Log
+        $sql2 = "CREATE TABLE bz_vd_account_fetch_log (
+            id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+            license_id bigint(20) unsigned NOT NULL,
+            device_fp char(64) NOT NULL,
+            provider_account_id bigint(20) unsigned NOT NULL,
+            fetched_fields longtext,
+            ip_address varchar(45),
+            user_agent text,
+            country varchar(100),
+            city varchar(100),
+            status varchar(20) NOT NULL DEFAULT 'success',
+            fetched_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            PRIMARY KEY  (id),
+            KEY idx_license (license_id),
+            KEY idx_device (device_fp),
+            KEY idx_date (fetched_at)
+        ) $charset_collate;";
 
-            if ($success) {
-                error_log('VD License Manager: Logs and config tables created successfully');
-            } else {
-                error_log('VD License Manager: Some logs/config tables failed to create');
-            }
+        // Table 3: License Access Log
+        $sql3 = "CREATE TABLE bz_vd_license_access_log (
+            id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+            license_id bigint(20) unsigned NOT NULL,
+            device_fp char(64) NOT NULL,
+            action varchar(50) NOT NULL,
+            status varchar(20) NOT NULL,
+            reason text,
+            ip_address varchar(45),
+            user_agent text,
+            country varchar(100),
+            city varchar(100),
+            accessed_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            PRIMARY KEY  (id),
+            KEY idx_license (license_id),
+            KEY idx_device (device_fp),
+            KEY idx_date (accessed_at)
+        ) $charset_collate;";
 
-        } catch (Exception $e) {
-            error_log('VD License Manager DB Error: ' . $e->getMessage());
-            $success = false;
-        }
+        // Table 4: License Rate Limits
+        $sql4 = "CREATE TABLE bz_vd_license_rate_limits (
+            id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+            license_id bigint(20) unsigned NOT NULL,
+            window_seconds int(11) NOT NULL DEFAULT 300,
+            max_hits int(11) NOT NULL DEFAULT 10,
+            PRIMARY KEY  (id),
+            UNIQUE KEY idx_license (license_id)
+        ) $charset_collate;";
 
-        return $success;
+        dbDelta($sql1);
+        dbDelta($sql2);
+        dbDelta($sql3);
+        dbDelta($sql4);
+
+        error_log('VD License Manager: Logs and config tables created successfully');
     }
 
     /**

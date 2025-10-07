@@ -67,34 +67,60 @@ class VD_DB_Devices {
      * @since 1.0.0
      * @return bool True on success, false on failure
      */
-    public function create_tables() {
+    public static function create_tables() {
+        global $wpdb;
         require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
 
-        $success = true;
-        $tables = $this->get_table_definitions();
+        $charset_collate = $wpdb->get_charset_collate();
 
-        try {
-            foreach ($tables as $table_name => $sql) {
-                $result = dbDelta($sql);
+        // Table 1: Device Fingerprints
+        $sql1 = "CREATE TABLE bz_vd_device_fingerprints (
+            id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+            device_fp char(64) NOT NULL,
+            user_agent text,
+            os varchar(100),
+            browser varchar(100),
+            screen_resolution varchar(20),
+            timezone_offset int(11),
+            language varchar(10),
+            platform varchar(50),
+            first_seen datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            last_seen datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            PRIMARY KEY  (id),
+            UNIQUE KEY idx_device_fp (device_fp)
+        ) $charset_collate;";
 
-                if (empty($result)) {
-                    error_log("VD License Manager: Failed to create {$table_name} table");
-                    $success = false;
-                }
-            }
+        // Table 2: License Devices
+        $sql2 = "CREATE TABLE bz_vd_license_devices (
+            id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+            license_id bigint(20) unsigned NOT NULL,
+            device_fp char(64) NOT NULL,
+            status varchar(20) NOT NULL DEFAULT 'pending',
+            first_used_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            last_used_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            approved_by bigint(20) unsigned,
+            approved_at datetime,
+            notes text,
+            PRIMARY KEY  (id),
+            KEY idx_license (license_id),
+            KEY idx_device (device_fp),
+            KEY idx_status (status)
+        ) $charset_collate;";
 
-            if ($success) {
-                error_log('VD License Manager: Device database tables created successfully');
-            } else {
-                error_log('VD License Manager: Some device database tables failed to create');
-            }
+        // Table 3: License Device Limits
+        $sql3 = "CREATE TABLE bz_vd_license_device_limits (
+            license_id bigint(20) unsigned NOT NULL,
+            max_devices int(11) NOT NULL DEFAULT 1,
+            rotation_cooldown_seconds int(11) NOT NULL DEFAULT 86400,
+            last_rotation_at datetime,
+            PRIMARY KEY  (license_id)
+        ) $charset_collate;";
 
-        } catch (Exception $e) {
-            error_log('VD License Manager DB Error: ' . $e->getMessage());
-            $success = false;
-        }
+        dbDelta($sql1);
+        dbDelta($sql2);
+        dbDelta($sql3);
 
-        return $success;
+        error_log('VD License Manager: Device database tables created successfully');
     }
 
     /**
