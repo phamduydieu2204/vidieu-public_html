@@ -108,7 +108,7 @@ class VD_Share_Config_Validator {
 		}
 
 		// Validate fields if provided
-		if (isset($data['max_profiles']) || isset($data['max_devices_per_profile']) || isset($data['sharing_duration_days'])) {
+		if (isset($data['max_profiles']) || isset($data['max_devices_per_profile']) || isset($data['max_devices']) || isset($data['sharing_duration_days'])) {
 			self::validate_required_fields($data, $errors, true);
 		}
 
@@ -154,6 +154,18 @@ class VD_Share_Config_Validator {
 			}
 		}
 
+		// Max devices total validation
+		if (!$is_update || isset($data['max_devices'])) {
+			if (empty($data['max_devices'])) {
+				$errors->add('missing_max_devices_total', __('Tổng số thiết bị tối đa là bắt buộc', 'vd-license-manager'));
+			} else {
+				$max_devices_total = intval($data['max_devices']);
+				if ($max_devices_total < 1 || $max_devices_total > 100) {
+					$errors->add('invalid_max_devices_total', __('Tổng số thiết bị tối đa phải từ 1 đến 100', 'vd-license-manager'));
+				}
+			}
+		}
+
 		// Sharing duration validation
 		if (!$is_update || isset($data['sharing_duration_days'])) {
 			if (empty($data['sharing_duration_days'])) {
@@ -175,52 +187,24 @@ class VD_Share_Config_Validator {
 	 * @param WP_Error $errors Error object to add errors to
 	 */
 	private static function validate_optional_fields($data, $errors) {
-		// Auto rotate validation
-		if (isset($data['auto_rotate'])) {
-			$auto_rotate = $data['auto_rotate'];
-			if ($auto_rotate !== '0' && $auto_rotate !== '1' && $auto_rotate !== 0 && $auto_rotate !== 1 && !is_bool($auto_rotate)) {
-				$errors->add('invalid_auto_rotate', __('Tự động xoay phải là true hoặc false', 'vd-license-manager'));
+		// Last update date validation
+		if (isset($data['last_update_date']) && !empty($data['last_update_date'])) {
+			$last_update = sanitize_text_field($data['last_update_date']);
+			if (!self::is_valid_datetime($last_update)) {
+				$errors->add('invalid_last_update_date', __('Ngày cập nhật cuối không hợp lệ', 'vd-license-manager'));
 			}
 		}
 
-		// Rotation interval validation
-		if (isset($data['rotation_interval_days']) && !empty($data['rotation_interval_days'])) {
-			$interval = intval($data['rotation_interval_days']);
-			if ($interval < 1 || $interval > 365) {
-				$errors->add('invalid_rotation_interval', __('Khoảng thời gian xoay phải từ 1 đến 365 ngày', 'vd-license-manager'));
-			}
-		}
-
-		// Allow concurrent streams validation
-		if (isset($data['allow_concurrent_streams']) && !empty($data['allow_concurrent_streams'])) {
-			$streams = intval($data['allow_concurrent_streams']);
-			if ($streams < 1 || $streams > 10) {
-				$errors->add('invalid_concurrent_streams', __('Số luồng đồng thời phải từ 1 đến 10', 'vd-license-manager'));
-			}
-		}
-
-		// Custom rules validation
-		if (isset($data['custom_rules']) && !empty($data['custom_rules'])) {
-			$rules = trim($data['custom_rules']);
-			if (strlen($rules) > 5000) {
-				$errors->add('custom_rules_too_long', __('Quy tắc tùy chỉnh không được quá 5000 ký tự', 'vd-license-manager'));
-			}
-
-			// Check for potentially dangerous content
-			$dangerous_patterns = array(
-				'<script',
-				'javascript:',
-				'data:text/html',
-				'eval(',
-				'exec(',
-				'system(',
-				'shell_exec('
-			);
-
-			foreach ($dangerous_patterns as $pattern) {
-				if (stripos($rules, $pattern) !== false) {
-					$errors->add('dangerous_custom_rules', __('Quy tắc tùy chỉnh chứa nội dung không an toàn', 'vd-license-manager'));
-					break;
+		// Next update date validation
+		if (isset($data['next_update_date']) && !empty($data['next_update_date'])) {
+			$next_update = sanitize_text_field($data['next_update_date']);
+			if (!self::is_valid_datetime($next_update)) {
+				$errors->add('invalid_next_update_date', __('Ngày cập nhật tiếp theo không hợp lệ', 'vd-license-manager'));
+			} else {
+				// Check if next update date is in the future
+				$next_update_timestamp = strtotime($next_update);
+				if ($next_update_timestamp < time()) {
+					$errors->add('next_update_date_past', __('Ngày cập nhật tiếp theo phải trong tương lai', 'vd-license-manager'));
 				}
 			}
 		}
@@ -234,42 +218,43 @@ class VD_Share_Config_Validator {
 	 * @param WP_Error $errors Error object to add errors to
 	 */
 	private static function validate_business_logic($data, $errors) {
-		// If auto_rotate is enabled, rotation_interval_days should be provided
-		if (isset($data['auto_rotate']) && !empty($data['auto_rotate'])) {
-			if (empty($data['rotation_interval_days'])) {
-				$errors->add('missing_rotation_interval', __('Khi bật tự động xoay, bạn phải nhập khoảng thời gian xoay', 'vd-license-manager'));
-			}
-		}
-
-		// If rotation_interval_days is provided, auto_rotate should be enabled
-		if (isset($data['rotation_interval_days']) && !empty($data['rotation_interval_days'])) {
-			if (empty($data['auto_rotate'])) {
-				$errors->add('auto_rotate_required', __('Khi nhập khoảng thời gian xoay, bạn phải bật tự động xoay', 'vd-license-manager'));
-			}
-		}
-
-		// Validate logical relationships
-		if (isset($data['max_profiles']) && isset($data['max_devices_per_profile'])) {
+		// Validate logical relationships between device limits
+		if (isset($data['max_profiles']) && isset($data['max_devices_per_profile']) && isset($data['max_devices'])) {
 			$max_profiles = intval($data['max_profiles']);
-			$max_devices = intval($data['max_devices_per_profile']);
-			$total_devices = $max_profiles * $max_devices;
+			$max_devices_per_profile = intval($data['max_devices_per_profile']);
+			$max_devices_total = intval($data['max_devices']);
+
+			// Check if total devices is consistent
+			$calculated_total = $max_profiles * $max_devices_per_profile;
+			if ($max_devices_total < $calculated_total) {
+				$errors->add('device_limit_mismatch', sprintf(
+					__('Tổng số thiết bị (%d) phải ít nhất bằng số hồ sơ × thiết bị mỗi hồ sơ (%d)', 'vd-license-manager'),
+					$max_devices_total,
+					$calculated_total
+				));
+			}
 
 			// Warn if total devices is very high
-			if ($total_devices > 100) {
+			if ($max_devices_total > 200) {
 				$errors->add('high_device_count', sprintf(
-					__('Tổng số thiết bị (%d) có thể quá cao. Điều này có thể ảnh hưởng đến hiệu suất.', 'vd-license-manager'),
-					$total_devices
+					__('Tổng số thiết bị (%d) rất cao. Điều này có thể ảnh hưởng đến hiệu suất.', 'vd-license-manager'),
+					$max_devices_total
 				));
 			}
 		}
 
-		// Validate rotation interval vs sharing duration
-		if (isset($data['rotation_interval_days']) && isset($data['sharing_duration_days'])) {
-			$rotation_interval = intval($data['rotation_interval_days']);
-			$sharing_duration = intval($data['sharing_duration_days']);
+		// Validate date relationships
+		if (isset($data['last_update_date']) && isset($data['next_update_date'])) {
+			$last_update = sanitize_text_field($data['last_update_date']);
+			$next_update = sanitize_text_field($data['next_update_date']);
 
-			if ($rotation_interval > $sharing_duration) {
-				$errors->add('rotation_interval_too_long', __('Khoảng thời gian xoay không được lớn hơn thời gian chia sẻ', 'vd-license-manager'));
+			if (!empty($last_update) && !empty($next_update)) {
+				$last_timestamp = strtotime($last_update);
+				$next_timestamp = strtotime($next_update);
+
+				if ($next_timestamp <= $last_timestamp) {
+					$errors->add('invalid_date_sequence', __('Ngày cập nhật tiếp theo phải sau ngày cập nhật cuối', 'vd-license-manager'));
+				}
 			}
 		}
 	}
@@ -299,29 +284,24 @@ class VD_Share_Config_Validator {
 			$sanitized['max_devices_per_profile'] = intval($data['max_devices_per_profile']);
 		}
 
+		// Max devices total
+		if (isset($data['max_devices'])) {
+			$sanitized['max_devices'] = intval($data['max_devices']);
+		}
+
 		// Sharing duration days
 		if (isset($data['sharing_duration_days'])) {
 			$sanitized['sharing_duration_days'] = intval($data['sharing_duration_days']);
 		}
 
-		// Auto rotate
-		if (isset($data['auto_rotate'])) {
-			$sanitized['auto_rotate'] = !empty($data['auto_rotate']) ? 1 : 0;
+		// Last update date
+		if (isset($data['last_update_date'])) {
+			$sanitized['last_update_date'] = !empty($data['last_update_date']) ? sanitize_text_field($data['last_update_date']) : null;
 		}
 
-		// Rotation interval days
-		if (isset($data['rotation_interval_days'])) {
-			$sanitized['rotation_interval_days'] = !empty($data['rotation_interval_days']) ? intval($data['rotation_interval_days']) : null;
-		}
-
-		// Allow concurrent streams
-		if (isset($data['allow_concurrent_streams'])) {
-			$sanitized['allow_concurrent_streams'] = !empty($data['allow_concurrent_streams']) ? intval($data['allow_concurrent_streams']) : null;
-		}
-
-		// Custom rules
-		if (isset($data['custom_rules'])) {
-			$sanitized['custom_rules'] = !empty($data['custom_rules']) ? sanitize_textarea_field($data['custom_rules']) : null;
+		// Next update date
+		if (isset($data['next_update_date'])) {
+			$sanitized['next_update_date'] = !empty($data['next_update_date']) ? sanitize_text_field($data['next_update_date']) : null;
 		}
 
 		return $sanitized;
@@ -337,11 +317,10 @@ class VD_Share_Config_Validator {
 		return array(
 			'max_profiles'             => 1,
 			'max_devices_per_profile'  => 1,
+			'max_devices'              => 1,
 			'sharing_duration_days'    => 30,
-			'auto_rotate'             => 0,
-			'rotation_interval_days'  => null,
-			'allow_concurrent_streams' => null,
-			'custom_rules'            => null
+			'last_update_date'         => null,
+			'next_update_date'         => null
 		);
 	}
 
@@ -360,16 +339,40 @@ class VD_Share_Config_Validator {
 		// Ensure required fields have minimum values
 		$config->max_profiles = max(1, intval($config->max_profiles));
 		$config->max_devices_per_profile = max(1, intval($config->max_devices_per_profile));
+		$config->max_devices = max(1, intval($config->max_devices));
 		$config->sharing_duration_days = max(1, intval($config->sharing_duration_days));
 
-		// Ensure boolean fields are properly formatted
-		$config->auto_rotate = intval($config->auto_rotate);
-
-		// Ensure nullable fields are properly handled
-		$config->rotation_interval_days = !empty($config->rotation_interval_days) ? intval($config->rotation_interval_days) : null;
-		$config->allow_concurrent_streams = !empty($config->allow_concurrent_streams) ? intval($config->allow_concurrent_streams) : null;
-		$config->custom_rules = !empty($config->custom_rules) ? $config->custom_rules : null;
+		// Ensure date fields are properly handled
+		$config->last_update_date = !empty($config->last_update_date) ? $config->last_update_date : null;
+		$config->next_update_date = !empty($config->next_update_date) ? $config->next_update_date : null;
 
 		return $config;
+	}
+
+	/**
+	 * Validate datetime format
+	 *
+	 * @since 1.0.1
+	 * @param string $datetime DateTime string
+	 * @return bool True if valid, false otherwise
+	 */
+	private static function is_valid_datetime($datetime) {
+		$formats = array(
+			'Y-m-d H:i:s',
+			'Y-m-d H:i',
+			'Y-m-d',
+			'd/m/Y H:i:s',
+			'd/m/Y H:i',
+			'd/m/Y'
+		);
+
+		foreach ($formats as $format) {
+			$date = DateTime::createFromFormat($format, $datetime);
+			if ($date && $date->format($format) === $datetime) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 }

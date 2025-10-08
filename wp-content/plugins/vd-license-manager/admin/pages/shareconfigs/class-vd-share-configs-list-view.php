@@ -106,8 +106,10 @@ class VD_Share_Configs_List_View {
 		$configs_table = 'bz_vd_product_share_configs';
 
 		$total_configs = $wpdb->get_var("SELECT COUNT(*) FROM {$configs_table}");
-		$auto_rotate_enabled = $wpdb->get_var("SELECT COUNT(*) FROM {$configs_table} WHERE auto_rotate = 1");
 		$products_configured = $wpdb->get_var("SELECT COUNT(DISTINCT product_id) FROM {$configs_table}");
+
+		// Get configs needing updates soon (within 7 days)
+		$configs_needing_updates = VD_Share_Config_Repository::get_configs_needing_updates_soon();
 
 		// Get products without configs
 		$products_without_configs = $wpdb->get_var("
@@ -130,10 +132,6 @@ class VD_Share_Configs_List_View {
 					<div class="stat-number"><?php echo intval($total_configs); ?></div>
 					<div class="stat-label"><?php _e('Tổng Cấu Hình', 'vd-license-manager'); ?></div>
 				</div>
-				<div class="config-stat-box auto-rotate">
-					<div class="stat-number"><?php echo intval($auto_rotate_enabled); ?></div>
-					<div class="stat-label"><?php _e('Tự Động Xoay', 'vd-license-manager'); ?></div>
-				</div>
 				<div class="config-stat-box configured">
 					<div class="stat-number"><?php echo intval($products_configured); ?></div>
 					<div class="stat-label"><?php _e('Sản Phẩm Đã Cấu Hình', 'vd-license-manager'); ?></div>
@@ -141,6 +139,10 @@ class VD_Share_Configs_List_View {
 				<div class="config-stat-box unconfigured">
 					<div class="stat-number"><?php echo intval($products_without_configs); ?></div>
 					<div class="stat-label"><?php _e('Sản Phẩm Chưa Cấu Hình', 'vd-license-manager'); ?></div>
+				</div>
+				<div class="config-stat-box updates-soon">
+					<div class="stat-number"><?php echo intval($configs_needing_updates); ?></div>
+					<div class="stat-label"><?php _e('Cần Cập Nhật Sớm', 'vd-license-manager'); ?></div>
 				</div>
 			</div>
 		</div>
@@ -166,20 +168,20 @@ class VD_Share_Configs_List_View {
 					<p><?php _e('Số lượng khách hàng có thể chia sẻ một tài khoản (VD: Netflix cho phép 4-5 profile).', 'vd-license-manager'); ?></p>
 				</div>
 				<div class="help-card">
-					<h4><?php _e('📱 Max Devices', 'vd-license-manager'); ?></h4>
+					<h4><?php _e('📱 Max Devices/Profile', 'vd-license-manager'); ?></h4>
 					<p><?php _e('Số thiết bị mỗi khách hàng có thể sử dụng đồng thời cho một profile.', 'vd-license-manager'); ?></p>
+				</div>
+				<div class="help-card">
+					<h4><?php _e('🖥️ Tổng Thiết Bị', 'vd-license-manager'); ?></h4>
+					<p><?php _e('Tổng số thiết bị có thể kết nối cho tất cả các profile của tài khoản.', 'vd-license-manager'); ?></p>
 				</div>
 				<div class="help-card">
 					<h4><?php _e('⏰ Thời Hạn', 'vd-license-manager'); ?></h4>
 					<p><?php _e('Số ngày khách hàng có thể sử dụng tài khoản trước khi hết hạn.', 'vd-license-manager'); ?></p>
 				</div>
 				<div class="help-card">
-					<h4><?php _e('🔄 Tự Động Xoay', 'vd-license-manager'); ?></h4>
-					<p><?php _e('Tự động chuyển đổi tài khoản sau một khoảng thời gian để tránh lạm dụng.', 'vd-license-manager'); ?></p>
-				</div>
-				<div class="help-card">
-					<h4><?php _e('📺 Luồng Đồng Thời', 'vd-license-manager'); ?></h4>
-					<p><?php _e('Số luồng phát có thể xem cùng lúc (VD: Netflix cho phép 1-4 luồng tùy gói).', 'vd-license-manager'); ?></p>
+					<h4><?php _e('📅 Lịch Cập Nhật', 'vd-license-manager'); ?></h4>
+					<p><?php _e('Theo dõi lần cập nhật cuối và lên kế hoạch cập nhật tiếp theo để duy trì chất lượng dịch vụ.', 'vd-license-manager'); ?></p>
 				</div>
 			</div>
 		</div>
@@ -224,16 +226,16 @@ class VD_Share_Configs_List_View {
 			letter-spacing: 0.5px;
 		}
 
-		.config-stat-box.auto-rotate .stat-number {
-			color: #00a32a;
-		}
-
 		.config-stat-box.configured .stat-number {
 			color: #007cba;
 		}
 
 		.config-stat-box.unconfigured .stat-number {
 			color: #dc3232;
+		}
+
+		.config-stat-box.updates-soon .stat-number {
+			color: #dba617;
 		}
 
 		.help-grid {

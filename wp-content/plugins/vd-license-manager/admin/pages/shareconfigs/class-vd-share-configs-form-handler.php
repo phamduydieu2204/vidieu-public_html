@@ -134,33 +134,28 @@ class VD_Share_Configs_Form_Handler {
 			$data['max_devices_per_profile'] = sanitize_text_field($_POST['max_devices_per_profile']);
 		}
 
+		// Max devices total (required)
+		if (isset($_POST['max_devices'])) {
+			$data['max_devices'] = sanitize_text_field($_POST['max_devices']);
+		}
+
 		// Sharing duration days (required)
 		if (isset($_POST['sharing_duration_days'])) {
 			$data['sharing_duration_days'] = sanitize_text_field($_POST['sharing_duration_days']);
 		}
 
-		// Auto rotate (checkbox, default unchecked = 0)
-		$data['auto_rotate'] = isset($_POST['auto_rotate']) && $_POST['auto_rotate'] == '1' ? 1 : 0;
-
-		// Rotation interval days (optional, only if auto_rotate is enabled)
-		if (isset($_POST['rotation_interval_days']) && !empty($_POST['rotation_interval_days'])) {
-			$data['rotation_interval_days'] = sanitize_text_field($_POST['rotation_interval_days']);
+		// Last update date (optional)
+		if (isset($_POST['last_update_date']) && !empty($_POST['last_update_date'])) {
+			$data['last_update_date'] = self::convert_datetime_local_to_mysql($_POST['last_update_date']);
 		} else {
-			$data['rotation_interval_days'] = null;
+			$data['last_update_date'] = null;
 		}
 
-		// Allow concurrent streams (optional)
-		if (isset($_POST['allow_concurrent_streams']) && !empty($_POST['allow_concurrent_streams'])) {
-			$data['allow_concurrent_streams'] = sanitize_text_field($_POST['allow_concurrent_streams']);
+		// Next update date (optional)
+		if (isset($_POST['next_update_date']) && !empty($_POST['next_update_date'])) {
+			$data['next_update_date'] = self::convert_datetime_local_to_mysql($_POST['next_update_date']);
 		} else {
-			$data['allow_concurrent_streams'] = null;
-		}
-
-		// Custom rules (optional)
-		if (isset($_POST['custom_rules']) && !empty(trim($_POST['custom_rules']))) {
-			$data['custom_rules'] = sanitize_textarea_field($_POST['custom_rules']);
-		} else {
-			$data['custom_rules'] = null;
+			$data['next_update_date'] = null;
 		}
 
 		return $data;
@@ -351,8 +346,8 @@ class VD_Share_Configs_Form_Handler {
 
 		$stats = array(
 			'total_configs' => $wpdb->get_var("SELECT COUNT(*) FROM {$configs_table}"),
-			'auto_rotate_enabled' => $wpdb->get_var("SELECT COUNT(*) FROM {$configs_table} WHERE auto_rotate = 1"),
 			'products_configured' => $wpdb->get_var("SELECT COUNT(DISTINCT product_id) FROM {$configs_table}"),
+			'configs_needing_updates' => VD_Share_Config_Repository::get_configs_needing_updates_soon(),
 			'products_without_configs' => $wpdb->get_var("
 				SELECT COUNT(*) FROM {$wpdb->posts} p
 				LEFT JOIN {$configs_table} c ON p.ID = c.product_id
@@ -368,5 +363,30 @@ class VD_Share_Configs_Form_Handler {
 		}
 
 		return $stats;
+	}
+
+	/**
+	 * Convert HTML datetime-local input to MySQL datetime format
+	 *
+	 * @since 1.0.1
+	 * @param string $datetime_local HTML datetime-local value (YYYY-MM-DDTHH:MM)
+	 * @return string|null MySQL datetime format (YYYY-MM-DD HH:MM:SS) or null if invalid
+	 */
+	private static function convert_datetime_local_to_mysql($datetime_local) {
+		if (empty($datetime_local)) {
+			return null;
+		}
+
+		try {
+			// HTML datetime-local format: 2023-12-25T14:30
+			$date = DateTime::createFromFormat('Y-m-d\TH:i', $datetime_local);
+			if ($date) {
+				return $date->format('Y-m-d H:i:s');
+			}
+		} catch (Exception $e) {
+			error_log('VD License Manager: DateTime conversion error - ' . $e->getMessage());
+		}
+
+		return null;
 	}
 }

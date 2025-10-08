@@ -83,17 +83,16 @@ class VD_Database {
             product_id bigint(20) unsigned NOT NULL,
             max_profiles int(11) NOT NULL DEFAULT 1,
             max_devices_per_profile int(11) NOT NULL DEFAULT 1,
+            max_devices int(11) NOT NULL DEFAULT 1,
             sharing_duration_days int(11) NOT NULL DEFAULT 30,
-            auto_rotate tinyint(1) NOT NULL DEFAULT 0,
-            rotation_interval_days int(11) DEFAULT NULL,
-            allow_concurrent_streams int(11) DEFAULT NULL,
-            custom_rules text DEFAULT NULL,
+            last_update_date datetime DEFAULT NULL,
+            next_update_date datetime DEFAULT NULL,
             created_at datetime NOT NULL,
             updated_at datetime NOT NULL,
             PRIMARY KEY (id),
             UNIQUE KEY product_id (product_id),
             KEY idx_product_id (product_id),
-            KEY idx_auto_rotate (auto_rotate)
+            KEY idx_next_update_date (next_update_date)
         ) $charset_collate;";
 
         dbDelta($sql_configs);
@@ -125,9 +124,20 @@ class VD_Database {
         $current_version = get_option('vd_license_manager_db_version', '0');
 
         if (version_compare($current_version, VD_VERSION, '<')) {
-            self::create_tables();
-            update_option('vd_license_manager_db_version', VD_VERSION);
+            // Check if we need to run migration for existing tables
+            global $wpdb;
+            $table_configs = $wpdb->prefix . 'vd_product_share_configs';
+            $table_exists = $wpdb->get_var("SHOW TABLES LIKE '$table_configs'") == $table_configs;
 
+            if ($table_exists) {
+                // Table exists, run migration
+                self::migrate_share_configs_schema();
+            } else {
+                // Table doesn't exist, create new
+                self::create_tables();
+            }
+
+            update_option('vd_license_manager_db_version', VD_VERSION);
             error_log('VD License Manager: Database updated from version ' . $current_version . ' to ' . VD_VERSION);
         }
     }
@@ -169,17 +179,16 @@ class VD_Database {
             product_id bigint(20) unsigned NOT NULL,
             max_profiles int(11) NOT NULL DEFAULT 1,
             max_devices_per_profile int(11) NOT NULL DEFAULT 1,
+            max_devices int(11) NOT NULL DEFAULT 1,
             sharing_duration_days int(11) NOT NULL DEFAULT 30,
-            auto_rotate tinyint(1) NOT NULL DEFAULT 0,
-            rotation_interval_days int(11) DEFAULT NULL,
-            allow_concurrent_streams int(11) DEFAULT NULL,
-            custom_rules text DEFAULT NULL,
+            last_update_date datetime DEFAULT NULL,
+            next_update_date datetime DEFAULT NULL,
             created_at datetime NOT NULL,
             updated_at datetime NOT NULL,
             PRIMARY KEY (id),
             UNIQUE KEY product_id (product_id),
             KEY idx_product_id (product_id),
-            KEY idx_auto_rotate (auto_rotate)
+            KEY idx_next_update_date (next_update_date)
         ) $charset_collate;";
 
         dbDelta($sql_configs);
@@ -195,6 +204,78 @@ class VD_Database {
             error_log('VD License Manager: Failed to create share configs table');
             return false;
         }
+    }
+
+    /**
+     * Migrate existing share configs table to new schema
+     *
+     * @since 2.0.0
+     * @return bool True on success, false on failure
+     */
+    public static function migrate_share_configs_schema() {
+        global $wpdb;
+
+        $table_configs = $wpdb->prefix . 'vd_product_share_configs';
+
+        // Check if table exists
+        if ($wpdb->get_var("SHOW TABLES LIKE '$table_configs'") != $table_configs) {
+            error_log('VD License Manager: Share configs table does not exist, cannot migrate');
+            return false;
+        }
+
+        error_log('VD License Manager: Starting share configs schema migration');
+
+        // Get current columns
+        $columns = $wpdb->get_results("DESCRIBE $table_configs");
+        $column_names = array_column($columns, 'Field');
+
+        // Add new columns if they don't exist
+        if (!in_array('max_devices', $column_names)) {
+            $wpdb->query("ALTER TABLE $table_configs ADD COLUMN max_devices int(11) NOT NULL DEFAULT 1 AFTER max_devices_per_profile");
+            error_log('VD License Manager: Added max_devices column');
+        }
+
+        if (!in_array('last_update_date', $column_names)) {
+            $wpdb->query("ALTER TABLE $table_configs ADD COLUMN last_update_date datetime DEFAULT NULL AFTER sharing_duration_days");
+            error_log('VD License Manager: Added last_update_date column');
+        }
+
+        if (!in_array('next_update_date', $column_names)) {
+            $wpdb->query("ALTER TABLE $table_configs ADD COLUMN next_update_date datetime DEFAULT NULL AFTER last_update_date");
+            error_log('VD License Manager: Added next_update_date column');
+        }
+
+        // Remove old columns if they exist
+        if (in_array('auto_rotate', $column_names)) {
+            $wpdb->query("ALTER TABLE $table_configs DROP COLUMN auto_rotate");
+            error_log('VD License Manager: Removed auto_rotate column');
+        }
+
+        if (in_array('rotation_interval_days', $column_names)) {
+            $wpdb->query("ALTER TABLE $table_configs DROP COLUMN rotation_interval_days");
+            error_log('VD License Manager: Removed rotation_interval_days column');
+        }
+
+        if (in_array('allow_concurrent_streams', $column_names)) {
+            $wpdb->query("ALTER TABLE $table_configs DROP COLUMN allow_concurrent_streams");
+            error_log('VD License Manager: Removed allow_concurrent_streams column');
+        }
+
+        if (in_array('custom_rules', $column_names)) {
+            $wpdb->query("ALTER TABLE $table_configs DROP COLUMN custom_rules");
+            error_log('VD License Manager: Removed custom_rules column');
+        }
+
+        // Update indexes
+        $wpdb->query("ALTER TABLE $table_configs DROP INDEX IF EXISTS idx_auto_rotate");
+        $wpdb->query("ALTER TABLE $table_configs ADD INDEX idx_next_update_date (next_update_date)");
+
+        error_log('VD License Manager: Share configs schema migration completed');
+
+        // Update database version
+        update_option('vd_license_manager_db_version', VD_VERSION);
+
+        return true;
     }
 
     /**

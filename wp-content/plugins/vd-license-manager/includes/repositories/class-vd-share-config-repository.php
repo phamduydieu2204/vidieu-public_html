@@ -60,7 +60,7 @@ class VD_Share_Config_Repository {
 		}
 
 		// Validate orderby and order
-		$allowed_orderby = array('id', 'product_id', 'max_profiles', 'sharing_duration_days', 'created_at');
+		$allowed_orderby = array('id', 'product_id', 'max_profiles', 'max_devices', 'sharing_duration_days', 'next_update_date', 'created_at');
 		$orderby = in_array($args['orderby'], $allowed_orderby) ? $args['orderby'] : 'id';
 		$order = strtoupper($args['order']) === 'ASC' ? 'ASC' : 'DESC';
 
@@ -207,11 +207,10 @@ class VD_Share_Config_Repository {
 			'product_id'               => intval($data['product_id']),
 			'max_profiles'            => intval($data['max_profiles']),
 			'max_devices_per_profile' => intval($data['max_devices_per_profile']),
+			'max_devices'             => intval($data['max_devices']),
 			'sharing_duration_days'   => intval($data['sharing_duration_days']),
-			'auto_rotate'            => !empty($data['auto_rotate']) ? 1 : 0,
-			'rotation_interval_days' => !empty($data['rotation_interval_days']) ? intval($data['rotation_interval_days']) : null,
-			'allow_concurrent_streams' => !empty($data['allow_concurrent_streams']) ? intval($data['allow_concurrent_streams']) : null,
-			'custom_rules'           => !empty($data['custom_rules']) ? sanitize_textarea_field($data['custom_rules']) : null,
+			'last_update_date'        => !empty($data['last_update_date']) ? sanitize_text_field($data['last_update_date']) : null,
+			'next_update_date'        => !empty($data['next_update_date']) ? sanitize_text_field($data['next_update_date']) : null,
 			'created_at'             => current_time('mysql'),
 			'updated_at'             => current_time('mysql')
 		);
@@ -220,11 +219,10 @@ class VD_Share_Config_Repository {
 			'%d',    // product_id
 			'%d',    // max_profiles
 			'%d',    // max_devices_per_profile
+			'%d',    // max_devices
 			'%d',    // sharing_duration_days
-			'%d',    // auto_rotate
-			'%d',    // rotation_interval_days
-			'%d',    // allow_concurrent_streams
-			'%s',    // custom_rules
+			'%s',    // last_update_date
+			'%s',    // next_update_date
 			'%s',    // created_at
 			'%s'     // updated_at
 		);
@@ -274,22 +272,20 @@ class VD_Share_Config_Repository {
 		$update_data = array(
 			'max_profiles'            => intval($data['max_profiles']),
 			'max_devices_per_profile' => intval($data['max_devices_per_profile']),
+			'max_devices'             => intval($data['max_devices']),
 			'sharing_duration_days'   => intval($data['sharing_duration_days']),
-			'auto_rotate'            => !empty($data['auto_rotate']) ? 1 : 0,
-			'rotation_interval_days' => !empty($data['rotation_interval_days']) ? intval($data['rotation_interval_days']) : null,
-			'allow_concurrent_streams' => !empty($data['allow_concurrent_streams']) ? intval($data['allow_concurrent_streams']) : null,
-			'custom_rules'           => !empty($data['custom_rules']) ? sanitize_textarea_field($data['custom_rules']) : null,
+			'last_update_date'        => !empty($data['last_update_date']) ? sanitize_text_field($data['last_update_date']) : null,
+			'next_update_date'        => !empty($data['next_update_date']) ? sanitize_text_field($data['next_update_date']) : null,
 			'updated_at'             => current_time('mysql')
 		);
 
 		$format = array(
 			'%d',    // max_profiles
 			'%d',    // max_devices_per_profile
+			'%d',    // max_devices
 			'%d',    // sharing_duration_days
-			'%d',    // auto_rotate
-			'%d',    // rotation_interval_days
-			'%d',    // allow_concurrent_streams
-			'%s',    // custom_rules
+			'%s',    // last_update_date
+			'%s',    // next_update_date
 			'%s'     // updated_at
 		);
 
@@ -426,5 +422,31 @@ class VD_Share_Config_Repository {
 		}
 
 		return $results ? $results : array();
+	}
+
+	/**
+	 * Get configs that need updates soon (within 7 days)
+	 *
+	 * @since 1.0.1
+	 * @return int Count of configs needing updates
+	 */
+	public static function get_configs_needing_updates_soon() {
+		global $wpdb;
+
+		$table = 'bz_vd_product_share_configs';
+		$date_threshold = date('Y-m-d H:i:s', strtotime('+7 days'));
+
+		$sql = "SELECT COUNT(*) FROM {$table}
+		        WHERE next_update_date IS NOT NULL
+		        AND next_update_date <= %s";
+
+		$count = $wpdb->get_var($wpdb->prepare($sql, $date_threshold));
+
+		if ($wpdb->last_error) {
+			error_log('VD License Manager: Database error in get_configs_needing_updates_soon - ' . $wpdb->last_error);
+			return 0;
+		}
+
+		return intval($count);
 	}
 }

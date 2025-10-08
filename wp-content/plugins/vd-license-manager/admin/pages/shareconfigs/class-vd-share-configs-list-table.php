@@ -54,9 +54,9 @@ class VD_Share_Configs_List_Table extends WP_List_Table {
 			'id'           => __('ID', 'vd-license-manager'),
 			'product_name' => __('Sản phẩm', 'vd-license-manager'),
 			'max_profiles' => __('Max Profiles', 'vd-license-manager'),
-			'max_devices'  => __('Max Devices', 'vd-license-manager'),
+			'max_devices'  => __('Tổng Thiết Bị', 'vd-license-manager'),
 			'duration'     => __('Thời hạn', 'vd-license-manager'),
-			'auto_rotate'  => __('Tự động xoay', 'vd-license-manager'),
+			'next_update'  => __('Cập nhật tiếp theo', 'vd-license-manager'),
 			'created_at'   => __('Ngày tạo', 'vd-license-manager')
 		);
 	}
@@ -69,9 +69,11 @@ class VD_Share_Configs_List_Table extends WP_List_Table {
 	 */
 	public function get_sortable_columns() {
 		return array(
-			'id'         => array('id', true),  // true = already sorted DESC
-			'product_id' => array('product_id', false),
-			'created_at' => array('created_at', false)
+			'id'          => array('id', true),  // true = already sorted DESC
+			'product_id'  => array('product_id', false),
+			'max_devices' => array('max_devices', false),
+			'next_update' => array('next_update_date', false),
+			'created_at'  => array('created_at', false)
 		);
 	}
 
@@ -179,9 +181,11 @@ class VD_Share_Configs_List_Table extends WP_List_Table {
 	 * @return string Column HTML
 	 */
 	public function column_max_devices($item) {
+		$max_devices = isset($item->max_devices) ? $item->max_devices : ($item->max_profiles * $item->max_devices_per_profile);
 		return sprintf(
-			'<span class="badge" style="background: #00a32a; color: white; padding: 2px 8px; border-radius: 3px; font-size: 12px;">%d</span>',
-			$item->max_devices_per_profile
+			'<span class="badge" style="background: #00a32a; color: white; padding: 2px 8px; border-radius: 3px; font-size: 12px;" title="%s">%d</span>',
+			sprintf(__('%d profiles × %d thiết bị/profile', 'vd-license-manager'), $item->max_profiles, $item->max_devices_per_profile),
+			$max_devices
 		);
 	}
 
@@ -201,25 +205,46 @@ class VD_Share_Configs_List_Table extends WP_List_Table {
 	}
 
 	/**
-	 * Render auto rotate column
+	 * Render next update column
 	 *
 	 * @since 1.0.1
 	 * @param object $item Config item
 	 * @return string Column HTML
 	 */
-	public function column_auto_rotate($item) {
-		if ($item->auto_rotate) {
-			$interval = $item->rotation_interval_days ? $item->rotation_interval_days . ' ' . __('ngày', 'vd-license-manager') : __('không xác định', 'vd-license-manager');
-			return sprintf(
-				'<span style="color: #00a32a;" title="%s">✓ %s</span>',
-				sprintf(__('Chu kỳ: %s', 'vd-license-manager'), $interval),
-				__('Có', 'vd-license-manager')
-			);
-		} else {
-			return sprintf(
-				'<span style="color: #dc3232;">✗ %s</span>',
-				__('Không', 'vd-license-manager')
-			);
+	public function column_next_update($item) {
+		if (empty($item->next_update_date)) {
+			return '<span style="color: #646970;">—</span>';
+		}
+
+		try {
+			$next_date = new DateTime($item->next_update_date);
+			$now = new DateTime();
+			$diff = $now->diff($next_date);
+
+			if ($next_date < $now) {
+				// Past due
+				return sprintf(
+					'<span style="color: #dc3232;" title="%s">⚠ %s</span>',
+					$next_date->format('Y-m-d H:i:s'),
+					__('Quá hạn', 'vd-license-manager')
+				);
+			} elseif ($diff->days <= 7) {
+				// Due soon
+				return sprintf(
+					'<span style="color: #dba617;" title="%s">⏰ %s</span>',
+					$next_date->format('Y-m-d H:i:s'),
+					sprintf(__('%d ngày nữa', 'vd-license-manager'), $diff->days)
+				);
+			} else {
+				// Future
+				return sprintf(
+					'<span style="color: #00a32a;" title="%s">📅 %s</span>',
+					$next_date->format('Y-m-d H:i:s'),
+					$next_date->format('d/m/Y')
+				);
+			}
+		} catch (Exception $e) {
+			return '<span style="color: #dc3232;">Lỗi định dạng</span>';
 		}
 	}
 
@@ -291,7 +316,7 @@ class VD_Share_Configs_List_Table extends WP_List_Table {
 		$order = isset($_GET['order']) ? sanitize_text_field($_GET['order']) : 'DESC';
 
 		// Validate orderby
-		$allowed_orderby = array('id', 'product_id', 'created_at');
+		$allowed_orderby = array('id', 'product_id', 'max_devices', 'next_update_date', 'created_at');
 		if (!in_array($orderby, $allowed_orderby)) {
 			$orderby = 'id';
 		}
