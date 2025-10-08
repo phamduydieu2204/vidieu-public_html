@@ -86,14 +86,14 @@ class VD_License_Admin {
             array('VD_Admin_Product_Pools', 'render')
         );
 
-        // Product Configs submenu
+        // Share Configs submenu
         add_submenu_page(
             'vd-license-manager',
-            __('Product Configs', 'vd-license-manager'),
-            __('Product Configs', 'vd-license-manager'),
+            __('Cấu Hình Chia Sẻ', 'vd-license-manager'),
+            __('Cấu Hình Chia Sẻ', 'vd-license-manager'),
             'manage_options',
-            'vd-product-configs',
-            array('VD_Admin_Product_Configs', 'render')
+            'vd-share-configs',
+            array('VD_Admin_Share_Configs', 'render')
         );
 
         // Devices submenu

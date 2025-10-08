@@ -398,4 +398,33 @@ class VD_Share_Config_Repository {
 
 		return $results ? array_map('intval', $results) : array();
 	}
+
+	/**
+	 * Get WooCommerce products without share configs
+	 *
+	 * @since 1.0.1
+	 * @return array Array of objects with ID and post_title
+	 */
+	public static function get_products_without_configs() {
+		global $wpdb;
+
+		$config_table = 'bz_vd_product_share_configs';
+
+		$results = $wpdb->get_results("
+			SELECT p.ID, p.post_title
+			FROM {$wpdb->posts} p
+			LEFT JOIN $config_table c ON p.ID = c.product_id
+			WHERE p.post_type = 'product'
+			  AND p.post_status = 'publish'
+			  AND c.id IS NULL
+			ORDER BY p.post_title ASC
+		");
+
+		if ($wpdb->last_error) {
+			error_log('VD License Manager: Database error in get_products_without_configs - ' . $wpdb->last_error);
+			return array();
+		}
+
+		return $results ? $results : array();
+	}
 }

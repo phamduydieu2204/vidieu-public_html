@@ -91,6 +91,7 @@ class VD_Loader {
             'VD_Admin_Accounts_Edit'    => $base_path . 'admin/pages/class-vd-admin-accounts-edit.php',
             'VD_Admin_Pools'            => $base_path . 'admin/pages/class-vd-admin-pools.php',
             'VD_Admin_Product_Pools'    => $base_path . 'admin/pages/class-vd-admin-product-pools.php',
+            'VD_Admin_Share_Configs'    => $base_path . 'admin/pages/shareconfigs/class-vd-admin-share-configs.php',
             'VD_Admin_Devices'          => $base_path . 'admin/pages/class-vd-admin-devices.php',
 
             // Admin account pages
@@ -99,6 +100,12 @@ class VD_Loader {
             'VD_Accounts_List_View'      => $base_path . 'admin/pages/accounts/class-vd-accounts-list-view.php',
             'VD_Accounts_Form_View'      => $base_path . 'admin/pages/accounts/class-vd-accounts-form-view.php',
             'VD_Accounts_Form_Handler'   => $base_path . 'admin/pages/accounts/class-vd-accounts-form-handler.php',
+
+            // Admin share config pages
+            'VD_Share_Configs_List_Table'    => $base_path . 'admin/pages/shareconfigs/class-vd-share-configs-list-table.php',
+            'VD_Share_Configs_List_View'     => $base_path . 'admin/pages/shareconfigs/class-vd-share-configs-list-view.php',
+            'VD_Share_Configs_Form_View'     => $base_path . 'admin/pages/shareconfigs/class-vd-share-configs-form-view.php',
+            'VD_Share_Configs_Form_Handler'  => $base_path . 'admin/pages/shareconfigs/class-vd-share-configs-form-handler.php',
 
             // Public classes
             'VD_Portal_Main'            => $base_path . 'public/pages/class-vd-portal-main.php',
