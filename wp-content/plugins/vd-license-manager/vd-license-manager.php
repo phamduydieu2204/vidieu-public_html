@@ -229,3 +229,29 @@ register_deactivation_hook(__FILE__, array('VD_License_Manager', 'deactivate'));
 
 // Initialize the plugin
 vd_license_manager();
+
+// Temporary: Force database check on admin_init
+add_action('admin_init', function() {
+    require_once plugin_dir_path(__FILE__) . 'includes/class-vd-database.php';
+    VD_Database::maybe_update();
+}, 1);
+
+// Temporary: Add debug info to admin
+add_action('admin_notices', function() {
+    if (current_user_can('manage_options') && isset($_GET['vd_debug'])) {
+        require_once plugin_dir_path(__FILE__) . 'includes/class-vd-database.php';
+        $status = VD_Database::get_database_status();
+
+        echo '<div class="notice notice-info"><h3>VD Database Status</h3>';
+        echo '<p><strong>Plugin Version:</strong> ' . $status['plugin_version'] . '</p>';
+        echo '<p><strong>DB Version:</strong> ' . $status['db_version'] . '</p>';
+
+        foreach ($status as $key => $data) {
+            if (is_array($data) && isset($data['table'])) {
+                $icon = $data['exists'] ? '✅' : '❌';
+                echo '<p>' . $icon . ' <strong>' . ucfirst($key) . ':</strong> ' . $data['table'] . ' (' . $data['count'] . ' records)</p>';
+            }
+        }
+        echo '</div>';
+    }
+});

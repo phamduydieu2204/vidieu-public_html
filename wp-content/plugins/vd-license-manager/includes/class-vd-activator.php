@@ -142,15 +142,19 @@ class VD_Activator {
             error_log('VD License Manager: Preserving existing data, creating tables if not exist');
         }
 
-        // Load database classes
+        // Load database classes - use both old and new methods for compatibility
         require_once VD_PLUGIN_PATH . 'includes/database/class-vd-db-core.php';
         require_once VD_PLUGIN_PATH . 'includes/database/class-vd-db-devices.php';
         require_once VD_PLUGIN_PATH . 'includes/database/class-vd-db-logs.php';
+        require_once VD_PLUGIN_PATH . 'includes/class-vd-database.php';
 
-        // Create tables fresh
+        // Create tables fresh using old method
         VD_DB_Core::create_tables();
         VD_DB_Devices::create_tables();
         VD_DB_Logs::create_tables();
+
+        // Force create share configs table using new method
+        VD_Database::force_create_share_configs_table();
 
         // Verify table count
         $tables = $wpdb->get_results("SHOW TABLES LIKE 'bz_vd_%'");

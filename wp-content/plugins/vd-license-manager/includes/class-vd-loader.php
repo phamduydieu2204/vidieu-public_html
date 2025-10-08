@@ -50,6 +50,7 @@ class VD_Loader {
             // Core classes
             'VD_Activator'              => $base_path . 'includes/class-vd-activator.php',
             'VD_Deactivator'            => $base_path . 'includes/class-vd-deactivator.php',
+            'VD_Database'               => $base_path . 'includes/class-vd-database.php',
 
             // Database classes
             'VD_DB_Core'                => $base_path . 'includes/database/class-vd-db-core.php',
