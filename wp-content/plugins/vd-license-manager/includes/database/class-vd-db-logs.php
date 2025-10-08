@@ -59,7 +59,8 @@ class VD_DB_Logs {
     /**
      * Create all logs and configuration tables
      *
-     * Creates the 3 final tables:
+     * Creates the 4 final tables:
+     * - bz_vd_product_share_configs: Product sharing configuration rules
      * - bz_vd_account_fetch_log: Account info fetch audit trail
      * - bz_vd_license_access_log: License access audit trail
      * - bz_vd_license_rate_limits: API rate limiting configuration
@@ -77,8 +78,13 @@ class VD_DB_Logs {
         $sql1 = "CREATE TABLE bz_vd_product_share_configs (
             id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
             product_id bigint(20) unsigned NOT NULL,
-            share_fields longtext NOT NULL,
-            instructions text,
+            max_profiles int(11) NOT NULL DEFAULT 1,
+            max_devices_per_profile int(11) NOT NULL DEFAULT 1,
+            sharing_duration_days int(11) NOT NULL DEFAULT 30,
+            auto_rotate tinyint(1) NOT NULL DEFAULT 0,
+            rotation_interval_days int(11) NULL,
+            allow_concurrent_streams int(11) NULL,
+            custom_rules text NULL,
             created_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
             updated_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
             PRIMARY KEY  (id),

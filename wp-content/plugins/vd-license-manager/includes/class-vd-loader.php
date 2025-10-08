@@ -59,10 +59,12 @@ class VD_Loader {
             // Repository classes
             'VD_Accounts_Repository'    => $base_path . 'includes/repositories/class-vd-accounts-repository.php',
             'VD_Pools_Repository'       => $base_path . 'includes/repositories/class-vd-pools-repository.php',
+            'VD_Share_Config_Repository' => $base_path . 'includes/repositories/class-vd-share-config-repository.php',
 
             // Validator classes
             'VD_Account_Validator'      => $base_path . 'includes/validators/class-vd-account-validator.php',
             'VD_Pool_Validator'         => $base_path . 'includes/validators/class-vd-pool-validator.php',
+            'VD_Share_Config_Validator' => $base_path . 'includes/validators/class-vd-share-config-validator.php',
 
             // Helper classes
             'VD_Security'               => $base_path . 'includes/helpers/class-vd-security.php',
