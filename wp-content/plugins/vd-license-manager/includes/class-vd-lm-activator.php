@@ -80,8 +80,8 @@ class VD_LM_Activator {
             );
         }
 
-        // Create database tables (placeholder - will be implemented in Day 2-3)
-        // self::create_database_tables();
+        // Create database tables
+        self::create_database_tables();
 
         // Set default options
         self::set_default_options();
@@ -180,28 +180,23 @@ class VD_LM_Activator {
     }
 
     /**
-     * Create database tables (placeholder)
+     * Create database tables
      *
-     * This will be implemented in Day 2-3 of development.
-     * For now, this is just a placeholder method.
+     * Creates all 11 database tables required for the plugin functionality.
+     * Uses the VD_LM_Database class for centralized table management.
      *
      * @since 1.0.0
      */
     private static function create_database_tables() {
-        // TODO: Implement database table creation
-        // This will be done in Day 2-3 according to the roadmap
+        // Load database migration class
+        require_once VD_PLUGIN_DIR . 'includes/class-vd-lm-database.php';
 
-        // Tables to create:
-        // 1. bz_vd_provider_accounts
-        // 2. bz_vd_product_pools
-        // 3. bz_vd_pool_accounts
-        // 4. bz_vd_cookie_assignments
-        // 5. bz_vd_product_share_configs
-        // 6. bz_vd_device_fingerprints
-        // 7. bz_vd_license_devices
-        // 8. bz_vd_license_device_limits
-        // 9. bz_vd_account_fetch_log
-        // 10. bz_vd_license_access_log
-        // 11. bz_vd_license_rate_limits
+        // Create all tables
+        VD_LM_Database::create_tables();
+
+        VD_LM_Logger_Service::info( 'Database tables created during plugin activation', array(
+            'plugin_version' => VD_PLUGIN_VERSION,
+            'db_version' => VD_LM_Database::DB_VERSION,
+        ) );
     }
 }

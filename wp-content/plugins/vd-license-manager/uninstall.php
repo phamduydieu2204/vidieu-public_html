@@ -78,30 +78,17 @@ class VD_License_Manager_Uninstaller {
     /**
      * Drop all database tables
      *
+     * Uses the VD_LM_Database class for centralized table management.
+     *
      * @since  1.0.0
      * @access private
      */
     private static function drop_database_tables() {
-        global $wpdb;
+        // Load database migration class
+        require_once plugin_dir_path( __FILE__ ) . 'includes/class-vd-lm-database.php';
 
-        $tables = array(
-            'vd_provider_accounts',
-            'vd_product_pools',
-            'vd_pool_accounts',
-            'vd_cookie_assignments',
-            'vd_product_share_configs',
-            'vd_device_fingerprints',
-            'vd_license_devices',
-            'vd_license_device_limits',
-            'vd_account_fetch_log',
-            'vd_license_access_log',
-            'vd_license_rate_limits',
-        );
-
-        foreach ( $tables as $table ) {
-            $table_name = $wpdb->prefix . $table;
-            $wpdb->query( "DROP TABLE IF EXISTS `{$table_name}`" );
-        }
+        // Drop all tables using the centralized method
+        VD_LM_Database::drop_tables();
     }
 
     /**
@@ -124,7 +111,7 @@ class VD_License_Manager_Uninstaller {
             'vd_license_manager_version',
             'vd_license_manager_activated_at',
             'vd_license_manager_deactivated_at',
-            'vd_license_manager_db_version',
+            'vd_lm_db_version', // Database version from VD_LM_Database::VERSION_OPTION
         );
 
         foreach ( $options as $option ) {
