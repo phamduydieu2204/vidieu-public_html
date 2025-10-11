@@ -25,7 +25,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @subpackage VD_License_Manager/includes/services
  * @author     Vidieu Team <admin@vidieu.vn>
  */
-class VD_Notification_Service {
+class VD_LM_Notification_Service {
 
     /**
      * Email templates directory

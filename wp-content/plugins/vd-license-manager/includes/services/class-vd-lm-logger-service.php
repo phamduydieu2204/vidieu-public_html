@@ -26,7 +26,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @subpackage VD_License_Manager/includes/services
  * @author     Vidieu Team <admin@vidieu.vn>
  */
-class VD_Logger_Service {
+class VD_LM_Logger_Service {
 
     /**
      * Log levels

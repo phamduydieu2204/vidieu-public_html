@@ -27,7 +27,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @subpackage VD_License_Manager/includes
  * @author     Vidieu Team <admin@vidieu.vn>
  */
-class VD_Loader {
+class VD_LM_Loader {
 
     /**
      * The array of actions registered with WordPress

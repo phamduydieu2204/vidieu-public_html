@@ -26,7 +26,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @subpackage VD_License_Manager/admin
  * @author     Vidieu Team <admin@vidieu.vn>
  */
-class VD_Admin {
+class VD_LM_Admin {
 
     /**
      * The ID of this plugin
@@ -373,7 +373,7 @@ class VD_Admin {
      */
     private function render_admin_notices() {
         // Check if encryption is configured
-        if ( ! VD_Encryption_Service::is_configured() ) {
+        if ( ! VD_LM_Encryption_Service::is_configured() ) {
             echo '<div class="notice notice-error"><p>';
             echo '<strong>' . esc_html__( 'VD License Manager:', 'vd-license-manager' ) . '</strong> ';
             echo esc_html__( 'Encryption is not properly configured. Please check your VD_ENCRYPTION_KEY constant in wp-config.php.', 'vd-license-manager' );
@@ -389,7 +389,7 @@ class VD_Admin {
         }
 
         // Test encryption functionality
-        if ( VD_Encryption_Service::is_configured() && ! VD_Encryption_Service::test() ) {
+        if ( VD_LM_Encryption_Service::is_configured() && ! VD_LM_Encryption_Service::test() ) {
             echo '<div class="notice notice-error"><p>';
             echo '<strong>' . esc_html__( 'VD License Manager:', 'vd-license-manager' ) . '</strong> ';
             echo esc_html__( 'Encryption test failed. Please verify your encryption configuration.', 'vd-license-manager' );

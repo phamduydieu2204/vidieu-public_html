@@ -26,7 +26,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @subpackage VD_License_Manager/includes
  * @author     Vidieu Team <admin@vidieu.vn>
  */
-class VD_i18n {
+class VD_LM_i18n {
 
     /**
      * Load the plugin text domain for translation

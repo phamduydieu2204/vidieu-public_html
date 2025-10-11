@@ -24,7 +24,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @subpackage VD_License_Manager/includes/utils
  * @author     Vidieu Team <admin@vidieu.vn>
  */
-class VD_Sanitizer {
+class VD_LM_Sanitizer {
 
     /**
      * Sanitize license key

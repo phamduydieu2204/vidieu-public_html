@@ -25,7 +25,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @subpackage VD_License_Manager/public
  * @author     Vidieu Team <admin@vidieu.vn>
  */
-class VD_Public {
+class VD_LM_Public {
 
     /**
      * The ID of this plugin

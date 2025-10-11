@@ -25,7 +25,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @subpackage VD_License_Manager/includes/repositories
  * @author     Vidieu Team <admin@vidieu.vn>
  */
-abstract class VD_Base_Repository {
+abstract class VD_LM_Base_Repository {
 
     /**
      * WordPress database instance
@@ -225,7 +225,7 @@ abstract class VD_Base_Repository {
         );
 
         if ( false === $result ) {
-            VD_Logger_Service::error( 'Database insert failed', array(
+            VD_LM_Logger_Service::error( 'Database insert failed', array(
                 'table' => $this->table_name,
                 'data' => $data,
                 'error' => $this->wpdb->last_error,
@@ -262,7 +262,7 @@ abstract class VD_Base_Repository {
         );
 
         if ( false === $result ) {
-            VD_Logger_Service::error( 'Database update failed', array(
+            VD_LM_Logger_Service::error( 'Database update failed', array(
                 'table' => $this->table_name,
                 'id' => $id,
                 'data' => $data,
@@ -295,7 +295,7 @@ abstract class VD_Base_Repository {
         );
 
         if ( false === $result ) {
-            VD_Logger_Service::error( 'Database delete failed', array(
+            VD_LM_Logger_Service::error( 'Database delete failed', array(
                 'table' => $this->table_name,
                 'id' => $id,
                 'error' => $this->wpdb->last_error,

@@ -24,7 +24,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @subpackage VD_License_Manager/includes
  * @author     Vidieu Team <admin@vidieu.vn>
  */
-class VD_Activator {
+class VD_LM_Activator {
 
     /**
      * Plugin activation handler

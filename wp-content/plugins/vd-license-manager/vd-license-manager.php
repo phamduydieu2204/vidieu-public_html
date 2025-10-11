@@ -80,9 +80,9 @@ if ( file_exists( VD_PLUGIN_DIR . 'vendor/autoload.php' ) ) {
  *
  * @since 1.0.0
  */
-require_once VD_PLUGIN_DIR . 'includes/class-vd-license-manager.php';
-require_once VD_PLUGIN_DIR . 'includes/class-vd-activator.php';
-require_once VD_PLUGIN_DIR . 'includes/class-vd-deactivator.php';
+require_once VD_PLUGIN_DIR . 'includes/class-vd-lm-license-manager.php';
+require_once VD_PLUGIN_DIR . 'includes/class-vd-lm-activator.php';
+require_once VD_PLUGIN_DIR . 'includes/class-vd-lm-deactivator.php';
 
 /**
  * Plugin activation hook
@@ -92,7 +92,7 @@ require_once VD_PLUGIN_DIR . 'includes/class-vd-deactivator.php';
  * @since 1.0.0
  */
 function activate_vd_license_manager() {
-    VD_Activator::activate();
+    VD_LM_Activator::activate();
 }
 
 /**
@@ -103,7 +103,7 @@ function activate_vd_license_manager() {
  * @since 1.0.0
  */
 function deactivate_vd_license_manager() {
-    VD_Deactivator::deactivate();
+    VD_LM_Deactivator::deactivate();
 }
 
 register_activation_hook( __FILE__, 'activate_vd_license_manager' );
@@ -172,7 +172,7 @@ function run_vd_license_manager() {
     }
 
     // Initialize the plugin
-    $plugin = new VD_License_Manager();
+    $plugin = new VD_LM_License_Manager();
     $plugin->run();
 }
 
