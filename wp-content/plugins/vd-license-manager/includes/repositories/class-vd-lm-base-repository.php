@@ -352,6 +352,17 @@ abstract class VD_LM_Base_Repository {
     }
 
     /**
+     * Count records with optional criteria
+     *
+     * @since 1.0.0
+     * @param array $criteria Optional search criteria
+     * @return int Number of matching records
+     */
+    public function count( $criteria = array() ) {
+        return $this->count_by( $criteria );
+    }
+
+    /**
      * Execute custom query
      *
      * @since 1.0.0
