@@ -160,9 +160,6 @@ class VD_LM_Database {
     /**
      * Create provider accounts table
      *
-     * Stores all provider account credentials with encryption support.
-     * Supports multiple credential types (username/password, cookies, API keys).
-     *
      * @since 1.0.0
      * @access private
      * @param string $charset_collate Database charset collation
@@ -179,31 +176,20 @@ class VD_LM_Database {
             capacity int(11) NOT NULL DEFAULT 1 COMMENT 'Maximum licenses this account can serve',
             status enum('active','inactive','expired') NOT NULL DEFAULT 'active' COMMENT 'Account status',
             expires_at datetime NOT NULL COMMENT 'Provider account expiration date',
-
-            -- Authentication credentials (encrypted)
             account_login varchar(255) NULL COMMENT 'Login username or email',
             login_password text NULL COMMENT 'Login password (encrypted with VD_LM_Encryption_Service)',
             cookie longtext NULL COMMENT 'Session cookie JSON (encrypted)',
-
-            -- Security fields (encrypted)
             security_question varchar(255) NULL COMMENT 'Security question text',
             security_answer text NULL COMMENT 'Security answer (encrypted)',
             backup_codes text NULL COMMENT 'Backup recovery codes (encrypted)',
             two_factor_secret varchar(255) NULL COMMENT '2FA TOTP secret (encrypted)',
-
-            -- API credentials (encrypted)
             api_key varchar(255) NULL COMMENT 'API key for provider services',
             api_secret text NULL COMMENT 'API secret (encrypted)',
             api_token text NULL COMMENT 'API access token (encrypted)',
-
-            -- Custom fields for flexibility
             account_fields longtext NULL COMMENT 'Additional custom fields as JSON',
-
-            -- Metadata
             last_credential_update datetime NULL COMMENT 'Last time any credential was changed',
             created_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
             updated_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-
             PRIMARY KEY (id),
             KEY idx_provider (provider),
             KEY idx_status (status),
@@ -212,14 +198,11 @@ class VD_LM_Database {
         ) $charset_collate;";
 
         dbDelta( $sql );
-
         VD_LM_Logger_Service::info( "Table created: {$table_name}" );
     }
 
     /**
      * Create product pools table
-     *
-     * Stores product pool groupings for organizing accounts by product type.
      *
      * @since 1.0.0
      * @access private
@@ -237,17 +220,12 @@ class VD_LM_Database {
             priority int(11) NOT NULL DEFAULT 0 COMMENT 'Pool priority (0 = highest)',
             capacity int(11) NOT NULL DEFAULT 10 COMMENT 'Maximum licenses this pool can handle',
             status enum('active','inactive') NOT NULL DEFAULT 'active' COMMENT 'Pool status',
-
-            -- Pool configuration
             assignment_strategy enum('random','sticky','weighted','priority') NOT NULL DEFAULT 'random' COMMENT 'How to assign accounts from this pool',
             rotation_enabled tinyint(1) NOT NULL DEFAULT 0 COMMENT 'Whether to rotate accounts periodically',
             rotation_interval int(11) NULL COMMENT 'Rotation interval in hours (if enabled)',
-
-            -- Metadata
             description text NULL COMMENT 'Pool description for admin reference',
             created_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
             updated_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-
             PRIMARY KEY (id),
             KEY idx_product_id (product_id),
             KEY idx_priority (priority),
@@ -256,14 +234,11 @@ class VD_LM_Database {
         ) $charset_collate;";
 
         dbDelta( $sql );
-
         VD_LM_Logger_Service::info( "Table created: {$table_name}" );
     }
 
     /**
      * Create pool accounts mapping table
-     *
-     * Many-to-many relationship between pools and provider accounts.
      *
      * @since 1.0.0
      * @access private
@@ -278,18 +253,11 @@ class VD_LM_Database {
             id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
             pool_id bigint(20) unsigned NOT NULL COMMENT 'FK to vd_product_pools.id',
             account_id bigint(20) unsigned NOT NULL COMMENT 'FK to vd_provider_accounts.id',
-
-            -- Assignment configuration
             weight int(11) NOT NULL DEFAULT 1 COMMENT 'Weight for weighted assignment strategy',
             is_primary tinyint(1) NOT NULL DEFAULT 0 COMMENT 'Primary account for sticky strategy',
-
-            -- Status
             status enum('active','inactive') NOT NULL DEFAULT 'active' COMMENT 'Assignment status',
-
-            -- Metadata
             assigned_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
             created_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-
             PRIMARY KEY (id),
             UNIQUE KEY uk_pool_account (pool_id, account_id),
             KEY idx_pool_id (pool_id),
@@ -299,14 +267,11 @@ class VD_LM_Database {
         ) $charset_collate;";
 
         dbDelta( $sql );
-
         VD_LM_Logger_Service::info( "Table created: {$table_name}" );
     }
 
     /**
      * Create license keys table
-     *
-     * Syncs with LMfWC and adds pool/account assignments and device tracking.
      *
      * @since 1.0.0
      * @access private
@@ -321,41 +286,24 @@ class VD_LM_Database {
             id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
             license_key varchar(255) NOT NULL COMMENT 'License key from LMfWC',
             lmfwc_license_id bigint(20) unsigned NOT NULL COMMENT 'FK to LMfWC licenses table',
-
-            -- Product and customer info
             product_id bigint(20) unsigned NOT NULL COMMENT 'WooCommerce product ID',
             order_id bigint(20) unsigned NOT NULL COMMENT 'WooCommerce order ID',
             customer_id bigint(20) unsigned NOT NULL COMMENT 'WordPress user ID',
             customer_email varchar(255) NOT NULL COMMENT 'Customer email address',
-
-            -- Pool and account assignment
             pool_id bigint(20) unsigned NULL COMMENT 'FK to vd_product_pools.id',
             account_id bigint(20) unsigned NULL COMMENT 'FK to vd_provider_accounts.id',
-
-            -- License status
             status enum('active','inactive','expired','suspended') NOT NULL DEFAULT 'active',
             expires_at datetime NULL COMMENT 'License expiration date (synced from LMfWC)',
-
-            -- Device tracking
             max_devices int(11) NOT NULL DEFAULT 2 COMMENT 'Maximum devices allowed for this license',
             current_devices int(11) NOT NULL DEFAULT 0 COMMENT 'Current number of registered devices',
-
-            -- Rate limiting
             max_requests_per_day int(11) NOT NULL DEFAULT 10 COMMENT 'Maximum API requests per day',
             max_requests_per_hour int(11) NOT NULL DEFAULT 5 COMMENT 'Maximum API requests per hour',
-
-            -- Assignment tracking
             assigned_at datetime NULL COMMENT 'When account was assigned to this license',
             last_rotation_at datetime NULL COMMENT 'Last time account was rotated',
-
-            -- Sync tracking
             synced_at datetime NULL COMMENT 'Last sync from LMfWC',
             sync_hash varchar(64) NULL COMMENT 'Hash of synced data for change detection',
-
-            -- Metadata
             created_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
             updated_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-
             PRIMARY KEY (id),
             UNIQUE KEY uk_license_key (license_key),
             UNIQUE KEY uk_lmfwc_license_id (lmfwc_license_id),
@@ -370,14 +318,11 @@ class VD_LM_Database {
         ) $charset_collate;";
 
         dbDelta( $sql );
-
         VD_LM_Logger_Service::info( "Table created: {$table_name}" );
     }
 
     /**
      * Create product share configs table
-     *
-     * Stores per-product configuration for what data to share with customers.
      *
      * @since 1.0.0
      * @access private
@@ -391,35 +336,20 @@ class VD_LM_Database {
         $sql = "CREATE TABLE {$table_name} (
             id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
             product_id bigint(20) unsigned NOT NULL COMMENT 'WooCommerce product ID',
-
-            -- Share configuration
             share_type enum('cookie','userpass','userpass_2fa','api_key','custom') NOT NULL DEFAULT 'userpass' COMMENT 'Type of credentials to share',
-
-            -- Field configuration (JSON)
             response_fields longtext NOT NULL COMMENT 'JSON config of fields to return to customer',
             field_mapping longtext NULL COMMENT 'JSON mapping of internal fields to response fields',
-
-            -- Device and rate limiting
             max_devices int(11) NOT NULL DEFAULT 2 COMMENT 'Maximum devices per license for this product',
             max_requests_per_day int(11) NOT NULL DEFAULT 10 COMMENT 'API rate limit per day',
             max_requests_per_hour int(11) NOT NULL DEFAULT 5 COMMENT 'API rate limit per hour',
-
-            -- VPS detection
             vps_detection_enabled tinyint(1) NOT NULL DEFAULT 1 COMMENT 'Enable VPS detection for this product',
             vps_block_enabled tinyint(1) NOT NULL DEFAULT 1 COMMENT 'Block VPS usage for this product',
-
-            -- Rotation settings
             auto_rotation_enabled tinyint(1) NOT NULL DEFAULT 0 COMMENT 'Enable automatic account rotation',
             rotation_interval_hours int(11) NULL COMMENT 'Hours between rotations (if enabled)',
-
-            -- Session management
             session_timeout_minutes int(11) NOT NULL DEFAULT 60 COMMENT 'Session timeout in minutes',
             concurrent_sessions_allowed int(11) NOT NULL DEFAULT 1 COMMENT 'Max concurrent sessions per license',
-
-            -- Metadata
             created_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
             updated_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-
             PRIMARY KEY (id),
             UNIQUE KEY uk_product_id (product_id),
             KEY idx_share_type (share_type),
@@ -427,14 +357,11 @@ class VD_LM_Database {
         ) $charset_collate;";
 
         dbDelta( $sql );
-
         VD_LM_Logger_Service::info( "Table created: {$table_name}" );
     }
 
     /**
      * Create device fingerprints table
-     *
-     * Stores unique device fingerprints for device identification and tracking.
      *
      * @since 1.0.0
      * @access private
@@ -449,41 +376,28 @@ class VD_LM_Database {
             id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
             device_id varchar(64) NOT NULL COMMENT 'Unique device identifier (hash)',
             fingerprint_hash varchar(64) NOT NULL COMMENT 'Fingerprint hash for fast lookup',
-
-            -- Device information
             user_agent text NOT NULL COMMENT 'Browser user agent string',
             ip_address varchar(45) NOT NULL COMMENT 'Device IP address (IPv4 or IPv6)',
             screen_resolution varchar(20) NULL COMMENT 'Screen resolution (e.g., 1920x1080)',
             timezone varchar(50) NULL COMMENT 'Device timezone',
             language varchar(10) NULL COMMENT 'Browser language',
             platform varchar(50) NULL COMMENT 'Operating system platform',
-
-            -- Browser fingerprinting
             canvas_fingerprint varchar(64) NULL COMMENT 'Canvas fingerprint hash',
             webgl_fingerprint varchar(64) NULL COMMENT 'WebGL fingerprint hash',
             audio_fingerprint varchar(64) NULL COMMENT 'Audio context fingerprint hash',
-
-            -- Network information
             connection_type varchar(20) NULL COMMENT 'Connection type (wifi, cellular, etc.)',
             isp varchar(255) NULL COMMENT 'Internet service provider',
             country_code varchar(2) NULL COMMENT 'Country code from IP geolocation',
             city varchar(100) NULL COMMENT 'City from IP geolocation',
-
-            -- VPS detection
             is_vps tinyint(1) NOT NULL DEFAULT 0 COMMENT 'Whether device is detected as VPS',
             vps_confidence_score decimal(3,2) NULL COMMENT 'VPS confidence score (0.00-1.00)',
             vps_indicators longtext NULL COMMENT 'JSON array of VPS detection indicators',
-
-            -- Status and tracking
             status enum('active','inactive','blocked') NOT NULL DEFAULT 'active' COMMENT 'Device status',
             first_seen_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
             last_seen_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
             access_count int(11) NOT NULL DEFAULT 1 COMMENT 'Number of times this device accessed the system',
-
-            -- Metadata
             created_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
             updated_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-
             PRIMARY KEY (id),
             UNIQUE KEY uk_device_id (device_id),
             KEY idx_fingerprint_hash (fingerprint_hash),
@@ -495,14 +409,11 @@ class VD_LM_Database {
         ) $charset_collate;";
 
         dbDelta( $sql );
-
         VD_LM_Logger_Service::info( "Table created: {$table_name}" );
     }
 
     /**
      * Create license devices table
-     *
-     * Maps licenses to registered devices with registration tracking.
      *
      * @since 1.0.0
      * @access private
@@ -517,29 +428,18 @@ class VD_LM_Database {
             id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
             license_id bigint(20) unsigned NOT NULL COMMENT 'FK to vd_license_keys.id',
             device_id varchar(64) NOT NULL COMMENT 'FK to vd_device_fingerprints.device_id',
-
-            -- Registration info
             device_name varchar(255) NULL COMMENT 'User-provided device name',
             registration_ip varchar(45) NOT NULL COMMENT 'IP address when device was registered',
-
-            -- Status
             status enum('active','inactive','suspended') NOT NULL DEFAULT 'active' COMMENT 'Device registration status',
-
-            -- Usage tracking
             first_access_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
             last_access_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
             access_count int(11) NOT NULL DEFAULT 1 COMMENT 'Total number of accesses',
             last_request_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-
-            -- Rate limiting
             requests_today int(11) NOT NULL DEFAULT 0 COMMENT 'Requests made today',
             requests_this_hour int(11) NOT NULL DEFAULT 0 COMMENT 'Requests made this hour',
             rate_limit_reset_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-
-            -- Metadata
             registered_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
             updated_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-
             PRIMARY KEY (id),
             UNIQUE KEY uk_license_device (license_id, device_id),
             KEY idx_license_id (license_id),
@@ -550,14 +450,11 @@ class VD_LM_Database {
         ) $charset_collate;";
 
         dbDelta( $sql );
-
         VD_LM_Logger_Service::info( "Table created: {$table_name}" );
     }
 
     /**
      * Create license device limits table
-     *
-     * Tracks device limits and usage per license for enforcement.
      *
      * @since 1.0.0
      * @access private
@@ -571,27 +468,16 @@ class VD_LM_Database {
         $sql = "CREATE TABLE {$table_name} (
             id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
             license_id bigint(20) unsigned NOT NULL COMMENT 'FK to vd_license_keys.id',
-
-            -- Device limits
             max_devices int(11) NOT NULL DEFAULT 2 COMMENT 'Maximum devices allowed',
             current_devices int(11) NOT NULL DEFAULT 0 COMMENT 'Currently registered devices',
-
-            -- Cooldown management
             device_cooldown_hours int(11) NOT NULL DEFAULT 24 COMMENT 'Hours before device can be replaced',
             last_device_change_at datetime NULL COMMENT 'Last time a device was added/removed',
-
-            -- Enforcement settings
             strict_mode tinyint(1) NOT NULL DEFAULT 1 COMMENT 'Strict device limit enforcement',
             allow_device_replacement tinyint(1) NOT NULL DEFAULT 1 COMMENT 'Allow replacing old devices',
-
-            -- Violation tracking
             violation_count int(11) NOT NULL DEFAULT 0 COMMENT 'Number of limit violations',
             last_violation_at datetime NULL COMMENT 'Last device limit violation',
-
-            -- Metadata
             created_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
             updated_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-
             PRIMARY KEY (id),
             UNIQUE KEY uk_license_id (license_id),
             KEY idx_max_devices (max_devices),
@@ -601,14 +487,11 @@ class VD_LM_Database {
         ) $charset_collate;";
 
         dbDelta( $sql );
-
         VD_LM_Logger_Service::info( "Table created: {$table_name}" );
     }
 
     /**
      * Create account fetch log table
-     *
-     * Logs when accounts are fetched and assigned to licenses for auditing.
      *
      * @since 1.0.0
      * @access private
@@ -624,27 +507,16 @@ class VD_LM_Database {
             license_id bigint(20) unsigned NOT NULL COMMENT 'FK to vd_license_keys.id',
             account_id bigint(20) unsigned NOT NULL COMMENT 'FK to vd_provider_accounts.id',
             pool_id bigint(20) unsigned NOT NULL COMMENT 'FK to vd_product_pools.id',
-
-            -- Fetch details
             fetch_reason enum('new_assignment','rotation','replacement','retry') NOT NULL COMMENT 'Why account was fetched',
             assignment_strategy varchar(50) NOT NULL COMMENT 'Strategy used for assignment',
-
-            -- Request context
             request_ip varchar(45) NOT NULL COMMENT 'IP address of request',
             user_agent text NULL COMMENT 'User agent of request',
             device_id varchar(64) NULL COMMENT 'Device ID if available',
-
-            -- Result
             success tinyint(1) NOT NULL DEFAULT 1 COMMENT 'Whether fetch was successful',
             error_message text NULL COMMENT 'Error message if fetch failed',
-
-            -- Performance tracking
             execution_time_ms int(11) NULL COMMENT 'Execution time in milliseconds',
             pool_capacity_at_fetch int(11) NULL COMMENT 'Pool capacity when fetched',
-
-            -- Metadata
             fetched_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-
             PRIMARY KEY (id),
             KEY idx_license_id (license_id),
             KEY idx_account_id (account_id),
@@ -656,14 +528,11 @@ class VD_LM_Database {
         ) $charset_collate;";
 
         dbDelta( $sql );
-
         VD_LM_Logger_Service::info( "Table created: {$table_name}" );
     }
 
     /**
      * Create license access log table
-     *
-     * Comprehensive logging of all API access attempts for security and analytics.
      *
      * @since 1.0.0
      * @access private
@@ -677,41 +546,24 @@ class VD_LM_Database {
         $sql = "CREATE TABLE {$table_name} (
             id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
             license_id bigint(20) unsigned NULL COMMENT 'FK to vd_license_keys.id (null for invalid license)',
-
-            -- Request details
             license_key varchar(255) NOT NULL COMMENT 'License key used in request',
             endpoint varchar(100) NOT NULL COMMENT 'API endpoint accessed',
             method varchar(10) NOT NULL DEFAULT 'GET' COMMENT 'HTTP method',
-
-            -- Client information
             ip_address varchar(45) NOT NULL COMMENT 'Client IP address',
             user_agent text NULL COMMENT 'Client user agent',
             device_id varchar(64) NULL COMMENT 'Device ID if provided',
-
-            -- Request/Response
             request_data longtext NULL COMMENT 'Request parameters (JSON)',
             response_status int(11) NOT NULL COMMENT 'HTTP response status code',
             response_data longtext NULL COMMENT 'Response data (JSON, may be truncated)',
-
-            -- Security
             authentication_result enum('success','invalid_license','expired_license','suspended_license','device_limit','rate_limit','vps_blocked','other') NOT NULL COMMENT 'Authentication result',
             security_flags longtext NULL COMMENT 'Security flags and warnings (JSON)',
-
-            -- Performance
             execution_time_ms int(11) NULL COMMENT 'Request execution time in milliseconds',
             memory_usage_mb decimal(8,2) NULL COMMENT 'Memory usage in MB',
-
-            -- Rate limiting
             rate_limit_remaining int(11) NULL COMMENT 'Rate limit remaining after request',
             rate_limit_reset_at datetime NULL COMMENT 'When rate limit resets',
-
-            -- Geolocation
             country_code varchar(2) NULL COMMENT 'Country code from IP',
             city varchar(100) NULL COMMENT 'City from IP geolocation',
-
-            -- Metadata
             accessed_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-
             PRIMARY KEY (id),
             KEY idx_license_id (license_id),
             KEY idx_license_key (license_key),
@@ -725,14 +577,11 @@ class VD_LM_Database {
         ) $charset_collate;";
 
         dbDelta( $sql );
-
         VD_LM_Logger_Service::info( "Table created: {$table_name}" );
     }
 
     /**
      * Create license rate limits table
-     *
-     * Tracks rate limiting counters and violations per license/device.
      *
      * @since 1.0.0
      * @access private
@@ -747,35 +596,22 @@ class VD_LM_Database {
             id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
             license_id bigint(20) unsigned NOT NULL COMMENT 'FK to vd_license_keys.id',
             device_id varchar(64) NULL COMMENT 'Device ID (null for license-wide limits)',
-
-            -- Rate limit configuration
             limit_type enum('hourly','daily','monthly') NOT NULL COMMENT 'Type of rate limit',
             max_requests int(11) NOT NULL COMMENT 'Maximum requests allowed',
             window_start datetime NOT NULL COMMENT 'Start of current rate limit window',
             window_end datetime NOT NULL COMMENT 'End of current rate limit window',
-
-            -- Current usage
             current_requests int(11) NOT NULL DEFAULT 0 COMMENT 'Requests made in current window',
             remaining_requests int(11) NOT NULL COMMENT 'Requests remaining in window',
-
-            -- Violation tracking
             total_violations int(11) NOT NULL DEFAULT 0 COMMENT 'Total rate limit violations',
             last_violation_at datetime NULL COMMENT 'Last rate limit violation',
             consecutive_violations int(11) NOT NULL DEFAULT 0 COMMENT 'Consecutive violations (resets on success)',
-
-            -- Enforcement
             is_blocked tinyint(1) NOT NULL DEFAULT 0 COMMENT 'Whether this license/device is rate limited',
             block_expires_at datetime NULL COMMENT 'When rate limit block expires',
             block_reason varchar(255) NULL COMMENT 'Reason for rate limit block',
-
-            -- Performance tracking
             avg_request_time_ms decimal(8,2) NULL COMMENT 'Average request execution time',
             peak_requests_per_minute int(11) NULL COMMENT 'Peak requests per minute',
-
-            -- Metadata
             created_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
             updated_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-
             PRIMARY KEY (id),
             UNIQUE KEY uk_license_device_type (license_id, device_id, limit_type),
             KEY idx_license_id (license_id),
@@ -787,7 +623,6 @@ class VD_LM_Database {
         ) $charset_collate;";
 
         dbDelta( $sql );
-
         VD_LM_Logger_Service::info( "Table created: {$table_name}" );
     }
 }
