@@ -20,9 +20,6 @@
         "wp-coding-standards/wpcs": "^2.3"
     },
     "autoload": {
-        "psr-4": {
-            "VD\\": "includes/"
-        },
         "classmap": [
             "includes/",
             "admin/",
@@ -31,7 +28,7 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "VD\\Tests\\": "tests/"
+            "VD_LM\\Tests\\": "tests/"
         }
     },
     "scripts": {

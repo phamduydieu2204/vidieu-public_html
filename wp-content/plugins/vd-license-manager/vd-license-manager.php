@@ -67,7 +67,46 @@ define( 'VD_PLUGIN_BASENAME', plugin_basename( __FILE__ ) );
 define( 'VD_TEXT_DOMAIN', 'vd-license-manager' );
 
 /**
- * Check if Composer autoloader exists and load it
+ * Manual autoloader for VD_LM_* classes
+ *
+ * This ensures all plugin classes are loaded properly
+ * Works as primary autoloader or fallback if composer fails
+ *
+ * @since 1.0.0
+ */
+spl_autoload_register( function( $class ) {
+    // Only handle VD_LM_ prefixed classes
+    if ( strpos( $class, 'VD_LM_' ) !== 0 ) {
+        return;
+    }
+
+    // Convert class name to file path
+    // VD_LM_Encryption_Service -> class-vd-lm-encryption-service.php
+    $file = str_replace( '_', '-', strtolower( $class ) );
+    $file = 'class-' . $file . '.php';
+
+    // Define search directories in priority order
+    $search_dirs = array(
+        VD_PLUGIN_DIR . 'includes/',
+        VD_PLUGIN_DIR . 'includes/services/',
+        VD_PLUGIN_DIR . 'includes/repositories/',
+        VD_PLUGIN_DIR . 'includes/utils/',
+        VD_PLUGIN_DIR . 'admin/',
+        VD_PLUGIN_DIR . 'public/',
+    );
+
+    // Search for the class file in each directory
+    foreach ( $search_dirs as $dir ) {
+        $file_path = $dir . $file;
+        if ( file_exists( $file_path ) ) {
+            require_once $file_path;
+            return;
+        }
+    }
+} );
+
+/**
+ * Load Composer autoloader if available (optional)
  *
  * @since 1.0.0
  */
