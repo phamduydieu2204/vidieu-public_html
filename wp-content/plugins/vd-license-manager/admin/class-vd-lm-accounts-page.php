@@ -68,6 +68,9 @@ class VD_LM_Accounts_Page {
 
 		$this->service = new VD_LM_Account_Service();
 		$this->current_page = isset( $_GET['paged'] ) ? max( 1, absint( $_GET['paged'] ) ) : 1;
+
+		// Enqueue assets for accounts page
+		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_assets' ) );
 	}
 
 	/**
@@ -485,5 +488,67 @@ class VD_LM_Accounts_Page {
 	 */
 	public function get_account_repository() {
 		return $this->service->get_account_repository();
+	}
+
+	/**
+	 * Enqueue CSS and JavaScript assets for accounts page
+	 *
+	 * @since 1.0.0
+	 * @param string $hook Current admin page hook
+	 */
+	public function enqueue_assets( $hook ) {
+		// Only enqueue on VD License Manager accounts pages
+		if ( strpos( $hook, 'vd-accounts' ) === false ) {
+			return;
+		}
+
+		// Enqueue accounts form CSS
+		wp_enqueue_style(
+			'vd-accounts-form',
+			VD_PLUGIN_URL . 'admin/css/accounts-form.css',
+			array(),
+			VD_PLUGIN_VERSION
+		);
+
+		// Enqueue accounts form JavaScript
+		wp_enqueue_script(
+			'vd-accounts-form',
+			VD_PLUGIN_URL . 'admin/js/accounts-form.js',
+			array( 'jquery' ),
+			VD_PLUGIN_VERSION,
+			true
+		);
+
+		// Localize script with translations and config
+		$is_edit = isset( $_GET['action'] ) && $_GET['action'] === 'edit' ? '1' : '0';
+
+		wp_localize_script(
+			'vd-accounts-form',
+			'vdAccountFormL10n',
+			array(
+				'isEdit' => $is_edit,
+				'show' => __( 'Show', 'vd-license-manager' ),
+				'hide' => __( 'Hide', 'vd-license-manager' ),
+				'remove' => __( 'Remove', 'vd-license-manager' ),
+				'fieldKey' => __( 'Field Key', 'vd-license-manager' ),
+				'fieldLabel' => __( 'Field Label', 'vd-license-manager' ),
+				'fieldValue' => __( 'Field Value', 'vd-license-manager' ),
+				'fieldTypes' => array(
+					'text' => __( 'Text', 'vd-license-manager' ),
+					'email' => __( 'Email', 'vd-license-manager' ),
+					'url' => __( 'URL', 'vd-license-manager' ),
+					'tel' => __( 'Phone', 'vd-license-manager' ),
+					'password' => __( 'Password (encrypted)', 'vd-license-manager' ),
+					'textarea' => __( 'Long Text', 'vd-license-manager' ),
+				),
+				'errors' => array(
+					'formErrors' => __( 'Please fix the following errors:', 'vd-license-manager' ),
+					'providerRequired' => __( 'Provider name is required.', 'vd-license-manager' ),
+					'loginRequired' => __( 'Account login is required.', 'vd-license-manager' ),
+					'passwordRequired' => __( 'Password is required for new accounts.', 'vd-license-manager' ),
+					'capacityInvalid' => __( 'Capacity must be between 1 and 100.', 'vd-license-manager' ),
+				),
+			)
+		);
 	}
 }

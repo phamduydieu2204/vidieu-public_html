@@ -84,7 +84,7 @@ $current_custom_fields = $is_edit ? $account->custom_fields : array();
 							<div class="vd-form-row">
 								<label for="account_password"><?php esc_html_e( 'Password', 'vd-license-manager' ); ?> <?php if ( ! $is_edit ) : ?><span class="required">*</span><?php endif; ?></label>
 								<div class="vd-password-field">
-									<input type="password" name="account_password" id="account_password" value="" class="regular-text" <?php echo $is_edit ? '' : 'required'; ?> autocomplete="new-password">
+									<input type="password" name="account_password" id="account_password" value="" class="regular-text" placeholder="<?php echo $is_edit ? 'Leave blank to keep current password' : 'Enter account password'; ?>" <?php echo $is_edit ? '' : 'required'; ?> autocomplete="new-password">
 									<button type="button" class="button vd-toggle-password" data-target="account_password">
 										👁️ <?php esc_html_e( 'Show', 'vd-license-manager' ); ?>
 									</button>
@@ -150,14 +150,14 @@ $current_custom_fields = $is_edit ? $account->custom_fields : array();
 						<div class="vd-form-section">
 							<div class="vd-form-row">
 								<label for="cookies"><?php esc_html_e( 'Session Cookies', 'vd-license-manager' ); ?></label>
-								<textarea name="cookies" id="cookies" rows="4" class="large-text" placeholder="Paste cookie string here (for session-based authentication)"><?php echo $is_edit ? '••••••••••••••••' : ''; ?></textarea>
+								<textarea name="cookies" id="cookies" rows="4" class="large-text" placeholder="Paste cookie string here (for session-based authentication)"><?php echo $is_edit && ! empty( $account->cookies ) ? '••••••••••••••••' : ''; ?></textarea>
 								<p class="description"><?php esc_html_e( 'Session cookies for maintaining logged-in state', 'vd-license-manager' ); ?></p>
 							</div>
 
 							<div class="vd-form-row">
 								<label for="two_factor_secret"><?php esc_html_e( '2FA Secret', 'vd-license-manager' ); ?></label>
 								<div class="vd-password-field">
-									<input type="password" name="two_factor_secret" id="two_factor_secret" value="<?php echo $is_edit ? '••••••••••••••••' : ''; ?>" class="regular-text" placeholder="JBSWY3DPEHPK3PXP">
+									<input type="password" name="two_factor_secret" id="two_factor_secret" value="" class="regular-text" placeholder="JBSWY3DPEHPK3PXP">
 									<button type="button" class="button vd-toggle-password" data-target="two_factor_secret">
 										👁️ <?php esc_html_e( 'Show', 'vd-license-manager' ); ?>
 									</button>
@@ -179,17 +179,17 @@ $current_custom_fields = $is_edit ? $account->custom_fields : array();
 							</button>
 						</div>
 					</div>
-					<div class="inside" style="display: none;">
+					<div class="inside">
 						<div class="vd-form-section">
 							<div class="vd-form-row vd-grid-2">
 								<div>
 									<label for="phone_recovery"><?php esc_html_e( 'Recovery Phone', 'vd-license-manager' ); ?></label>
-									<input type="tel" name="phone_recovery" id="phone_recovery" value="<?php echo $is_edit ? '••••••••••••••••' : ''; ?>" class="regular-text" placeholder="+84 xxx xxx xxx">
+									<input type="tel" name="phone_recovery" id="phone_recovery" value="" class="regular-text" placeholder="+84 xxx xxx xxx">
 									<p class="description"><?php esc_html_e( 'Phone for account recovery', 'vd-license-manager' ); ?></p>
 								</div>
 								<div>
 									<label for="email_recovery"><?php esc_html_e( 'Recovery Email', 'vd-license-manager' ); ?></label>
-									<input type="email" name="email_recovery" id="email_recovery" value="<?php echo $is_edit ? '••••••••••••••••' : ''; ?>" class="regular-text" placeholder="recovery@example.com">
+									<input type="email" name="email_recovery" id="email_recovery" value="" class="regular-text" placeholder="recovery@example.com">
 									<p class="description"><?php esc_html_e( 'Email for account recovery', 'vd-license-manager' ); ?></p>
 								</div>
 							</div>
@@ -203,7 +203,7 @@ $current_custom_fields = $is_edit ? $account->custom_fields : array();
 							<div class="vd-form-row">
 								<label for="security_answer"><?php esc_html_e( 'Security Answer', 'vd-license-manager' ); ?></label>
 								<div class="vd-password-field">
-									<input type="password" name="security_answer" id="security_answer" value="<?php echo $is_edit ? '••••••••••••••••' : ''; ?>" class="regular-text">
+									<input type="password" name="security_answer" id="security_answer" value="" class="regular-text">
 									<button type="button" class="button vd-toggle-password" data-target="security_answer">
 										👁️ <?php esc_html_e( 'Show', 'vd-license-manager' ); ?>
 									</button>
@@ -213,7 +213,7 @@ $current_custom_fields = $is_edit ? $account->custom_fields : array();
 
 							<div class="vd-form-row">
 								<label for="backup_codes"><?php esc_html_e( 'Backup Codes', 'vd-license-manager' ); ?></label>
-								<textarea name="backup_codes" id="backup_codes" rows="3" class="large-text" placeholder="Enter backup codes, one per line"><?php echo $is_edit ? '••••••••••••••••' : ''; ?></textarea>
+								<textarea name="backup_codes" id="backup_codes" rows="3" class="large-text" placeholder="Enter backup codes, one per line"></textarea>
 								<p class="description"><?php esc_html_e( 'Account backup codes for recovery (one per line)', 'vd-license-manager' ); ?></p>
 							</div>
 						</div>
@@ -231,20 +231,20 @@ $current_custom_fields = $is_edit ? $account->custom_fields : array();
 							</button>
 						</div>
 					</div>
-					<div class="inside" style="display: none;">
+					<div class="inside">
 						<p class="description" style="margin-bottom: 15px;"><?php esc_html_e( 'For providers that support API access', 'vd-license-manager' ); ?></p>
 
 						<div class="vd-form-section">
 							<div class="vd-form-row">
 								<label for="api_key"><?php esc_html_e( 'API Key', 'vd-license-manager' ); ?></label>
-								<input type="text" name="api_key" id="api_key" value="<?php echo $is_edit ? '••••••••••••••••' : ''; ?>" class="regular-text" placeholder="Provider API key (if applicable)">
+								<input type="text" name="api_key" id="api_key" value="" class="regular-text" placeholder="Provider API key (if applicable)">
 								<p class="description"><?php esc_html_e( 'Provider API key (will be encrypted)', 'vd-license-manager' ); ?></p>
 							</div>
 
 							<div class="vd-form-row">
 								<label for="secret_key"><?php esc_html_e( 'Secret Key', 'vd-license-manager' ); ?></label>
 								<div class="vd-password-field">
-									<input type="password" name="secret_key" id="secret_key" value="<?php echo $is_edit ? '••••••••••••••••' : ''; ?>" class="regular-text">
+									<input type="password" name="secret_key" id="secret_key" value="" class="regular-text">
 									<button type="button" class="button vd-toggle-password" data-target="secret_key">
 										👁️ <?php esc_html_e( 'Show', 'vd-license-manager' ); ?>
 									</button>
@@ -254,7 +254,7 @@ $current_custom_fields = $is_edit ? $account->custom_fields : array();
 
 							<div class="vd-form-row">
 								<label for="api_token"><?php esc_html_e( 'API Token', 'vd-license-manager' ); ?></label>
-								<textarea name="api_token" id="api_token" rows="3" class="large-text" placeholder="Bearer token or OAuth token (if applicable)"><?php echo $is_edit ? '••••••••••••••••' : ''; ?></textarea>
+								<textarea name="api_token" id="api_token" rows="3" class="large-text" placeholder="Bearer token or OAuth token (if applicable)"></textarea>
 								<p class="description"><?php esc_html_e( 'API authentication token (will be encrypted)', 'vd-license-manager' ); ?></p>
 							</div>
 						</div>
@@ -272,7 +272,7 @@ $current_custom_fields = $is_edit ? $account->custom_fields : array();
 							</button>
 						</div>
 					</div>
-					<div class="inside" style="display: none;">
+					<div class="inside">
 						<p class="description" style="margin-bottom: 15px;"><?php esc_html_e( 'Add provider-specific fields such as subscription details or special configurations.', 'vd-license-manager' ); ?></p>
 
 						<div id="custom-fields-container">
@@ -373,258 +373,3 @@ $current_custom_fields = $is_edit ? $account->custom_fields : array();
 		</div>
 	</form>
 </div>
-
-<style>
-.vd-account-form-wrapper {
-	max-width: 1200px;
-}
-
-.vd-form-container {
-	display: flex;
-	gap: 20px;
-}
-
-.vd-form-main {
-	flex: 1;
-}
-
-.vd-form-sidebar {
-	width: 280px;
-	flex-shrink: 0;
-}
-
-.vd-page-navigation {
-	margin-bottom: 10px;
-}
-
-.required {
-	color: #d63638;
-}
-
-.vd-form-section {
-	padding: 0;
-}
-
-.vd-form-row {
-	margin-bottom: 20px;
-}
-
-.vd-form-row label {
-	display: block;
-	font-weight: 600;
-	margin-bottom: 5px;
-}
-
-.vd-grid-2 {
-	display: grid;
-	grid-template-columns: 1fr 1fr;
-	gap: 20px;
-}
-
-.vd-grid-4 {
-	display: grid;
-	grid-template-columns: 2fr 2fr 1.5fr 1fr;
-	gap: 10px;
-	align-items: center;
-}
-
-.vd-password-field {
-	display: flex;
-	gap: 5px;
-	align-items: center;
-}
-
-.vd-password-field input {
-	flex: 1;
-}
-
-.vd-encryption-notice {
-	background: #fff3cd;
-	padding: 10px 15px;
-	border-left: 4px solid #ffc107;
-	margin-bottom: 20px;
-	border-radius: 3px;
-}
-
-.vd-encryption-notice p {
-	margin: 0;
-}
-
-.vd-custom-field-row {
-	padding: 15px;
-	background: #f9f9f9;
-	border: 1px solid #ddd;
-	border-radius: 4px;
-	margin-bottom: 10px;
-}
-
-.vd-account-info {
-	margin: 0;
-	padding: 0;
-	list-style: none;
-}
-
-.vd-account-info li {
-	margin-bottom: 8px;
-	padding-bottom: 8px;
-	border-bottom: 1px solid #f0f0f1;
-}
-
-.vd-account-info li:last-child {
-	border-bottom: none;
-	margin-bottom: 0;
-	padding-bottom: 0;
-}
-
-.vd-security-tips {
-	margin: 0;
-	padding: 0;
-	list-style: none;
-}
-
-.vd-security-tips li {
-	margin-bottom: 8px;
-	font-size: 12px;
-	color: #666;
-}
-
-@media (max-width: 850px) {
-	.vd-form-container {
-		flex-direction: column;
-	}
-
-	.vd-form-sidebar {
-		width: 100%;
-	}
-
-	.vd-grid-2 {
-		grid-template-columns: 1fr;
-	}
-
-	.vd-grid-4 {
-		grid-template-columns: 1fr;
-	}
-}
-</style>
-
-<script>
-jQuery(document).ready(function($) {
-	// Handle collapsible postboxes
-	$('.postbox .handlediv').on('click', function() {
-		var $postbox = $(this).closest('.postbox');
-		var $inside = $postbox.find('.inside');
-		var $button = $(this);
-
-		$inside.toggle();
-		$button.attr('aria-expanded', $inside.is(':visible'));
-	});
-
-	// Auto-fill display name from account login
-	$('#account_login').on('blur', function() {
-		var accountLogin = $(this).val();
-		var displayName = $('#display_name').val();
-
-		if (accountLogin && !displayName) {
-			$('#display_name').val(accountLogin);
-		}
-	});
-
-	// Password toggle functionality
-	$('.vd-toggle-password').on('click', function() {
-		var target = $(this).data('target');
-		var $field = $('#' + target);
-		var $button = $(this);
-
-		if ($field.attr('type') === 'password') {
-			$field.attr('type', 'text');
-			$button.html('🙈 <?php esc_html_e( 'Hide', 'vd-license-manager' ); ?>');
-		} else {
-			$field.attr('type', 'password');
-			$button.html('👁️ <?php esc_html_e( 'Show', 'vd-license-manager' ); ?>');
-		}
-	});
-
-	// Custom fields management
-	var customFieldIndex = <?php echo count( $current_custom_fields ); ?>;
-
-	$('#add-custom-field').on('click', function() {
-		var fieldHtml = '<div class="vd-custom-field-row">' +
-			'<div class="vd-grid-4">' +
-				'<input type="text" name="custom_field_key[]" placeholder="<?php esc_attr_e( 'Field Key', 'vd-license-manager' ); ?>" class="regular-text" required>' +
-				'<input type="text" name="custom_field_label[]" placeholder="<?php esc_attr_e( 'Field Label', 'vd-license-manager' ); ?>" class="regular-text" required>' +
-				'<select name="custom_field_type[]" class="regular-text">' +
-					'<option value="text">Text</option>' +
-					'<option value="email">Email</option>' +
-					'<option value="url">URL</option>' +
-					'<option value="tel">Phone</option>' +
-					'<option value="password">Password (encrypted)</option>' +
-					'<option value="textarea">Long Text</option>' +
-				'</select>' +
-				'<button type="button" class="button button-small vd-remove-field"><?php esc_html_e( 'Remove', 'vd-license-manager' ); ?></button>' +
-			'</div>' +
-			'<input type="text" name="custom_field_value[]" placeholder="<?php esc_attr_e( 'Field Value', 'vd-license-manager' ); ?>" class="large-text" style="margin-top: 5px;">' +
-		'</div>';
-
-		$('#custom-fields-container').append(fieldHtml);
-		customFieldIndex++;
-	});
-
-	// Remove custom field
-	$(document).on('click', '.vd-remove-field', function() {
-		$(this).closest('.vd-custom-field-row').remove();
-	});
-
-	// Handle encrypted field focus for edit mode
-	<?php if ( $is_edit ) : ?>
-	$('#cookies, #phone_recovery, #email_recovery, #security_answer, #backup_codes, #two_factor_secret, #api_key, #secret_key, #api_token').on('focus', function() {
-		if ($(this).val() === '••••••••••••••••') {
-			$(this).val('');
-		}
-	});
-
-	$('#cookies, #phone_recovery, #email_recovery, #security_answer, #backup_codes, #two_factor_secret, #api_key, #secret_key, #api_token').on('blur', function() {
-		if ($(this).val() === '') {
-			$(this).val('••••••••••••••••');
-		}
-	});
-	<?php endif; ?>
-
-	// Form validation
-	$('.vd-account-form').on('submit', function(e) {
-		var provider = $('#provider').val();
-		var accountLogin = $('#account_login').val();
-		var capacity = parseInt($('#capacity').val());
-
-		if (!provider) {
-			alert('<?php echo esc_js( __( 'Please enter a provider name.', 'vd-license-manager' ) ); ?>');
-			e.preventDefault();
-			$('#provider').focus();
-			return false;
-		}
-
-		if (!accountLogin) {
-			alert('<?php echo esc_js( __( 'Please enter an account login.', 'vd-license-manager' ) ); ?>');
-			e.preventDefault();
-			$('#account_login').focus();
-			return false;
-		}
-
-		if (capacity < 1 || capacity > 100) {
-			alert('<?php echo esc_js( __( 'Capacity must be between 1 and 100.', 'vd-license-manager' ) ); ?>');
-			e.preventDefault();
-			$('#capacity').focus();
-			return false;
-		}
-
-		<?php if ( ! $is_edit ) : ?>
-		var password = $('#account_password').val();
-		if (!password) {
-			alert('<?php echo esc_js( __( 'Please enter a password.', 'vd-license-manager' ) ); ?>');
-			e.preventDefault();
-			$('#account_password').focus();
-			return false;
-		}
-		<?php endif; ?>
-	});
-});
-</script>

@@ -416,7 +416,7 @@ class VD_LM_Account_Repository extends VD_LM_Base_Repository {
 		}
 
 		$count = $this->wpdb->get_var(
-			$this->wpdb->prepare( $sql, $params )
+			$this->wpdb->prepare( $sql, ...$params )
 		);
 
 		return absint( $count ) > 0;

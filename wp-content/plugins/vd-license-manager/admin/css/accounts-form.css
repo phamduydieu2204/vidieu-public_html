@@ -1,0 +1,333 @@
+/**
+ * Account Form Styles
+ *
+ * CSS styles for the provider account add/edit form interface.
+ * Provides responsive layout and professional WordPress admin styling.
+ *
+ * @package    VD_License_Manager
+ * @subpackage Admin/CSS
+ * @since      1.0.0
+ */
+
+/* Main Layout */
+.vd-account-form-wrapper {
+    max-width: 1200px;
+}
+
+.vd-form-container {
+    display: flex;
+    gap: 20px;
+}
+
+.vd-form-main {
+    flex: 1;
+}
+
+.vd-form-sidebar {
+    width: 280px;
+    flex-shrink: 0;
+}
+
+.vd-page-navigation {
+    margin-bottom: 10px;
+}
+
+/* Form Elements */
+.required {
+    color: #d63638;
+}
+
+.vd-form-section {
+    padding: 0;
+}
+
+.vd-form-row {
+    margin-bottom: 20px;
+}
+
+.vd-form-row label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 5px;
+    color: #1d2327;
+}
+
+.vd-form-row .description {
+    margin-top: 5px;
+    font-style: italic;
+    color: #646970;
+}
+
+/* Grid Layouts */
+.vd-grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+.vd-grid-4 {
+    display: grid;
+    grid-template-columns: 2fr 2fr 1.5fr 1fr;
+    gap: 10px;
+    align-items: center;
+}
+
+/* Password Fields */
+.vd-password-field {
+    display: flex;
+    gap: 5px;
+    align-items: center;
+}
+
+.vd-password-field input {
+    flex: 1;
+}
+
+.vd-toggle-password {
+    flex-shrink: 0;
+    white-space: nowrap;
+}
+
+.vd-toggle-password .dashicons {
+    vertical-align: middle;
+    margin-right: 4px;
+}
+
+/* Encryption Notice */
+.vd-encryption-notice {
+    background: #fff3cd;
+    padding: 10px 15px;
+    border-left: 4px solid #ffc107;
+    margin-bottom: 20px;
+    border-radius: 3px;
+}
+
+.vd-encryption-notice p {
+    margin: 0;
+    font-size: 13px;
+    color: #856404;
+}
+
+/* Custom Fields */
+.vd-custom-field-row {
+    padding: 15px;
+    background: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    margin-bottom: 10px;
+}
+
+.vd-custom-field-row .vd-grid-4 {
+    margin-bottom: 10px;
+}
+
+.vd-remove-field {
+    color: #b32d2e !important;
+    border-color: #b32d2e !important;
+}
+
+.vd-remove-field:hover {
+    color: #d63638 !important;
+    border-color: #d63638 !important;
+    background: #fef2f2 !important;
+}
+
+/* Account Info */
+.vd-account-info {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.vd-account-info li {
+    margin-bottom: 8px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #f0f0f1;
+    font-size: 12px;
+}
+
+.vd-account-info li:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+
+/* Security Tips */
+.vd-security-tips {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.vd-security-tips li {
+    margin-bottom: 8px;
+    font-size: 12px;
+    color: #666;
+    line-height: 1.4;
+}
+
+/* Form Section Toggles */
+.postbox .handlediv {
+    cursor: pointer;
+}
+
+.postbox .handle-actions {
+    display: flex;
+    align-items: center;
+}
+
+.postbox .toggle-indicator {
+    transition: transform 0.2s ease;
+}
+
+.postbox .handlediv[aria-expanded="true"] .toggle-indicator {
+    transform: rotate(180deg);
+}
+
+/* Status Indicators */
+.vd-status-active {
+    color: #00a32a;
+    font-weight: 600;
+}
+
+.vd-status-inactive {
+    color: #d63638;
+    font-weight: 600;
+}
+
+.vd-status-expired {
+    color: #ff922b;
+    font-weight: 600;
+}
+
+/* Field Groups */
+.vd-field-group {
+    border: 1px solid #e5e5e5;
+    border-radius: 4px;
+    padding: 15px;
+    margin-bottom: 15px;
+    background: #fff;
+}
+
+.vd-field-group-title {
+    margin: 0 0 15px 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: #1d2327;
+    border-bottom: 1px solid #e5e5e5;
+    padding-bottom: 8px;
+}
+
+/* Validation Styles */
+.vd-form-row.error input,
+.vd-form-row.error textarea,
+.vd-form-row.error select {
+    border-color: #d63638;
+    box-shadow: 0 0 0 1px #d63638;
+}
+
+.vd-error-message {
+    color: #d63638;
+    font-size: 12px;
+    margin-top: 5px;
+    display: block;
+}
+
+/* Loading States */
+.vd-loading {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+.vd-spinner {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    margin-left: 8px;
+    vertical-align: middle;
+}
+
+/* Responsive Design */
+@media screen and (max-width: 850px) {
+    .vd-form-container {
+        flex-direction: column;
+    }
+
+    .vd-form-sidebar {
+        width: 100%;
+        order: -1;
+    }
+
+    .vd-grid-2 {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+
+    .vd-grid-4 {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+
+    .vd-password-field {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
+    }
+}
+
+@media screen and (max-width: 600px) {
+    .vd-account-form-wrapper {
+        margin: 0 -20px;
+        padding: 0 20px;
+    }
+
+    .vd-form-container {
+        gap: 15px;
+    }
+
+    .vd-custom-field-row {
+        padding: 10px;
+    }
+
+    .vd-form-row {
+        margin-bottom: 15px;
+    }
+}
+
+/* Print Styles */
+@media print {
+    .vd-form-sidebar,
+    .vd-toggle-password,
+    .vd-remove-field,
+    #add-custom-field {
+        display: none !important;
+    }
+
+    .vd-form-container {
+        flex-direction: column;
+    }
+
+    .vd-password-field input {
+        border: 1px solid #000 !important;
+    }
+}
+
+/* Accessibility Improvements */
+@media (prefers-reduced-motion: reduce) {
+    .postbox .toggle-indicator {
+        transition: none;
+    }
+}
+
+/* High Contrast Mode */
+@media (prefers-contrast: high) {
+    .vd-encryption-notice {
+        background: #fff;
+        border: 2px solid #000;
+    }
+
+    .vd-custom-field-row {
+        border: 2px solid #000;
+        background: #fff;
+    }
+}

@@ -145,7 +145,7 @@ abstract class VD_LM_Base_Repository {
 
         // Prepare and execute query
         if ( ! empty( $where_values ) ) {
-            $prepared_sql = $this->wpdb->prepare( $sql, $where_values );
+            $prepared_sql = $this->wpdb->prepare( $sql, ...$where_values );
         } else {
             $prepared_sql = $sql;
         }
@@ -199,7 +199,7 @@ abstract class VD_LM_Base_Repository {
 
         // Prepare and execute query
         if ( ! empty( $where_values ) ) {
-            $prepared_sql = $this->wpdb->prepare( $sql, $where_values );
+            $prepared_sql = $this->wpdb->prepare( $sql, ...$where_values );
         } else {
             $prepared_sql = $sql;
         }
@@ -372,7 +372,7 @@ abstract class VD_LM_Base_Repository {
      */
     protected function query( $sql, $params = array() ) {
         if ( ! empty( $params ) ) {
-            $sql = $this->wpdb->prepare( $sql, $params );
+            $sql = $this->wpdb->prepare( $sql, ...$params );
         }
 
         return $this->wpdb->get_results( $sql );
