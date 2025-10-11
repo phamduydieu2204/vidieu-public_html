@@ -73,7 +73,7 @@ class VD_LM_Notification_Service {
             $template_content = self::load_template( 'license-delivery', $license_data );
 
             if ( ! $template_content ) {
-                VD_Logger_Service::error( 'Failed to load license delivery email template' );
+                VD_LM_Logger_Service::error( 'Failed to load license delivery email template' );
                 return false;
             }
 
@@ -84,12 +84,12 @@ class VD_LM_Notification_Service {
             $sent = wp_mail( $to, $subject, $template_content, $headers );
 
             if ( $sent ) {
-                VD_Logger_Service::info( 'License credentials email sent', array(
+                VD_LM_Logger_Service::info( 'License credentials email sent', array(
                     'license_key' => $license_data['license_key'],
                     'customer_email' => $to,
                 ) );
             } else {
-                VD_Logger_Service::error( 'Failed to send license credentials email', array(
+                VD_LM_Logger_Service::error( 'Failed to send license credentials email', array(
                     'license_key' => $license_data['license_key'],
                     'customer_email' => $to,
                 ) );
@@ -98,7 +98,7 @@ class VD_LM_Notification_Service {
             return $sent;
 
         } catch ( Exception $e ) {
-            VD_Logger_Service::error( 'Exception sending license credentials email', array(
+            VD_LM_Logger_Service::error( 'Exception sending license credentials email', array(
                 'error' => $e->getMessage(),
                 'license_key' => isset( $license_data['license_key'] ) ? $license_data['license_key'] : 'unknown',
             ) );
@@ -138,7 +138,7 @@ class VD_LM_Notification_Service {
             $template_content = self::load_template( 'pool-capacity-warning', $pool_data );
 
             if ( ! $template_content ) {
-                VD_Logger_Service::error( 'Failed to load pool capacity warning email template' );
+                VD_LM_Logger_Service::error( 'Failed to load pool capacity warning email template' );
                 return false;
             }
 
@@ -149,12 +149,12 @@ class VD_LM_Notification_Service {
             $sent = wp_mail( $admin_email, $subject, $template_content, $headers );
 
             if ( $sent ) {
-                VD_Logger_Service::info( 'Pool capacity warning email sent', array(
+                VD_LM_Logger_Service::info( 'Pool capacity warning email sent', array(
                     'pool_id' => $pool_data['pool_id'],
                     'usage_percentage' => $usage_percentage,
                 ) );
             } else {
-                VD_Logger_Service::error( 'Failed to send pool capacity warning email', array(
+                VD_LM_Logger_Service::error( 'Failed to send pool capacity warning email', array(
                     'pool_id' => $pool_data['pool_id'],
                 ) );
             }
@@ -162,7 +162,7 @@ class VD_LM_Notification_Service {
             return $sent;
 
         } catch ( Exception $e ) {
-            VD_Logger_Service::error( 'Exception sending pool capacity warning email', array(
+            VD_LM_Logger_Service::error( 'Exception sending pool capacity warning email', array(
                 'error' => $e->getMessage(),
                 'pool_id' => isset( $pool_data['pool_id'] ) ? $pool_data['pool_id'] : 'unknown',
             ) );
@@ -198,7 +198,7 @@ class VD_LM_Notification_Service {
             $template_content = self::load_template( 'account-expiring', $account_data );
 
             if ( ! $template_content ) {
-                VD_Logger_Service::error( 'Failed to load account expiring email template' );
+                VD_LM_Logger_Service::error( 'Failed to load account expiring email template' );
                 return false;
             }
 
@@ -209,12 +209,12 @@ class VD_LM_Notification_Service {
             $sent = wp_mail( $admin_email, $subject, $template_content, $headers );
 
             if ( $sent ) {
-                VD_Logger_Service::info( 'Account expiring notification sent', array(
+                VD_LM_Logger_Service::info( 'Account expiring notification sent', array(
                     'account_id' => $account_data['account_id'],
                     'days_remaining' => $account_data['days_remaining'],
                 ) );
             } else {
-                VD_Logger_Service::error( 'Failed to send account expiring notification', array(
+                VD_LM_Logger_Service::error( 'Failed to send account expiring notification', array(
                     'account_id' => $account_data['account_id'],
                 ) );
             }
@@ -222,7 +222,7 @@ class VD_LM_Notification_Service {
             return $sent;
 
         } catch ( Exception $e ) {
-            VD_Logger_Service::error( 'Exception sending account expiring notification', array(
+            VD_LM_Logger_Service::error( 'Exception sending account expiring notification', array(
                 'error' => $e->getMessage(),
                 'account_id' => isset( $account_data['account_id'] ) ? $account_data['account_id'] : 'unknown',
             ) );
@@ -366,11 +366,11 @@ class VD_LM_Notification_Service {
         $sent = wp_mail( $test_email, $subject, $message, $headers );
 
         if ( $sent ) {
-            VD_Logger_Service::info( 'Test email sent successfully', array(
+            VD_LM_Logger_Service::info( 'Test email sent successfully', array(
                 'test_email' => $test_email,
             ) );
         } else {
-            VD_Logger_Service::error( 'Failed to send test email', array(
+            VD_LM_Logger_Service::error( 'Failed to send test email', array(
                 'test_email' => $test_email,
             ) );
         }
@@ -398,4 +398,4 @@ class VD_LM_Notification_Service {
 }
 
 // Initialize the service
-VD_Notification_Service::init();
+VD_LM_Notification_Service::init();
