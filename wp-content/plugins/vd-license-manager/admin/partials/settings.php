@@ -71,7 +71,7 @@ if ( ! defined( 'ABSPATH' ) ) {
                 <tr>
                     <th scope="row"><?php esc_html_e( 'Encryption Status', 'vd-license-manager' ); ?></th>
                     <td>
-                        <?php if ( VD_Encryption_Service::is_configured() ) : ?>
+                        <?php if ( VD_LM_Encryption_Service::is_configured() ) : ?>
                             <span class="vd-status-ok">✓ <?php esc_html_e( 'Configured', 'vd-license-manager' ); ?></span>
                         <?php else : ?>
                             <span class="vd-status-error">✗ <?php esc_html_e( 'Not Configured', 'vd-license-manager' ); ?></span>
@@ -82,7 +82,7 @@ if ( ! defined( 'ABSPATH' ) ) {
                 <tr>
                     <th scope="row"><?php esc_html_e( 'Email Configuration', 'vd-license-manager' ); ?></th>
                     <td>
-                        <?php if ( VD_Notification_Service::is_email_configured() ) : ?>
+                        <?php if ( VD_LM_Notification_Service::is_email_configured() ) : ?>
                             <span class="vd-status-ok">✓ <?php esc_html_e( 'Configured', 'vd-license-manager' ); ?></span>
                         <?php else : ?>
                             <span class="vd-status-warning">⚠ <?php esc_html_e( 'Basic Configuration', 'vd-license-manager' ); ?></span>

@@ -78,7 +78,7 @@ if ( ! defined( 'ABSPATH' ) ) {
             <h4><?php esc_html_e( 'Recent Plugin Logs', 'vd-license-manager' ); ?></h4>
             <div class="vd-log-viewer">
                 <?php
-                $recent_logs = VD_Logger_Service::get_recent_logs( 20 );
+                $recent_logs = VD_LM_Logger_Service::get_recent_logs( 20 );
                 if ( ! empty( $recent_logs ) ) :
                 ?>
                     <pre class="vd-log-content"><?php echo esc_html( implode( "\n", $recent_logs ) ); ?></pre>

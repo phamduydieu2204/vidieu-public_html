@@ -105,7 +105,7 @@ if ( ! defined( 'ABSPATH' ) ) {
             <tr>
                 <td><?php esc_html_e( 'Encryption', 'vd-license-manager' ); ?></td>
                 <td>
-                    <?php if ( VD_Encryption_Service::is_configured() ) : ?>
+                    <?php if ( VD_LM_Encryption_Service::is_configured() ) : ?>
                         <span class="vd-status-ok">✓ <?php esc_html_e( 'Configured', 'vd-license-manager' ); ?></span>
                     <?php else : ?>
                         <span class="vd-status-error">✗ <?php esc_html_e( 'Not Configured', 'vd-license-manager' ); ?></span>

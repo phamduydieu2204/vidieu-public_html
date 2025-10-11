@@ -73,12 +73,12 @@ if ( ! defined( 'ABSPATH' ) ) {
 
         <div class="vd-encryption-status">
             <h4><?php esc_html_e( 'Encryption Status', 'vd-license-manager' ); ?></h4>
-            <?php if ( VD_Encryption_Service::is_configured() ) : ?>
+            <?php if ( VD_LM_Encryption_Service::is_configured() ) : ?>
                 <p class="vd-status-ok">
                     <span class="dashicons dashicons-yes-alt"></span>
                     <?php esc_html_e( 'Encryption is properly configured and ready for use.', 'vd-license-manager' ); ?>
                 </p>
-                <?php if ( VD_Encryption_Service::test() ) : ?>
+                <?php if ( VD_LM_Encryption_Service::test() ) : ?>
                     <p class="vd-status-ok">
                         <span class="dashicons dashicons-yes-alt"></span>
                         <?php esc_html_e( 'Encryption test passed - credentials will be safely encrypted.', 'vd-license-manager' ); ?>
