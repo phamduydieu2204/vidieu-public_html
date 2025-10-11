@@ -556,4 +556,14 @@ class VD_LM_Account_Service {
 
 		return $dependencies;
 	}
+
+	/**
+	 * Get account repository instance
+	 *
+	 * @since 1.0.0
+	 * @return VD_LM_Account_Repository Account repository instance
+	 */
+	public function get_account_repository() {
+		return $this->account_repository;
+	}
 }

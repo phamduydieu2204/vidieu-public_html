@@ -246,8 +246,10 @@ class VD_LM_Admin {
             wp_die( __( 'You do not have sufficient permissions to access this page.', 'vd-license-manager' ) );
         }
 
-        $this->render_page_header( __( 'Provider Accounts', 'vd-license-manager' ) );
-        $this->load_partial( 'accounts' );
+        // Load and use the new Accounts Page Controller
+        require_once VD_PLUGIN_DIR . 'admin/class-vd-lm-accounts-page.php';
+        $accounts_page = new VD_LM_Accounts_Page();
+        $accounts_page->render();
     }
 
     /**

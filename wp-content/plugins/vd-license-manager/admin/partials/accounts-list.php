@@ -1,0 +1,393 @@
+<?php
+/**
+ * Accounts List Template
+ *
+ * Displays provider accounts in a table format with filters, search,
+ * pagination, and bulk actions.
+ *
+ * @package    VD_License_Manager
+ * @subpackage VD_License_Manager/admin/partials
+ * @since      1.0.0
+ */
+
+// Prevent direct access
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
+// Variables available from controller:
+// $accounts - array of account objects
+// $total_accounts - total number of accounts
+// $total_pages - total pagination pages
+// $current_page - current page number
+// $per_page - items per page
+// $providers - array of unique providers
+
+$current_provider = isset( $_GET['provider'] ) ? sanitize_text_field( $_GET['provider'] ) : '';
+$current_status = isset( $_GET['status'] ) ? sanitize_text_field( $_GET['status'] ) : '';
+$orderby = isset( $_GET['orderby'] ) ? sanitize_text_field( $_GET['orderby'] ) : 'created_at';
+$order = isset( $_GET['order'] ) ? sanitize_text_field( $_GET['order'] ) : 'DESC';
+?>
+
+<div class="vd-accounts-list-wrapper">
+
+	<!-- Filters and Search -->
+	<div class="tablenav top">
+		<div class="alignleft actions">
+			<form method="get" action="">
+				<input type="hidden" name="page" value="vd-accounts">
+
+				<label for="filter-by-provider" class="screen-reader-text"><?php esc_html_e( 'Filter by provider', 'vd-license-manager' ); ?></label>
+				<select name="provider" id="filter-by-provider">
+					<option value=""><?php esc_html_e( 'All Providers', 'vd-license-manager' ); ?></option>
+					<?php foreach ( $providers as $provider ) : ?>
+						<option value="<?php echo esc_attr( $provider ); ?>" <?php selected( $current_provider, $provider ); ?>>
+							<?php echo esc_html( $provider ); ?>
+						</option>
+					<?php endforeach; ?>
+				</select>
+
+				<label for="filter-by-status" class="screen-reader-text"><?php esc_html_e( 'Filter by status', 'vd-license-manager' ); ?></label>
+				<select name="status" id="filter-by-status">
+					<option value=""><?php esc_html_e( 'All Statuses', 'vd-license-manager' ); ?></option>
+					<option value="active" <?php selected( $current_status, 'active' ); ?>><?php esc_html_e( 'Active', 'vd-license-manager' ); ?></option>
+					<option value="inactive" <?php selected( $current_status, 'inactive' ); ?>><?php esc_html_e( 'Inactive', 'vd-license-manager' ); ?></option>
+					<option value="suspended" <?php selected( $current_status, 'suspended' ); ?>><?php esc_html_e( 'Suspended', 'vd-license-manager' ); ?></option>
+				</select>
+
+				<?php submit_button( __( 'Filter', 'vd-license-manager' ), 'secondary', 'filter_action', false ); ?>
+			</form>
+		</div>
+
+		<div class="alignleft actions">
+			<form method="post" action="">
+				<?php wp_nonce_field( 'vd_lm_account_action', 'vd_lm_nonce' ); ?>
+				<input type="hidden" name="action" value="bulk_delete">
+
+				<select name="bulk_action" id="bulk-action-selector-top">
+					<option value="-1"><?php esc_html_e( 'Bulk Actions', 'vd-license-manager' ); ?></option>
+					<option value="delete"><?php esc_html_e( 'Delete', 'vd-license-manager' ); ?></option>
+				</select>
+
+				<?php submit_button( __( 'Apply', 'vd-license-manager' ), 'secondary action', 'bulk_action_submit', false, array( 'id' => 'doaction' ) ); ?>
+			</form>
+		</div>
+
+		<?php if ( $total_pages > 1 ) : ?>
+		<div class="tablenav-pages">
+			<span class="displaying-num">
+				<?php
+				/* translators: %s: number of items */
+				echo esc_html( sprintf( _n( '%s item', '%s items', $total_accounts, 'vd-license-manager' ), number_format_i18n( $total_accounts ) ) );
+				?>
+			</span>
+			<?php
+			echo paginate_links( array(
+				'base' => add_query_arg( 'paged', '%#%' ),
+				'format' => '',
+				'prev_text' => __( '&laquo;' ),
+				'next_text' => __( '&raquo;' ),
+				'total' => $total_pages,
+				'current' => $this->current_page,
+				'type' => 'plain',
+			) );
+			?>
+		</div>
+		<?php endif; ?>
+	</div>
+
+	<!-- Accounts Table -->
+	<form method="post" id="accounts-filter">
+		<?php wp_nonce_field( 'vd_lm_account_action', 'vd_lm_nonce' ); ?>
+		<input type="hidden" name="action" value="bulk_delete">
+
+		<table class="wp-list-table widefat fixed striped accounts">
+			<thead>
+				<tr>
+					<td id="cb" class="manage-column column-cb check-column">
+						<label class="screen-reader-text" for="cb-select-all-1"><?php esc_html_e( 'Select All', 'vd-license-manager' ); ?></label>
+						<input id="cb-select-all-1" type="checkbox">
+					</td>
+					<th scope="col" class="manage-column column-provider <?php echo ( $orderby === 'provider' ) ? 'sorted ' . strtolower( $order ) : 'sortable desc'; ?>">
+						<a href="<?php echo esc_url( add_query_arg( array( 'orderby' => 'provider', 'order' => ( $orderby === 'provider' && $order === 'ASC' ) ? 'DESC' : 'ASC' ) ) ); ?>">
+							<span><?php esc_html_e( 'Provider', 'vd-license-manager' ); ?></span>
+							<span class="sorting-indicator"></span>
+						</a>
+					</th>
+					<th scope="col" class="manage-column column-account-login <?php echo ( $orderby === 'account_login' ) ? 'sorted ' . strtolower( $order ) : 'sortable desc'; ?>">
+						<a href="<?php echo esc_url( add_query_arg( array( 'orderby' => 'account_login', 'order' => ( $orderby === 'account_login' && $order === 'ASC' ) ? 'DESC' : 'ASC' ) ) ); ?>">
+							<span><?php esc_html_e( 'Account Login', 'vd-license-manager' ); ?></span>
+							<span class="sorting-indicator"></span>
+						</a>
+					</th>
+					<th scope="col" class="manage-column column-display-name"><?php esc_html_e( 'Display Name', 'vd-license-manager' ); ?></th>
+					<th scope="col" class="manage-column column-capacity"><?php esc_html_e( 'Capacity', 'vd-license-manager' ); ?></th>
+					<th scope="col" class="manage-column column-status <?php echo ( $orderby === 'status' ) ? 'sorted ' . strtolower( $order ) : 'sortable desc'; ?>">
+						<a href="<?php echo esc_url( add_query_arg( array( 'orderby' => 'status', 'order' => ( $orderby === 'status' && $order === 'ASC' ) ? 'DESC' : 'ASC' ) ) ); ?>">
+							<span><?php esc_html_e( 'Status', 'vd-license-manager' ); ?></span>
+							<span class="sorting-indicator"></span>
+						</a>
+					</th>
+					<th scope="col" class="manage-column column-expires"><?php esc_html_e( 'Expires', 'vd-license-manager' ); ?></th>
+					<th scope="col" class="manage-column column-created <?php echo ( $orderby === 'created_at' ) ? 'sorted ' . strtolower( $order ) : 'sortable desc'; ?>">
+						<a href="<?php echo esc_url( add_query_arg( array( 'orderby' => 'created_at', 'order' => ( $orderby === 'created_at' && $order === 'ASC' ) ? 'DESC' : 'ASC' ) ) ); ?>">
+							<span><?php esc_html_e( 'Created', 'vd-license-manager' ); ?></span>
+							<span class="sorting-indicator"></span>
+						</a>
+					</th>
+				</tr>
+			</thead>
+
+			<tbody id="the-list">
+				<?php if ( empty( $accounts ) ) : ?>
+					<tr class="no-items">
+						<td class="colspanchange" colspan="8">
+							<?php esc_html_e( 'No accounts found.', 'vd-license-manager' ); ?>
+						</td>
+					</tr>
+				<?php else : ?>
+					<?php foreach ( $accounts as $account ) : ?>
+						<tr>
+							<th scope="row" class="check-column">
+								<label class="screen-reader-text" for="cb-select-<?php echo esc_attr( $account->id ); ?>">
+									<?php
+									/* translators: %s: account display name */
+									echo esc_html( sprintf( __( 'Select %s', 'vd-license-manager' ), $account->display_name ) );
+									?>
+								</label>
+								<input id="cb-select-<?php echo esc_attr( $account->id ); ?>" type="checkbox" name="account_ids[]" value="<?php echo esc_attr( $account->id ); ?>">
+							</th>
+
+							<td class="provider column-provider">
+								<strong>
+									<a href="<?php echo esc_url( admin_url( 'admin.php?page=vd-accounts&action=edit&id=' . $account->id ) ); ?>" class="row-title">
+										<?php echo esc_html( $account->provider ); ?>
+									</a>
+								</strong>
+
+								<div class="row-actions">
+									<span class="edit">
+										<a href="<?php echo esc_url( admin_url( 'admin.php?page=vd-accounts&action=edit&id=' . $account->id ) ); ?>" aria-label="<?php esc_attr_e( 'Edit this account', 'vd-license-manager' ); ?>">
+											<?php esc_html_e( 'Edit', 'vd-license-manager' ); ?>
+										</a> |
+									</span>
+									<span class="view">
+										<a href="<?php echo esc_url( admin_url( 'admin.php?page=vd-accounts&action=view&id=' . $account->id ) ); ?>" aria-label="<?php esc_attr_e( 'View this account', 'vd-license-manager' ); ?>">
+											<?php esc_html_e( 'View', 'vd-license-manager' ); ?>
+										</a> |
+									</span>
+									<span class="trash">
+										<a href="#" class="delete-account" data-account-id="<?php echo esc_attr( $account->id ); ?>" data-account-name="<?php echo esc_attr( $account->display_name ); ?>" aria-label="<?php esc_attr_e( 'Delete this account', 'vd-license-manager' ); ?>">
+											<?php esc_html_e( 'Delete', 'vd-license-manager' ); ?>
+										</a>
+									</span>
+								</div>
+							</td>
+
+							<td class="account-login column-account-login">
+								<?php echo esc_html( $account->account_login ); ?>
+							</td>
+
+							<td class="display-name column-display-name">
+								<?php echo esc_html( $account->display_name ); ?>
+							</td>
+
+							<td class="capacity column-capacity">
+								<?php echo esc_html( $account->capacity ); ?>
+							</td>
+
+							<td class="status column-status">
+								<span class="status-badge status-<?php echo esc_attr( $account->status ); ?>">
+									<?php echo esc_html( ucfirst( $account->status ) ); ?>
+								</span>
+							</td>
+
+							<td class="expires column-expires">
+								<?php
+								if ( ! empty( $account->expires_at ) && $account->expires_at !== '0000-00-00 00:00:00' ) {
+									$expires_timestamp = strtotime( $account->expires_at );
+									$current_timestamp = current_time( 'timestamp' );
+
+									if ( $expires_timestamp < $current_timestamp ) {
+										echo '<span class="expired">' . esc_html__( 'Expired', 'vd-license-manager' ) . '</span>';
+									} else {
+										echo '<span class="expires-date">' . esc_html( wp_date( 'M j, Y', $expires_timestamp ) ) . '</span>';
+									}
+								} else {
+									echo '<span class="no-expiry">' . esc_html__( 'Never', 'vd-license-manager' ) . '</span>';
+								}
+								?>
+							</td>
+
+							<td class="created column-created">
+								<?php echo esc_html( wp_date( 'M j, Y', strtotime( $account->created_at ) ) ); ?>
+							</td>
+						</tr>
+					<?php endforeach; ?>
+				<?php endif; ?>
+			</tbody>
+
+			<tfoot>
+				<tr>
+					<td class="manage-column column-cb check-column">
+						<label class="screen-reader-text" for="cb-select-all-2"><?php esc_html_e( 'Select All', 'vd-license-manager' ); ?></label>
+						<input id="cb-select-all-2" type="checkbox">
+					</td>
+					<th scope="col" class="manage-column column-provider"><?php esc_html_e( 'Provider', 'vd-license-manager' ); ?></th>
+					<th scope="col" class="manage-column column-account-login"><?php esc_html_e( 'Account Login', 'vd-license-manager' ); ?></th>
+					<th scope="col" class="manage-column column-display-name"><?php esc_html_e( 'Display Name', 'vd-license-manager' ); ?></th>
+					<th scope="col" class="manage-column column-capacity"><?php esc_html_e( 'Capacity', 'vd-license-manager' ); ?></th>
+					<th scope="col" class="manage-column column-status"><?php esc_html_e( 'Status', 'vd-license-manager' ); ?></th>
+					<th scope="col" class="manage-column column-expires"><?php esc_html_e( 'Expires', 'vd-license-manager' ); ?></th>
+					<th scope="col" class="manage-column column-created"><?php esc_html_e( 'Created', 'vd-license-manager' ); ?></th>
+				</tr>
+			</tfoot>
+		</table>
+	</form>
+
+	<!-- Bottom Pagination -->
+	<?php if ( $total_pages > 1 ) : ?>
+	<div class="tablenav bottom">
+		<div class="tablenav-pages">
+			<span class="displaying-num">
+				<?php
+				/* translators: %s: number of items */
+				echo esc_html( sprintf( _n( '%s item', '%s items', $total_accounts, 'vd-license-manager' ), number_format_i18n( $total_accounts ) ) );
+				?>
+			</span>
+			<?php
+			echo paginate_links( array(
+				'base' => add_query_arg( 'paged', '%#%' ),
+				'format' => '',
+				'prev_text' => __( '&laquo;' ),
+				'next_text' => __( '&raquo;' ),
+				'total' => $total_pages,
+				'current' => $this->current_page,
+				'type' => 'plain',
+			) );
+			?>
+		</div>
+	</div>
+	<?php endif; ?>
+</div>
+
+<!-- Delete Confirmation Modal (will be added via JavaScript) -->
+<div id="delete-account-modal" style="display: none;">
+	<form method="post" id="delete-account-form">
+		<?php wp_nonce_field( 'vd_lm_account_action', 'vd_lm_nonce' ); ?>
+		<input type="hidden" name="action" value="delete">
+		<input type="hidden" name="account_id" id="delete-account-id">
+	</form>
+</div>
+
+<style>
+.status-badge {
+	padding: 2px 8px;
+	border-radius: 3px;
+	font-size: 11px;
+	font-weight: bold;
+	text-transform: uppercase;
+}
+
+.status-active {
+	background-color: #dff0d8;
+	color: #3c763d;
+}
+
+.status-inactive {
+	background-color: #f2dede;
+	color: #a94442;
+}
+
+.status-suspended {
+	background-color: #fcf8e3;
+	color: #8a6d3b;
+}
+
+.expired {
+	color: #a94442;
+	font-weight: bold;
+}
+
+.expires-date {
+	color: #555;
+}
+
+.no-expiry {
+	color: #999;
+	font-style: italic;
+}
+
+.vd-accounts-list-wrapper .tablenav {
+	margin-bottom: 10px;
+}
+
+.vd-accounts-list-wrapper .tablenav .actions {
+	margin-right: 20px;
+}
+
+.vd-accounts-list-wrapper .tablenav .actions form {
+	display: inline;
+}
+
+.vd-accounts-list-wrapper .tablenav .actions select {
+	margin-right: 5px;
+}
+</style>
+
+<script>
+jQuery(document).ready(function($) {
+	// Handle select all checkboxes
+	$('#cb-select-all-1, #cb-select-all-2').on('change', function() {
+		var checked = $(this).prop('checked');
+		$('input[name="account_ids[]"]').prop('checked', checked);
+		$('#cb-select-all-1, #cb-select-all-2').prop('checked', checked);
+	});
+
+	// Handle individual checkboxes
+	$('input[name="account_ids[]"]').on('change', function() {
+		var total = $('input[name="account_ids[]"]').length;
+		var checked = $('input[name="account_ids[]"]:checked').length;
+
+		$('#cb-select-all-1, #cb-select-all-2').prop('checked', total === checked);
+	});
+
+	// Handle delete account links
+	$('.delete-account').on('click', function(e) {
+		e.preventDefault();
+
+		var accountId = $(this).data('account-id');
+		var accountName = $(this).data('account-name');
+
+		if (confirm('<?php echo esc_js( __( 'Are you sure you want to delete this account?', 'vd-license-manager' ) ); ?>\n\n' + accountName)) {
+			$('#delete-account-id').val(accountId);
+			$('#delete-account-form').submit();
+		}
+	});
+
+	// Handle bulk actions
+	$('#doaction').on('click', function(e) {
+		var action = $('#bulk-action-selector-top').val();
+		var selected = $('input[name="account_ids[]"]:checked').length;
+
+		if (action === '-1') {
+			e.preventDefault();
+			alert('<?php echo esc_js( __( 'Please select an action.', 'vd-license-manager' ) ); ?>');
+			return;
+		}
+
+		if (selected === 0) {
+			e.preventDefault();
+			alert('<?php echo esc_js( __( 'Please select at least one account.', 'vd-license-manager' ) ); ?>');
+			return;
+		}
+
+		if (action === 'delete') {
+			if (!confirm('<?php echo esc_js( __( 'Are you sure you want to delete the selected accounts?', 'vd-license-manager' ) ); ?>')) {
+				e.preventDefault();
+				return;
+			}
+		}
+	});
+});
+</script>
