@@ -46,9 +46,15 @@ class VD_LM_Account_Repository extends VD_LM_Base_Repository {
 	 */
 	private $encrypted_fields = array(
 		'account_password',
+		'cookies',
+		'phone_recovery',
+		'email_recovery',
+		'security_answer',
+		'backup_codes',
+		'two_factor_secret',
 		'api_key',
 		'secret_key',
-		'two_factor_secret',
+		'api_token',
 		'custom_fields',
 	);
 

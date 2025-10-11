@@ -380,12 +380,19 @@ class VD_LM_Accounts_Page {
 			'account_login' => sanitize_text_field( $post['account_login'] ?? '' ),
 			'display_name' => sanitize_text_field( $post['display_name'] ?? '' ),
 			'account_password' => $post['account_password'] ?? '', // Don't sanitize password
+			'cookies' => $post['cookies'] ?? '', // Don't sanitize cookies
+			'phone_recovery' => sanitize_text_field( $post['phone_recovery'] ?? '' ),
+			'email_recovery' => sanitize_email( $post['email_recovery'] ?? '' ),
+			'security_question' => sanitize_text_field( $post['security_question'] ?? '' ),
+			'security_answer' => $post['security_answer'] ?? '', // Don't sanitize sensitive answer
+			'backup_codes' => sanitize_textarea_field( $post['backup_codes'] ?? '' ),
+			'two_factor_secret' => sanitize_text_field( $post['two_factor_secret'] ?? '' ),
+			'api_key' => sanitize_text_field( $post['api_key'] ?? '' ),
+			'secret_key' => $post['secret_key'] ?? '', // Don't sanitize secret
+			'api_token' => $post['api_token'] ?? '', // Don't sanitize token
 			'capacity' => absint( $post['capacity'] ?? 1 ),
 			'status' => sanitize_text_field( $post['status'] ?? 'active' ),
 			'expires_at' => sanitize_text_field( $post['expires_at'] ?? '' ),
-			'api_key' => sanitize_text_field( $post['api_key'] ?? '' ),
-			'secret_key' => sanitize_text_field( $post['secret_key'] ?? '' ),
-			'two_factor_secret' => sanitize_text_field( $post['two_factor_secret'] ?? '' ),
 			'custom_fields' => $this->sanitize_custom_fields( $post['custom_fields'] ?? array() ),
 			'notes' => sanitize_textarea_field( $post['notes'] ?? '' ),
 		);

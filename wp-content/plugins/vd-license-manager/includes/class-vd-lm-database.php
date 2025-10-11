@@ -115,6 +115,154 @@ class VD_LM_Database {
     }
 
     /**
+     * Migrate provider accounts table to new schema
+     *
+     * Adds missing columns to existing installations.
+     *
+     * @since 1.0.0
+     * @return bool True if migration was successful
+     */
+    public static function migrate_provider_accounts_table() {
+        global $wpdb;
+        $table_name = $wpdb->prefix . 'vd_provider_accounts';
+
+        // Check if table exists
+        $table_exists = $wpdb->get_var( $wpdb->prepare(
+            "SHOW TABLES LIKE %s",
+            $table_name
+        ) );
+
+        if ( ! $table_exists ) {
+            VD_LM_Logger_Service::info( 'Provider accounts table does not exist, skipping migration' );
+            return false;
+        }
+
+        // Define columns to add/modify
+        $columns_to_add = array(
+            'account_password' => "ADD COLUMN account_password TEXT NULL COMMENT 'Login password (encrypted)' AFTER display_name",
+            'cookies' => "ADD COLUMN cookies LONGTEXT NULL COMMENT 'Session cookies (encrypted)' AFTER expires_at",
+            'phone_recovery' => "ADD COLUMN phone_recovery VARCHAR(50) NULL COMMENT 'Recovery phone number (encrypted)' AFTER cookies",
+            'email_recovery' => "ADD COLUMN email_recovery VARCHAR(255) NULL COMMENT 'Recovery email address (encrypted)' AFTER phone_recovery",
+            'secret_key' => "ADD COLUMN secret_key TEXT NULL COMMENT 'API secret key (encrypted)' AFTER api_key",
+            'current_usage' => "ADD COLUMN current_usage INT(11) NOT NULL DEFAULT 0 COMMENT 'Current number of active licenses' AFTER custom_fields",
+            'last_credentials_update' => "ADD COLUMN last_credentials_update DATETIME NULL COMMENT 'Last time any credential was changed' AFTER current_usage",
+            'next_update_due' => "ADD COLUMN next_update_due DATETIME NULL COMMENT 'When credentials need to be updated next' AFTER last_credentials_update",
+            'notes' => "ADD COLUMN notes TEXT NULL COMMENT 'Internal admin notes (not encrypted)' AFTER next_update_due",
+        );
+
+        // Columns to modify
+        $columns_to_modify = array(
+            'display_name' => "MODIFY COLUMN display_name VARCHAR(255) NULL COMMENT 'Admin display name for easy identification'",
+            'account_login' => "MODIFY COLUMN account_login VARCHAR(255) NOT NULL COMMENT 'Login username or email'",
+            'expires_at' => "MODIFY COLUMN expires_at DATETIME NULL COMMENT 'Provider account expiration date'",
+            'status' => "MODIFY COLUMN status ENUM('active','inactive','suspended') NOT NULL DEFAULT 'active' COMMENT 'Account status'",
+            'api_key' => "MODIFY COLUMN api_key TEXT NULL COMMENT 'API key for provider services (encrypted)'",
+            'api_token' => "MODIFY COLUMN api_token LONGTEXT NULL COMMENT 'API access token (encrypted)'",
+            'two_factor_secret' => "MODIFY COLUMN two_factor_secret TEXT NULL COMMENT '2FA TOTP secret (encrypted)'",
+        );
+
+        // Rename columns if needed
+        $columns_to_rename = array(
+            'login_password' => "CHANGE COLUMN login_password account_password TEXT NULL COMMENT 'Login password (encrypted)'",
+            'cookie' => "CHANGE COLUMN cookie cookies LONGTEXT NULL COMMENT 'Session cookies (encrypted)'",
+            'account_fields' => "CHANGE COLUMN account_fields custom_fields LONGTEXT NULL COMMENT 'Additional custom fields as JSON (encrypted)'",
+        );
+
+        $migration_errors = array();
+        $migration_success = array();
+
+        // Add missing columns
+        foreach ( $columns_to_add as $column => $sql ) {
+            $column_exists = $wpdb->get_results( $wpdb->prepare(
+                "SELECT * FROM INFORMATION_SCHEMA.COLUMNS
+                WHERE TABLE_SCHEMA = %s
+                AND TABLE_NAME = %s
+                AND COLUMN_NAME = %s",
+                DB_NAME,
+                $table_name,
+                $column
+            ) );
+
+            if ( empty( $column_exists ) ) {
+                $result = $wpdb->query( "ALTER TABLE {$table_name} {$sql}" );
+                if ( $result === false ) {
+                    $migration_errors[] = "Failed to add column '{$column}': " . $wpdb->last_error;
+                } else {
+                    $migration_success[] = "Added column '{$column}'";
+                    VD_LM_Logger_Service::info( "Migration: Added column '{$column}' to {$table_name}" );
+                }
+            }
+        }
+
+        // Rename columns
+        foreach ( $columns_to_rename as $old_column => $sql ) {
+            $column_exists = $wpdb->get_results( $wpdb->prepare(
+                "SELECT * FROM INFORMATION_SCHEMA.COLUMNS
+                WHERE TABLE_SCHEMA = %s
+                AND TABLE_NAME = %s
+                AND COLUMN_NAME = %s",
+                DB_NAME,
+                $table_name,
+                $old_column
+            ) );
+
+            if ( ! empty( $column_exists ) ) {
+                $result = $wpdb->query( "ALTER TABLE {$table_name} {$sql}" );
+                if ( $result === false ) {
+                    $migration_errors[] = "Failed to rename column '{$old_column}': " . $wpdb->last_error;
+                } else {
+                    $migration_success[] = "Renamed column '{$old_column}'";
+                    VD_LM_Logger_Service::info( "Migration: Renamed column '{$old_column}' in {$table_name}" );
+                }
+            }
+        }
+
+        // Modify existing columns
+        foreach ( $columns_to_modify as $column => $sql ) {
+            $result = $wpdb->query( "ALTER TABLE {$table_name} {$sql}" );
+            if ( $result === false ) {
+                $migration_errors[] = "Failed to modify column '{$column}': " . $wpdb->last_error;
+            } else {
+                $migration_success[] = "Modified column '{$column}'";
+                VD_LM_Logger_Service::info( "Migration: Modified column '{$column}' in {$table_name}" );
+            }
+        }
+
+        // Add unique constraint if it doesn't exist
+        $constraint_exists = $wpdb->get_results( $wpdb->prepare(
+            "SELECT * FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS
+            WHERE TABLE_SCHEMA = %s
+            AND TABLE_NAME = %s
+            AND CONSTRAINT_NAME = 'uk_provider_login'",
+            DB_NAME,
+            $table_name
+        ) );
+
+        if ( empty( $constraint_exists ) ) {
+            $result = $wpdb->query( "ALTER TABLE {$table_name} ADD UNIQUE KEY uk_provider_login (provider, account_login)" );
+            if ( $result === false ) {
+                $migration_errors[] = "Failed to add unique constraint: " . $wpdb->last_error;
+            } else {
+                $migration_success[] = "Added unique constraint for provider+login";
+                VD_LM_Logger_Service::info( "Migration: Added unique constraint to {$table_name}" );
+            }
+        }
+
+        // Update migration flag
+        update_option( 'vd_accounts_migrated_v2', time() );
+
+        // Log migration results
+        VD_LM_Logger_Service::info( 'Provider accounts table migration completed', array(
+            'success_count' => count( $migration_success ),
+            'error_count' => count( $migration_errors ),
+            'success_operations' => $migration_success,
+            'errors' => $migration_errors,
+        ) );
+
+        return empty( $migration_errors );
+    }
+
+    /**
      * Drop all plugin tables
      *
      * Removes all plugin tables and related options.
@@ -172,28 +320,35 @@ class VD_LM_Database {
         $sql = "CREATE TABLE {$table_name} (
             id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
             provider varchar(100) NOT NULL COMMENT 'Provider name: Netflix, Spotify, Helium10, etc.',
-            display_name varchar(255) NOT NULL COMMENT 'Admin display name for easy identification',
+            account_login varchar(255) NOT NULL COMMENT 'Login username or email',
+            display_name varchar(255) NULL COMMENT 'Admin display name for easy identification',
+            account_password text NULL COMMENT 'Login password (encrypted with VD_LM_Encryption_Service)',
             capacity int(11) NOT NULL DEFAULT 1 COMMENT 'Maximum licenses this account can serve',
-            status enum('active','inactive','expired') NOT NULL DEFAULT 'active' COMMENT 'Account status',
-            expires_at datetime NOT NULL COMMENT 'Provider account expiration date',
-            account_login varchar(255) NULL COMMENT 'Login username or email',
-            login_password text NULL COMMENT 'Login password (encrypted with VD_LM_Encryption_Service)',
-            cookie longtext NULL COMMENT 'Session cookie JSON (encrypted)',
+            status enum('active','inactive','suspended') NOT NULL DEFAULT 'active' COMMENT 'Account status',
+            expires_at datetime NULL COMMENT 'Provider account expiration date',
+            cookies longtext NULL COMMENT 'Session cookies (encrypted)',
+            phone_recovery varchar(50) NULL COMMENT 'Recovery phone number (encrypted)',
+            email_recovery varchar(255) NULL COMMENT 'Recovery email address (encrypted)',
             security_question varchar(255) NULL COMMENT 'Security question text',
             security_answer text NULL COMMENT 'Security answer (encrypted)',
             backup_codes text NULL COMMENT 'Backup recovery codes (encrypted)',
-            two_factor_secret varchar(255) NULL COMMENT '2FA TOTP secret (encrypted)',
-            api_key varchar(255) NULL COMMENT 'API key for provider services',
-            api_secret text NULL COMMENT 'API secret (encrypted)',
-            api_token text NULL COMMENT 'API access token (encrypted)',
-            account_fields longtext NULL COMMENT 'Additional custom fields as JSON',
-            last_credential_update datetime NULL COMMENT 'Last time any credential was changed',
+            two_factor_secret text NULL COMMENT '2FA TOTP secret (encrypted)',
+            api_key text NULL COMMENT 'API key for provider services (encrypted)',
+            secret_key text NULL COMMENT 'API secret key (encrypted)',
+            api_token longtext NULL COMMENT 'API access token (encrypted)',
+            custom_fields longtext NULL COMMENT 'Additional custom fields as JSON (encrypted)',
+            current_usage int(11) NOT NULL DEFAULT 0 COMMENT 'Current number of active licenses',
+            last_credentials_update datetime NULL COMMENT 'Last time any credential was changed',
+            next_update_due datetime NULL COMMENT 'When credentials need to be updated next',
+            notes text NULL COMMENT 'Internal admin notes (not encrypted)',
             created_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
             updated_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
             PRIMARY KEY (id),
+            UNIQUE KEY uk_provider_login (provider, account_login),
             KEY idx_provider (provider),
             KEY idx_status (status),
             KEY idx_expires_at (expires_at),
+            KEY idx_current_usage (current_usage),
             KEY idx_created_at (created_at)
         ) $charset_collate;";
 
