@@ -1,0 +1,3098 @@
+<?xml version="1.0"?>
+<opml version="1.0">
+	<head>
+		<title>
+FLOW 2: CUSTOMER
+PURCHASE FLOW - Khách
+mua hàng (Tích hợp LMfWC)
+		</title>
+	</head>
+	<body>
+		<outline text="FLOW 4: ADMIN MANAGEMENT FLOW" _note="Admin quản lý licenses, devices, pools, accounts, logs và analytics. Tất cả thao tác qua WordPress Admin Dashboard.">
+			<outline text="OVERVIEW - Tổng quan FLOW 4" _note="Các chức năng admin có thể làm">
+				<outline text="Admin Dashboard Sections">
+					<outline text="1. License Management: View/search licenses, view details, view devices, manage device status"/>
+					<outline text="2. Device Management: View all devices, remove/block/unblock devices, view device history"/>
+					<outline text="3. Pool Management: View/add/edit/delete pools, view pool capacity, reassign licenses"/>
+					<outline text="4. Account Management: View/add/edit/delete provider accounts, update credentials"/>
+					<outline text="5. Logs &amp; Analytics: View access logs, request history, analytics dashboard, reports"/>
+					<outline text="6. Settings: Product share configs, VPS settings, IP whitelist"/>
+				</outline>
+				<outline text="User Roles">
+					<outline text="Administrator: Full access (all functions)"/>
+					<outline text="Shop Manager: View licenses, manage devices, view logs"/>
+					<outline text="Customer: Chỉ access portal (không vào admin)"/>
+				</outline>
+				<outline text="Menu Structure trong WP Admin">
+					<outline text="VD License Manager (top level menu)">
+						<outline text="- Licenses (submenu)"/>
+						<outline text="- Devices (submenu)"/>
+						<outline text="- Pools (submenu)"/>
+						<outline text="- Accounts (submenu)"/>
+						<outline text="- Logs (submenu)"/>
+						<outline text="- Analytics (submenu)"/>
+						<outline text="- Settings (submenu)"/>
+					</outline>
+				</outline>
+			</outline>
+			<outline text="PHẦN 1: LICENSE MANAGEMENT" _note="Quản lý licenses">
+				<outline text="1.1. View License List" _note="Danh sách tất cả licenses">
+					<outline text="1.1.1. Admin truy cập">
+						<outline text="Navigate: WP Admin → VD License Manager → Licenses"/>
+						<outline text="URL: /wp-admin/admin. php?page=vd-licenses"/>
+					</outline>
+					<outline text="1.1.2. License List Table" _note="Bảng danh sách licenses với filters">
+						<outline text="Columns hiển thị">
+							<outline text="License Key (A3F9-K2L4-M8N1-P5Q7)"/>
+							<outline text="Product (Netflix Premium 4K - 30 ngày)"/>
+							<outline text="Customer (Email/Name)"/>
+							<outline text="Status (active/expired/suspended/revoked) - Badge màu"/>
+							<outline text="Devices (1/2 - current/max) - Progress bar"/>
+							<outline text="Pool (Pool 1: Netflix001) - Link to pool"/>
+							<outline text="Valid Until (2025-11-07 23:59:59)"/>
+							<outline text="Last Accessed (2025-10-08 14:30:00)"/>
+							<outline text="Actions (View Details | Edit | Suspend | Delete)"/>
+						</outline>
+						<outline text="Filters &amp; Search">
+							<outline text="Search box: Tìm theo license key, email, order ID"/>
+							<outline text="Filter by Status: All | Active | Expired | Suspended | Revoked"/>
+							<outline text="Filter by Product: Dropdown list products"/>
+							<outline text="Filter by Date: Date range picker (valid_from, valid_until)"/>
+							<outline text="Sort by: License Key, Status, Valid Until, Last Accessed"/>
+						</outline>
+						<outline text="Pagination">
+							<outline text="Items per page: 20 (default), 50, 100"/>
+							<outline text="Total: 1,234 licenses"/>
+							<outline text="Page navigation: Previous | 1 2 3 ... 62 | Next"/>
+						</outline>
+					</outline>
+					<outline text="1.1.3. Bulk Actions" _note="Thao tác hàng loạt">
+						<outline text="Select multiple licenses (checkboxes)"/>
+						<outline text="Bulk actions dropdown">
+							<outline text="Suspend Selected (chuyển status → suspended)"/>
+							<outline text="Activate Selected (chuyển status → active)"/>
+							<outline text="Revoke Selected (chuyển status → revoked)"/>
+							<outline text="Delete Selected (xóa hoàn toàn - cảnh báo)"/>
+							<outline text="Export Selected (xuất CSV)"/>
+						</outline>
+						<outline text="Confirmation dialog trước khi thực hiện"/>
+					</outline>
+				</outline>
+				<outline text="1.2. View License Details" _note="Chi tiết 1 license cụ thể">
+					<outline text="1.2.1. Admin click vào license">
+						<outline text="From: License List → Click &apos;View Details&apos; hoặc click vào License Key"/>
+						<outline text="URL: /wp-admin/admin. php?page=vd-licenses&amp;action=view&amp;license_id=50"/>
+					</outline>
+					<outline text="1.2.2. License Information Section" _note="Thông tin cơ bản">
+						<outline text="License Details">
+							<outline text="License Key: A3F9-K2L4-M8N1-P5Q7 (Copy button)"/>
+							<outline text="Status: Active (Badge màu xanh) - Có nút Change Status"/>
+							<outline text="Product: Netflix Premium 4K - 30 ngày (Link to product)"/>
+							<outline text="Order ID: #12345 (Link to WooCommerce order)"/>
+							<outline text="Customer: john@example. com (Link to customer)"/>
+							<outline text="Created: 2025-10-08 00:00:00"/>
+							<outline text="Valid From: 2025-10-08 00:00:00"/>
+							<outline text="Valid Until: 2025-11-07 23:59:59"/>
+							<outline text="Days Remaining: 30 days"/>
+						</outline>
+						<outline text="Quick Actions">
+							<outline text="Button: Extend License (thêm ngày)"/>
+							<outline text="Button: Suspend License"/>
+							<outline text="Button: Revoke License"/>
+							<outline text="Button: Send to Customer (gửi email thông tin)"/>
+						</outline>
+					</outline>
+					<outline text="1.2.3. Pool Assignment Section" _note="Thông tin pool">
+						<outline text="Current Pool Assignment">
+							<outline text="Pool: Pool 1: Netflix Premium (Link to pool details)">
+								<outline text="Click vào → Redirect to Pool Details page"/>
+								<outline text="Ở Pool Details sẽ thấy danh sách tất cả accounts với expires_at của từng account"/>
+							</outline>
+							<outline text="Current Account: Netflix001 (account_login) - Link to account details">
+								<outline text="Hiển thị account ĐANG được assign cho license này"/>
+								<outline text="Click vào → Redirect to Account Details page"/>
+								<outline text="Ở Account Details sẽ thấy expires_at: 2025-12-31 23:59:59"/>
+							</outline>
+							<outline text="Account Status: Active (Badge màu xanh)">
+								<outline text="Active: Account hoạt động bình thường"/>
+								<outline text="Expired: Account hết hạn (màu đỏ)"/>
+								<outline text="Inactive: Account bị tắt bởi admin (màu xám)"/>
+							</outline>
+							<outline text="Assigned At: 2025-10-08 14:30:00">
+								<outline text="Thời điểm pool được assign cho license này"/>
+							</outline>
+						</outline>
+						<outline text="Pool Capacity Info" _note="Thông tin capacity của pool">
+							<outline text="Total Accounts in Pool: 5 accounts">
+								<outline text="Tổng số accounts trong pool này"/>
+							</outline>
+							<outline text="Pool Capacity: 15/20 (Assigned/Total)">
+								<outline text="15 licenses đã được assign"/>
+								<outline text="20 là tổng capacity (5 accounts x 4 capacity each = 20)"/>
+								<outline text="Còn 5 slots available"/>
+							</outline>
+							<outline text="Progress bar: 75% used (15/20)"/>
+						</outline>
+						<outline text="Actions">
+							<outline text="Button: View Pool Details">
+								<outline text="Redirect to: /wp-admin/admin. php?page=vd-pools&amp;action=view&amp;pool_id=1"/>
+								<outline text="Xem đầy đủ: danh sách accounts, expires_at từng account, licenses assigned"/>
+							</outline>
+							<outline text="Button: Reassign to Another Pool">
+								<outline text="Mở modal chọn pool khác"/>
+								<outline text="Chỉ show pools có available capacity"/>
+								<outline text="Sau khi chọn → License sẽ được assign sang pool mới"/>
+							</outline>
+							<outline text="Button: Unassign Pool">
+								<outline text="Gỡ pool assignment"/>
+								<outline text="SET assigned_pool_id=NULL, assigned_account_id=NULL"/>
+								<outline text="License sẽ auto-assign lại khi customer access lần sau"/>
+							</outline>
+						</outline>
+						<outline text="IF chưa assign pool" _note="Trường hợp license chưa có pool">
+							<outline text="Message: Pool chưa được assign. Pool sẽ tự động assign khi khách hàng truy cập portal lần đầu tiên (theo priority rule)."/>
+							<outline text="Button: Assign Pool Now (manual assign)">
+								<outline text="Admin click → Mở modal chọn pool"/>
+								<outline text="System apply pool assignment logic (giống Flow 3 Bước 5)"/>
+								<outline text="Assign ngay mà không cần đợi customer access"/>
+							</outline>
+						</outline>
+						<outline text="Warning Messages" _note="Cảnh báo nếu có vấn đề">
+							<outline text="IF account status = Expired">
+								<outline text="⚠️ Warning (màu đỏ): Account hiện tại đã HẾT HẠN (expires_at: 2025-10-01). Customer sẽ không thể lấy credentials. Vui lòng update credentials hoặc reassign sang pool khác."/>
+								<outline text="Button: View Account Details (để xem và update)"/>
+							</outline>
+							<outline text="IF pool is full">
+								<outline text="⚠️ Warning (màu cam): Pool hiện tại đã ĐẦY (20/20). Nếu unassign license này, có thể không assign lại được pool này. Cân nhắc trước khi thao tác."/>
+							</outline>
+							<outline text="IF all accounts in pool expired">
+								<outline text="🚨 Critical (màu đỏ): TẤT CẢ accounts trong pool này đã HẾT HẠN. Customer sẽ không thể access. Khẩn cấp cần: Update credentials hoặc reassign sang pool khác."/>
+							</outline>
+						</outline>
+					</outline>
+					<outline text="1.2.4. Devices Section" _note="Danh sách thiết bị">
+						<outline text="Devices List Table">
+							<outline text="Columns: Device Name, Status, Registered At, Last Accessed, IP Address, Actions"/>
+							<outline text="Ví dụ devices">
+								<outline text="Row 1: Laptop - Windows 11 - Chrome 120 | Active | 2025-10-08 14:30:00 | 2025-10-08 14:30:00 | 123.45. 67.89 | [View] [Remove] [Block]"/>
+								<outline text="Row 2: iPhone 14 | Active | 2025-10-07 10: 15:00 | 2025-10-08 09:20:00 | 123.45.67.90 | [View] [Remove] [Block]"/>
+								<outline text="Row 3: iPad Pro | Removed | 2025-10-02 08:00:00 | 2025-10-05 16: 30:00 | 123.45.67.88 | [Restore]"/>
+							</outline>
+							<outline text="Device Count: 2/2 active devices (đã đạt giới hạn) - Badge đỏ"/>
+						</outline>
+						<outline text="Device Actions">
+							<outline text="View: Xem chi tiết device (device_combined_id, fingerprint, token, access history)"/>
+							<outline text="Remove: Gỡ thiết bị (chuyển status → removed, freed_at = NOW())"/>
+							<outline text="Block: Chặn thiết bị vĩnh viễn (status → blocked)"/>
+							<outline text="Restore: Khôi phục thiết bị đã remove (chuyển về active)"/>
+						</outline>
+						<outline text="Bulk Device Actions">
+							<outline text="Select multiple → Remove Selected / Block Selected"/>
+						</outline>
+					</outline>
+					<outline text="1.2.5. Usage Statistics Section" _note="Thống kê sử dụng">
+						<outline text="Statistics Cards">
+							<outline text="Total Access Count: 45 requests (tổng số lần access thành công)"/>
+							<outline text="Requests Today: 3/10 (hôm nay / limit per day)"/>
+							<outline text="Last Accessed: 2025-10-08 14: 30:00 (from 123.45.67.89)"/>
+							<outline text="VPS Attempts: 2 blocked (số lần bị chặn vì VPS)"/>
+						</outline>
+						<outline text="Charts (optional)">
+							<outline text="Access frequency chart (7 days / 30 days)"/>
+							<outline text="Devices timeline (khi nào device được add/remove)"/>
+						</outline>
+					</outline>
+					<outline text="1.2.6. Request History Section" _note="Lịch sử truy cập">
+						<outline text="Recent Access Logs Table">
+							<outline text="Columns: Time, Device, IP, VPS, Result, Error"/>
+							<outline text="Show last 20 records, link &apos;View All Logs&apos; → Full logs page"/>
+							<outline text="Ví dụ logs">
+								<outline text="2025-10-08 14:30:00 | Laptop - Windows 11 | 123.45.67.89 | No | Success | -"/>
+								<outline text="2025-10-08 10:15:00 | iPhone 14 | 123. 45.67.90 | No | Success | -"/>
+								<outline text="2025-10-07 18:20:00 | Unknown | 45.67.89.12 | Yes (AWS) | Blocked | vps_detected"/>
+								<outline text="2025-10-06 16:00:00 | iPad Pro | 123.45.67.88 | No | Blocked | device_limit_reached"/>
+							</outline>
+						</outline>
+						<outline text="Filters: By date range, by device, by result (success/blocked)"/>
+					</outline>
+				</outline>
+				<outline text="1.3. Edit License" _note="Chỉnh sửa license">
+					<outline text="1.3.1. Admin click Edit License">
+						<outline text="From: License Details → Click &apos;Edit License&apos; button"/>
+						<outline text="URL: /wp-admin/admin. php?page=vd-licenses&amp;action=edit&amp;license_id=50"/>
+					</outline>
+					<outline text="1.3.2. Edit Form Fields">
+						<outline text="License Key: A3F9-K2L4-M8N1-P5Q7 (Read-only, không cho sửa)"/>
+						<outline text="Status: Dropdown (active, suspended, revoked, expired)"/>
+						<outline text="Valid From: Date picker"/>
+						<outline text="Valid Until: Date picker"/>
+						<outline text="Max Devices: Number input (override product default)"/>
+						<outline text="Max Requests Per Day: Number input (override product default)"/>
+						<outline text="Notes: Textarea (admin notes, không hiển thị cho customer)"/>
+					</outline>
+					<outline text="1.3.3. Save Changes">
+						<outline text="Button: Update License"/>
+						<outline text="Validation: Valid Until phải &gt; Valid From"/>
+						<outline text="Success: Redirect về License Details với notice &apos;License updated successfully&apos;"/>
+					</outline>
+				</outline>
+				<outline text="1.4. Suspend/Revoke License" _note="Tạm ngưng hoặc thu hồi license">
+					<outline text="1.4.1. Suspend License" _note="Tạm ngưng (có thể kích hoạt lại)">
+						<outline text="Action: Admin click &apos;Suspend License&apos; button"/>
+						<outline text="Confirmation dialog: Are you sure? This will prevent customer from accessing. You can reactivate later."/>
+						<outline text="Process">
+							<outline text="UPDATE bz_vd_license_keys SET status=&apos;suspended&apos;, updated_at=NOW() WHERE id=50"/>
+							<outline text="Không xóa pool assignment (giữ nguyên assigned_pool_id, assigned_account_id)"/>
+							<outline text="Customer access → Error: License suspended"/>
+						</outline>
+						<outline text="Success: Notice &apos;License suspended successfully&apos;"/>
+					</outline>
+					<outline text="1.4.2. Revoke License" _note="Thu hồi vĩnh viễn (không kích hoạt lại)">
+						<outline text="Action: Admin click &apos;Revoke License&apos; button"/>
+						<outline text="Confirmation dialog: Are you sure? This action cannot be undone. Customer will lose access permanently."/>
+						<outline text="Process">
+							<outline text="UPDATE bz_vd_license_keys SET status=&apos;revoked&apos;, updated_at=NOW() WHERE id=50"/>
+							<outline text="Unassign pool: SET assigned_pool_id=NULL, assigned_account_id=NULL"/>
+							<outline text="Customer access → Error: License revoked"/>
+						</outline>
+						<outline text="Success: Notice &apos;License revoked successfully&apos;"/>
+					</outline>
+					<outline text="1.4.3. Reactivate License" _note="Kích hoạt lại license đã suspend">
+						<outline text="Only for suspended licenses (không dùng cho revoked)"/>
+						<outline text="Action: Admin click &apos;Activate License&apos; button"/>
+						<outline text="Process: UPDATE status=&apos;active&apos;"/>
+						<outline text="Pool assignment: Nếu đã unassign thì sẽ auto-assign lại khi customer access"/>
+					</outline>
+				</outline>
+			</outline>
+			<outline text="PHẦN 2: DEVICE MANAGEMENT" _note="Quản lý thiết bị">
+				<outline text="2.1. View All Devices" _note="Danh sách tất cả thiết bị trong hệ thống">
+					<outline text="2.1.1. Admin truy cập">
+						<outline text="Navigate: WP Admin → VD License Manager → Devices"/>
+						<outline text="URL: /wp-admin/admin. php?page=vd-devices"/>
+					</outline>
+					<outline text="2.1.2. Devices List Table">
+						<outline text="Columns">
+							<outline text="Device Name (Laptop - Windows 11 - Chrome 120)"/>
+							<outline text="License Key (A3F9-K2L4-M8N1-P5Q7) - Link to license"/>
+							<outline text="Customer (john@example.com)"/>
+							<outline text="Status (active/removed/blocked) - Badge"/>
+							<outline text="Registered At (2025-10-08 14:30:00)"/>
+							<outline text="Last Accessed (2025-10-08 14:30:00)"/>
+							<outline text="IP Address (123.45.67.89)"/>
+							<outline text="Actions (View | Remove | Block)"/>
+						</outline>
+						<outline text="Filters">
+							<outline text="Filter by Status: All | Active | Removed | Blocked"/>
+							<outline text="Filter by License: Dropdown licenses"/>
+							<outline text="Search: By device name, IP, device_combined_id"/>
+							<outline text="Date range: Registered date, Last accessed date"/>
+						</outline>
+					</outline>
+				</outline>
+				<outline text="2.2. View Device Details" _note="Chi tiết 1 thiết bị">
+					<outline text="2.2.1. Device Information">
+						<outline text="Device Name: Laptop - Windows 11 - Chrome 120"/>
+						<outline text="Device Combined ID: d5f6e89a12bc34de56fa... (SHA256 hash)"/>
+						<outline text="Device Fingerprint: e3b0c44298fc1c149afb... (Browser fingerprint)"/>
+						<outline text="Device Token: dt_a3f9k2l4m8n1p5q7 (localStorage token)"/>
+						<outline text="Status: Active (Badge)"/>
+						<outline text="License: A3F9-K2L4-M8N1-P5Q7 (Link)"/>
+						<outline text="Customer: john@example.com"/>
+						<outline text="Registered At: 2025-10-08 14:30:00"/>
+						<outline text="Last Accessed At: 2025-10-08 14:30:00"/>
+						<outline text="Last IP: 123.45.67.89"/>
+						<outline text="User Agent: Mozilla/5.0 (Windows NT 10.0...)"/>
+					</outline>
+					<outline text="2.2.2. Device Access History">
+						<outline text="Table: Time | IP | VPS | Result"/>
+						<outline text="Show all access attempts from this device"/>
+						<outline text="Link IPs to IP info (ASN, ISP, location)"/>
+					</outline>
+					<outline text="2.2.3. Actions">
+						<outline text="Remove Device: Gỡ thiết bị"/>
+						<outline text="Block Device: Chặn thiết bị"/>
+						<outline text="Restore Device: Khôi phục (nếu removed)"/>
+					</outline>
+				</outline>
+				<outline text="2.3. Remove Device" _note="Gỡ thiết bị khỏi license">
+					<outline text="2.3.1. Admin click Remove">
+						<outline text="From: Device list hoặc Device details → Click &apos;Remove&apos;"/>
+					</outline>
+					<outline text="2.3.2. Confirmation dialog">
+						<outline text="Message: Remove this device? Customer can register it again if they have available slots."/>
+						<outline text="Checkbox: Send notification email to customer (optional)"/>
+					</outline>
+					<outline text="2.3.3. Process">
+						<outline text="UPDATE bz_vd_license_devices SET status=&apos;removed&apos;, removed_at=NOW(), freed_at=NOW() WHERE id=15"/>
+						<outline text="freed_at: Timestamp khi device được free (cho device_reset_days logic)"/>
+						<outline text="Decrement license device count: Slot được giải phóng ngay"/>
+					</outline>
+					<outline text="2.3.4. Customer impact">
+						<outline text="Device này không thể access nữa (bị chặn với error device_removed)"/>
+						<outline text="Customer có thể đăng ký device mới (nếu còn slot)"/>
+					</outline>
+					<outline text="2.3.5. Send notification (nếu admin chọn)">
+						<outline text="Email to customer: Your device [name] has been removed from license [key]. You can register a new device if needed."/>
+					</outline>
+				</outline>
+				<outline text="2.4. Block Device" _note="Chặn thiết bị vĩnh viễn">
+					<outline text="2.4.1. Admin click Block">
+						<outline text="From: Device list hoặc Device details → Click &apos;Block&apos;"/>
+					</outline>
+					<outline text="2.4.2. Block Form">
+						<outline text="Reason (dropdown): Violation | Sharing | Fraud | Other"/>
+						<outline text="Notes (textarea): Admin ghi chú chi tiết lý do"/>
+						<outline text="Checkbox: Send notification email to customer"/>
+					</outline>
+					<outline text="2.4.3. Process">
+						<outline text="UPDATE bz_vd_license_devices SET status=&apos;blocked&apos;, blocked_at=NOW(), blocked_reason=&apos;Violation&apos;, blocked_notes=&apos;...&apos;, freed_at=NOW() WHERE id=15"/>
+						<outline text="Slot được giải phóng (freed_at)"/>
+					</outline>
+					<outline text="2.4.4. Customer impact">
+						<outline text="Device bị chặn VĨNH VIỄN (không thể restore, không thể access)"/>
+						<outline text="Customer access → Error: Device blocked"/>
+						<outline text="Customer CÓ THỂ đăng ký device mới (nếu còn slot)"/>
+					</outline>
+				</outline>
+				<outline text="2.5. Restore Device" _note="Khôi phục thiết bị đã remove">
+					<outline text="2.5.1. Chỉ dùng cho removed devices">
+						<outline text="Blocked devices KHÔNG thể restore (permanent ban)"/>
+					</outline>
+					<outline text="2.5.2. Admin click Restore">
+						<outline text="From: Device details (của removed device) → Click &apos;Restore&apos;"/>
+					</outline>
+					<outline text="2.5.3. Check device limit">
+						<outline text="Query: COUNT active devices của license"/>
+						<outline text="IF count &gt;= max_devices → Error: Cannot restore, license has reached device limit"/>
+						<outline text="ELSE → Allow restore"/>
+					</outline>
+					<outline text="2.5.4. Process">
+						<outline text="UPDATE bz_vd_license_devices SET status=&apos;active&apos;, removed_at=NULL, freed_at=NULL WHERE id=15"/>
+					</outline>
+					<outline text="2.5.5. Customer impact">
+						<outline text="Device có thể access lại bình thường"/>
+					</outline>
+				</outline>
+			</outline>
+			<outline text="Kết thúc PHẦN 1 &amp; 2" _note="Tiếp tục PHẦN 3, 4, 5 ở message tiếp theo">
+				<outline text="✓ PHẦN 1: License Management (View list, details, edit, suspend/revoke)"/>
+				<outline text="✓ PHẦN 2: Device Management (View all, details, remove, block, restore)"/>
+				<outline text="→ TIẾP TỤC: PHẦN 3 - Pool Management"/>
+			</outline>
+			<outline text="PHẦN 3: POOL MANAGEMENT" _note="Quản lý pools và accounts trong pool">
+				<outline text="3.1. View Pool List" _note="Danh sách tất cả pools">
+					<outline text="3.1.1. Admin truy cập">
+						<outline text="Navigate: WP Admin → VD License Manager → Pools"/>
+						<outline text="URL: /wp-admin/admin. php?page=vd-pools"/>
+					</outline>
+					<outline text="3.1.2. Pool List Table">
+						<outline text="Columns">
+							<outline text="Pool Name (Pool 1: Netflix Premium)"/>
+							<outline text="Provider (Netflix)"/>
+							<outline text="Priority (1 - cao nhất)"/>
+							<outline text="Total Accounts (5 accounts)"/>
+							<outline text="Total Capacity (20 slots = 5 accounts x 4 capacity)"/>
+							<outline text="Assigned Licenses (15/20 - với progress bar)"/>
+							<outline text="Status (active/inactive) - Badge"/>
+							<outline text="Actions (View | Edit | Delete)"/>
+						</outline>
+						<outline text="Filters">
+							<outline text="Filter by Provider: Netflix, Spotify, YouTube..."/>
+							<outline text="Filter by Status: All | Active | Inactive"/>
+							<outline text="Sort by: Priority, Capacity, Assigned count"/>
+						</outline>
+					</outline>
+					<outline text="3.1.3. Add New Pool">
+						<outline text="Button: Add New Pool (top right)"/>
+						<outline text="Redirect to: Add Pool form"/>
+					</outline>
+				</outline>
+				<outline text="3.2. View Pool Details" _note="Chi tiết 1 pool - HIỂN THỊ ACCOUNTS VỚI EXPIRES_AT">
+					<outline text="3.2.1. Admin click vào pool">
+						<outline text="From: Pool List → Click &apos;View&apos; hoặc Pool Name"/>
+						<outline text="URL: /wp-admin/admin. php?page=vd-pools&amp;action=view&amp;pool_id=1"/>
+					</outline>
+					<outline text="3.2.2. Pool Information Section">
+						<outline text="Pool Details">
+							<outline text="Pool Name: Pool 1: Netflix Premium"/>
+							<outline text="Provider: Netflix"/>
+							<outline text="Priority: 1 (Highest priority)"/>
+							<outline text="Status: Active (Badge)"/>
+							<outline text="Total Accounts: 5 accounts"/>
+							<outline text="Total Capacity: 20 slots (5 accounts x 4 capacity each)"/>
+							<outline text="Assigned Licenses: 15/20 (75% used) - Progress bar"/>
+							<outline text="Available Slots: 5"/>
+							<outline text="Created At: 2025-09-01 10:00:00"/>
+						</outline>
+						<outline text="Quick Actions">
+							<outline text="Button: Edit Pool"/>
+							<outline text="Button: Add Account to Pool"/>
+							<outline text="Button: View Assigned Licenses (15 licenses)"/>
+						</outline>
+					</outline>
+					<outline text="3.2.3. Accounts in Pool Section (QUAN TRỌNG)" _note="Danh sách accounts - MỖI ACCOUNT CÓ EXPIRES_AT RIÊNG">
+						<outline text="Accounts List Table">
+							<outline text="Columns">
+								<outline text="Account Login (netflix001@provider. com)"/>
+								<outline text="Capacity (4 slots per account)"/>
+								<outline text="Assigned (3/4 licenses đang dùng account này)"/>
+								<outline text="Status (active/expired/inactive) - Badge"/>
+								<outline text="Expires At (2025-12-31 23:59:59) ← NGÀY HẾT HẠN CỦA ACCOUNT">
+									<outline text="Hiển thị màu đỏ nếu &lt; 7 ngày nữa hết hạn"/>
+									<outline text="Hiển thị màu xám nếu đã expired"/>
+								</outline>
+								<outline text="Last Credential Update (2025-10-01 14:30:00)">
+									<outline text="Lần cuối admin update password/cookie"/>
+								</outline>
+								<outline text="Actions (View | Edit | Remove from Pool)"/>
+							</outline>
+							<outline text="Ví dụ danh sách 5 accounts">
+								<outline text="Row 1: netflix001@provider.com | 4 | 3/4 | Active | 2025-12-31 23:59:59 | 2025-10-01 14:30:00 | [Actions]"/>
+								<outline text="Row 2: netflix002@provider.com | 4 | 4/4 (Full) | Active | 2025-11-30 23:59:59 | 2025-09-15 10:00:00 | [Actions]"/>
+								<outline text="Row 3: netflix003@provider.com | 4 | 4/4 (Full) | Active | 2026-01-31 23:59:59 | 2025-09-20 11:00:00 | [Actions]"/>
+								<outline text="Row 4: netflix004@provider.com | 4 | 4/4 (Full) | Expired ❌ | 2025-10-01 23:59:59 (Đã hết hạn) | 2025-08-01 09:00:00 | [Actions]"/>
+								<outline text="Row 5: netflix005@provider.com | 4 | 0/4 | Active | 2025-12-15 23:59:59 | 2025-09-25 15:00:00 | [Actions]"/>
+							</outline>
+						</outline>
+						<outline text="Account Status Badges">
+							<outline text="Active (Màu xanh): Account hoạt động, expires_at &gt; NOW()"/>
+							<outline text="Expired (Màu đỏ): Account hết hạn, expires_at &lt;= NOW()"/>
+							<outline text="Expiring Soon (Màu cam): expires_at trong vòng 7 ngày"/>
+							<outline text="Inactive (Màu xám): Admin tắt account"/>
+						</outline>
+						<outline text="Summary Statistics">
+							<outline text="Total Accounts: 5"/>
+							<outline text="Active Accounts: 4"/>
+							<outline text="Expired Accounts: 1 ❌ (netflix004)"/>
+							<outline text="Expiring in 7 days: 0"/>
+						</outline>
+						<outline text="Warning Messages">
+							<outline text="IF có expired accounts">
+								<outline text="⚠️ Warning: Pool có 1 account đã HẾT HẠN (netflix004). 4 licenses đang dùng account này sẽ bị ảnh hưởng. Khuyến nghị: Update credentials hoặc remove account khỏi pool."/>
+								<outline text="Button: View Affected Licenses (4 licenses)"/>
+							</outline>
+						</outline>
+					</outline>
+					<outline text="3.2.4. Assigned Licenses Section" _note="Licenses đang dùng pool này">
+						<outline text="Licenses List Table">
+							<outline text="Columns: License Key, Customer, Account (đang dùng account nào), Last Accessed"/>
+							<outline text="Ví dụ 15 licenses">
+								<outline text="A3F9-K2L4-M8N1-P5Q7 | john@example.com | netflix001 | 2025-10-08 14:30:00"/>
+								<outline text="B4G0-L3M5-N9O2-Q6R8 | jane@example.com | netflix002 | 2025-10-08 13:15:00"/>
+								<outline text="C5H1-M4N6-O0P3-R7S9 | bob@example.com | netflix004 ❌ (Expired) | 2025-10-07 16:20:00"/>
+								<outline text="..."/>
+							</outline>
+							<outline text="Highlight licenses dùng expired account (màu đỏ)"/>
+						</outline>
+						<outline text="Button: Export License List (CSV)"/>
+					</outline>
+				</outline>
+				<outline text="3.3. Add/Edit Pool" _note="Thêm hoặc chỉnh sửa pool">
+					<outline text="3.3.1. Add Pool Form">
+						<outline text="Fields">
+							<outline text="Pool Name: Text input (VD: Pool 1: Netflix Premium)"/>
+							<outline text="Provider: Dropdown (Netflix, Spotify, YouTube...) - Từ bz_vd_providers"/>
+							<outline text="Priority: Number input (1=highest, 2, 3...)"/>
+							<outline text="Status: Dropdown (active, inactive)"/>
+						</outline>
+						<outline text="Note: Accounts sẽ được add vào pool SAU KHI tạo pool (ở Account Management section)"/>
+					</outline>
+				</outline>
+				<outline text="3.4. Remove Account from Pool" _note="Gỡ account khỏi pool">
+					<outline text="3.4.1. Admin click Remove">
+						<outline text="From: Pool Details → Accounts table → Click &apos;Remove from Pool&apos;"/>
+					</outline>
+					<outline text="3.4.2. Check assigned licenses">
+						<outline text="Query: SELECT COUNT(*) FROM bz_vd_license_keys WHERE assigned_account_id = [account_id]"/>
+						<outline text="Result: 3 licenses đang dùng account này"/>
+					</outline>
+					<outline text="3.4.3. Confirmation dialog">
+						<outline text="Warning: 3 licenses đang sử dụng account này. Nếu remove, các licenses này sẽ được auto-reassign sang account khác trong pool hoặc pool khác."/>
+						<outline text="Checkbox: Reassign affected licenses now (hoặc để auto-reassign khi access)"/>
+					</outline>
+					<outline text="3.4.4. Process">
+						<outline text="UPDATE bz_vd_provider_accounts SET pool_id=NULL WHERE id=[account_id]"/>
+						<outline text="IF reassign now checked">
+							<outline text="Loop qua 3 licenses → Gọi pool assignment logic (Flow 3 Bước 5)"/>
+						</outline>
+						<outline text="ELSE">
+							<outline text="UPDATE bz_vd_license_keys SET assigned_pool_id=NULL, assigned_account_id=NULL WHERE assigned_account_id=[account_id]"/>
+							<outline text="Licenses sẽ auto-reassign khi customer access lần sau"/>
+						</outline>
+					</outline>
+				</outline>
+			</outline>
+			<outline text="PHẦN 4: ACCOUNT MANAGEMENT">
+				<outline text="4.1. View Account List" _note="Danh sách tất cả provider accounts">
+					<outline text="4.1.1. Admin truy cập">
+						<outline text="Navigate: WP Admin → VD License Manager → Accounts"/>
+						<outline text="URL: /wp-admin/admin. php?page=vd-accounts"/>
+					</outline>
+					<outline text="4.1.2. Account List Table">
+						<outline text="Columns">
+							<outline text="Account Login (netflix001@provider. com)">
+								<outline text="Email hoặc username tùy provider"/>
+							</outline>
+							<outline text="Provider (Netflix, Spotify, YouTube...)">
+								<outline text="Badge với icon provider"/>
+							</outline>
+							<outline text="Pool (Pool 1: Netflix Premium)">
+								<outline text="Pool mà account này thuộc về"/>
+								<outline text="Link to Pool Details"/>
+								<outline text="NULL nếu chưa assign vào pool nào"/>
+							</outline>
+							<outline text="Capacity (4 slots)">
+								<outline text="Số license tối đa account này có thể phục vụ"/>
+							</outline>
+							<outline text="Assigned (3/4)">
+								<outline text="Số licenses đang sử dụng account này"/>
+								<outline text="Progress bar: 75% used"/>
+							</outline>
+							<outline text="Status (active/expired/inactive)">
+								<outline text="Active (xanh): Đang hoạt động, expires_at &gt; NOW()"/>
+								<outline text="Expired (đỏ): Hết hạn, expires_at &lt;= NOW()"/>
+								<outline text="Expiring Soon (cam): Còn &lt; 7 ngày"/>
+								<outline text="Inactive (xám): Admin tắt"/>
+							</outline>
+							<outline text="Expires At (2025-12-31 23:59:59)">
+								<outline text="Ngày hết hạn account (từ provider)"/>
+								<outline text="Màu đỏ nếu đã expired"/>
+								<outline text="Màu cam nếu còn &lt; 7 ngày"/>
+								<outline text="Icon cảnh báo nếu sắp hết hạn"/>
+							</outline>
+							<outline text="Last Credential Update (2025-10-01 14:30:00)">
+								<outline text="Lần cuối admin update password/cookie"/>
+								<outline text="Tooltip: Next update scheduled: 2025-10-15"/>
+							</outline>
+							<outline text="Actions (View | Edit | Update Credentials | Delete)"/>
+						</outline>
+						<outline text="Filters &amp; Search">
+							<outline text="Search: By account login, email"/>
+							<outline text="Filter by Provider: All | Netflix | Spotify | YouTube..."/>
+							<outline text="Filter by Status: All | Active | Expired | Expiring Soon | Inactive"/>
+							<outline text="Filter by Pool: All | Pool 1 | Pool 2 | Not in Pool"/>
+							<outline text="Sort by: Account login, Expires at, Last updated, Assigned count"/>
+						</outline>
+						<outline text="Bulk Actions">
+							<outline text="Select multiple accounts (checkboxes)"/>
+							<outline text="Bulk Update Credentials (mở modal nhập credentials mới cho nhiều accounts)"/>
+							<outline text="Bulk Change Status (active/inactive)"/>
+							<outline text="Bulk Delete (cảnh báo nếu có assigned licenses)"/>
+						</outline>
+					</outline>
+					<outline text="4.1.3. Add New Account">
+						<outline text="Button: Add New Account (top right)"/>
+						<outline text="Redirect to: Add Account form"/>
+					</outline>
+					<outline text="4.1.4. Quick Stats (Dashboard cards)">
+						<outline text="Total Accounts: 25"/>
+						<outline text="Active Accounts: 20 (80%)"/>
+						<outline text="Expired Accounts: 3 ❌ (12%)"/>
+						<outline text="Expiring in 7 days: 2 ⚠️ (8%)"/>
+						<outline text="Total Capacity: 100 slots (25 accounts x 4 avg)"/>
+						<outline text="Used Capacity: 78/100 (78%)"/>
+					</outline>
+				</outline>
+				<outline text="4.2. View Account Details" _note="Chi tiết 1 account - HIỂN THỊ EXPIRES_AT &amp; CREDENTIALS">
+					<outline text="4.2.1. Admin click vào account">
+						<outline text="From: Account List → Click &apos;View&apos; button hoặc click Account Login/Display Name"/>
+						<outline text="URL: /wp-admin/admin. php?page=vd-accounts&amp;action=view&amp;account_id=1"/>
+					</outline>
+					<outline text="4.2.2. Account Information Section">
+						<outline text="Basic Info">
+							<outline text="Provider: Netflix (Badge with icon 🎬)">
+								<outline text="Badge màu tùy provider (Netflix=đỏ, Spotify=xanh lá, YouTube=đỏ...)"/>
+							</outline>
+							<outline text="Display Name: Netflix Premium Account #001">
+								<outline text="Font size lớn, bold"/>
+								<outline text="IF không có display_name → Show provider + account_login"/>
+							</outline>
+							<outline text="Account ID: #1 (read-only, for reference)"/>
+							<outline text="Pool Assignment">
+								<outline text="IF pool_id NOT NULL">
+									<outline text="Pool: Pool 1: Netflix Premium (Link to pool details)"/>
+									<outline text="Click link → Redirect to Pool Details page"/>
+								</outline>
+								<outline text="ELSE">
+									<outline text="Pool: Not assigned to any pool (Badge màu xám)"/>
+									<outline text="Button: Assign to Pool"/>
+								</outline>
+							</outline>
+							<outline text="Capacity Info">
+								<outline text="Capacity: 4 slots per account"/>
+								<outline text="Assigned Licenses: 3/4 (75% used)">
+									<outline text="Progress bar: 75% filled"/>
+									<outline text="Color: Green (&lt;70%), Yellow (70-90%), Red (&gt;90%)"/>
+								</outline>
+								<outline text="Available Slots: 1">
+									<outline text="IF available = 0 → Badge đỏ FULL"/>
+								</outline>
+							</outline>
+							<outline text="Status: Active (Badge màu xanh)">
+								<outline text="Active: Xanh lá"/>
+								<outline text="Inactive: Xám"/>
+								<outline text="Expired: Đỏ"/>
+							</outline>
+							<outline text="Created At: 01/09/2025 10:00:00">
+								<outline text="Format: DD/MM/YYYY HH:MM:SS"/>
+							</outline>
+						</outline>
+						<outline text="Expiration Info (QUAN TRỌNG)">
+							<outline text="Expires At: 31/12/2025 23:59:59">
+								<outline text="Large font, prominent display"/>
+								<outline text="Icon calendar 📅"/>
+								<outline text="Ngày hết hạn account từ provider (VD: Netflix subscription expires)"/>
+								<outline text="Color coding">
+									<outline text="IF expired (expires_at &lt;= NOW()) → Màu đỏ + icon ⚠️"/>
+									<outline text="IF expiring soon (&lt; 7 days) → Màu cam + icon ⚠️"/>
+									<outline text="IF expiring medium term (7-30 days) → Màu vàng"/>
+									<outline text="ELSE (safe) → Màu xanh lá"/>
+								</outline>
+							</outline>
+							<outline text="Days Until Expiration: 84 days (dynamic calculation)">
+								<outline text="Calculate: DATEDIFF(expires_at, NOW())"/>
+								<outline text="IF expired → Show: Expired 5 days ago (negative days)"/>
+							</outline>
+							<outline text="Next Credential Update: 24/12/2025">
+								<outline text="Ngày dự kiến update credentials"/>
+								<outline text="IF next_credential_update &lt; NOW() → Badge: OVERDUE (đỏ)"/>
+								<outline text="IF next_credential_update &lt; NOW() + 3 days → Badge: DUE SOON (cam)"/>
+							</outline>
+							<outline text="Last Credential Update: 01/10/2025 14:30:00">
+								<outline text="Lần cuối admin update password/cookie/credentials"/>
+								<outline text="Show: X days ago (relative time)"/>
+							</outline>
+						</outline>
+						<outline text="Warning Messages (Conditional Display)">
+							<outline text="IF expired (expires_at &lt;= NOW())">
+								<outline text="Alert Box: CRITICAL (màu đỏ đậm, background đỏ nhạt)">
+									<outline text="Icon: 🚨"/>
+									<outline text="Title: ACCOUNT EXPIRED"/>
+									<outline text="Message: Account này đã HẾT HẠN {X} ngày trước! {N} licenses đang sử dụng account này sẽ KHÔNG THỂ lấy credentials. Khách hàng sẽ gặp lỗi khi truy cập."/>
+									<outline text="Actions">
+										<outline text="Button (Primary): Update Credentials Now (red)"/>
+										<outline text="Button (Secondary): View Affected Licenses ({N} licenses)"/>
+										<outline text="Button (Tertiary): Extend Expiration Date"/>
+									</outline>
+								</outline>
+							</outline>
+							<outline text="IF expiring soon (expires_at &lt; NOW() + 7 days AND expires_at &gt; NOW())">
+								<outline text="Alert Box: WARNING (màu cam, background cam nhạt)">
+									<outline text="Icon: ⚠️"/>
+									<outline text="Title: EXPIRING SOON"/>
+									<outline text="Message: Account sẽ hết hạn trong {X} ngày! Vui lòng chuẩn bị gia hạn hoặc cập nhật credentials thay thế trước {expires_at}."/>
+									<outline text="Actions">
+										<outline text="Button: Extend Expiration Date"/>
+										<outline text="Button: Set Reminder"/>
+									</outline>
+								</outline>
+							</outline>
+							<outline text="IF credential update overdue (next_credential_update &lt; NOW())">
+								<outline text="Alert Box: INFO (màu xanh dương)">
+									<outline text="Icon: ℹ️"/>
+									<outline text="Title: CREDENTIAL UPDATE DUE"/>
+									<outline text="Message: Credentials của account này đã quá hạn cập nhật ({X} ngày). Khuyến nghị update password/cookie định kỳ để đảm bảo bảo mật."/>
+									<outline text="Actions">
+										<outline text="Button: Update Credentials Now"/>
+										<outline text="Button: Reschedule Update"/>
+									</outline>
+								</outline>
+							</outline>
+							<outline text="IF account full (assigned = capacity)">
+								<outline text="Alert Box: INFO (màu vàng)">
+									<outline text="Icon: 📊"/>
+									<outline text="Title: CAPACITY FULL"/>
+									<outline text="Message: Account đã đạt capacity tối đa ({capacity}/{capacity}). Không thể assign thêm licenses. Cân nhắc tăng capacity hoặc thêm account mới."/>
+									<outline text="Actions">
+										<outline text="Button: Increase Capacity"/>
+										<outline text="Button: Add New Account"/>
+									</outline>
+								</outline>
+							</outline>
+						</outline>
+						<outline text="Quick Actions (Button bar)">
+							<outline text="Button: Edit Account (Primary)"/>
+							<outline text="Button: Update Credentials (Warning color)"/>
+							<outline text="Button: Extend Expiration"/>
+							<outline text="Dropdown: More Actions">
+								<outline text="Reassign All Licenses"/>
+								<outline text="Duplicate Account (create copy)"/>
+								<outline text="Export Account Data"/>
+								<outline text="Delete Account (Danger)"/>
+							</outline>
+						</outline>
+					</outline>
+					<outline text="4.2.3. Credentials Section (BẢO MẬT - UPDATED)" _note="Hiển thị TẤT CẢ credentials có data - AUTO-DETECT fields">
+						<outline text="Security Notice (Always visible)">
+							<outline text="🔒 Credentials are encrypted in database. Only administrators can view."/>
+							<outline text="Last viewed by: admin@vidieu.vn at 08/10/2025 10:00:00"/>
+							<outline text="Note: Viewing credentials is logged for security audit."/>
+						</outline>
+						<outline text="Credentials Display (Collapsed by default)">
+							<outline text="Collapsed State">
+								<outline text="Button: 🔓 Show Credentials (Large button, center)"/>
+								<outline text="Click → Show confirmation dialog"/>
+							</outline>
+							<outline text="Confirmation Dialog">
+								<outline text="Title: Are you sure?"/>
+								<outline text="Message: You are about to view sensitive credentials. This action will be logged with your username and timestamp."/>
+								<outline text="Checkbox: I understand and confirm"/>
+								<outline text="Button: Confirm &amp; Show Credentials (Primary)"/>
+								<outline text="Button: Cancel (Secondary)"/>
+							</outline>
+							<outline text="After Confirmation → Expanded State">
+								<outline text="Button: 🔒 Hide Credentials (to collapse again)"/>
+								<outline text="Auto-detect và hiển thị TẤT CẢ fields có data (NOT NULL)">
+									<outline text="Logic: Loop through all possible fields → IF value NOT NULL → Display"/>
+								</outline>
+								<outline text="GROUP 1: Authentication (Always show if has data)">
+									<outline text="IF account_login NOT NULL">
+										<outline text="Account Login: netflix001@provider. com">
+											<outline text="Icon: 📧"/>
+											<outline text="Label: Username/Email đăng nhập"/>
+											<outline text="Value: Plaintext (not sensitive)"/>
+											<outline text="Button: Copy (with toast: Copied!)"/>
+										</outline>
+									</outline>
+									<outline text="IF login_password NOT NULL">
+										<outline text="Password: ••••••••••• (masked by default)">
+											<outline text="Icon: 🔑"/>
+											<outline text="Label: Mật khẩu"/>
+											<outline text="Value: Masked (bullets)"/>
+											<outline text="Button: Show (click → reveal plaintext: Abc123xyz!@#)"/>
+											<outline text="Button: Hide (click → mask again)"/>
+											<outline text="Button: Copy (copy decrypted value)"/>
+											<outline text="Note: Decrypt on-the-fly: decrypt($encrypted_password, KEY)"/>
+										</outline>
+									</outline>
+									<outline text="IF cookie NOT NULL">
+										<outline text="Cookie: {...} (5 keys) [Expand] (collapsed by default)">
+											<outline text="Icon: 🍪"/>
+											<outline text="Label: Cookie Session"/>
+											<outline text="Collapsed: {...} (5 keys) - Show key count"/>
+											<outline text="Button: Expand (click → show full JSON)"/>
+											<outline text="Expanded state">
+												<outline text="JSON formatted (prettified)">
+													<outline text="{"/>
+													<outline text="  &quot;session_id&quot;: &quot;xyz789abc123&quot;,"/>
+													<outline text="  &quot;auth_token&quot;: &quot;abc123xyz789&quot;,"/>
+													<outline text="  &quot;expires&quot;: &quot;2025-12-31T23:59:59Z&quot;,"/>
+													<outline text="  &quot;user_id&quot;: &quot;12345&quot;,"/>
+													<outline text="  &quot;device_id&quot;: &quot;device_abc123&quot;"/>
+													<outline text="}"/>
+												</outline>
+												<outline text="Syntax highlighting (JSON)"/>
+												<outline text="Button: Collapse"/>
+												<outline text="Button: Copy JSON (copy entire JSON string)"/>
+											</outline>
+										</outline>
+									</outline>
+									<outline text="IF email NOT NULL">
+										<outline text="Email: backup@email.com">
+											<outline text="Icon: 📮"/>
+											<outline text="Label: Email tài khoản (backup)"/>
+											<outline text="Value: Plaintext"/>
+											<outline text="Button: Copy"/>
+										</outline>
+									</outline>
+									<outline text="IF phone NOT NULL">
+										<outline text="Phone: +84 901 234 567">
+											<outline text="Icon: 📱"/>
+											<outline text="Label: Số điện thoại"/>
+											<outline text="Value: Plaintext"/>
+											<outline text="Button: Copy"/>
+										</outline>
+									</outline>
+								</outline>
+								<outline text="GROUP 2: Profile (Show if has data)">
+									<outline text="IF profile_name NOT NULL">
+										<outline text="Profile Name: Profile 1">
+											<outline text="Icon: 👤"/>
+											<outline text="Label: Tên Profile"/>
+											<outline text="Value: Plaintext"/>
+											<outline text="Button: Copy"/>
+										</outline>
+									</outline>
+									<outline text="IF pin_code NOT NULL">
+										<outline text="PIN Code: •••• (masked)">
+											<outline text="Icon: 🔢"/>
+											<outline text="Label: Mã PIN Profile"/>
+											<outline text="Value: Masked (4-6 bullets)"/>
+											<outline text="Button: Show (reveal: 1234)"/>
+											<outline text="Button: Hide"/>
+											<outline text="Button: Copy"/>
+										</outline>
+									</outline>
+								</outline>
+								<outline text="GROUP 3: Security (Show if has data)">
+									<outline text="IF security_question NOT NULL">
+										<outline text="Security Question: What is your pet&apos;s name?">
+											<outline text="Icon: ❓"/>
+											<outline text="Label: Câu hỏi bảo mật"/>
+											<outline text="Value: Plaintext"/>
+										</outline>
+									</outline>
+									<outline text="IF security_answer NOT NULL">
+										<outline text="Security Answer: ••••••• (masked)">
+											<outline text="Icon: ✅"/>
+											<outline text="Label: Câu trả lời bảo mật"/>
+											<outline text="Value: Masked"/>
+											<outline text="Button: Show (reveal: Fluffy)"/>
+											<outline text="Button: Hide"/>
+											<outline text="Button: Copy"/>
+										</outline>
+									</outline>
+									<outline text="IF backup_codes NOT NULL">
+										<outline text="Backup Codes: [View Codes] (modal)">
+											<outline text="Icon: 🎫"/>
+											<outline text="Label: Backup Codes"/>
+											<outline text="Button: View Codes (opens modal)"/>
+											<outline text="Modal Content">
+												<outline text="Title: Backup Recovery Codes"/>
+												<outline text="List of codes">
+													<outline text="1. ABC123XYZ [Copy]"/>
+													<outline text="2. QWE456RST [Copy]"/>
+													<outline text="3. ZXC789VBN [Copy]"/>
+													<outline text="..."/>
+												</outline>
+												<outline text="Button: Copy All Codes"/>
+												<outline text="Button: Download as TXT"/>
+												<outline text="Button: Close"/>
+											</outline>
+										</outline>
+									</outline>
+									<outline text="IF two_factor_secret NOT NULL">
+										<outline text="2FA Secret: ••••••••••••••• (masked)">
+											<outline text="Icon: 🔐"/>
+											<outline text="Label: Two-Factor Secret (TOTP)"/>
+											<outline text="Value: Masked"/>
+											<outline text="Button: Show (reveal: JBSWY3DPEHPK3PXP)"/>
+											<outline text="Button: Hide"/>
+											<outline text="Button: Copy"/>
+											<outline text="Button: Show QR Code (generate QR for easy scanning)"/>
+										</outline>
+									</outline>
+								</outline>
+								<outline text="GROUP 4: API (Show if has data)">
+									<outline text="IF api_key NOT NULL">
+										<outline text="API Key: pk_live_abc123xyz789">
+											<outline text="Icon: 🔑"/>
+											<outline text="Label: API Key (Public)"/>
+											<outline text="Value: Plaintext (truncated if too long: pk_live_abc...789)"/>
+											<outline text="Button: Show Full"/>
+											<outline text="Button: Copy"/>
+										</outline>
+									</outline>
+									<outline text="IF api_secret NOT NULL">
+										<outline text="API Secret: ••••••••••••••• (masked)">
+											<outline text="Icon: 🔒"/>
+											<outline text="Label: API Secret (Private)"/>
+											<outline text="Value: Masked"/>
+											<outline text="Button: Show (reveal: sk_live_xyz789abc123)"/>
+											<outline text="Button: Hide"/>
+											<outline text="Button: Copy"/>
+										</outline>
+									</outline>
+									<outline text="IF api_token NOT NULL">
+										<outline text="API Token: eyJhbGc... (truncated)">
+											<outline text="Icon: 🎟️"/>
+											<outline text="Label: API Token (Bearer)"/>
+											<outline text="Value: Truncated (first 20 chars + ...)"/>
+											<outline text="Button: Show Full (expand to full token in modal/textarea)"/>
+											<outline text="Button: Copy Full Token"/>
+										</outline>
+									</outline>
+								</outline>
+								<outline text="GROUP 5: Custom Fields (Dynamic - Show if has data)">
+									<outline text="IF account_fields NOT NULL (JSON)">
+										<outline text="Parse JSON: $custom_fields = json_decode($account_fields, true)"/>
+										<outline text="FOREACH $field_key =&gt; $field_data in $custom_fields">
+											<outline text="Display Custom Field">
+												<outline text="Label: {$field_data[&apos;label&apos;]} (từ JSON)">
+													<outline text="Example: Webhook URL, Telegram Bot Token"/>
+												</outline>
+												<outline text="Value: Tùy field type">
+													<outline text="IF type = &apos;password&apos; → Masked: •••••••••">
+														<outline text="Button: Show/Hide"/>
+														<outline text="Decrypt value nếu encrypted"/>
+													</outline>
+													<outline text="IF type = &apos;text&apos; → Plaintext: https: //example.com/webhook"/>
+													<outline text="IF type = &apos;textarea&apos; → Expandable textarea"/>
+													<outline text="IF type = &apos;json&apos; → JSON viewer (collapsed/expanded)">
+														<outline text="Button: Format JSON"/>
+													</outline>
+													<outline text="IF type = &apos;url&apos; → Clickable link + Copy"/>
+													<outline text="IF type = &apos;email&apos; → Email link + Copy"/>
+													<outline text="IF type = &apos;number&apos; → Plaintext number"/>
+												</outline>
+												<outline text="Button: Copy (always)"/>
+											</outline>
+										</outline>
+										<outline text="Example Custom Fields Display">
+											<outline text="Webhook URL: https: //example.com/webhook [Copy]">
+												<outline text="Type: url → Clickable link"/>
+											</outline>
+											<outline text="Telegram Token: ••••••••••••••• [Show] [Hide] [Copy]">
+												<outline text="Type: password → Masked, encrypted"/>
+											</outline>
+											<outline text="Recovery Email: recovery@example.com [Copy]">
+												<outline text="Type: email → Email link"/>
+											</outline>
+										</outline>
+									</outline>
+									<outline text="IF account_fields NULL or empty">
+										<outline text="No custom fields (không hiển thị gì)"/>
+									</outline>
+								</outline>
+								<outline text="Copy All Credentials (Advanced)">
+									<outline text="Button: Copy All as JSON (bottom of credentials section)">
+										<outline text="Click → Copy ALL credentials as JSON object"/>
+										<outline text="Format">
+											<outline text="{"/>
+											<outline text="&quot;account_login&quot;: &quot;netflix001@provider.com&quot;,"/>
+											<outline text="  &quot;login_password&quot;: &quot;Abc123xyz!@#&quot;,"/>
+											<outline text="  &quot;cookie&quot;: {...},"/>
+											<outline text="  &quot;profile_name&quot;: &quot;Profile 1&quot;,"/>
+											<outline text="  &quot;pin_code&quot;: &quot;1234&quot;,"/>
+											<outline text="  ...all fields..."/>
+											<outline text="}"/>
+										</outline>
+										<outline text="Use case: Backup, migration, testing"/>
+									</outline>
+									<outline text="Button: Export as TXT">
+										<outline text="Download .txt file với all credentials (formatted)"/>
+									</outline>
+								</outline>
+							</outline>
+						</outline>
+						<outline text="Credential Update History">
+							<outline text="Last Updated">
+								<outline text="Date: 01/10/2025 14:30:00"/>
+								<outline text="Updated By: admin@vidieu.vn (Link to admin user)"/>
+								<outline text="Fields Changed: password, cookie, email">
+									<outline text="Show which fields were updated"/>
+								</outline>
+								<outline text="Reason: Scheduled monthly update">
+									<outline text="Admin note khi update"/>
+								</outline>
+							</outline>
+							<outline text="Next Scheduled Update: 15/10/2025">
+								<outline text="Reminder date"/>
+								<outline text="IF overdue → Badge: OVERDUE"/>
+							</outline>
+							<outline text="Update History Table (Last 10 updates)">
+								<outline text="Collapsible section: Show/Hide History"/>
+								<outline text="Table Columns: Date, Updated By, Fields Changed, Reason, Actions"/>
+								<outline text="Rows (example)">
+									<outline text="01/10/2025 14:30:00 | admin@vidieu.vn | password, cookie | Monthly update | [View Details]"/>
+									<outline text="01/09/2025 10:00:00 | admin@vidieu.vn | password, email | Account created | [View Details]"/>
+									<outline text="..."/>
+								</outline>
+								<outline text="Click [View Details] → Show full changelog (before/after values - sensitive!)"/>
+							</outline>
+						</outline>
+						<outline text="Actions">
+							<outline text="Button: Update Credentials (Primary action)">
+								<outline text="Redirect to: Update Credentials page/modal"/>
+							</outline>
+							<outline text="Button: Test Credentials (Optional - Advanced)">
+								<outline text="Send test request to provider API để verify credentials"/>
+								<outline text="Show loading spinner during test"/>
+								<outline text="Result: ✓ Valid | ✗ Invalid">
+									<outline text="IF valid → Green badge: Credentials working"/>
+									<outline text="IF invalid → Red badge: Credentials failed + Error message"/>
+								</outline>
+								<outline text="Note: Only available for certain providers (Netflix, Spotify...)"/>
+							</outline>
+							<outline text="Button: Refresh Credentials">
+								<outline text="Re-decrypt and reload credentials from DB"/>
+							</outline>
+						</outline>
+					</outline>
+					<outline text="4.2.4. Assigned Licenses Section" _note="Licenses đang dùng account này">
+						<outline text="Section Header">
+							<outline text="Title: Assigned Licenses ({N} licenses)"/>
+							<outline text="Badge: {N}/{capacity} used"/>
+						</outline>
+						<outline text="Licenses List Table">
+							<outline text="Columns">
+								<outline text="License Key (A3F9-K2L4-M8N1-P5Q7) - Link to License Details"/>
+								<outline text="Customer (john@example.com) - Link to Customer/Order"/>
+								<outline text="Product (Netflix Premium 4K - 30 ngày)"/>
+								<outline text="Status (Active, Expired, Suspended) - Badge"/>
+								<outline text="Last Accessed (08/10/2025 14: 30:00) - Relative time"/>
+								<outline text="Actions ([View License] [Unassign])"/>
+							</outline>
+							<outline text="Example Rows">
+								<outline text="A3F9-K2L4-M8N1-P5Q7 | john@example. com | Netflix Premium 4K | Active | 2 hours ago | [View] [Unassign]"/>
+								<outline text="B4G0-L3M5-N9O2-Q6R8 | jane@example. com | Netflix Premium 4K | Active | 5 hours ago | [View] [Unassign]"/>
+								<outline text="C5H1-M4N6-O0P3-R7S9 | bob@example. com | Netflix Premium 4K | Expired | 1 day ago | [View] [Unassign]"/>
+							</outline>
+							<outline text="IF no licenses assigned">
+								<outline text="Empty state: No licenses assigned to this account yet."/>
+							</outline>
+						</outline>
+						<outline text="Summary">
+							<outline text="Total: {N} licenses using this account"/>
+							<outline text="Active: {X} licenses"/>
+							<outline text="Expired/Suspended: {Y} licenses"/>
+						</outline>
+						<outline text="Actions">
+							<outline text="Button: Reassign All Licenses">
+								<outline text="Bulk action: Move all {N} licenses sang account khác"/>
+								<outline text="Opens modal: Select target account + Confirm"/>
+							</outline>
+							<outline text="Button: Export License List">
+								<outline text="Download CSV với license keys + customers"/>
+							</outline>
+						</outline>
+					</outline>
+					<outline text="4.2.5. Usage Statistics Section">
+						<outline text="Stats Cards">
+							<outline text="Card 1: Total Access Count">
+								<outline text="Value: 234 requests"/>
+								<outline text="Description: Tổng số lần licenses request credentials từ account này"/>
+								<outline text="Icon: 📊"/>
+							</outline>
+							<outline text="Card 2: Success Rate">
+								<outline text="Value: 98.3% (230/234)"/>
+								<outline text="Description: Tỷ lệ requests thành công"/>
+								<outline text="Icon: ✅"/>
+								<outline text="Color: Green (&gt;95%), Yellow (90-95%), Red (&lt;90%)"/>
+							</outline>
+							<outline text="Card 3: Failed Access">
+								<outline text="Value: 4 requests (1.7%)"/>
+								<outline text="Description: Số lần request thất bại"/>
+								<outline text="Icon: ❌"/>
+								<outline text="Possible reasons: Credentials sai, Account expired, Network issues"/>
+								<outline text="Link: View Failed Logs"/>
+							</outline>
+							<outline text="Card 4: Last Accessed">
+								<outline text="Value: 08/10/2025 14: 30:00 (2 hours ago)"/>
+								<outline text="Description: Lần cuối có license request credentials"/>
+								<outline text="Icon: 🕐"/>
+							</outline>
+							<outline text="Card 5: Most Active License">
+								<outline text="Value: A3F9-K2L4-M8N1-P5Q7 (150 accesses)"/>
+								<outline text="Description: License request nhiều nhất"/>
+								<outline text="Link: View License Details"/>
+							</outline>
+						</outline>
+						<outline text="Charts (Optional - Can be collapsed)">
+							<outline text="Chart 1: Access Frequency (Last 30 days)">
+								<outline text="Line chart: Requests per day"/>
+								<outline text="X-axis: Dates"/>
+								<outline text="Y-axis: Number of requests"/>
+								<outline text="Show: Total, Success, Failed"/>
+							</outline>
+							<outline text="Chart 2: Success/Fail Rate Over Time">
+								<outline text="Area chart: Success % over time"/>
+								<outline text="Identify trends: Credentials degrading? Account issues?"/>
+							</outline>
+						</outline>
+						<outline text="Actions">
+							<outline text="Button: View Full Access Logs">
+								<outline text="Redirect to: Logs page filtered by this account"/>
+							</outline>
+						</outline>
+					</outline>
+					<outline text="Kết quả 4.2 - View Account Details">
+						<outline text="✅ Hiển thị ĐẦY ĐỦ thông tin account: Basic, Expiration, Credentials, Licenses, Stats"/>
+						<outline text="✅ AUTO-DETECT fields: Chỉ hiển thị fields có data (NOT NULL)"/>
+						<outline text="✅ 100% FLEXIBLE: Hỗ trợ TẤT CẢ loại credentials (Authentication, Profile, Security, API, Custom)"/>
+						<outline text="✅ CUSTOM FIELDS: Dynamic display từ account_fields JSON"/>
+						<outline text="✅ Security: Masked sensitive data, Show/Hide toggles, Audit logging"/>
+						<outline text="✅ Warning alerts: Expired, Expiring Soon, Credential Update Due, Capacity Full"/>
+						<outline text="✅ Actions: Edit, Update Credentials, Test Credentials, Reassign Licenses"/>
+						<outline text="✅ Copy buttons: Mọi field đều có Copy button"/>
+						<outline text="✅ Usage stats: Access count, Success rate, Charts"/>
+						<outline text="✅ UI/UX: Collapsible sections, Icons, Color coding, Toast notifications"/>
+					</outline>
+				</outline>
+				<outline text="4.3. Add New Account" _note="Thêm account mới vào hệ thống">
+					<outline text="4.3.1. Admin click Add New Account">
+						<outline text="From: Account List → Click &apos;Add New Account&apos; button (top right)"/>
+						<outline text="URL: /wp-admin/admin. php?page=vd-accounts&amp;action=add"/>
+					</outline>
+					<outline text="4.3.2. Add Account Form (UPDATED - Comprehensive Fields)">
+						<outline text="SECTION 1: Basic Information">
+							<outline text="Provider (required)">
+								<outline text="Input Type: Text input (free text) hoặc Dropdown với suggestions"/>
+								<outline text="Suggestions: Netflix, Spotify, YouTube Premium, Canva Pro, API Service, Custom..."/>
+								<outline text="Example: Netflix"/>
+								<outline text="Help text: Tên nhà cung cấp dịch vụ. Có thể nhập tự do hoặc chọn từ danh sách."/>
+								<outline text="Validation: Required, max 100 chars"/>
+							</outline>
+							<outline text="Display Name (optional but recommended)">
+								<outline text="Text input"/>
+								<outline text="Label: Tên hiển thị (để dễ quản lý)"/>
+								<outline text="Example: Netflix Premium Account #001"/>
+								<outline text="Placeholder: VD: Netflix Premium #001, Spotify Family #002"/>
+								<outline text="Help text: Tên dễ nhớ để phân biệt các accounts trong admin dashboard"/>
+								<outline text="Auto-generate suggestion: [Provider] Account [auto_increment_number]"/>
+							</outline>
+							<outline text="Capacity (required)">
+								<outline text="Number input"/>
+								<outline text="Label: Capacity (Số licenses tối đa)"/>
+								<outline text="Min: 1, Max: 100, Default: 4"/>
+								<outline text="Example: 4"/>
+								<outline text="Help text: Số licenses tối đa mà account này có thể phục vụ đồng thời (tùy thuộc plan từ provider)"/>
+							</outline>
+							<outline text="Status (required)">
+								<outline text="Dropdown: Active, Inactive"/>
+								<outline text="Default: Active"/>
+								<outline text="Help text: Chỉ Active accounts được assign cho licenses"/>
+							</outline>
+							<outline text="Expires At (required)">
+								<outline text="Date-time picker"/>
+								<outline text="Label: Ngày hết hạn account"/>
+								<outline text="Example: 31/12/2025 23:59:59"/>
+								<outline text="Help text: Ngày subscription từ provider hết hạn. Hệ thống sẽ nhắc nhở trước khi hết hạn."/>
+								<outline text="Validation: Must be &gt; NOW()"/>
+								<outline text="Quick buttons: +30 days, +60 days, +90 days, +1 year"/>
+							</outline>
+							<outline text="Next Credential Update (optional)">
+								<outline text="Date picker"/>
+								<outline text="Label: Ngày dự kiến update credentials tiếp theo"/>
+								<outline text="Example: 24/12/2025"/>
+								<outline text="Help text: Lịch nhắc nhở admin update password/cookie định kỳ"/>
+								<outline text="Auto-suggestion: expires_at - 7 days"/>
+							</outline>
+						</outline>
+						<outline text="SECTION 2: Account Credentials (ALL POSSIBLE FIELDS - Collapsible Sections)">
+							<outline text="Help text: ⚠️ Điền TẤT CẢ thông tin bạn có về account này. KHÔNG bắt buộc điền hết - chỉ điền fields nào bạn sẽ sử dụng. Thông tin nào hiển thị cho khách sẽ được cấu hình trong Product Share Config."/>
+							<outline text="SUB-SECTION 2.1: Authentication (Thông tin đăng nhập) - EXPANDED BY DEFAULT">
+								<outline text="Account Login/Username (optional)">
+									<outline text="Text input"/>
+									<outline text="Label: Username hoặc Email đăng nhập"/>
+									<outline text="Example: netflix001@provider.com"/>
+									<outline text="Placeholder: username@example. com"/>
+									<outline text="Help text: Email hoặc username chính để đăng nhập"/>
+									<outline text="Validation: IF điền → must be unique per provider"/>
+									<outline text="Copy button (after save)"/>
+								</outline>
+								<outline text="Login Password (optional)">
+									<outline text="Password input with Show/Hide toggle"/>
+									<outline text="Label: Mật khẩu đăng nhập"/>
+									<outline text="Example: Abc123xyz!@#"/>
+									<outline text="Help text: Mật khẩu sẽ được mã hóa trước khi lưu"/>
+									<outline text="Strength indicator: Weak/Medium/Strong"/>
+									<outline text="Copy button (after save)"/>
+								</outline>
+								<outline text="Cookie (optional)">
+									<outline text="Textarea (expandable)"/>
+									<outline text="Label: Cookie Session (JSON format)"/>
+									<outline text="Placeholder: {&quot;session_id&quot;: &quot;xyz789&quot;, &quot;auth_token&quot;:&quot;abc123&quot;}"/>
+									<outline text="Help text: Cookie JSON để auto-login. Paste cookie từ browser (format JSON)."/>
+									<outline text="Buttons">
+										<outline text="Validate JSON (check format)"/>
+										<outline text="Format JSON (beautify)"/>
+										<outline text="Copy (after save)"/>
+									</outline>
+									<outline text="Validation: IF điền → must be valid JSON"/>
+								</outline>
+								<outline text="Email (optional)">
+									<outline text="Email input"/>
+									<outline text="Label: Email tài khoản (backup email)"/>
+									<outline text="Example: backup@email.com"/>
+									<outline text="Placeholder: backup@example.com"/>
+									<outline text="Help text: Email phụ hoặc email recovery (nếu khác với account_login)"/>
+									<outline text="Validation: Valid email format"/>
+								</outline>
+								<outline text="Phone Number (optional)">
+									<outline text="Phone input (with country code selector)"/>
+									<outline text="Label: Số điện thoại"/>
+									<outline text="Example: +84 901 234 567"/>
+									<outline text="Placeholder: +84 9XX XXX XXX"/>
+									<outline text="Help text: Số điện thoại đăng ký tài khoản (nếu có)"/>
+								</outline>
+							</outline>
+							<outline text="SUB-SECTION 2.2: Profile Information (Thông tin profile) - COLLAPSED BY DEFAULT">
+								<outline text="Collapsible section: Click để expand/collapse"/>
+								<outline text="Profile Name (optional)">
+									<outline text="Text input"/>
+									<outline text="Label: Tên Profile"/>
+									<outline text="Example: Profile 1, Kids Profile, Main Profile"/>
+									<outline text="Placeholder: VD: Profile 1"/>
+									<outline text="Help text: Tên profile trong account (Netflix có nhiều profiles, chọn profile nào cho khách)"/>
+								</outline>
+								<outline text="PIN Code (optional)">
+									<outline text="Number input (4-6 digits)"/>
+									<outline text="Label: Mã PIN Profile"/>
+									<outline text="Example: 1234"/>
+									<outline text="Input type: Password (masked)"/>
+									<outline text="Show/Hide toggle"/>
+									<outline text="Help text: Mã PIN để truy cập profile (nếu profile có PIN lock)"/>
+									<outline text="Validation: 4-6 digits only"/>
+								</outline>
+							</outline>
+							<outline text="SUB-SECTION 2.3: Security Information (Thông tin bảo mật) - COLLAPSED BY DEFAULT">
+								<outline text="Collapsible section: Click để expand/collapse"/>
+								<outline text="Security Question (optional)">
+									<outline text="Text input or Dropdown (common questions)"/>
+									<outline text="Label: Câu hỏi bảo mật"/>
+									<outline text="Example: What is your pet&apos;s name?"/>
+									<outline text="Placeholder: Nhập câu hỏi bảo mật"/>
+									<outline text="Help text: Câu hỏi khi quên mật khẩu"/>
+								</outline>
+								<outline text="Security Answer (optional)">
+									<outline text="Text input (masked)"/>
+									<outline text="Label: Câu trả lời bảo mật"/>
+									<outline text="Example: Fluffy"/>
+									<outline text="Input type: Password"/>
+									<outline text="Show/Hide toggle"/>
+									<outline text="Help text: Câu trả lời cho câu hỏi bảo mật"/>
+								</outline>
+								<outline text="Backup Codes (optional)">
+									<outline text="Textarea (1 code per line)"/>
+									<outline text="Label: Backup Codes (Mã khôi phục)"/>
+									<outline text="Example: ABC123XYZ, QWE456RST, ZXC789VBN"/>
+									<outline text="Placeholder: Mỗi code 1 dòng"/>
+									<outline text="Help text: Mã backup codes từ provider để khôi phục tài khoản khi mất access"/>
+									<outline text="Button: Import from file (upload .txt)"/>
+								</outline>
+								<outline text="Two-Factor Secret (optional)">
+									<outline text="Text input"/>
+									<outline text="Label: 2FA Secret Key (TOTP)"/>
+									<outline text="Example: JBSWY3DPEHPK3PXP"/>
+									<outline text="Placeholder: Secret key từ 2FA app"/>
+									<outline text="Help text: Secret key để generate 2FA codes (Google Authenticator, Authy...)"/>
+									<outline text="Button: Generate QR Code (preview QR để test)"/>
+								</outline>
+							</outline>
+							<outline text="SUB-SECTION 2.4: API Credentials (Cho API services) - COLLAPSED BY DEFAULT">
+								<outline text="Collapsible section: Click để expand/collapse"/>
+								<outline text="Help text: Dành cho services dùng API authentication (Stripe, SendGrid, OpenAI...)"/>
+								<outline text="API Key (optional)">
+									<outline text="Text input"/>
+									<outline text="Label: API Key (Public Key)"/>
+									<outline text="Example: pk_live_abc123xyz789"/>
+									<outline text="Placeholder: pk_live_..."/>
+									<outline text="Help text: Public API key"/>
+									<outline text="Copy button"/>
+								</outline>
+								<outline text="API Secret (optional)">
+									<outline text="Password input"/>
+									<outline text="Label: API Secret (Private Key)"/>
+									<outline text="Example: sk_live_xyz789abc123"/>
+									<outline text="Placeholder: sk_live_..."/>
+									<outline text="Help text: Private API secret - sẽ được mã hóa"/>
+									<outline text="Show/Hide toggle"/>
+									<outline text="Copy button"/>
+								</outline>
+								<outline text="API Token (optional)">
+									<outline text="Textarea (expandable)"/>
+									<outline text="Label: API Token (Bearer Token)"/>
+									<outline text="Example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9. .."/>
+									<outline text="Placeholder: Long-lived access token"/>
+									<outline text="Help text: Bearer token hoặc long-lived access token"/>
+									<outline text="Copy button"/>
+								</outline>
+							</outline>
+							<outline text="SUB-SECTION 2.5: Custom Fields (Tùy chỉnh) - COLLAPSED BY DEFAULT">
+								<outline text="Collapsible section: Click để expand/collapse"/>
+								<outline text="Purpose: Cho phép admin thêm BẤT KỲ field nào chưa có ở trên"/>
+								<outline text="Help text: Thêm các thông tin tùy chỉnh khác chưa có trong danh sách trên (VD: Webhook URL, Discord Token, Recovery Email...)"/>
+								<outline text="Custom Fields Builder (Dynamic)">
+									<outline text="Button: + Add Custom Field (primary button)"/>
+									<outline text="WHEN clicked → Thêm 1 custom field row">
+										<outline text="Row UI: 4 columns layout">
+											<outline text="Column 1: Field Key (required)">
+												<outline text="Text input"/>
+												<outline text="Label: Field Key (tên field)"/>
+												<outline text="Example: webhook_url, telegram_bot_token, discord_webhook"/>
+												<outline text="Placeholder: field_key"/>
+												<outline text="Validation">
+													<outline text="Lowercase only"/>
+													<outline text="Alphanumeric + underscore only (no spaces, no special chars)"/>
+													<outline text="Must be unique in this account"/>
+													<outline text="Pattern: ^[a-z][a-z0-9_]*$"/>
+												</outline>
+												<outline text="Help text: Tên field (chỉ chữ thường, số, dấu gạch dưới). VD: webhook_url"/>
+											</outline>
+											<outline text="Column 2: Field Label (required)">
+												<outline text="Text input"/>
+												<outline text="Label: Display Label (nhãn hiển thị)"/>
+												<outline text="Example: Webhook URL, Telegram Bot Token"/>
+												<outline text="Placeholder: VD: Webhook URL"/>
+												<outline text="Help text: Tên hiển thị cho field này (có thể có dấu, chữ hoa)"/>
+											</outline>
+											<outline text="Column 3: Field Type (required)">
+												<outline text="Dropdown">
+													<outline text="Options">
+														<outline text="text (Text input) - Default"/>
+														<outline text="password (Password input - masked)"/>
+														<outline text="textarea (Multi-line text)"/>
+														<outline text="json (JSON format - với validator)"/>
+														<outline text="url (URL input - với validator)"/>
+														<outline text="email (Email input - với validator)"/>
+														<outline text="number (Number input)"/>
+													</outline>
+												</outline>
+												<outline text="Help text: Loại dữ liệu của field"/>
+											</outline>
+											<outline text="Column 4: Field Value (required)">
+												<outline text="Input type thay đổi theo Field Type">
+													<outline text="IF type = text → Text input"/>
+													<outline text="IF type = password → Password input with Show/Hide"/>
+													<outline text="IF type = textarea → Textarea (expandable)"/>
+													<outline text="IF type = json → Textarea with JSON validator + Format button"/>
+													<outline text="IF type = url → URL input with validation"/>
+													<outline text="IF type = email → Email input with validation"/>
+													<outline text="IF type = number → Number input"/>
+												</outline>
+												<outline text="Placeholder: Nhập giá trị"/>
+												<outline text="Help text: Giá trị của field"/>
+												<outline text="Validation: Tùy theo type (URL format, Email format, JSON format...)"/>
+											</outline>
+											<outline text="Column 5: Actions">
+												<outline text="Button: Remove (delete icon) - Xóa custom field này"/>
+											</outline>
+										</outline>
+									</outline>
+									<outline text="Can add UNLIMITED custom fields">
+										<outline text="Each click + Add → Thêm 1 row mới"/>
+										<outline text="No limit on number of custom fields"/>
+									</outline>
+									<outline text="Example Custom Fields">
+										<outline text="Field 1: webhook_url | Webhook URL | url | https://example.com/webhook"/>
+										<outline text="Field 2: telegram_token | Telegram Bot Token | password | 123456: ABC-DEF... [Show/Hide]"/>
+										<outline text="Field 3: recovery_email | Recovery Email | email | recovery@example.com"/>
+										<outline text="Field 4: api_endpoint | API Endpoint | url | https://api.example.com/v1"/>
+										<outline text="Field 5: custom_note | Custom Note | textarea | Multi-line note..."/>
+									</outline>
+								</outline>
+								<outline text="Storage">
+									<outline text="All custom fields saved as JSON in account_fields column"/>
+									<outline text="Format: {&quot;webhook_url&quot;:{&quot;label&quot;:&quot;Webhook URL&quot;, &quot;type&quot;:&quot;url&quot;,&quot;value&quot;:&quot;https://...&quot;}, &quot;telegram_token&quot;: {&quot;label&quot;:&quot;Telegram Bot Token&quot;,&quot;type&quot;:&quot;password&quot;, &quot;value&quot;:&quot;[encrypted]&quot;}}"/>
+								</outline>
+							</outline>
+						</outline>
+						<outline text="SECTION 3: Pool Assignment (Optional)">
+							<outline text="Assign to Pool (optional)">
+								<outline text="Dropdown: None, Pool 1, Pool 2, Pool 3..."/>
+								<outline text="Label: Assign vào Pool nào? (có thể bỏ trống)"/>
+								<outline text="Default: None (không assign vào pool nào)"/>
+								<outline text="Help text: Chọn pool để account này thuộc về. Có thể bỏ trống và assign sau."/>
+								<outline text="Filter: Chỉ show pools của cùng provider"/>
+								<outline text="Show pool info: Pool 1 (Priority 1, Capacity 15/20)"/>
+							</outline>
+						</outline>
+						<outline text="SECTION 4: Admin Notes (Optional)">
+							<outline text="Internal Notes (optional)">
+								<outline text="Rich textarea (WYSIWYG editor - optional)"/>
+								<outline text="Label: Ghi chú nội bộ (chỉ admin thấy)"/>
+								<outline text="Placeholder: VD: Mua từ seller X ngày 01/10/2025, gia hạn hàng tháng, không share quá 4 users..."/>
+								<outline text="Help text: Ghi chú riêng cho admin, khách hàng không thấy"/>
+								<outline text="Markdown support (optional)"/>
+							</outline>
+						</outline>
+					</outline>
+					<outline text="4.3.3. Validation (COMPREHENSIVE)">
+						<outline text="Required Fields">
+							<outline text="Provider: Required"/>
+							<outline text="Capacity: Required (1-100)"/>
+							<outline text="Status: Required"/>
+							<outline text="Expires At: Required AND &gt; NOW()"/>
+						</outline>
+						<outline text="At Least One Credential">
+							<outline text="Must have AT LEAST 1 credential field filled">
+								<outline text="Check: account_login OR login_password OR cookie OR email OR phone OR profile_name OR pin_code OR security_question OR api_key OR api_secret OR api_token OR (custom_fields count &gt; 0)"/>
+							</outline>
+							<outline text="IF no credential fields → ERROR">
+								<outline text="Message: Phải điền ít nhất 1 thông tin credentials (password, cookie, API key, hoặc custom field)"/>
+							</outline>
+						</outline>
+						<outline text="Unique Checks">
+							<outline text="IF account_login điền → Must be unique per provider">
+								<outline text="Query: SELECT COUNT FROM bz_vd_provider_accounts WHERE provider = ? AND account_login = ?"/>
+								<outline text="IF exists → ERROR: Account login đã tồn tại cho provider này"/>
+							</outline>
+						</outline>
+						<outline text="Format Validations">
+							<outline text="Cookie: IF điền → Must be valid JSON">
+								<outline text="json_decode($cookie) !== NULL"/>
+							</outline>
+							<outline text="Email: IF điền → Valid email format"/>
+							<outline text="Phone: IF điền → Valid phone format"/>
+							<outline text="PIN Code: IF điền → 4-6 digits only"/>
+							<outline text="Custom field keys: Lowercase, alphanumeric + underscore only"/>
+							<outline text="Custom field values: Validate theo type (url, email, json, number...)"/>
+						</outline>
+						<outline text="Date Validations">
+							<outline text="Expires At: Must be &gt; NOW()"/>
+							<outline text="Next Credential Update: IF điền → Must be &lt;= expires_at"/>
+						</outline>
+					</outline>
+					<outline text="4.3.4. Save Process (COMPREHENSIVE)">
+						<outline text="Step 1: Prepare data for encryption">
+							<outline text="Encrypt sensitive standard fields">
+								<outline text="login_password → encrypt($password, ENCRYPTION_KEY)"/>
+								<outline text="pin_code → encrypt($pin, ENCRYPTION_KEY)"/>
+								<outline text="security_answer → encrypt($answer, ENCRYPTION_KEY)"/>
+								<outline text="api_secret → encrypt($secret, ENCRYPTION_KEY)"/>
+							</outline>
+							<outline text="Encrypt sensitive custom fields">
+								<outline text="Loop through custom_fields"/>
+								<outline text="IF field type = &apos;password&apos; → encrypt(value, ENCRYPTION_KEY)"/>
+							</outline>
+						</outline>
+						<outline text="Step 2: Validate and format JSON fields">
+							<outline text="Cookie: IF provided → json_decode() validate + json_encode() format"/>
+							<outline text="Backup Codes: Convert multiline text to JSON array">
+								<outline text="explode(&quot;\n&quot;, $backup_codes)"/>
+								<outline text="json_encode($codes_array)"/>
+							</outline>
+						</outline>
+						<outline text="Step 3: Build account_fields JSON (Custom fields)">
+							<outline text="$account_fields = []"/>
+							<outline text="FOREACH custom field">
+								<outline text="$account_fields[$field_key] = ["/>
+								<outline text="  &apos;label&apos; =&gt; $field_label,"/>
+								<outline text="  &apos;type&apos; =&gt; $field_type,"/>
+								<outline text="&apos;value&apos; =&gt; $encrypted_value OR $value"/>
+								<outline text="]"/>
+							</outline>
+							<outline text="$account_fields_json = json_encode($account_fields)"/>
+						</outline>
+						<outline text="Step 4: Set timestamps">
+							<outline text="last_credential_update = NOW() (mới tạo)"/>
+							<outline text="next_credential_update = user input OR (expires_at - 7 days)"/>
+							<outline text="created_at = NOW()"/>
+							<outline text="updated_at = NOW()"/>
+						</outline>
+						<outline text="Step 5: Insert into database">
+							<outline text="INSERT INTO bz_vd_provider_accounts">
+								<outline text="Standard columns">
+									<outline text="provider, display_name, capacity, status, expires_at"/>
+								</outline>
+								<outline text="Authentication columns">
+									<outline text="account_login, login_password (encrypted), cookie, email, phone"/>
+								</outline>
+								<outline text="Profile columns">
+									<outline text="profile_name, pin_code (encrypted)"/>
+								</outline>
+								<outline text="Security columns">
+									<outline text="security_question, security_answer (encrypted), backup_codes (JSON), two_factor_secret"/>
+								</outline>
+								<outline text="API columns">
+									<outline text="api_key, api_secret (encrypted), api_token"/>
+								</outline>
+								<outline text="Custom fields">
+									<outline text="account_fields (JSON)"/>
+								</outline>
+								<outline text="Management columns">
+									<outline text="pool_id, last_credential_update, next_credential_update, internal_notes"/>
+								</outline>
+								<outline text="Timestamps">
+									<outline text="created_at, updated_at"/>
+								</outline>
+							</outline>
+						</outline>
+						<outline text="Step 6: Log action (Audit trail)">
+							<outline text="INSERT INTO bz_vd_audit_log">
+								<outline text="action: &apos;create_account&apos;"/>
+								<outline text="target_type: &apos;provider_account&apos;"/>
+								<outline text="target_id: [new account id]"/>
+								<outline text="user_id: [current admin user id]"/>
+								<outline text="details: JSON with provider, capacity, expires_at"/>
+								<outline text="created_at: NOW()"/>
+							</outline>
+						</outline>
+						<outline text="Step 7: Success response">
+							<outline text="Success message: &apos;Account created successfully&apos;"/>
+							<outline text="Redirect to: Account Details page"/>
+							<outline text="URL: /wp-admin/admin. php?page=vd-accounts&amp;action=view&amp;account_id=[new_id]"/>
+							<outline text="Show all credentials với Copy buttons, Show/Hide toggles"/>
+						</outline>
+					</outline>
+					<outline text="Kết quả 4.3 - Add New Account">
+						<outline text="✅ Account mới được tạo với ĐẦY ĐỦ thông tin có thể"/>
+						<outline text="✅ Hỗ trợ TẤT CẢ loại credentials: Authentication, Profile, Security, API, Custom"/>
+						<outline text="✅ Custom Fields: UNLIMITED, admin tự định nghĩa bất kỳ field nào"/>
+						<outline text="✅ Sensitive data được encrypt an toàn (password, PIN, API secret, custom password fields)"/>
+						<outline text="✅ Validation đầy đủ: Required fields, uniqueness, format, dates"/>
+						<outline text="✅ Audit trail: Log hành động create_account"/>
+						<outline text="✅ UI thân thiện: Collapsible sections, validators, copy buttons, show/hide toggles"/>
+						<outline text="✅ 100% FLEXIBLE - Admin kiểm soát hoàn toàn thông tin lưu trữ"/>
+						<outline text="✅ Account sẵn sàng để: Assign vào Pool → Config trong Product Share Config → Gửi cho khách"/>
+					</outline>
+				</outline>
+				<outline text="4.4. Edit Account" _note="Chỉnh sửa account">
+					<outline text="4.4.1. Admin click Edit">
+						<outline text="From: Account Details page → Click &apos;Edit Account&apos; button"/>
+						<outline text="OR: Account List → Click &apos;Edit&apos; action"/>
+						<outline text="URL: /wp-admin/admin. php?page=vd-accounts&amp;action=edit&amp;account_id=1"/>
+					</outline>
+					<outline text="4.4.2. Edit Form (PRE-FILLED - Identical to Add Form but with data)">
+						<outline text="Form Structure: SAME as Add Account Form (Phần 4.3)">
+							<outline text="All sections: Basic Info, Credentials (5 sub-sections), Pool Assignment, Admin Notes"/>
+							<outline text="All fields pre-filled với current data từ database"/>
+						</outline>
+						<outline text="SECTION 1: Basic Information (Pre-filled)">
+							<outline text="Provider (READ-ONLY - Cannot change)">
+								<outline text="Display: Text label with badge (not editable)"/>
+								<outline text="Value: Netflix"/>
+								<outline text="Reason: Changing provider would break integrity with pools, licenses"/>
+								<outline text="Help text: Provider cannot be changed. Create new account if needed."/>
+								<outline text="Hidden input: &lt;input type=&quot;hidden&quot; name=&quot;provider&quot; value=&quot;Netflix&quot;&gt;"/>
+							</outline>
+							<outline text="Display Name (editable)">
+								<outline text="Text input"/>
+								<outline text="Current value: Netflix Premium Account #001"/>
+								<outline text="Can edit freely"/>
+							</outline>
+							<outline text="Capacity (editable - WITH WARNING)">
+								<outline text="Number input"/>
+								<outline text="Current value: 4"/>
+								<outline text="Can change: 1-100"/>
+								<outline text="IF new_capacity &lt; assigned_count → Show warning (see 4.4.3)"/>
+							</outline>
+							<outline text="Status (editable)">
+								<outline text="Dropdown: Active, Inactive"/>
+								<outline text="Current value: Active"/>
+								<outline text="Warning if changing to Inactive">
+									<outline text="Alert: Changing to Inactive will prevent new licenses from using this account. Existing assigned licenses will still work."/>
+								</outline>
+							</outline>
+							<outline text="Expires At (editable)">
+								<outline text="Date-time picker"/>
+								<outline text="Current value: 31/12/2025 23:59:59"/>
+								<outline text="Can extend or update"/>
+								<outline text="Quick buttons: +30 days, +60 days, +90 days, +1 year"/>
+								<outline text="Validation: Must be &gt; NOW()"/>
+							</outline>
+							<outline text="Next Credential Update (editable)">
+								<outline text="Date picker"/>
+								<outline text="Current value: 24/12/2025"/>
+								<outline text="Can update"/>
+							</outline>
+						</outline>
+						<outline text="SECTION 2: Account Credentials (Pre-filled - ALL FIELDS)">
+							<outline text="Help text: Update any fields below. Leave blank to keep current value. Password fields shown as masked - enter new password to change."/>
+							<outline text="SUB-SECTION 2.1: Authentication (Pre-filled)">
+								<outline text="Account Login/Username (editable)">
+									<outline text="Text input"/>
+									<outline text="Current value: netflix001@provider. com"/>
+									<outline text="Can edit"/>
+									<outline text="Validation: Must be unique per provider (exclude current account)"/>
+								</outline>
+								<outline text="Login Password (editable - SPECIAL HANDLING)">
+									<outline text="Password input"/>
+									<outline text="Display: ••••••••••• (masked - không show current password)"/>
+									<outline text="Placeholder: Leave blank to keep current password"/>
+									<outline text="Help text: Enter new password only if you want to change it. Leave blank to keep existing password."/>
+									<outline text="IF field left empty → Keep current encrypted password"/>
+									<outline text="IF field has value → Encrypt new password and update"/>
+									<outline text="Button: Show (để xem current password - decrypt và show)">
+										<outline text="Confirmation: Are you sure? Current password will be revealed."/>
+										<outline text="After confirm → Show decrypted: Abc123xyz!@#"/>
+									</outline>
+								</outline>
+								<outline text="Cookie (editable)">
+									<outline text="Textarea"/>
+									<outline text="Current value: {&quot;session_id&quot;: &quot;xyz789&quot;,...} (pre-filled JSON)"/>
+									<outline text="Can edit entire JSON"/>
+									<outline text="Button: Format JSON"/>
+									<outline text="Validation: Must be valid JSON if not empty"/>
+									<outline text="Can clear (delete cookie)"/>
+								</outline>
+								<outline text="Email (editable)">
+									<outline text="Email input"/>
+									<outline text="Current value: backup@email.com"/>
+									<outline text="Can edit or clear"/>
+								</outline>
+								<outline text="Phone (editable)">
+									<outline text="Phone input"/>
+									<outline text="Current value: +84 901 234 567"/>
+									<outline text="Can edit or clear"/>
+								</outline>
+							</outline>
+							<outline text="SUB-SECTION 2.2: Profile (Pre-filled)">
+								<outline text="Profile Name (editable)">
+									<outline text="Current value: Profile 1"/>
+									<outline text="Can edit or clear"/>
+								</outline>
+								<outline text="PIN Code (editable - SPECIAL HANDLING)">
+									<outline text="Password input (masked)"/>
+									<outline text="Display: •••• (don&apos;t show current PIN)"/>
+									<outline text="Placeholder: Leave blank to keep current PIN"/>
+									<outline text="IF empty → Keep current"/>
+									<outline text="IF has value → Encrypt and update"/>
+									<outline text="Button: Show Current PIN">
+										<outline text="Confirmation → Reveal: 1234"/>
+									</outline>
+								</outline>
+							</outline>
+							<outline text="SUB-SECTION 2.3: Security (Pre-filled)">
+								<outline text="Security Question (editable)">
+									<outline text="Current value: What is your pet&apos;s name?"/>
+									<outline text="Can edit or clear"/>
+								</outline>
+								<outline text="Security Answer (editable - SPECIAL HANDLING)">
+									<outline text="Password input (masked)"/>
+									<outline text="Display: ••••••• (don&apos;t show)"/>
+									<outline text="Placeholder: Leave blank to keep current answer"/>
+									<outline text="IF empty → Keep current"/>
+									<outline text="IF has value → Encrypt and update"/>
+									<outline text="Button: Show Current Answer"/>
+								</outline>
+								<outline text="Backup Codes (editable)">
+									<outline text="Textarea"/>
+									<outline text="Current value: ABC123, QWE456, ZXC789 (pre-filled, 1 per line)"/>
+									<outline text="Can edit, add, remove codes"/>
+								</outline>
+								<outline text="Two-Factor Secret (editable)">
+									<outline text="Text input"/>
+									<outline text="Current value: JBSWY3DPEHPK3PXP"/>
+									<outline text="Can edit or clear"/>
+								</outline>
+							</outline>
+							<outline text="SUB-SECTION 2.4: API (Pre-filled)">
+								<outline text="API Key (editable)">
+									<outline text="Current value: pk_live_abc123xyz789"/>
+									<outline text="Can edit or clear"/>
+								</outline>
+								<outline text="API Secret (editable - SPECIAL HANDLING)">
+									<outline text="Password input (masked)"/>
+									<outline text="Display: ••••••••••••••• (don&apos;t show)"/>
+									<outline text="Placeholder: Leave blank to keep current secret"/>
+									<outline text="IF empty → Keep current"/>
+									<outline text="IF has value → Encrypt and update"/>
+									<outline text="Button: Show Current Secret"/>
+								</outline>
+								<outline text="API Token (editable)">
+									<outline text="Textarea"/>
+									<outline text="Current value: eyJhbGc... (pre-filled)"/>
+									<outline text="Can edit or clear"/>
+								</outline>
+							</outline>
+							<outline text="SUB-SECTION 2.5: Custom Fields (Pre-filled - DYNAMIC)">
+								<outline text="Load existing custom fields từ account_fields JSON">
+									<outline text="Parse: $custom_fields = json_decode($account[&apos;account_fields&apos;], true)"/>
+									<outline text="FOREACH existing custom field → Display as editable row">
+										<outline text="Row with: Field Key (read-only), Field Label (editable), Field Type (editable), Field Value (editable), Remove button"/>
+										<outline text="Example existing field">
+											<outline text="Field Key: webhook_url (read-only - can&apos;t change key)"/>
+											<outline text="Field Label: Webhook URL (editable)"/>
+											<outline text="Field Type: url (editable - can change type)"/>
+											<outline text="Field Value: https://example. com/webhook (editable)"/>
+											<outline text="Button: Remove (delete this custom field)"/>
+										</outline>
+										<outline text="IF field type = password">
+											<outline text="Display value: ••••••••••• (masked)"/>
+											<outline text="Placeholder: Leave blank to keep current value"/>
+											<outline text="Button: Show Current Value"/>
+										</outline>
+									</outline>
+								</outline>
+								<outline text="Can add NEW custom fields">
+									<outline text="Button: + Add Custom Field"/>
+									<outline text="Same UI as Add Account form"/>
+									<outline text="New fields will be added to account_fields JSON"/>
+								</outline>
+								<outline text="Can remove existing custom fields">
+									<outline text="Click Remove → Confirm → Field removed from JSON"/>
+								</outline>
+								<outline text="Example: Edit account has 2 custom fields">
+									<outline text="Existing Field 1: webhook_url | Webhook URL | url | https://old. com/webhook [Remove]">
+										<outline text="Can edit value to https: //new.com/webhook"/>
+										<outline text="Can edit label to New Webhook URL"/>
+										<outline text="Can change type to text"/>
+										<outline text="Can remove entire field"/>
+									</outline>
+									<outline text="Existing Field 2: telegram_token | Telegram Bot Token | password | ••••••••••• [Show] [Remove]">
+										<outline text="Masked - can show current value"/>
+										<outline text="Can enter new value to update"/>
+										<outline text="Leave blank to keep current"/>
+									</outline>
+									<outline text="Button: + Add Custom Field → Can add Field 3, 4, 5..."/>
+								</outline>
+							</outline>
+						</outline>
+						<outline text="SECTION 3: Pool Assignment (editable)">
+							<outline text="Assign to Pool">
+								<outline text="Dropdown"/>
+								<outline text="Current value: Pool 1 (if assigned)"/>
+								<outline text="Options: None, Pool 1, Pool 2, Pool 3..."/>
+								<outline text="Can change pool or unassign (set to None)"/>
+								<outline text="Warning if changing pool AND has assigned licenses">
+									<outline text="Alert: This account has {N} assigned licenses. Changing pool may affect license assignment logic. Consider reassigning licenses first."/>
+									<outline text="Checkbox: Auto-reassign licenses to new pool"/>
+								</outline>
+							</outline>
+						</outline>
+						<outline text="SECTION 4: Admin Notes (editable)">
+							<outline text="Internal Notes">
+								<outline text="Rich textarea"/>
+								<outline text="Current value: Pre-filled với existing notes"/>
+								<outline text="Can edit or clear"/>
+							</outline>
+						</outline>
+					</outline>
+					<outline text="4.4.3. Capacity Change Warning (IMPORTANT)">
+						<outline text="Trigger: WHEN admin changes capacity field">
+							<outline text="On blur OR on save attempt → Check capacity vs assigned count"/>
+						</outline>
+						<outline text="Get current assigned count">
+							<outline text="Query: SELECT COUNT(*) FROM bz_vd_license_keys WHERE assigned_account_id = 1"/>
+							<outline text="Example result: assigned_count = 4"/>
+						</outline>
+						<outline text="Compare: new_capacity vs assigned_count">
+							<outline text="IF new_capacity &gt;= assigned_count → OK, no warning"/>
+							<outline text="IF new_capacity &lt; assigned_count → SHOW WARNING"/>
+						</outline>
+						<outline text="Warning Alert Box (IF new_capacity &lt; assigned_count)">
+							<outline text="Type: Warning (màu cam)"/>
+							<outline text="Icon: ⚠️"/>
+							<outline text="Title: CAPACITY REDUCTION WARNING"/>
+							<outline text="Message">
+								<outline text="Account này đang phục vụ {assigned_count} licenses nhưng bạn đang giảm capacity xuống {new_capacity}."/>
+								<outline text="Điều này có nghĩa {excess_count} licenses sẽ VƯỢT capacity và có thể bị ảnh hưởng."/>
+								<outline/>
+								<outline text="Example: Đang phục vụ 4 licenses, giảm capacity xuống 3 → 1 license thừa"/>
+							</outline>
+							<outline text="Options">
+								<outline text="Radio 1: Keep all licenses (cho phép vượt capacity tạm thời)">
+									<outline text="Label: Giữ nguyên tất cả {assigned_count} licenses (vượt capacity tạm thời)"/>
+									<outline text="Description: Capacity sẽ là {new_capacity} nhưng account vẫn phục vụ {assigned_count} licenses. Admin cần reassign thủ công sau."/>
+									<outline text="Risk: Account overloaded"/>
+								</outline>
+								<outline text="Radio 2: Auto-reassign excess licenses (Recommended)">
+									<outline text="Label: Tự động reassign {excess_count} licenses thừa sang accounts khác"/>
+									<outline text="Description: Hệ thống sẽ chọn {excess_count} licenses (ưu tiên licenses ít active nhất) và reassign sang accounts khác trong cùng pool hoặc pools khác."/>
+									<outline text="Logic: Sort licenses by last_accessed ASC → Pick first {excess_count} → Reassign"/>
+									<outline text="Default: CHECKED (recommended)"/>
+								</outline>
+								<outline text="Radio 3: Manually select licenses to reassign">
+									<outline text="Label: Tôi sẽ chọn licenses nào cần reassign"/>
+									<outline text="Description: Hiển thị list {assigned_count} licenses, admin chọn {excess_count} licenses để reassign"/>
+									<outline text="Opens modal: Checkbox list of licenses + Select target account"/>
+								</outline>
+							</outline>
+							<outline text="Cannot save without selecting an option"/>
+						</outline>
+						<outline text="Example Scenario">
+							<outline text="Current capacity: 4, Assigned licenses: 4, New capacity: 3"/>
+							<outline text="Excess count: 1 license"/>
+							<outline text="Warning: Đang phục vụ 4 licenses, giảm xuống 3 → 1 license thừa"/>
+							<outline text="IF choose Auto-reassign → System picks least active license (e.g., C5H1-M4N6-O0P3-R7S9) → Reassign to another account"/>
+						</outline>
+					</outline>
+					<outline text="4.4.4. Validation (Same as Add + Additional checks)">
+						<outline text="All validation from Add Account (4.3.3)">
+							<outline text="Required fields, At least 1 credential, Format validations, Dates..."/>
+						</outline>
+						<outline text="Additional checks for Edit">
+							<outline text="Account Login uniqueness: Exclude current account ID">
+								<outline text="Query: SELECT COUNT FROM bz_vd_provider_accounts WHERE provider = ? AND account_login = ? AND id != ?"/>
+							</outline>
+							<outline text="Capacity vs Assigned">
+								<outline text="IF new_capacity &lt; assigned_count AND no option selected → ERROR: Please handle capacity reduction"/>
+							</outline>
+							<outline text="Expires At: Must be &gt; NOW()">
+								<outline text="IF admin tries to set past date → ERROR"/>
+							</outline>
+						</outline>
+					</outline>
+					<outline text="4.4.5. Save Process (COMPREHENSIVE)">
+						<outline text="Step 1: Determine what changed">
+							<outline text="Compare form data with current database data"/>
+							<outline text="Track changed fields: $changed_fields = []"/>
+							<outline text="Example: IF password changed → Add &apos;login_password&apos; to $changed_fields"/>
+						</outline>
+						<outline text="Step 2: Handle password fields (SPECIAL LOGIC)">
+							<outline text="FOR EACH password-type field (login_password, pin_code, security_answer, api_secret, custom password fields)">
+								<outline text="IF field is EMPTY (blank) in form">
+									<outline text="→ KEEP CURRENT VALUE (don&apos;t update)"/>
+									<outline text="Exclude from UPDATE query"/>
+								</outline>
+								<outline text="ELSE IF field has NEW VALUE">
+									<outline text="→ ENCRYPT new value"/>
+									<outline text="→ UPDATE database with encrypted value"/>
+									<outline text="Add to $changed_fields"/>
+								</outline>
+							</outline>
+							<outline text="Example">
+								<outline text="Current password: [encrypted_abc123]"/>
+								<outline text="Form password field: [blank] → Keep [encrypted_abc123]"/>
+								<outline text="Form password field: newpass456 → Encrypt to [encrypted_newpass456] → Update"/>
+							</outline>
+						</outline>
+						<outline text="Step 3: Handle custom fields (BUILD JSON)">
+							<outline text="Start with existing custom_fields JSON: $existing_custom = json_decode($account[&apos;account_fields&apos;])"/>
+							<outline text="Apply changes from form">
+								<outline text="FOR EACH existing custom field in form">
+									<outline text="IF changed → Update value in $existing_custom"/>
+									<outline text="IF removed → Unset from $existing_custom"/>
+								</outline>
+								<outline text="FOR EACH new custom field in form">
+									<outline text="Add to $existing_custom"/>
+								</outline>
+							</outline>
+							<outline text="Encrypt password-type custom fields"/>
+							<outline text="Rebuild JSON: $new_account_fields = json_encode($existing_custom)"/>
+						</outline>
+						<outline text="Step 4: Update timestamps">
+							<outline text="IF any credential field changed (password, cookie, email, any field in credentials section)">
+								<outline text="last_credential_update = NOW()">
+									<outline text="This triggers request counter reset (Flow 3 Bước 4.3)"/>
+								</outline>
+							</outline>
+							<outline text="updated_at = NOW() (always)"/>
+						</outline>
+						<outline text="Step 5: Handle capacity reduction (IF applicable)">
+							<outline text="IF new_capacity &lt; assigned_count">
+								<outline text="Get admin&apos;s selected option from form"/>
+								<outline text="Option 1: Keep all licenses">
+									<outline text="Do nothing - just update capacity"/>
+									<outline text="Result: Account overloaded (assigned &gt; capacity)"/>
+								</outline>
+								<outline text="Option 2: Auto-reassign excess licenses">
+									<outline text="Calculate excess: $excess = assigned_count - new_capacity"/>
+									<outline text="Get licenses to reassign">
+										<outline text="Query: SELECT id, license_key FROM bz_vd_license_keys WHERE assigned_account_id = 1 ORDER BY last_accessed ASC LIMIT $excess"/>
+										<outline text="Example: Pick 1 least active license"/>
+									</outline>
+									<outline text="FOR EACH excess license">
+										<outline text="Call pool assignment logic (Flow 3 Bước 5)"/>
+										<outline text="Reassign to another available account"/>
+										<outline text="Log reassignment"/>
+									</outline>
+								</outline>
+								<outline text="Option 3: Manually selected licenses">
+									<outline text="Get admin-selected license IDs from form"/>
+									<outline text="FOR EACH selected license">
+										<outline text="Reassign to admin-selected target account"/>
+										<outline text="Update: assigned_account_id = target_account_id"/>
+										<outline text="Log reassignment"/>
+									</outline>
+								</outline>
+							</outline>
+						</outline>
+						<outline text="Step 6: Update database">
+							<outline text="UPDATE bz_vd_provider_accounts SET">
+								<outline text="display_name = ?, capacity = ?, status = ?, expires_at = ?,"/>
+								<outline text="account_login = ?, [login_password = ?,] cookie = ?, email = ?, phone = ?,"/>
+								<outline text="profile_name = ?, [pin_code = ?,]"/>
+								<outline text="security_question = ?, [security_answer = ?,] backup_codes = ?, two_factor_secret = ?,"/>
+								<outline text="api_key = ?, [api_secret = ?,] api_token = ?,"/>
+								<outline text="account_fields = ?,"/>
+								<outline text="pool_id = ?, next_credential_update = ?, internal_notes = ?,"/>
+								<outline text="[last_credential_update = ?,] updated_at = NOW()"/>
+								<outline text="WHERE id = 1"/>
+							</outline>
+							<outline text="Note: [bracketed fields] only updated if changed"/>
+						</outline>
+						<outline text="Step 7: Log action (Audit trail)">
+							<outline text="INSERT INTO bz_vd_audit_log">
+								<outline text="action: &apos;update_account&apos;"/>
+								<outline text="target_type: &apos;provider_account&apos;"/>
+								<outline text="target_id: 1"/>
+								<outline text="user_id: [current admin user id]"/>
+								<outline text="details: JSON với changed_fields array">
+									<outline text="Example: {&quot;changed_fields&quot;:[&quot;login_password&quot;, &quot;cookie&quot;,&quot;expires_at&quot;], &quot;capacity_change&quot;:{&quot;from&quot;:4, &quot;to&quot;:3}, &quot;reassigned_licenses&quot;:[...]}"/>
+								</outline>
+								<outline text="created_at: NOW()"/>
+							</outline>
+						</outline>
+						<outline text="Step 8: Send notifications (Optional)">
+							<outline text="IF credential fields changed AND notification enabled">
+								<outline text="Email admin: Account {display_name} credentials updated"/>
+							</outline>
+							<outline text="IF assigned licenses exist AND credential changed">
+								<outline text="Optional: Email affected customers về credential update"/>
+							</outline>
+						</outline>
+						<outline text="Step 9: Success response">
+							<outline text="Success message: &apos;Account updated successfully&apos;"/>
+							<outline text="IF credentials changed → Add: &apos;Credentials updated. Request counters for affected licenses have been reset.&apos;"/>
+							<outline text="IF capacity reduced → Add: &apos;Capacity reduced. {N} licenses have been reassigned.&apos;"/>
+							<outline text="Redirect to: Account Details page"/>
+							<outline text="URL: /wp-admin/admin. php?page=vd-accounts&amp;action=view&amp;account_id=1"/>
+						</outline>
+					</outline>
+					<outline text="4.4.6. Edge Cases &amp; Error Handling">
+						<outline text="Case 1: Edit while licenses are accessing">
+							<outline text="Scenario: Admin updates credentials while customers đang request"/>
+							<outline text="Handling: Allow update, customers get new credentials on next request"/>
+							<outline text="last_credential_update triggers counter reset"/>
+						</outline>
+						<outline text="Case 2: Capacity reduced to 0">
+							<outline text="Validation: Capacity min = 1"/>
+							<outline text="Cannot set capacity to 0"/>
+						</outline>
+						<outline text="Case 3: Change status to Inactive while has assigned licenses">
+							<outline text="Warning: {N} licenses đang sử dụng account này. Changing to Inactive sẽ prevent new assignments nhưng existing licenses vẫn hoạt động."/>
+							<outline text="Confirm: Continue anyway?"/>
+						</outline>
+						<outline text="Case 4: Expires At set to past date">
+							<outline text="Validation error: Expires At must be in the future"/>
+							<outline text="Suggest: Extend expiration or set status to Expired"/>
+						</outline>
+						<outline text="Case 5: Remove custom field that&apos;s in Product Share Config">
+							<outline text="Warning: Custom field &apos;webhook_url&apos; is configured to display to customers in Product X. Removing this field may cause errors."/>
+							<outline text="Suggestion: Update Product Share Config first"/>
+						</outline>
+						<outline text="Case 6: Concurrent edits (2 admins edit same account)">
+							<outline text="Use updated_at for optimistic locking"/>
+							<outline text="IF updated_at changed since form load → Error: Account has been modified by another admin. Please refresh and try again."/>
+						</outline>
+					</outline>
+					<outline text="Kết quả 4.4 - Edit Account">
+						<outline text="✅ Edit form IDENTICAL to Add form - Consistent UX"/>
+						<outline text="✅ ALL fields pre-filled với current data"/>
+						<outline text="✅ Provider READ-ONLY (cannot change provider)"/>
+						<outline text="✅ Password fields: Leave blank to keep current, enter to update"/>
+						<outline text="✅ Custom fields: Edit existing, add new, remove any"/>
+						<outline text="✅ Capacity reduction: Smart handling with 3 options (keep, auto-reassign, manual)"/>
+						<outline text="✅ Validation: Comprehensive (uniqueness, formats, capacity vs assigned)"/>
+						<outline text="✅ Save logic: Smart update (only changed fields), encrypt sensitive data"/>
+						<outline text="✅ Timestamp: last_credential_update triggers request counter reset"/>
+						<outline text="✅ Audit trail: Log all changes with details"/>
+						<outline text="✅ Edge cases handled: Concurrent edits, inactive status, custom field removal"/>
+						<outline text="✅ 100% FLEXIBLE: Support TẤT CẢ credential types và custom fields"/>
+					</outline>
+				</outline>
+				<outline text="4.5. Update Credentials (CORE FUNCTION)" _note="Update password/cookie - RESET REQUEST COUNTER">
+					<outline text="4.5.1. Admin click Update Credentials">
+						<outline text="From: Account Details → Click &apos;Update Credentials&apos; button"/>
+						<outline text="Hoặc: Account List → Bulk Update Credentials"/>
+					</outline>
+					<outline text="4.5.2. Update Credentials Modal/Page">
+						<outline text="Current Account: netflix001@provider.com (read-only)"/>
+						<outline text="Update Reason: Dropdown (Scheduled update, Password changed, Account renewed, Other) + Textarea note"/>
+						<outline text="New Credentials Fields (dynamic theo provider)">
+							<outline text="Password: Password input (show current as masked, enter new)">
+								<outline text="Leave blank to keep current"/>
+								<outline text="Show/Hide toggle"/>
+							</outline>
+							<outline text="Cookie: Textarea JSON">
+								<outline text="Pre-filled với cookie hiện tại"/>
+								<outline text="Edit hoặc paste new cookie"/>
+							</outline>
+							<outline text="Custom Fields (if any)">
+								<outline text="api_key: Text input"/>
+								<outline text="api_secret: Password input"/>
+							</outline>
+						</outline>
+						<outline text="Expiration Update (optional)">
+							<outline text="Checkbox: Update Expires At (nếu gia hạn account)"/>
+							<outline text="New Expires At: Date-time picker"/>
+						</outline>
+						<outline text="Impact Warning">
+							<outline text="ℹ️ Info: 3 licenses đang sử dụng account này. Sau khi update credentials:"/>
+							<outline text="• Request counter của 3 licenses này sẽ được RESET về 0"/>
+							<outline text="• Customers có thể lấy credentials mới NGAY (không cần đợi ngày mai)"/>
+							<outline text="• Tất cả requests trước đây vẫn được log"/>
+						</outline>
+					</outline>
+					<outline text="4.5.3. Process Update">
+						<outline text="Encrypt new password (if provided): $encrypted_password = encrypt($new_password, ENCRYPTION_KEY)"/>
+						<outline text="UPDATE bz_vd_provider_accounts SET">
+							<outline text="login_password = $encrypted_password (if changed)"/>
+							<outline text="cookie = $new_cookie (if changed)"/>
+							<outline text="custom_fields = $new_custom_fields (if changed)"/>
+							<outline text="expires_at = $new_expires_at (if checkbox checked)"/>
+							<outline text="last_credential_update = NOW() ← QUAN TRỌNG"/>
+							<outline text="next_credential_update = $new_date (if changed)"/>
+							<outline text="updated_at = NOW()"/>
+							<outline text="WHERE id = 1"/>
+						</outline>
+						<outline text="Log update">
+							<outline text="INSERT INTO bz_vd_account_credential_history">
+								<outline text="account_id, updated_by (admin user ID), fields_changed (password, cookie), reason, updated_at"/>
+							</outline>
+						</outline>
+						<outline text="IMPACT: Request Counter Reset">
+							<outline text="Khi licenses truy cập lần sau (Flow 3 Bước 4.3):">
+								<outline text="count_from = MAX(today_start, last_credential_update)"/>
+								<outline text="last_credential_update = NOW() (vừa update)"/>
+								<outline text="→ count_from = NOW() (thời điểm update)"/>
+								<outline text="→ Requests trước đó KHÔNG được tính"/>
+								<outline text="→ Counter = 0 (reset)"/>
+							</outline>
+						</outline>
+					</outline>
+					<outline text="4.5.4. Success">
+						<outline text="Notice: Credentials updated successfully. 3 affected licenses can now access with new credentials."/>
+						<outline text="Email notification (optional)">
+							<outline text="IF admin enabled notification"/>
+							<outline text="Send email to 3 customers: Your account credentials have been updated. Please access the portal again to get new credentials."/>
+						</outline>
+					</outline>
+				</outline>
+				<outline text="4.6. Delete Account" _note="Xóa account khỏi hệ thống">
+					<outline text="4.6.1. Admin click Delete">
+						<outline text="From: Account Details → Click &apos;Delete Account&apos;"/>
+					</outline>
+					<outline text="4.6.2. Check assigned licenses">
+						<outline text="Query: SELECT COUNT(*) FROM bz_vd_license_keys WHERE assigned_account_id = 1"/>
+						<outline text="Result: 3 licenses đang sử dụng"/>
+					</outline>
+					<outline text="4.6.3. Confirmation Dialog">
+						<outline text="IF assigned_count &gt; 0">
+							<outline text="⚠️ WARNING: 3 licenses đang sử dụng account này. Xóa account sẽ ảnh hưởng đến customers."/>
+							<outline text="Options">
+								<outline text="Radio: Reassign licenses to other accounts in same pool (recommended)"/>
+								<outline text="Radio: Unassign licenses (licenses sẽ auto-reassign khi customer access)"/>
+								<outline text="Radio: Force delete (licenses sẽ bị lỗi khi access) - DANGEROUS"/>
+							</outline>
+							<outline text="Type DELETE to confirm: Text input (require typing DELETE)"/>
+						</outline>
+						<outline text="ELSE (no assigned licenses)">
+							<outline text="Confirm: Are you sure? This action cannot be undone."/>
+						</outline>
+					</outline>
+					<outline text="4.6.4. Process">
+						<outline text="IF reassign option selected">
+							<outline text="Loop qua 3 licenses → Reassign theo pool logic"/>
+						</outline>
+						<outline text="IF unassign option selected">
+							<outline text="UPDATE bz_vd_license_keys SET assigned_pool_id=NULL, assigned_account_id=NULL WHERE assigned_account_id=1"/>
+						</outline>
+						<outline text="DELETE FROM bz_vd_provider_accounts WHERE id=1"/>
+						<outline text="Log deletion: INSERT INTO bz_vd_audit_log (action:&apos;delete_account&apos;, account_id, reason, deleted_by, deleted_at)"/>
+					</outline>
+					<outline text="4.6.5. Success">
+						<outline text="Redirect to Account List với notice &apos;Account deleted successfully&apos;"/>
+					</outline>
+				</outline>
+				<outline text="4.7. Bulk Operations" _note="Thao tác hàng loạt">
+					<outline text="4.7.1. Bulk Update Credentials">
+						<outline text="Select multiple accounts → Bulk Actions → Update Credentials"/>
+						<outline text="Modal: Update credentials for 5 accounts">
+							<outline text="Same fields as single update"/>
+							<outline text="Apply to all selected accounts"/>
+							<outline text="Confirmation: This will affect 12 licenses total"/>
+						</outline>
+					</outline>
+					<outline text="4.7.2. Bulk Change Status">
+						<outline text="Select multiple → Bulk Actions → Set Active/Inactive"/>
+						<outline text="Warning if setting to inactive: X licenses will be affected"/>
+					</outline>
+					<outline text="4.7.3. Bulk Extend Expiration">
+						<outline text="Select multiple → Bulk Actions → Extend Expiration"/>
+						<outline text="Add days: Number input (VD: 30 days)"/>
+						<outline text="New expires_at = current_expires_at + 30 days"/>
+					</outline>
+				</outline>
+				<outline text="4.8. Account Expiration Monitoring" _note="Theo dõi accounts sắp hết hạn">
+					<outline text="4.8.1. Expiration Dashboard">
+						<outline text="Navigate: Accounts → Filter &apos;Expiring Soon&apos;"/>
+						<outline text="Show accounts với expires_at &lt; NOW() + 7 days"/>
+					</outline>
+					<outline text="4.8.2. Email Reminders (Admin)">
+						<outline text="Cron job: Daily check accounts expiring in 7 days, 3 days, 1 day"/>
+						<outline text="Send email to admin: Account [name] will expire in 3 days. Renew now to avoid service disruption."/>
+						<outline text="Email includes: Account info, affected licenses count, link to update"/>
+					</outline>
+					<outline text="4.8.3. Auto-disable Expired Accounts (optional)">
+						<outline text="Cron job: Daily check accounts với expires_at &lt;= NOW()"/>
+						<outline text="Auto UPDATE status = &apos;expired&apos;"/>
+						<outline text="Log: Automatic expiration"/>
+						<outline text="Email admin: Account [name] has expired and been disabled"/>
+					</outline>
+				</outline>
+			</outline>
+			<outline text="PHẦN 5: LOGS &amp; ANALYTICS" _note="Xem logs, lịch sử truy cập, analytics dashboard, reports - Data từ bz_vd_device_access_log">
+				<outline text="5.1. Access Logs (Lịch sử truy cập chi tiết)" _note="View tất cả access logs trong hệ thống">
+					<outline text="5.1.1. Admin truy cập">
+						<outline text="Navigate: WP Admin → VD License Manager → Logs"/>
+						<outline text="URL: /wp-admin/admin. php?page=vd-logs"/>
+					</outline>
+					<outline text="5.1.2. Logs List Table" _note="Bảng logs từ bz_vd_device_access_log">
+						<outline text="Columns">
+							<outline text="Time (accessed_at)">
+								<outline text="2025-10-08 14:30:00"/>
+								<outline text="Format: Relative time (2 hours ago) + absolute time tooltip"/>
+							</outline>
+							<outline text="License Key">
+								<outline text="A3F9-K2L4-M8N1-P5Q7"/>
+								<outline text="Link to License Details"/>
+								<outline text="NULL nếu bị chặn sớm (VPS) trước khi validate"/>
+							</outline>
+							<outline text="Customer">
+								<outline text="john@example.com"/>
+								<outline text="Query từ license → order → customer"/>
+								<outline text="Unknown nếu license NULL"/>
+							</outline>
+							<outline text="Device Name">
+								<outline text="Laptop - Windows 11 - Chrome 120"/>
+								<outline text="Link to Device Details (nếu device_id NOT NULL)"/>
+							</outline>
+							<outline text="IP Address">
+								<outline text="123.45.67.89"/>
+								<outline text="Tooltip: ISP info (nếu có)"/>
+								<outline text="Link to IP Details (whois/geolocation)"/>
+							</outline>
+							<outline text="VPS Status (MỚI)">
+								<outline text="Badge: Residential (xanh) | VPS (đỏ) | Not Checked (xám)"/>
+								<outline text="IF is_vps = 1: Show provider name (AWS, DigitalOcean...)"/>
+								<outline text="Tooltip: Datacenter info (ASN, Org, Country)"/>
+							</outline>
+							<outline text="Result (access_result)">
+								<outline text="Badge màu theo result">
+									<outline text="Success (xanh): Access granted"/>
+									<outline text="Blocked - VPS (đỏ): VPS detected"/>
+									<outline text="Blocked - Device Limit (cam): Device limit reached"/>
+									<outline text="Blocked - Request Limit (cam): Request limit exceeded"/>
+									<outline text="Blocked - Device Removed (xám): Device was removed"/>
+									<outline text="Blocked - Device Banned (đỏ): Device blocked"/>
+									<outline text="Error (đỏ): Other errors"/>
+								</outline>
+							</outline>
+							<outline text="Error Code (nếu có)">
+								<outline text="vps_detected, device_limit_reached, request_limit_exceeded, license_expired..."/>
+								<outline text="Tooltip: Error message chi tiết"/>
+							</outline>
+							<outline text="Pool/Account">
+								<outline text="Pool 1: Netflix001"/>
+								<outline text="NULL nếu không thành công"/>
+								<outline text="Link to Pool/Account details"/>
+							</outline>
+							<outline text="Actions">
+								<outline text="View Details (expand row để xem full info)"/>
+								<outline text="View License (if license_id NOT NULL)"/>
+								<outline text="View Device (if device_id NOT NULL)"/>
+							</outline>
+						</outline>
+						<outline text="Row Expansion (Click to expand)" _note="Chi tiết đầy đủ của log entry">
+							<outline text="Full Details">
+								<outline text="Log ID: 1001"/>
+								<outline text="License Key ID: 50"/>
+								<outline text="Device ID: 15"/>
+								<outline text="Device Combined ID: d5f6e89a12bc34de56fa..."/>
+								<outline text="Device Fingerprint: e3b0c44298fc1c149afb..."/>
+								<outline text="Device Token: dt_a3f9k2l4m8n1p5q7"/>
+								<outline text="User Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36..."/>
+								<outline text="VPS Info (if is_vps = 1)">
+									<outline text="VPS Provider: DigitalOcean"/>
+									<outline text="Datacenter Info: {asn:&apos;AS14061&apos;, org:&apos;DigitalOcean LLC&apos;, country: &apos;US&apos;, isp:&apos;DigitalOcean&apos;}"/>
+								</outline>
+								<outline text="Pool ID: 1"/>
+								<outline text="Account ID: 1"/>
+								<outline text="Created At: 2025-10-08 14:30:00"/>
+							</outline>
+						</outline>
+					</outline>
+					<outline text="5.1.3. Filters &amp; Search (QUAN TRỌNG)" _note="Lọc logs theo nhiều tiêu chí">
+						<outline text="Search Box">
+							<outline text="Search by: License key, IP address, Device name, Customer email"/>
+							<outline text="Real-time search (AJAX)"/>
+						</outline>
+						<outline text="Date Range Filter">
+							<outline text="Preset ranges: Today, Yesterday, Last 7 days, Last 30 days, This month, Custom range"/>
+							<outline text="Date picker: From - To"/>
+						</outline>
+						<outline text="Result Filter">
+							<outline text="Dropdown: All | Success Only | Blocked Only | Errors Only"/>
+							<outline text="Sub-filter (if Blocked selected): VPS | Device Limit | Request Limit | Device Removed | Device Banned"/>
+						</outline>
+						<outline text="VPS Filter (MỚI)">
+							<outline text="Dropdown: All | Residential Only | VPS Only | Not Checked"/>
+							<outline text="Sub-filter (if VPS selected): By Provider (AWS, Google Cloud, DigitalOcean...)"/>
+						</outline>
+						<outline text="License Filter">
+							<outline text="Dropdown: All licenses | Select specific license"/>
+							<outline text="Autocomplete search licenses"/>
+						</outline>
+						<outline text="Device Filter">
+							<outline text="Dropdown: All devices | Select specific device"/>
+						</outline>
+						<outline text="Pool/Account Filter">
+							<outline text="Dropdown: All pools | Select pool"/>
+							<outline text="Dropdown: All accounts | Select account"/>
+						</outline>
+						<outline text="Customer Filter">
+							<outline text="Dropdown: All customers | Select customer email"/>
+						</outline>
+					</outline>
+					<outline text="5.1.4. Sort Options">
+						<outline text="Sort by: Time (newest/oldest), Result, IP, License, Device"/>
+						<outline text="Default: Time DESC (newest first)"/>
+					</outline>
+					<outline text="5.1.5. Pagination">
+						<outline text="Items per page: 50 (default), 100, 200, 500"/>
+						<outline text="Total: 12,345 logs"/>
+						<outline text="Page navigation"/>
+					</outline>
+					<outline text="5.1.6. Export Logs">
+						<outline text="Button: Export Logs (top right)">
+							<outline text="Format: CSV, Excel (XLSX), JSON"/>
+							<outline text="Options">
+								<outline text="Export current page (50 records)"/>
+								<outline text="Export filtered results (all matching filters)"/>
+								<outline text="Export date range"/>
+								<outline text="Export all logs (cảnh báo nếu &gt; 10,000 records)"/>
+							</outline>
+						</outline>
+						<outline text="CSV Columns: Time, License Key, Customer, Device, IP, VPS Status, VPS Provider, Result, Error Code, Pool, Account"/>
+					</outline>
+					<outline text="5.1.7. Quick Stats (Dashboard cards)" _note="Thống kê nhanh về logs">
+						<outline text="Total Logs: 12,345 (all time)"/>
+						<outline text="Today: 234 requests">
+							<outline text="Success: 220 (94%)"/>
+							<outline text="Blocked: 14 (6%)"/>
+						</outline>
+						<outline text="VPS Blocked: 45 (last 7 days)"/>
+						<outline text="Most Active License: A3F9-K2L4-M8N1-P5Q7 (150 requests today)"/>
+					</outline>
+				</outline>
+				<outline text="5.2. Analytics Dashboard" _note="Tổng quan analytics với charts và metrics">
+					<outline text="5.2.1. Admin truy cập">
+						<outline text="Navigate: WP Admin → VD License Manager → Analytics"/>
+						<outline text="URL: /wp-admin/admin. php?page=vd-analytics"/>
+					</outline>
+					<outline text="5.2.2. Date Range Selector (Global)">
+						<outline text="Presets: Last 7 days, Last 30 days, This month, Last month, Last 3 months, Custom"/>
+						<outline text="All charts/metrics update theo date range này"/>
+						<outline text="Default: Last 30 days"/>
+					</outline>
+					<outline text="5.2.3. Overview Metrics (KPI Cards)" _note="Các chỉ số chính">
+						<outline text="Card 1: Total Requests">
+							<outline text="Value: 8,945 requests (in selected date range)"/>
+							<outline text="Change: +12% vs previous period (với icon ↑ xanh)"/>
+							<outline text="Sparkline chart (mini trend)"/>
+						</outline>
+						<outline text="Card 2: Success Rate">
+							<outline text="Value: 94.2% (8,427 success / 8,945 total)"/>
+							<outline text="Change: +1.2% vs previous"/>
+							<outline text="Gauge chart (circular progress)"/>
+						</outline>
+						<outline text="Card 3: Active Licenses">
+							<outline text="Value: 1,234 licenses active"/>
+							<outline text="Accessed: 890 (72%) accessed at least once"/>
+						</outline>
+						<outline text="Card 4: VPS Blocked">
+							<outline text="Value: 234 requests blocked (2.6% of total)"/>
+							<outline text="Change: -5% vs previous (improvement - icon ↓ xanh)"/>
+						</outline>
+						<outline text="Card 5: Device Registrations">
+							<outline text="Value: 456 new devices registered"/>
+							<outline text="Change: +8% vs previous"/>
+						</outline>
+						<outline text="Card 6: Average Requests per License">
+							<outline text="Value: 7.3 requests/license"/>
+							<outline text="Change: +0.5 vs previous"/>
+						</outline>
+					</outline>
+					<outline text="5.2.4. Access Frequency Chart" _note="Biểu đồ truy cập theo thời gian">
+						<outline text="Chart Type: Line chart hoặc Area chart">
+							<outline text="Library: Chart.js hoặc ApexCharts"/>
+						</outline>
+						<outline text="X-axis: Date (theo date range: days, weeks, months)">
+							<outline text="Last 7 days → Daily"/>
+							<outline text="Last 30 days → Daily"/>
+							<outline text="Last 3 months → Weekly"/>
+						</outline>
+						<outline text="Y-axis: Number of requests"/>
+						<outline text="Lines">
+							<outline text="Total Requests (xanh dương)"/>
+							<outline text="Success (xanh lá)"/>
+							<outline text="Blocked (đỏ)"/>
+							<outline text="VPS Blocked (cam) - NEW"/>
+						</outline>
+						<outline text="Hover tooltip: Date, Total, Success, Blocked breakdown"/>
+						<outline text="Zoom/Pan enabled"/>
+					</outline>
+					<outline text="5.2.5. Request Results Distribution" _note="Phân bố kết quả request">
+						<outline text="Chart Type: Pie chart hoặc Donut chart"/>
+						<outline text="Segments">
+							<outline text="Success: 8,427 (94.2%) - Xanh"/>
+							<outline text="Blocked - VPS: 234 (2.6%) - Đỏ"/>
+							<outline text="Blocked - Device Limit: 123 (1.4%) - Cam"/>
+							<outline text="Blocked - Request Limit: 89 (1.0%) - Vàng"/>
+							<outline text="Blocked - Other: 45 (0.5%) - Xám"/>
+							<outline text="Error: 27 (0.3%) - Đỏ đậm"/>
+						</outline>
+						<outline text="Click segment → Filter logs by that result"/>
+					</outline>
+					<outline text="5.2.6. VPS Detection Analytics (MỚI)" _note="Phân tích VPS detection">
+						<outline text="Chart: VPS vs Residential Breakdown">
+							<outline text="Bar chart: Residential (xanh) vs VPS (đỏ) by day/week"/>
+							<outline text="Show % VPS of total requests"/>
+						</outline>
+						<outline text="VPS Providers Pie Chart">
+							<outline text="Segments: AWS (30%), DigitalOcean (25%), Google Cloud (20%), Azure (15%), Others (10%)"/>
+							<outline text="Click → Show logs from that provider"/>
+						</outline>
+						<outline text="VPS Blocked Rate Trend">
+							<outline text="Line chart: VPS blocked rate over time"/>
+							<outline text="Y-axis: % blocked"/>
+							<outline text="Target line: 0% (ideal)"/>
+						</outline>
+						<outline text="Table: Top VPS IPs Blocked">
+							<outline text="Columns: IP, Provider, Country, Attempts, Last Attempt"/>
+							<outline text="Top 10 IPs most blocked"/>
+							<outline text="Action: Add to whitelist (if false positive)"/>
+						</outline>
+					</outline>
+					<outline text="5.2.7. Top Licenses Analytics" _note="Licenses hoạt động nhiều nhất">
+						<outline text="Table: Top 20 Most Active Licenses">
+							<outline text="Columns: License Key, Customer, Requests, Success Rate, Devices, Last Accessed"/>
+							<outline text="Sort by: Requests DESC"/>
+							<outline text="Click license → View details"/>
+						</outline>
+						<outline text="Chart: Requests Distribution">
+							<outline text="Histogram: Number of licenses by request count ranges"/>
+							<outline text="X-axis: 0-10, 11-20, 21-50, 51-100, 100+"/>
+							<outline text="Y-axis: Number of licenses"/>
+						</outline>
+					</outline>
+					<outline text="5.2.8. Device Analytics" _note="Phân tích thiết bị">
+						<outline text="Chart: Device Status Distribution">
+							<outline text="Pie chart: Active (70%), Removed (20%), Blocked (10%)"/>
+						</outline>
+						<outline text="Chart: New Device Registrations">
+							<outline text="Bar chart: New devices per day/week"/>
+						</outline>
+						<outline text="Table: Most Common Devices">
+							<outline text="Device types: Windows (40%), iPhone (25%), Android (20%), Mac (10%), iPad (5%)"/>
+							<outline text="Browsers: Chrome (60%), Safari (25%), Firefox (10%), Edge (5%)"/>
+						</outline>
+					</outline>
+					<outline text="5.2.9. Pool &amp; Account Analytics" _note="Phân tích pools và accounts">
+						<outline text="Chart: Pool Capacity Usage">
+							<outline text="Bar chart: Each pool with capacity used/total"/>
+							<outline text="Highlight pools &gt; 90% capacity (màu đỏ)"/>
+						</outline>
+						<outline text="Table: Account Usage">
+							<outline text="Columns: Account, Pool, Assigned/Capacity, Success Rate, Last Used"/>
+							<outline text="Sort by: Usage %"/>
+						</outline>
+						<outline text="Chart: Requests by Pool">
+							<outline text="Stacked bar chart: Requests per pool per day/week"/>
+						</outline>
+					</outline>
+					<outline text="5.2.10. Geographic Analytics (Optional - Advanced)">
+						<outline text="World Map: Requests by country">
+							<outline text="Heatmap: Darker color = more requests"/>
+							<outline text="Tooltip: Country name, requests count"/>
+						</outline>
+						<outline text="Table: Top Countries">
+							<outline text="Columns: Country, Requests, VPS %, Success Rate"/>
+							<outline text="Top 20 countries"/>
+						</outline>
+					</outline>
+					<outline text="5.2.11. Time-based Analytics">
+						<outline text="Chart: Requests by Hour of Day">
+							<outline text="Bar chart: 0-23 hours"/>
+							<outline text="Identify peak hours"/>
+						</outline>
+						<outline text="Chart: Requests by Day of Week">
+							<outline text="Bar chart: Monday-Sunday"/>
+							<outline text="Identify busy days"/>
+						</outline>
+					</outline>
+				</outline>
+				<outline text="5.3. Reports" _note="Tạo và xuất báo cáo">
+					<outline text="5.3.1. Report Types">
+						<outline text="License Usage Report">
+							<outline text="Show: All licenses, requests count, success rate, devices, pool assignment"/>
+							<outline text="Group by: Product, Status, Date range"/>
+						</outline>
+						<outline text="Device Activity Report">
+							<outline text="Show: All devices, registrations, last accessed, status changes"/>
+							<outline text="Group by: License, Device type, Status"/>
+						</outline>
+						<outline text="VPS Detection Report (MỚI)">
+							<outline text="Show: All VPS attempts, blocked rate, providers, IPs"/>
+							<outline text="Group by: Provider, Country, Date"/>
+						</outline>
+						<outline text="Pool Performance Report">
+							<outline text="Show: Pools, capacity, assigned licenses, accounts, success rate"/>
+							<outline text="Highlight: Underutilized pools, overloaded pools"/>
+						</outline>
+						<outline text="Account Credentials Report">
+							<outline text="Show: Accounts, expires_at, last update, next update due"/>
+							<outline text="Highlight: Expired accounts, expiring soon"/>
+						</outline>
+						<outline text="Error &amp; Blocked Report">
+							<outline text="Show: All blocked/error attempts, reasons, frequency"/>
+							<outline text="Group by: Error type, License, Device"/>
+						</outline>
+					</outline>
+					<outline text="5.3.2. Generate Report Interface">
+						<outline text="Report Builder Form">
+							<outline text="Select Report Type: Dropdown"/>
+							<outline text="Date Range: Picker"/>
+							<outline text="Filters: Based on report type">
+								<outline text="License Usage: Filter by product, status"/>
+								<outline text="VPS Detection: Filter by provider, country"/>
+							</outline>
+							<outline text="Group By: Options specific to report"/>
+							<outline text="Sort By: Options"/>
+							<outline text="Include Charts: Checkbox (embed charts in report)"/>
+						</outline>
+					</outline>
+					<outline text="5.3.3. Report Output">
+						<outline text="Preview Report">
+							<outline text="Show report on screen first"/>
+							<outline text="Tables, charts, summary stats"/>
+						</outline>
+						<outline text="Export Formats">
+							<outline text="PDF: Professional formatted report with logo, charts"/>
+							<outline text="Excel (XLSX): Data tables with formatting"/>
+							<outline text="CSV: Raw data"/>
+							<outline text="HTML: Email-friendly format"/>
+						</outline>
+						<outline text="Schedule Reports (Advanced)">
+							<outline text="Schedule: Daily, Weekly, Monthly"/>
+							<outline text="Auto-generate and email to admin"/>
+							<outline text="Saved reports history"/>
+						</outline>
+					</outline>
+				</outline>
+				<outline text="5.4. Real-time Monitoring (Optional - Advanced)" _note="Monitor hệ thống real-time">
+					<outline text="5.4.1. Live Activity Feed">
+						<outline text="WebSocket hoặc AJAX polling (5s interval)"/>
+						<outline text="Show latest 20 access attempts in real-time">
+							<outline text="Format: [Time] [License] [Device] [Result] [VPS]"/>
+							<outline text="Auto-scroll, highlight new entries"/>
+						</outline>
+						<outline text="Sound alert on VPS blocked (optional)"/>
+					</outline>
+					<outline text="5.4.2. Real-time Stats">
+						<outline text="Requests in Last Hour: 45"/>
+						<outline text="Success Rate: 95%"/>
+						<outline text="VPS Blocked: 2"/>
+						<outline text="Active Sessions: 23 (licenses being accessed right now)"/>
+					</outline>
+					<outline text="5.4.3. Alerts &amp; Notifications">
+						<outline text="Alert when: VPS blocked rate &gt; 10% in last hour"/>
+						<outline text="Alert when: Account expired (not updated)"/>
+						<outline text="Alert when: Pool capacity &gt; 95%"/>
+						<outline text="Alert when: Unusual access pattern (same IP, many licenses)"/>
+						<outline text="Notification methods: Browser notification, Email, Slack webhook"/>
+					</outline>
+				</outline>
+				<outline text="5.5. Audit Log (Admin Actions)" _note="Log hành động của admin">
+					<outline text="5.5.1. Purpose">
+						<outline text="Track tất cả actions của admin trong hệ thống"/>
+						<outline text="Compliance, security, troubleshooting"/>
+					</outline>
+					<outline text="5.5.2. Logged Actions">
+						<outline text="License: Create, Edit, Suspend, Revoke, Delete, Extend"/>
+						<outline text="Device: Remove, Block, Restore"/>
+						<outline text="Pool: Create, Edit, Delete, Reassign licenses"/>
+						<outline text="Account: Create, Edit, Update Credentials, Delete"/>
+						<outline text="Settings: Change configs (VPS blocking, response fields...)"/>
+						<outline text="Data Export: Export logs, Export reports"/>
+					</outline>
+					<outline text="5.5.3. Audit Log Table">
+						<outline text="Columns">
+							<outline text="Time: When action performed"/>
+							<outline text="Admin User: Who performed (admin@vidieu. vn)"/>
+							<outline text="Action: update_credentials, remove_device, suspend_license..."/>
+							<outline text="Target: What was affected (License A3F9..., Account Netflix001)"/>
+							<outline text="Details: JSON with before/after values"/>
+							<outline text="IP Address: Admin&apos;s IP"/>
+							<outline text="User Agent: Admin&apos;s browser"/>
+						</outline>
+						<outline text="Example entries">
+							<outline text="2025-10-08 15:00:00 | admin@vidieu.vn | update_credentials | Account Netflix001 | {changed:[&apos;password&apos;,&apos;cookie&apos;]} | 1.2.3.4"/>
+							<outline text="2025-10-08 14:30:00 | admin@vidieu.vn | remove_device | Device 15 (Laptop) | {license:&apos;A3F9-K2L4-M8N1-P5Q7&apos;, reason:&apos;Manual removal&apos;} | 1.2.3.4"/>
+						</outline>
+					</outline>
+					<outline text="5.5.4. Filters">
+						<outline text="Date range, Admin user, Action type, Target type"/>
+					</outline>
+					<outline text="5.5.5. Export">
+						<outline text="CSV, Excel for compliance audit"/>
+					</outline>
+				</outline>
+				<outline text="5.6. System Health Dashboard (Optional)" _note="Tổng quan sức khỏe hệ thống">
+					<outline text="5.6.1. Database Stats">
+						<outline text="Total Records">
+							<outline text="Licenses: 1,234"/>
+							<outline text="Devices: 2,456"/>
+							<outline text="Pools: 15"/>
+							<outline text="Accounts: 78"/>
+							<outline text="Access Logs: 125,678"/>
+						</outline>
+						<outline text="Database Size: 245 MB"/>
+					</outline>
+					<outline text="5.6.2. Performance Metrics">
+						<outline text="Average API Response Time: 250ms"/>
+						<outline text="VPS Detection Latency: 15ms (local DB) / 180ms (API fallback)"/>
+						<outline text="Cache Hit Rate: 95%"/>
+					</outline>
+					<outline text="5.6.3. Error Monitoring">
+						<outline text="API Errors (last 24h): 3 errors"/>
+						<outline text="Failed Database Queries: 0"/>
+						<outline text="Slow Queries (&gt; 1s): 2"/>
+					</outline>
+					<outline text="5.6.4. Recommendations">
+						<outline text="• Pool 3 is 98% full - Consider adding more accounts"/>
+						<outline text="• 5 accounts expiring in 7 days - Update credentials"/>
+						<outline text="• VPS IP ranges database last updated 45 days ago - Update recommended (monthly)"/>
+						<outline text="• 234 old access logs (&gt; 90 days) - Archive or delete"/>
+					</outline>
+				</outline>
+			</outline>
+			<outline text="Phần 6: SETTINGS" _note="Cấu hình hệ thống - Product Share Configs, VPS Settings, IP Whitelist, General Settings">
+				<outline text="6.1. Product Share Configs" _note="Cấu hình chia sẻ cho từng sản phẩm WooCommerce">
+					<outline text="6.1.1. Admin truy cập">
+						<outline text="Navigate: WP Admin → VD License Manager → Settings → Product Configs"/>
+						<outline text="URL: /wp-admin/admin. php?page=vd-settings&amp;tab=product-configs"/>
+					</outline>
+					<outline text="6.1.2. Product List Table" _note="Danh sách sản phẩm có VD License">
+						<outline text="Columns">
+							<outline text="Product Name (Netflix Premium 4K - 30 ngày)">
+								<outline text="Link to WooCommerce product edit page"/>
+							</outline>
+							<outline text="Product ID (100)"/>
+							<outline text="Config Status">
+								<outline text="Badge: Configured (xanh) | Not Configured (xám)"/>
+							</outline>
+							<outline text="Max Devices (2)">
+								<outline text="Số thiết bị tối đa mỗi license"/>
+							</outline>
+							<outline text="Max Requests/Day (10)">
+								<outline text="Giới hạn request mỗi ngày"/>
+							</outline>
+							<outline text="VPS Blocking">
+								<outline text="Badge: Enabled (đỏ) | Disabled (xám)"/>
+							</outline>
+							<outline text="Actions (Configure | View | Delete Config)"/>
+						</outline>
+						<outline text="Filters">
+							<outline text="Filter by Config Status: All | Configured | Not Configured"/>
+							<outline text="Filter by VPS Blocking: All | Enabled | Disabled"/>
+							<outline text="Search: By product name"/>
+						</outline>
+					</outline>
+					<outline text="6.1.3. Configure Product (Add/Edit)" _note="Cấu hình cho 1 sản phẩm">
+						<outline text="6.1.3.1. Admin click Configure">
+							<outline text="From: Product List → Click &apos;Configure&apos;"/>
+							<outline text="URL: /wp-admin/admin. php?page=vd-settings&amp;tab=product-configs&amp;action=edit&amp;product_id=100"/>
+						</outline>
+						<outline text="6.1.3.2. Configuration Form">
+							<outline text="Product Info (Read-only)">
+								<outline text="Product: Netflix Premium 4K - 30 ngày (ID: 100)"/>
+								<outline text="Product Type: VD License (simple/variable)"/>
+							</outline>
+							<outline text="Pool Assignment Section">
+								<outline text="Pool Assignment Rule: Dropdown">
+									<outline text="Options">
+										<outline text="priority (Ưu tiên theo thứ tự priority - Recommended)">
+											<outline text="Giải thích: Assign pool có priority thấp nhất trước (1 trước 2)"/>
+										</outline>
+										<outline text="round_robin (Xoay vòng đều)">
+											<outline text="Giải thích: Phân bố đều licenses vào các pools"/>
+										</outline>
+										<outline text="capacity_based (Dựa trên capacity còn trống)">
+											<outline text="Giải thích: Assign pool có nhiều slots trống nhất"/>
+										</outline>
+										<outline text="random (Ngẫu nhiên)">
+											<outline text="Giải thích: Random pool (ít dùng)"/>
+										</outline>
+									</outline>
+									<outline text="Default: priority"/>
+									<outline text="Help text: Quy tắc này áp dụng khi có nhiều pools cho cùng provider. Xem Flow 3 Bước 5 để hiểu rõ logic."/>
+								</outline>
+							</outline>
+							<outline text="Device Management Section">
+								<outline text="Max Devices Per License: Number input">
+									<outline text="Min: 1, Max: 10 (hoặc unlimited)"/>
+									<outline text="Default: 2"/>
+									<outline text="Help text: Số thiết bị tối đa có thể đăng ký cho 1 license. Khách sẽ không thể đăng ký thiết bị mới khi đạt giới hạn."/>
+								</outline>
+								<outline text="Device Reset Days: Number input (optional)">
+									<outline text="Min: 0 (disabled), Default: 7, Max: 365"/>
+									<outline text="Help text: Sau bao nhiêu ngày thiết bị bị removed có thể được khôi phục slot. 0 = disabled (slot free ngay lập tức). CHƯA IMPLEMENT - để sau."/>
+									<outline text="Status: COMING SOON (badge)"/>
+								</outline>
+							</outline>
+							<outline text="Request Limit Section">
+								<outline text="Max Requests Per Day: Number input">
+									<outline text="Min: 0 (unlimited), Default: 10, Max: 1000"/>
+									<outline text="Help text: Giới hạn số lần khách có thể lấy credentials mỗi ngày. 0 = unlimited (không giới hạn). Counter reset lúc 00:00 hoặc khi admin update credentials."/>
+								</outline>
+							</outline>
+							<outline text="VPS Blocking Section (QUAN TRỌNG)">
+								<outline text="Enable VPS Blocking: Toggle switch (ON/OFF)">
+									<outline text="ON: Chặn VPS/Datacenter IPs"/>
+									<outline text="OFF: Cho phép tất cả IPs"/>
+									<outline text="Default: OFF"/>
+								</outline>
+								<outline text="IF VPS Blocking = ON, show additional options">
+									<outline text="Detection Method: Dropdown">
+										<outline text="local_db (Local IP Ranges Database - Fast, Free) - Recommended"/>
+										<outline text="api (Third-party API - Accurate, Has cost)"/>
+										<outline text="hybrid (Local DB + API Fallback - Best of both) - Best"/>
+									</outline>
+									<outline text="IF method = api OR hybrid, show API settings">
+										<outline text="API Provider: Dropdown (IPHub, IPQualityScore, IP2Location, MaxMind)"/>
+										<outline text="API Key: Password input (encrypted in DB)"/>
+										<outline text="Button: Test API (verify API key works)"/>
+									</outline>
+									<outline text="Cache Settings">
+										<outline text="Cache VPS Results: Checkbox (default: checked)"/>
+										<outline text="Cache TTL: Number input (days, default: 7)">
+											<outline text="Help text: Lưu kết quả detection trong cache bao lâu để tránh check lại"/>
+										</outline>
+									</outline>
+									<outline text="Whitelist IPs (override VPS detection)">
+										<outline text="Textarea: 1 IP per line"/>
+										<outline text="Example: 1.2.3.4, 5.6.7.8/24 (CIDR)"/>
+										<outline text="Help text: IPs này sẽ LUÔN được cho phép, dù detect là VPS. Dùng cho corporate IPs, false positives."/>
+									</outline>
+								</outline>
+								<outline text="Warning message">
+									<outline text="⚠️ VPS Blocking sẽ ảnh hưởng TẤT CẢ licenses của sản phẩm này. Khách dùng VPS sẽ KHÔNG thể truy cập. Cân nhắc kỹ trước khi bật."/>
+								</outline>
+							</outline>
+							<outline text="Response Fields Section (FLEXIBLE CREDENTIALS)">
+								<outline text="Help text: Cấu hình fields nào sẽ được trả về cho khách khi truy cập portal. Mỗi field có label và required flag."/>
+								<outline text="Field Builder UI (Drag &amp; Drop)">
+									<outline text="Available Fields (sidebar)">
+										<outline text="Standard Fields">
+											<outline text="account_login (Email/Username)"/>
+											<outline text="login_password (Password)"/>
+											<outline text="cookie (Cookie JSON)"/>
+										</outline>
+										<outline text="Custom Fields">
+											<outline text="Button: Add Custom Field">
+												<outline text="Opens modal: Field Key (text), Field Type (text/password/textarea)"/>
+											</outline>
+										</outline>
+									</outline>
+									<outline text="Selected Fields (main area - sortable)">
+										<outline text="Each field card shows">
+											<outline text="Field Key: account_login"/>
+											<outline text="Label: Text input (VD: &apos;Email Netflix&apos;, &apos;Username Spotify&apos;)">
+												<outline text="Editable, will show to customer"/>
+											</outline>
+											<outline text="Required: Checkbox">
+												<outline text="If checked, account PHẢI có field này (validation)"/>
+											</outline>
+											<outline text="Actions: Move Up/Down, Remove"/>
+										</outline>
+										<outline text="Drag to reorder fields"/>
+									</outline>
+								</outline>
+								<outline text="Presets (Quick setup)">
+									<outline text="Button: Load Preset">
+										<outline text="Netflix Preset: account_login (Email Netflix), login_password (Mật khẩu), cookie (Cookie - optional)"/>
+										<outline text="Spotify Preset: account_login (Username Spotify), login_password (Password)"/>
+										<outline text="YouTube Preset: cookie (Cookie đăng nhập)"/>
+										<outline text="API Service Preset: api_key (API Key), api_secret (API Secret)"/>
+									</outline>
+								</outline>
+								<outline text="JSON Preview (Read-only textarea)">
+									<outline text="Show JSON format sẽ lưu vào DB">
+										<outline text="{&apos;fields&apos;:[{&apos;key&apos;:&apos;account_login&apos;,&apos;label&apos;:&apos;Email Netflix&apos;, &apos;required&apos;:true}, {&apos;key&apos;:&apos;login_password&apos;,&apos;label&apos;:&apos;Mật khẩu&apos;,&apos;required&apos;:true}, {&apos;key&apos;:&apos;cookie&apos;,&apos;label&apos;:&apos;Cookie Session&apos;,&apos;required&apos;:false}]}"/>
+									</outline>
+								</outline>
+								<outline text="Validation">
+									<outline text="At least 1 field required"/>
+									<outline text="Labels không được để trống"/>
+									<outline text="Custom field keys phải unique, lowercase, underscore only"/>
+								</outline>
+							</outline>
+						</outline>
+						<outline text="6.1.3.3. Save Configuration">
+							<outline text="Button: Save Configuration"/>
+							<outline text="Validation">
+								<outline text="Max devices &gt;= 1"/>
+								<outline text="Max requests &gt;= 0"/>
+								<outline text="Response fields valid JSON"/>
+								<outline text="IF VPS blocking ON + API method → API key required"/>
+							</outline>
+							<outline text="Process">
+								<outline text="INSERT or UPDATE bz_vd_product_share_configs">
+									<outline text="product_id, pool_assignment_rule, max_devices_per_license, max_requests_per_day, block_vps, vps_detection_method, vps_api_provider, vps_api_key (encrypted), vps_cache_ttl, vps_whitelist_ips, response_fields (JSON), created_at, updated_at"/>
+								</outline>
+							</outline>
+							<outline text="Success: Notice &apos;Configuration saved successfully&apos;"/>
+						</outline>
+					</outline>
+					<outline text="6.1.4. Bulk Configuration (Advanced)">
+						<outline text="Apply Same Config to Multiple Products">
+							<outline text="Button: Bulk Configure (top right)"/>
+							<outline text="Modal: Select products (checkboxes) + Config form (same as single)"/>
+							<outline text="Use case: Admin có 10 sản phẩm Netflix khác nhau (30 ngày, 60 ngày...) muốn apply cùng config"/>
+						</outline>
+					</outline>
+				</outline>
+				<outline text="6.2. VPS Global Settings" _note="Cấu hình VPS detection cho toàn hệ thống">
+					<outline text="6.2.1. Admin truy cập">
+						<outline text="Navigate: WP Admin → VD License Manager → Settings → VPS Settings"/>
+						<outline text="URL: /wp-admin/admin. php?page=vd-settings&amp;tab=vps-settings"/>
+					</outline>
+					<outline text="6.2.2. VPS IP Ranges Database Management">
+						<outline text="Database Info">
+							<outline text="Table: bz_vd_datacenter_ip_ranges"/>
+							<outline text="Total IP Ranges: 15,234 ranges"/>
+							<outline text="Providers: 45 providers (AWS, Google Cloud, Azure, DigitalOcean...)"/>
+							<outline text="Last Updated: 2025-09-15 10: 00:00 (45 days ago)"/>
+							<outline text="Database Size: 3.2 MB"/>
+						</outline>
+						<outline text="Update Status">
+							<outline text="IF last_updated &gt; 30 days ago">
+								<outline text="⚠️ Warning: IP ranges database is OUTDATED (45 days old). Recommended to update monthly. VPS detection may not be accurate."/>
+							</outline>
+							<outline text="ELSE">
+								<outline text="✓ Database is up-to-date"/>
+							</outline>
+						</outline>
+						<outline text="Actions">
+							<outline text="Button: Update IP Ranges Now">
+								<outline text="Click → Start download và import process"/>
+								<outline text="Progress bar: Downloading AWS... (1/5), Parsing... (2/5), Importing... (3/5)..."/>
+								<outline text="Process">
+									<outline text="Download JSON/CSV từ official sources (AWS, GCP, Azure...)"/>
+									<outline text="Parse IP ranges (CIDR to start/end integers)"/>
+									<outline text="BEGIN TRANSACTION"/>
+									<outline text="DELETE old ranges (hoặc UPDATE if exists)"/>
+									<outline text="INSERT new ranges (batch insert 1000 rows at a time)"/>
+									<outline text="COMMIT"/>
+									<outline text="Update last_updated timestamp"/>
+								</outline>
+								<outline text="Success: &apos;Updated 15,234 IP ranges from 45 providers. Database is now up-to-date.&apos;"/>
+								<outline text="Error handling: If download fails, show error, database unchanged"/>
+							</outline>
+							<outline text="Button: View IP Ranges">
+								<outline text="Opens modal/page với table của IP ranges"/>
+								<outline text="Columns: Provider, IP Range (CIDR), ASN, Org, Country, Updated At"/>
+								<outline text="Filters: By provider, by country"/>
+								<outline text="Search: By IP (check if IP in ranges)"/>
+							</outline>
+							<outline text="Schedule Auto-Update">
+								<outline text="Checkbox: Enable automatic monthly update"/>
+								<outline text="Day of month: Dropdown (1-28)"/>
+								<outline text="Time: Time picker"/>
+								<outline text="WP Cron job: Schedule wp vd_update_vps_ranges cron"/>
+							</outline>
+						</outline>
+						<outline text="Data Sources Info">
+							<outline text="List of sources">
+								<outline text="• AWS: https://ip-ranges. amazonaws.com/ip-ranges.json"/>
+								<outline text="• Google Cloud: https://www.gstatic. com/ipranges/cloud.json"/>
+								<outline text="• Azure: Microsoft download center"/>
+								<outline text="• DigitalOcean, Linode, Vultr: ASN-based"/>
+								<outline text="• Consolidated: GitHub datacenter-iplist"/>
+							</outline>
+							<outline text="Link: View full documentation (link to docs)"/>
+						</outline>
+					</outline>
+					<outline text="6.2.3. VPS API Settings (Global defaults)">
+						<outline text="Default API Provider: Dropdown (IPHub, IPQualityScore, IP2Location, MaxMind, None)">
+							<outline text="Used when product config uses &apos;api&apos; method nhưng không config riêng"/>
+						</outline>
+						<outline text="Default API Key: Password input">
+							<outline text="Encrypted in DB"/>
+							<outline text="Used as fallback if product không có API key riêng"/>
+						</outline>
+						<outline text="API Usage Stats (if API enabled)">
+							<outline text="Requests Today: 23/1000 (quota)"/>
+							<outline text="Requests This Month: 456/30,000"/>
+							<outline text="Cache Hit Rate: 95% (only 5% hit API)"/>
+							<outline text="Average API Latency: 180ms"/>
+						</outline>
+						<outline text="Button: Test API Connection">
+							<outline text="Test với IP mẫu (1.1.1.1) để verify API key"/>
+							<outline text="Show result: ✓ API working | ✗ API error (message)"/>
+						</outline>
+					</outline>
+					<outline text="6.2.4. Global IP Whitelist">
+						<outline text="Purpose: IPs luôn được allow dù detect là VPS (áp dụng cho TẤT CẢ products)">
+							<outline text="Use case: Corporate office IPs, university IPs, admin testing IPs"/>
+						</outline>
+						<outline text="Whitelist Management">
+							<outline text="Table: Whitelisted IPs">
+								<outline text="Columns: IP/CIDR, Label (VD: &apos;Company Office&apos;), Added By, Added At, Actions"/>
+							</outline>
+							<outline text="Add IP Form">
+								<outline text="IP or CIDR: Text input (1.2. 3.4 hoặc 1.2.3.0/24)"/>
+								<outline text="Label: Text input (descriptive name)"/>
+								<outline text="Reason: Textarea (why whitelist)"/>
+								<outline text="Button: Add to Whitelist"/>
+								<outline text="Validation: IP/CIDR format valid"/>
+							</outline>
+							<outline text="Actions: Remove from whitelist"/>
+						</outline>
+						<outline text="Bulk Import">
+							<outline text="Textarea: Paste multiple IPs (1 per line)"/>
+							<outline text="Button: Bulk Import"/>
+						</outline>
+					</outline>
+					<outline text="6.2.5. VPS Detection Statistics">
+						<outline text="Charts (last 30 days)">
+							<outline text="Total Checks: 8,945"/>
+							<outline text="VPS Detected: 234 (2.6%)"/>
+							<outline text="Residential: 8,711 (97.4%)"/>
+							<outline text="Cache Hit Rate: 95%"/>
+						</outline>
+						<outline text="Top VPS Providers Detected">
+							<outline text="Pie chart: AWS (30%), DigitalOcean (25%), Google Cloud (20%)..."/>
+						</outline>
+						<outline text="Link: View Full Analytics (goes to Analytics → VPS section)"/>
+					</outline>
+				</outline>
+				<outline text="6.3. Email Notifications Settings" _note="Cấu hình email thông báo">
+					<outline text="6.3.1. Admin truy cập">
+						<outline text="Navigate: WP Admin → VD License Manager → Settings → Notifications"/>
+						<outline text="URL: /wp-admin/admin. php?page=vd-settings&amp;tab=notifications"/>
+					</outline>
+					<outline text="6.3.2. Admin Notifications">
+						<outline text="Notify Admin When">
+							<outline text="Account Expires: Checkbox (default: ON)">
+								<outline text="Timing: 7 days before, 3 days before, 1 day before, On expiration day"/>
+								<outline text="Email to: Admin email (from WP settings)"/>
+							</outline>
+							<outline text="Pool Capacity High: Checkbox (default: ON)">
+								<outline text="Threshold: Number input (%, default: 90%)"/>
+								<outline text="Email when pool reaches threshold"/>
+							</outline>
+							<outline text="VPS Blocked Rate High: Checkbox (default: OFF)">
+								<outline text="Threshold: Number input (%, default: 10%)"/>
+								<outline text="Period: Dropdown (last hour, last day)"/>
+								<outline text="Email when VPS blocked rate exceeds threshold"/>
+							</outline>
+							<outline text="Device Limit Reached: Checkbox (default: OFF)">
+								<outline text="Email when customer tries to add device but reached limit"/>
+							</outline>
+							<outline text="License Suspended/Revoked: Checkbox (default: OFF)">
+								<outline text="Email when admin suspends/revokes license"/>
+							</outline>
+						</outline>
+						<outline text="Admin Email Addresses">
+							<outline text="Primary: admin@vidieu.vn (from WP settings)"/>
+							<outline text="Additional: Textarea (1 email per line)">
+								<outline text="Support team members"/>
+							</outline>
+						</outline>
+					</outline>
+					<outline text="6.3.3. Customer Notifications">
+						<outline text="Notify Customer When">
+							<outline text="Credentials Updated: Checkbox (default: OFF)">
+								<outline text="Email customer: Your account credentials have been updated. Please access portal for new credentials."/>
+							</outline>
+							<outline text="Device Removed by Admin: Checkbox (default: OFF)">
+								<outline text="Email customer: Your device [name] has been removed. You can register a new device."/>
+							</outline>
+							<outline text="Device Blocked by Admin: Checkbox (default: ON)">
+								<outline text="Email customer: Your device [name] has been blocked due to [reason]."/>
+							</outline>
+							<outline text="License Suspended: Checkbox (default: ON)">
+								<outline text="Email customer: Your license has been suspended. Please contact support."/>
+							</outline>
+							<outline text="License Expiring: Checkbox (default: ON)">
+								<outline text="Timing: 7 days before, 3 days before"/>
+								<outline text="Email: Your license will expire in X days. Please renew."/>
+							</outline>
+						</outline>
+						<outline text="Email Templates">
+							<outline text="Customize email content">
+								<outline text="Subject: Text input with variables {{license_key}}, {{product_name}}"/>
+								<outline text="Body: Rich text editor (TinyMCE) với variables"/>
+								<outline text="Variables available: {{customer_name}}, {{license_key}}, {{product_name}}, {{device_name}}, {{expires_at}}, {{portal_url}}"/>
+							</outline>
+							<outline text="Preview: Button to send test email"/>
+						</outline>
+					</outline>
+				</outline>
+				<outline text="6.4. Portal Settings" _note="Cấu hình Customer Portal (UI)">
+					<outline text="6.4.1. Admin truy cập">
+						<outline text="Navigate: WP Admin → VD License Manager → Settings → Portal"/>
+						<outline text="URL: /wp-admin/admin. php?page=vd-settings&amp;tab=portal"/>
+					</outline>
+					<outline text="6.4.2. Portal Page Settings">
+						<outline text="Portal URL">
+							<outline text="Current: https://vidieu.vn/license-portal"/>
+							<outline text="Page: Dropdown (select WP page)">
+								<outline text="List all published pages"/>
+								<outline text="Selected page will have [vd_license_portal] shortcode"/>
+							</outline>
+							<outline text="Auto-create page: Button (create new page with shortcode)"/>
+						</outline>
+					</outline>
+					<outline text="6.4.3. Branding &amp; Appearance">
+						<outline text="Portal Logo">
+							<outline text="Upload logo image"/>
+							<outline text="Shown at top of portal"/>
+						</outline>
+						<outline text="Primary Color: Color picker">
+							<outline text="Default: #0066cc"/>
+							<outline text="Used for buttons, links, badges"/>
+						</outline>
+						<outline text="Custom CSS: Textarea">
+							<outline text="Advanced: Add custom CSS to portal"/>
+						</outline>
+					</outline>
+					<outline text="6.4.4. Portal Features">
+						<outline text="Show Request History: Checkbox (default: ON)">
+							<outline text="Display lịch sử request trong portal response"/>
+						</outline>
+						<outline text="Show Device List: Checkbox (default: ON)">
+							<outline text="Display danh sách devices trong response"/>
+						</outline>
+						<outline text="Show Account Info: Checkbox (default: ON)">
+							<outline text="Display account metadata (expires_at, last_update...) trong response"/>
+						</outline>
+						<outline text="Allow Device Self-Remove: Checkbox (default: OFF)">
+							<outline text="Customer có thể tự gỡ device của mình (chưa implement - COMING SOON)"/>
+						</outline>
+						<outline text="Show VPS Warning: Checkbox (default: ON)">
+							<outline text="Show warning message khi VPS blocked"/>
+						</outline>
+					</outline>
+					<outline text="6.4.5. Security Settings">
+						<outline text="Rate Limiting (API level)">
+							<outline text="Max requests per IP per minute: Number input (default: 60)"/>
+							<outline text="Max requests per IP per hour: Number input (default: 200)"/>
+							<outline text="Prevent brute force attacks"/>
+						</outline>
+						<outline text="CORS Settings">
+							<outline text="Allowed Origins: Textarea (1 domain per line)">
+								<outline text="Default: Same origin only"/>
+								<outline text="Add domains if portal embedded on external site"/>
+							</outline>
+						</outline>
+						<outline text="Session/Token Settings">
+							<outline text="Device Token Length: Number input (chars, default: 20)"/>
+							<outline text="Device Token Prefix: Text input (default: dt_)"/>
+						</outline>
+					</outline>
+				</outline>
+				<outline text="6.5. Advanced Settings" _note="Các cài đặt nâng cao cho admin kỹ thuật">
+					<outline text="6.5.1. Admin truy cập">
+						<outline text="Navigate: WP Admin → VD License Manager → Settings → Advanced"/>
+						<outline text="URL: /wp-admin/admin. php?page=vd-settings&amp;tab=advanced"/>
+					</outline>
+					<outline text="6.5.2. Database Maintenance">
+						<outline text="Clean Old Logs">
+							<outline text="Delete logs older than: Number input (days, default: 90)"/>
+							<outline text="Button: Clean Now">
+								<outline text="DELETE FROM bz_vd_device_access_log WHERE created_at &lt; NOW() - INTERVAL X DAY"/>
+								<outline text="Confirmation dialog: This will delete X logs. Continue?"/>
+								<outline text="Success: Deleted X old logs. Database size reduced by Y MB."/>
+							</outline>
+							<outline text="Auto-clean: Checkbox (enable WP cron daily)"/>
+						</outline>
+						<outline text="Optimize Database Tables">
+							<outline text="Button: Optimize Now">
+								<outline text="OPTIMIZE TABLE bz_vd_license_keys, bz_vd_license_devices, bz_vd_device_access_log..."/>
+								<outline text="Success: All tables optimized. Reclaimed Y MB."/>
+							</outline>
+						</outline>
+						<outline text="Database Backup">
+							<outline text="Button: Export Database (CSV)">
+								<outline text="Exports all VD tables to CSV files (ZIP)"/>
+							</outline>
+						</outline>
+					</outline>
+					<outline text="6.5.3. Performance Settings">
+						<outline text="Enable Caching">
+							<outline text="Object Cache: Checkbox (use WP object cache - Redis/Memcached)"/>
+							<outline text="Transients Cache: Checkbox (use WP transients)"/>
+							<outline text="Cache TTL: Number input (seconds, default: 3600)"/>
+						</outline>
+						<outline text="Database Indexes">
+							<outline text="Info: Current indexes status"/>
+							<outline text="Button: Rebuild Indexes (if needed)"/>
+						</outline>
+					</outline>
+					<outline text="6.5.4. Debug &amp; Logging">
+						<outline text="Enable Debug Mode: Checkbox (default: OFF)">
+							<outline text="Warning: Only enable for troubleshooting. Logs everything, may slow down."/>
+						</outline>
+						<outline text="Debug Log Level: Dropdown (ERROR, WARNING, INFO, DEBUG)"/>
+						<outline text="Debug Log File: wp-content/debug-vd-license. log"/>
+						<outline text="Button: View Debug Log (opens modal with log tail)"/>
+						<outline text="Button: Clear Debug Log"/>
+					</outline>
+					<outline text="6.5.5. API Settings">
+						<outline text="API Version: Display current version (v1)"/>
+						<outline text="API Endpoint: https: //vidieu.vn/wp-json/vd/v1/"/>
+						<outline text="Enable API Documentation: Checkbox">
+							<outline text="If enabled: /wp-json/vd/v1/docs (Swagger UI)"/>
+						</outline>
+						<outline text="API Key (for external integrations): Generate/Regenerate button">
+							<outline text="For future: Webhook integrations, Zapier, etc."/>
+						</outline>
+					</outline>
+					<outline text="6.5.6. Reset/Uninstall">
+						<outline text="Reset All Settings">
+							<outline text="Button: Reset to Defaults (danger)">
+								<outline text="Confirmation: Type RESET to confirm"/>
+								<outline text="Reset all settings to default values (không xóa data)"/>
+							</outline>
+						</outline>
+						<outline text="Uninstall Plugin Data">
+							<outline text="Checkbox: Delete all data on plugin uninstall">
+								<outline text="Warning: This will DELETE all licenses, devices, logs, settings when you uninstall plugin. Cannot be undone."/>
+								<outline text="Default: OFF (keep data on uninstall)"/>
+							</outline>
+						</outline>
+					</outline>
+				</outline>
+				<outline text="6.6. Import/Export Settings" _note="Backup và khôi phục cấu hình">
+					<outline text="6.6.1. Export Settings">
+						<outline text="Button: Export All Settings">
+							<outline text="Exports JSON file với tất cả configs">
+								<outline text="Product configs"/>
+								<outline text="VPS settings"/>
+								<outline text="Notification settings"/>
+								<outline text="Portal settings"/>
+								<outline text="Advanced settings"/>
+							</outline>
+							<outline text="Filename: vd-license-settings-2025-10-08. json"/>
+							<outline text="NOT include: API keys (security), database data (licenses, devices...)"/>
+						</outline>
+					</outline>
+					<outline text="6.6.2. Import Settings">
+						<outline text="File Upload: Choose JSON file (from export)"/>
+						<outline text="Button: Import Settings">
+							<outline text="Preview: Show what will be imported/overwritten"/>
+							<outline text="Checkbox: Overwrite existing settings (if unchecked, only add new)"/>
+							<outline text="Confirmation: Are you sure? Current settings will be overwritten."/>
+							<outline text="Process: Parse JSON → Validate → Update DB"/>
+							<outline text="Success: Settings imported successfully"/>
+						</outline>
+					</outline>
+					<outline text="Use case: Migrate settings giữa staging và production, backup before major changes"/>
+				</outline>
+				<outline text="6.7. System Info" _note="Thông tin hệ thống để troubleshooting">
+					<outline text="6.7.1. WordPress Info">
+						<outline text="WordPress Version: 6.3.2"/>
+						<outline text="PHP Version: 8.1.10"/>
+						<outline text="MySQL Version: 8.0.30"/>
+						<outline text="Server: Apache 2.4.54"/>
+						<outline text="WP Memory Limit: 256M"/>
+						<outline text="PHP Time Limit: 300s"/>
+					</outline>
+					<outline text="6.7.2. Plugin Info">
+						<outline text="VD License Manager Version: 1.0.0"/>
+						<outline text="Database Version: 1.0.0"/>
+						<outline text="Last Update Check: 2025-10-08 10:00:00"/>
+					</outline>
+					<outline text="6.7.3. Database Tables">
+						<outline text="List tables with row counts and sizes">
+							<outline text="bz_vd_license_keys: 1, 234 rows, 2.5 MB"/>
+							<outline text="bz_vd_license_devices: 2, 456 rows, 1.8 MB"/>
+							<outline text="bz_vd_device_access_log: 125,678 rows, 45.2 MB"/>
+							<outline text="bz_vd_pools: 15 rows, 0.01 MB"/>
+							<outline text="bz_vd_provider_accounts: 78 rows, 0.05 MB"/>
+							<outline text="bz_vd_product_share_configs: 25 rows, 0.02 MB"/>
+							<outline text="bz_vd_datacenter_ip_ranges: 15,234 rows, 3.2 MB"/>
+							<outline text="Total: 52.78 MB"/>
+						</outline>
+					</outline>
+					<outline text="6.7.4. Active Integrations">
+						<outline text="WooCommerce: ✓ Active (version 8.2.0)"/>
+						<outline text="Redis Cache: ✓ Active"/>
+						<outline text="CDN: ✗ Not detected"/>
+					</outline>
+					<outline text="Button: Copy System Info (to clipboard)">
+						<outline text="For support tickets"/>
+					</outline>
+				</outline>
+			</outline>
+		</outline>
+	</body>
+</opml>

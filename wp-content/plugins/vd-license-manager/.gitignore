@@ -1,0 +1,67 @@
+# WordPress
+wp-config.php
+wp-content/uploads/
+wp-content/cache/
+wp-content/debug.log
+wp-content/vd-logs/
+
+# Dependencies
+vendor/
+node_modules/
+
+# Environment
+.env
+.env.local
+.env.production
+
+# IDE
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+
+# OS
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+
+# Logs
+*.log
+error_log
+debug.log
+debug-vd.log
+
+# Temporary
+*.tmp
+*.bak
+*~
+
+# Build
+build/
+dist/
+
+# Testing
+phpunit.xml
+coverage/
+
+# Composer
+composer.phar
+composer.lock
+
+# Package managers
+package-lock.json
+yarn.lock
+
+# Backup files
+*.backup
+*.orig
+
+# Cache
+.cache/
+
+# Screenshots (development only)
+screenshots/
+
+# Documentation drafts
+docs/drafts/

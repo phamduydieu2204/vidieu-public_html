@@ -1,0 +1,1111 @@
+<?xml version="1.0"?>
+<opml version="1.0">
+	<head>
+		<title>
+FLOW 2: CUSTOMER
+PURCHASE FLOW - Khách
+mua hàng (Tích hợp LMfWC)
+		</title>
+	</head>
+	<body>
+		<outline text="FLOW 2: CUSTOMER PURCHASE FLOW - Khách mua hàng (Tích hợp LMfWC)" _note="Flow này mô tả toàn bộ quá trình từ khi khách đặt hàng trên WooCommerce cho đến khi nhận được License Key qua email. LMfWC là plugin bên thứ 3 chịu trách nhiệm tạo license key, VD Plugin sẽ đồng bộ license này vào hệ thống của mình để quản lý việc gán Pool và tracking thiết bị.">
+			<outline text="Bước 1: Khách đặt hàng trên WooCommerce" _note="Khách hàng thực hiện mua sản phẩm trên website WooCommerce như mua hàng online bình thường. Chưa có gì liên quan đến license ở bước này.">
+				<outline text="1.1. Khách browse sản phẩm" _note="Khách vào website vidieu.vn, tìm và xem sản phẩm muốn mua">
+					<outline text="Vào website: vidieu.vn"/>
+					<outline text="Tìm sản phẩm: Netflix Premium 4K - 30 ngày" _note="Đây là sản phẩm WooCommerce thông thường, được tạo trong wp_posts với post_type=&apos;product&apos;"/>
+					<outline text="Xem thông tin sản phẩm">
+						<outline text="Giá: 149,000 VNĐ"/>
+						<outline text="Mô tả: Share Netflix Premium, xem 4K, 30 ngày"/>
+						<outline text="Thông số: 2 thiết bị, 10 requests/ngày" _note="Thông tin này đến từ Share Config (bảng bz_vd_product_share_configs) mà admin đã setup ở Flow 1"/>
+					</outline>
+				</outline>
+				<outline text="1.2. Thêm vào giỏ hàng" _note="WooCommerce xử lý, chưa có license">
+					<outline text="Click: Add to Cart"/>
+					<outline text="WooCommerce thêm product vào session cart" _note="Lưu trong session/cookie của trình duyệt, chưa lưu database"/>
+					<outline text="Cart badge hiển thị: 1 item"/>
+				</outline>
+				<outline text="1.3. Checkout - Điền thông tin" _note="Khách điền thông tin để đặt hàng">
+					<outline text="Click: View Cart hoặc Checkout"/>
+					<outline text="Trang checkout hiển thị form">
+						<outline text="Email: khach@example.com (bắt buộc)" _note="Email này sẽ nhận license key sau khi order complete"/>
+						<outline text="Họ tên: Nguyễn Văn A"/>
+						<outline text="Số điện thoại: 0901234567"/>
+						<outline text="Địa chỉ: (không bắt buộc với digital product)"/>
+					</outline>
+					<outline text="Chọn phương thức thanh toán">
+						<outline text="Chuyển khoản ngân hàng (COD bank transfer)"/>
+						<outline text="Momo (e-wallet)"/>
+						<outline text="VNPay (payment gateway)"/>
+						<outline text="Thẻ tín dụng (credit card)"/>
+					</outline>
+				</outline>
+				<outline text="1.4. Đặt hàng - Tạo Order" _note="WooCommerce tạo order trong database">
+					<outline text="Khách click: Place Order"/>
+					<outline text="WooCommerce tạo Order #12345" _note="INSERT vào bảng wp_wc_orders (WooCommerce HPOS) hoặc wp_posts (legacy) với post_type=&apos;shop_order&apos;">
+						<outline text="Order ID: 12345" _note="ID tự tăng của bảng orders"/>
+						<outline text="Status: Pending Payment" _note="Trạng thái chờ thanh toán. Order chưa hoàn tất."/>
+						<outline text="Customer Email: khach@example.com"/>
+						<outline text="Customer ID: 456" _note="User ID trong bảng wp_users. Nếu khách không đăng ký thì = 0 (guest)"/>
+						<outline text="Product: Netflix Premium 4K - 30 ngày"/>
+						<outline text="Product ID: 100" _note="ID của product trong wp_posts"/>
+						<outline text="Amount: 149,000 VNĐ"/>
+						<outline text="Created Date: 08/10/2025 14:00:00"/>
+					</outline>
+					<outline text="Khách được redirect">
+						<outline text="Nếu Chuyển khoản: Trang hướng dẫn chuyển khoản (với STK, số tiền, nội dung)"/>
+						<outline text="Nếu Gateway (Momo/VNPay): Redirect đến trang thanh toán của gateway"/>
+						<outline text="Sau đó: Order Received page (Thank you page)"/>
+					</outline>
+				</outline>
+				<outline text="Kết quả bước 1" _note="Order đã được tạo nhưng chưa thanh toán">
+					<outline text="Database: wp_wc_orders có Order #12345 với status = &apos;pending&apos;"/>
+					<outline text="License: Chưa có gì, chờ thanh toán xong"/>
+				</outline>
+			</outline>
+			<outline text="Bước 2: Khách thanh toán" _note="Khách hoàn tất thanh toán bằng một trong các phương thức đã chọn">
+				<outline text="2.1. Quy trình thanh toán" _note="Tùy theo phương thức thanh toán mà flow khác nhau">
+					<outline text="Trường hợp A: Chuyển khoản ngân hàng" _note="Thanh toán thủ công, cần admin xác nhận">
+						<outline text="Khách mở app ngân hàng"/>
+						<outline text="Chuyển khoản theo thông tin">
+							<outline text="Số tài khoản: 1234567890 (VCB)"/>
+							<outline text="Số tiền: 149,000 VNĐ"/>
+							<outline text="Nội dung: DH12345" _note="Nội dung này giúp admin match thanh toán với order"/>
+						</outline>
+						<outline text="Admin kiểm tra bank statement" _note="Admin check sao kê ngân hàng, thấy có giao dịch với nội dung DH12345"/>
+						<outline text="Admin vào WooCommerce → Orders → Order #12345"/>
+						<outline text="Admin click: Change status to Processing" _note="Xác nhận đã nhận tiền"/>
+					</outline>
+					<outline text="Trường hợp B: Momo / VNPay / Card" _note="Thanh toán tự động qua payment gateway">
+						<outline text="Khách thanh toán trên gateway (Momo app, VNPay, etc.)"/>
+						<outline text="Gateway xử lý thanh toán thành công"/>
+						<outline text="Gateway gửi callback về WooCommerce" _note="Gateway gọi webhook URL của website để báo kết quả thanh toán. URL dạng: https://vidieu.vn/?wc-api=gateway_callback"/>
+						<outline text="WooCommerce verify callback signature" _note="Kiểm tra chữ ký để đảm bảo request thật sự từ gateway, không phải giả mạo"/>
+						<outline text="WooCommerce tự động update order status" _note="Không cần admin can thiệp"/>
+					</outline>
+				</outline>
+				<outline text="2.2. Order status được cập nhật" _note="Order chuyển từ Pending sang Processing sau khi thanh toán xác nhận">
+					<outline text="Database UPDATE wp_wc_orders" _note="UPDATE wp_wc_orders SET status = &apos;wc-processing&apos; WHERE id = 12345">
+						<outline text="Status: pending → processing"/>
+						<outline text="date_paid: 2025-10-08 14:15:00" _note="Thời điểm thanh toán được xác nhận"/>
+					</outline>
+					<outline text="WooCommerce gửi email: Order processing" _note="Email tự động từ WooCommerce thông báo đơn hàng đang xử lý"/>
+				</outline>
+				<outline text="Kết quả bước 2" _note="Order đã thanh toán nhưng chưa complete">
+					<outline text="Order status = &apos;processing&apos; (đang xử lý)"/>
+					<outline text="Chưa có license, đợi order complete"/>
+				</outline>
+			</outline>
+			<outline text="Bước 3: Order được Complete" _note="Bước quan trọng: Order chuyển sang Completed, trigger tạo license">
+				<outline text="3.1. Cách order được complete" _note="Có 2 cách: tự động (gateway) hoặc thủ công (admin)">
+					<outline text="Cách A: Tự động (với gateway)" _note="Đối với digital product và gateway tự động">
+						<outline text="WooCommerce setting: Auto-complete cho digital products" _note="Settings → Products → Downloadable products → Grant access after payment"/>
+						<outline text="Sau khi payment confirmed (status = processing)"/>
+						<outline text="WooCommerce tự động chuyển status: processing → completed" _note="Không cần admin làm gì"/>
+					</outline>
+					<outline text="Cách B: Thủ công (admin)" _note="Đối với chuyển khoản hoặc cần kiểm tra">
+						<outline text="Admin login WordPress dashboard"/>
+						<outline text="Vào: WooCommerce → Orders"/>
+						<outline text="Tìm Order #12345 (status = Processing)"/>
+						<outline text="Kiểm tra đã nhận tiền: ✓"/>
+						<outline text="Click dropdown: Change status"/>
+						<outline text="Chọn: Completed"/>
+						<outline text="Click: Update"/>
+					</outline>
+				</outline>
+				<outline text="3.2. WooCommerce trigger hook" _note="Đây là điểm then chốt - hook này trigger các plugin action">
+					<outline text="WooCommerce thực thi action hook" _note="WordPress action hook system cho phép plugins can thiệp vào flow">
+						<outline text="Hook name: woocommerce_order_status_completed" _note="Hook này fire khi order status chuyển sang completed"/>
+						<outline text="Action: Order #12345 completed"/>
+						<outline text="Data được pass vào hook">
+							<outline text="$order_id: 12345" _note="ID của order"/>
+							<outline text="$order object: Toàn bộ thông tin order" _note="Object chứa tất cả data: items, customer, payment, etc."/>
+						</outline>
+					</outline>
+					<outline text="Các plugins listening hook này">
+						<outline text="LMfWC Plugin: Priority 10 (chạy trước)" _note="LMfWC (License Manager for WooCommerce) sẽ tạo license key"/>
+						<outline text="VD Plugin: Priority 20 (chạy sau)" _note="VD Plugin đợi LMfWC tạo xong rồi mới sync"/>
+						<outline text="Các plugins khác: Email, invoice, etc."/>
+					</outline>
+				</outline>
+				<outline text="Kết quả bước 3" _note="Order đã completed, sẵn sàng tạo license">
+					<outline text="Order status = &apos;completed&apos;"/>
+					<outline text="Hook fired: woocommerce_order_status_completed"/>
+					<outline text="LMfWC và VD Plugin được trigger"/>
+				</outline>
+			</outline>
+			<outline text="Bước 4: LMfWC Plugin tạo License Key" _note="Plugin LMfWC (License Manager for WooCommerce) là plugin bên thứ 3 chuyên tạo và quản lý license keys cho WooCommerce. VD Plugin sẽ sync license này sau.">
+				<outline text="4.1. LMfWC detect hook" _note="LMfWC đăng ký listening hook woocommerce_order_status_completed với priority 10">
+					<outline text="LMfWC hook callback được gọi">
+						<outline text="Function: lmfwc_order_completed($order_id)" _note="Hàm của LMfWC tự động chạy"/>
+						<outline text="Nhận: $order_id = 12345"/>
+					</outline>
+					<outline text="LMfWC query order items" _note="Lấy danh sách sản phẩm trong order">
+						<outline text="Query: $order→get_items()" _note="WooCommerce API để lấy items"/>
+						<outline text="Result: 1 item">
+							<outline text="Product ID: 100"/>
+							<outline text="Product name: Netflix Premium 4K - 30 ngày"/>
+							<outline text="Quantity: 1" _note="1 sản phẩm = 1 license key"/>
+						</outline>
+					</outline>
+					<outline text="LMfWC check: Product có Generator không?" _note="Admin phải setup Generator cho product trước (ở Flow 1 - Admin Setup)">
+						<outline text="Query LMfWC settings" _note="LMfWC lưu settings trong wp_options và custom tables"/>
+						<outline text="Product ID 100 → Generator assigned: YES" _note="Admin đã assign &apos;Netflix Premium Generator&apos; cho product này"/>
+						<outline text="Generator ID: 5"/>
+						<outline text="→ Continue tạo license"/>
+					</outline>
+				</outline>
+				<outline text="4.2. LMfWC lấy Generator settings" _note="Mỗi generator có cấu hình riêng về format, charset, expiry">
+					<outline text="Generator: Netflix Premium Generator (ID: 5)" _note="Admin đã tạo generator này trong LMfWC → Generators → Add New">
+						<outline text="Charset: ABCDEFGHJKLMNPQRSTUVWXYZ123456789" _note="33 ký tự, loại bỏ các ký tự dễ nhầm: 0, O, I, l"/>
+						<outline text="Format: ####-####-####-####" _note="4 blocks, mỗi block 4 ký tự, cách nhau bởi dấu gạch ngang. # = ký tự ngẫu nhiên từ charset"/>
+						<outline text="License count: 1" _note="Mỗi order tạo 1 license"/>
+						<outline text="Expires after: 30 days" _note="License hết hạn sau 30 ngày kể từ khi tạo"/>
+						<outline text="Max activations: NULL" _note="Không giới hạn activation vì VD system quản lý devices"/>
+					</outline>
+				</outline>
+				<outline text="4.3. LMfWC generate license key" _note="Thuật toán tạo license key ngẫu nhiên và đảm bảo unique">
+					<outline text="Loop tạo key unique">
+						<outline text="Iteration 1: Generate">
+							<outline text="Block 1: Random 4 chars từ charset → A3F9"/>
+							<outline text="Block 2: Random 4 chars từ charset → K2L4"/>
+							<outline text="Block 3: Random 4 chars từ charset → M8N1"/>
+							<outline text="Block 4: Random 4 chars từ charset → P5Q7"/>
+							<outline text="Key: A3F9-K2L4-M8N1-P5Q7" _note="16 chars + 3 dashes = 19 chars total"/>
+						</outline>
+						<outline text="Check uniqueness" _note="Kiểm tra key đã tồn tại chưa">
+							<outline text="Query: SELECT COUNT(*) FROM lmfwc_licenses WHERE license_key = &apos;A3F9-K2L4-M8N1-P5Q7&apos;" _note="LMfWC có table riêng: lmfwc_licenses (được tạo khi cài plugin)"/>
+							<outline text="Result: 0 (chưa tồn tại)"/>
+							<outline text="→ Unique, dùng key này"/>
+						</outline>
+						<outline text="Nếu key đã tồn tại (COUNT &gt; 0)" _note="Trường hợp hiếm, xác suất rất thấp với 33^16 combinations">
+							<outline text="→ Loop lại, generate key khác"/>
+							<outline text="→ Check again cho đến khi unique"/>
+						</outline>
+					</outline>
+					<outline text="Final key: A3F9-K2L4-M8N1-P5Q7" _note="Key đã unique, sẵn sàng insert vào database"/>
+				</outline>
+				<outline text="4.4. LMfWC tính validity period" _note="Thời hạn license dựa trên generator settings">
+					<outline text="Created date: 08/10/2025 14:15:00" _note="Thời điểm order completed"/>
+					<outline text="Expires after: 30 days (from generator)"/>
+					<outline text="Calculate expires_at">
+						<outline text="created_at + 30 days"/>
+						<outline text="= 08/10/2025 + 30 days"/>
+						<outline text="= 07/11/2025 23:59:59" _note="End of day, 30 ngày sau"/>
+					</outline>
+				</outline>
+				<outline text="4.5. LMfWC insert license vào database" _note="Lưu license vào table của LMfWC">
+					<outline text="INSERT INTO lmfwc_licenses" _note="Table: lmfwc_licenses (prefix: wp_lmfwc_licenses). Table này thuộc về LMfWC plugin.">
+						<outline text="id: 789 (auto increment)" _note="Primary key của license trong LMfWC system"/>
+						<outline text="order_id: 12345" _note="Foreign key đến wp_wc_orders. Link license với order."/>
+						<outline text="product_id: 100" _note="Foreign key đến wp_posts (product). License cho product nào."/>
+						<outline text="license_key: A3F9-K2L4-M8N1-P5Q7" _note="Unique license key vừa generate"/>
+						<outline text="hash: [SHA256 hash]" _note="LMfWC hash license key để bảo mật. Dùng khi validate."/>
+						<outline text="user_id: 456" _note="Customer user ID (wp_users). 0 nếu guest checkout."/>
+						<outline text="status: sold" _note="LMfWC statuses: sold (đã bán), delivered (đã giao), active, inactive, expired, etc."/>
+						<outline text="expires_at: 2025-11-07 23:59:59" _note="Ngày hết hạn license"/>
+						<outline text="valid_for: 30" _note="Số ngày valid (30 days)"/>
+						<outline text="source: order" _note="License tạo từ đâu: order, import, generator, etc."/>
+						<outline text="times_activated: 0" _note="Số lần activate. VD system không dùng field này."/>
+						<outline text="times_activated_max: NULL" _note="Max activations. NULL = unlimited. VD system quản lý devices riêng."/>
+						<outline text="created_at: 2025-10-08 14:15:00"/>
+						<outline text="created_by: NULL" _note="User ID nếu tạo thủ công, NULL nếu auto"/>
+						<outline text="updated_at: 2025-10-08 14:15:00"/>
+					</outline>
+					<outline text="INSERT successful" _note="License đã được tạo trong LMfWC system">
+						<outline text="LMfWC license ID: 789"/>
+						<outline text="License key: A3F9-K2L4-M8N1-P5Q7"/>
+					</outline>
+				</outline>
+				<outline text="4.6. LMfWC add order meta" _note="LMfWC thêm metadata vào order để tracking">
+					<outline text="update_post_meta() hoặc $order→add_meta_data()" _note="WooCommerce meta data API">
+						<outline text="Meta key: _lmfwc_order_complete">
+							<outline text="Value: yes" _note="Đánh dấu order này đã generate license"/>
+						</outline>
+						<outline text="Meta key: _lmfwc_license_keys">
+							<outline text="Value: [789]" _note="Array of license IDs. Order có thể có nhiều licenses nếu mua nhiều products."/>
+						</outline>
+					</outline>
+				</outline>
+				<outline text="4.7. LMfWC email (Optional - Nên disable)" _note="LMfWC có thể tự gửi email nhưng nên tắt để VD gửi email custom">
+					<outline text="LMfWC default behavior">
+						<outline text="Send email với template của LMfWC"/>
+						<outline text="Subject: Your license key for Order #12345"/>
+						<outline text="Content: Generic license key info"/>
+						<outline text="Không có instructions chi tiết về portal"/>
+					</outline>
+					<outline text="VD Plugin setup: DISABLE LMfWC email" _note="Tránh gửi 2 emails (LMfWC + VD)">
+						<outline text="LMfWC → Settings → Email Settings"/>
+						<outline text="Uncheck: Enable license delivery email"/>
+						<outline text="→ LMfWC không gửi email"/>
+						<outline text="→ Chỉ VD Plugin gửi email custom (bước 6)"/>
+					</outline>
+				</outline>
+				<outline text="Kết quả bước 4" _note="LMfWC đã tạo xong license">
+					<outline text="Database: lmfwc_licenses có license #789"/>
+					<outline text="License key: A3F9-K2L4-M8N1-P5Q7"/>
+					<outline text="Order meta: _lmfwc_order_complete = yes"/>
+					<outline text="LMfWC hoàn tất nhiệm vụ"/>
+				</outline>
+			</outline>
+			<outline text="Bước 5: VD Plugin đồng bộ License từ LMfWC" _note="VD Plugin cần copy license từ LMfWC vào bảng của mình (bz_vd_license_keys) để quản lý pool assignment và device tracking. Đây là bước bridge giữa LMfWC và VD system.">
+				<outline text="5.1. VD Plugin detect hook" _note="VD Plugin listening hook với priority cao hơn LMfWC">
+					<outline text="VD Plugin registered hook">
+						<outline text="Hook: woocommerce_order_status_completed"/>
+						<outline text="Priority: 20" _note="Priority cao hơn LMfWC (10) → VD chạy SAU LMfWC"/>
+						<outline text="Callback: vd_sync_license_on_order_complete($order_id)"/>
+					</outline>
+					<outline text="Hook được trigger">
+						<outline text="Nhận $order_id: 12345"/>
+						<outline text="LMfWC đã chạy xong (priority 10)"/>
+						<outline text="→ License đã được LMfWC tạo sẵn"/>
+					</outline>
+					<outline text="Alternative hook (better)" _note="LMfWC cung cấp hook riêng khi tạo license">
+						<outline text="Hook: lmfwc/license_created" _note="Specific hook của LMfWC, fire ngay sau khi INSERT license"/>
+						<outline text="Data: $license object (toàn bộ thông tin license)"/>
+						<outline text="Advantage: Không cần query lại, có sẵn data"/>
+					</outline>
+				</outline>
+				<outline text="5.2. VD Plugin query LMfWC license" _note="Lấy license mà LMfWC vừa tạo">
+					<outline text="Query lmfwc_licenses table" _note="VD Plugin đọc từ table của LMfWC">
+						<outline text="SQL: SELECT * FROM wp_lmfwc_licenses WHERE order_id = 12345 AND product_id = 100"/>
+						<outline text="Giải thích: Tìm license cho order 12345, product 100"/>
+					</outline>
+					<outline text="Result: 1 license found">
+						<outline text="id: 789" _note="ID của license trong LMfWC system"/>
+						<outline text="license_key: A3F9-K2L4-M8N1-P5Q7"/>
+						<outline text="order_id: 12345"/>
+						<outline text="product_id: 100"/>
+						<outline text="user_id: 456"/>
+						<outline text="expires_at: 2025-11-07 23:59:59"/>
+						<outline text="status: sold"/>
+					</outline>
+					<outline text="Nếu không tìm thấy license" _note="Trường hợp exception">
+						<outline text="Log error: License not found for order 12345"/>
+						<outline text="Possible reasons">
+							<outline text="LMfWC chưa chạy (hook priority sai)"/>
+							<outline text="Product không có generator"/>
+							<outline text="LMfWC bị lỗi khi generate"/>
+						</outline>
+						<outline text="→ Stop sync, không tạo VD license"/>
+					</outline>
+				</outline>
+				<outline text="5.3. VD Plugin check Share Config" _note="Kiểm tra product có được setup Share Config chưa (Flow 1 - Admin Setup)">
+					<outline text="Query bz_vd_product_share_configs" _note="Table chứa rules cho mỗi product">
+						<outline text="SQL: SELECT * FROM bz_vd_product_share_configs WHERE product_id = 100"/>
+					</outline>
+					<outline text="Case A: Config found (normal)" _note="Product đã được admin setup config ở Flow 1">
+						<outline text="Config exists ✓"/>
+						<outline text="Data">
+							<outline text="pool_assignment_rule: priority"/>
+							<outline text="max_devices_per_license: 2"/>
+							<outline text="device_reset_days: 7"/>
+							<outline text="max_requests_per_day: 10"/>
+							<outline text="response_fields: [account_login, login_password, cookie]"/>
+						</outline>
+						<outline text="→ Continue to Bước 5.4 (Pool Capacity Check)"/>
+					</outline>
+					<outline text="Case B: Config NOT found (warning)" _note="Admin chưa setup Share Config cho product này">
+						<outline text="Config does not exist ✗"/>
+						<outline text="VD Plugin actions">
+							<outline text="Log warning: Product 100 chưa có Share Config"/>
+							<outline text="Admin notification: Email/dashboard notice cho admin"/>
+							<outline text="Message: Setup Share Config cho product &apos;Netflix Premium 4K - 30 ngày&apos;"/>
+						</outline>
+						<outline text="License behavior">
+							<outline text="License tồn tại trong LMfWC (khách có license key)"/>
+							<outline text="NHƯNG không sync vào bz_vd_license_keys"/>
+							<outline text="→ Khách có license key nhưng KHÔNG THỂ lấy pool info"/>
+							<outline text="→ Portal sẽ báo lỗi: Product chưa có config"/>
+						</outline>
+						<outline text="→ Stop sync, chờ admin setup config"/>
+					</outline>
+				</outline>
+				<outline text="5.4. CRITICAL: Check Pool Capacity (NEW)" _note="BƯỚC MỚI - Kiểm tra pool có capacity còn trống TRƯỚC KHI sync license. Đây là bước then chốt để tránh licenses không có account.">
+					<outline text="5.4.1. Get pools for this product">
+						<outline text="Query bz_vd_product_pools">
+							<outline text="SQL: SELECT * FROM bz_vd_product_pools WHERE product_id = 100 AND status = &apos;active&apos; ORDER BY priority ASC"/>
+							<outline text="Giải thích: Lấy TẤT CẢ pools active cho product này, sort theo priority (thấp → cao)"/>
+							<outline text="Example result">
+								<outline text="Pool 1: id=1, account_id=10, priority=1, status=active"/>
+								<outline text="Pool 2: id=2, account_id=11, priority=2, status=active (backup)"/>
+							</outline>
+						</outline>
+						<outline text="IF no pools found (empty result)">
+							<outline text="ERROR: Product không có pools nào">
+								<outline text="Log error">
+									<outline text="Message: Product 100 has no pools configured"/>
+									<outline text="Order: #12345"/>
+									<outline text="Customer: khach@example.com"/>
+								</outline>
+								<outline text="Notify admin (Email - URGENT)">
+									<outline text="Subject: 🚨 URGENT - No Pools for Product"/>
+									<outline text="Body: Product &apos;Netflix Premium 4K&apos; has no pools configured. Order #12345 cannot be processed. Customer: khach@example.com. Action required: Add pools in VD Admin → Pools."/>
+								</outline>
+								<outline text="Handle order">
+									<outline text="Do NOT sync license to VD (skip Bước 5.6)"/>
+									<outline text="License vẫn tồn tại trong LMfWC (khách có key)"/>
+									<outline text="Order meta: _vd_sync_status = &apos;failed_no_pools&apos;"/>
+									<outline text="Order note: Add note to order: &apos;VD License sync failed - No pools configured&apos;"/>
+								</outline>
+								<outline text="Customer experience">
+									<outline text="Customer có license key (từ email Flow 2 Bước 8)"/>
+									<outline text="Customer vào portal, nhập license key"/>
+									<outline text="Portal response: ERROR - Product chưa có pool, vui lòng liên hệ support"/>
+								</outline>
+							</outline>
+							<outline text="→ STOP sync process"/>
+						</outline>
+						<outline text="IF pools found">
+							<outline text="Store pools array: $pools = [...]"/>
+							<outline text="→ Continue to 5.4.2"/>
+						</outline>
+					</outline>
+					<outline text="5.4.2. Check each pool capacity">
+						<outline text="Initialize: $available_pool = NULL"/>
+						<outline text="FOREACH $pool in $pools (ordered by priority)">
+							<outline text="Get pool&apos;s account">
+								<outline text="Query bz_vd_provider_accounts">
+									<outline text="SQL: SELECT id, capacity, status, expires_at FROM bz_vd_provider_accounts WHERE id = $pool[&apos;account_id&apos;]"/>
+									<outline text="Example: account_id=10 → capacity=4, status=active, expires_at=&apos;2025-12-31 23:59:59&apos;"/>
+								</outline>
+								<outline text="IF account not found">
+									<outline text="Log warning: Pool {pool_id} has invalid account_id {account_id}"/>
+									<outline text="Continue to next pool (try backup pool)"/>
+								</outline>
+								<outline text="IF account.status != &apos;active&apos;">
+									<outline text="Log warning: Account {account_id} is {status}, skipping pool {pool_id}"/>
+									<outline text="Continue to next pool"/>
+								</outline>
+								<outline text="IF account.expires_at &lt; NOW()">
+									<outline text="Log warning: Account {account_id} has expired, skipping pool {pool_id}"/>
+									<outline text="Continue to next pool"/>
+								</outline>
+							</outline>
+							<outline text="Count assigned licenses for this account">
+								<outline text="Query bz_vd_license_keys">
+									<outline text="SQL: SELECT COUNT(*) as assigned_count FROM bz_vd_license_keys WHERE assigned_account_id = $account[&apos;id&apos;] AND status = &apos;active&apos;"/>
+									<outline text="Example result: assigned_count = 3 (đang phục vụ 3 licenses)"/>
+								</outline>
+							</outline>
+							<outline text="Calculate available capacity">
+								<outline text="Formula: available_capacity = account. capacity - assigned_count"/>
+								<outline text="Example: 4 - 3 = 1 (còn 1 slot trống)"/>
+							</outline>
+							<outline text="Check if pool has capacity">
+								<outline text="IF available_capacity &gt; 0">
+									<outline text="Pool has capacity ✓"/>
+									<outline text="$available_pool = $pool"/>
+									<outline text="BREAK loop (found available pool, không cần check pools khác)"/>
+								</outline>
+								<outline text="ELSE (available_capacity = 0)">
+									<outline text="Pool is FULL ✗"/>
+									<outline text="Log info: Pool {pool_id} is full ({assigned_count}/{capacity}), trying next pool"/>
+									<outline text="Continue to next pool (check backup pool)"/>
+								</outline>
+							</outline>
+						</outline>
+					</outline>
+					<outline text="5.4.3. Handle result">
+						<outline text="Case A: Found available pool ($available_pool != NULL)">
+							<outline text="Pool capacity OK ✓">
+								<outline text="Pool: {pool_id}"/>
+								<outline text="Account: {account_id}"/>
+								<outline text="Available capacity: {available_capacity}"/>
+							</outline>
+							<outline text="Log success">
+								<outline text="Message: Pool {pool_id} has capacity for license"/>
+								<outline text="Details: {assigned_count}/{capacity} licenses assigned"/>
+							</outline>
+							<outline text="→ Continue to Bước 5.5 (sync license normally)"/>
+						</outline>
+						<outline text="Case B: NO available pool ($available_pool == NULL)" _note="CRITICAL ERROR - Tất cả pools đều FULL">
+							<outline text="ALL POOLS FULL - CRITICAL ERROR ✗">
+								<outline text="Meaning: Tất cả pools đều đã hết capacity, không thể phục vụ license mới"/>
+								<outline text="Impact: Khách đã mua nhưng KHÔNG THỂ dùng được"/>
+							</outline>
+							<outline text="Log critical error">
+								<outline text="Level: CRITICAL"/>
+								<outline text="Message: All pools full for product {product_id}"/>
+								<outline text="Details">
+									<outline text="Order: #12345"/>
+									<outline text="Product: Netflix Premium 4K - 30 ngày"/>
+									<outline text="Customer: khach@example.com"/>
+									<outline text="License key: A3F9-K2L4-M8N1-P5Q7 (from LMfWC)"/>
+									<outline text="Pools checked: {count} pools"/>
+									<outline text="All pools status: FULL"/>
+								</outline>
+							</outline>
+							<outline text="Notify admin (Email - URGENT)" _note="Email ngay lập tức cho admin">
+								<outline text="Subject: 🚨 CRITICAL - All Pools FULL for Product"/>
+								<outline text="To: admin@vidieu.vn"/>
+								<outline text="Priority: HIGH"/>
+								<outline text="Body">
+									<outline text="⚠️ URGENT ACTION REQUIRED"/>
+									<outline/>
+									<outline text="All pools are full for product: Netflix Premium 4K - 30 ngày"/>
+									<outline/>
+									<outline text="Order Details:"/>
+									<outline text="- Order ID: #12345"/>
+									<outline text="- Customer: khach@example.com"/>
+									<outline text="- License Key: A3F9-K2L4-M8N1-P5Q7"/>
+									<outline text="- Product ID: 100"/>
+									<outline/>
+									<outline text="Pool Status:"/>
+									<outline text="- Pool 1: 4/4 (FULL)"/>
+									<outline text="- Pool 2: 3/3 (FULL)"/>
+									<outline/>
+									<outline text="Action Required:"/>
+									<outline text="1. Add more accounts to existing pools, OR"/>
+									<outline text="2. Increase account capacity, OR"/>
+									<outline text="3. Create new pools"/>
+									<outline/>
+									<outline text="Order Status: ON HOLD (waiting for capacity)"/>
+									<outline/>
+									<outline text="View Order: https://vidieu.vn/wp-admin/post. php?post=12345&amp;action=edit"/>
+								</outline>
+							</outline>
+							<outline text="Admin Dashboard Alert" _note="Hiển thị alert banner trong admin dashboard">
+								<outline text="Add transient: set_transient(&apos;vd_pool_full_alert&apos;, [...])"/>
+								<outline text="Alert banner (top of admin dashboard)">
+									<outline text="Type: Error (red banner)"/>
+									<outline text="Icon: ⚠️"/>
+									<outline text="Message: URGENT - Pools full for product &apos;Netflix Premium&apos;. Order #12345 on hold. Take action now."/>
+									<outline text="Button: View Order"/>
+									<outline text="Button: Manage Pools"/>
+								</outline>
+							</outline>
+							<outline text="Handle Order Status" _note="Chuyển order về ON-HOLD thay vì COMPLETED">
+								<outline text="UPDATE order status">
+									<outline text="From: wc-processing (hoặc wc-completed nếu đã completed)"/>
+									<outline text="To: wc-on-hold"/>
+									<outline text="Code: $order-&gt;update_status(&apos;on-hold&apos;, &apos;VD License sync failed - All pools full&apos;)"/>
+								</outline>
+								<outline text="Add order note (visible to admin)">
+									<outline text="Note: VD License sync failed - All pools are at full capacity. Please add more accounts or increase capacity. License key: A3F9-K2L4-M8N1-P5Q7"/>
+									<outline text="Type: system note"/>
+								</outline>
+								<outline text="Order meta">
+									<outline text="_vd_sync_status: &apos;failed_pools_full&apos;"/>
+									<outline text="_vd_sync_error: &apos;All pools at capacity&apos;"/>
+									<outline text="_vd_lmfwc_license_id: 789"/>
+									<outline text="_vd_license_key: &apos;A3F9-K2L4-M8N1-P5Q7&apos;"/>
+								</outline>
+							</outline>
+							<outline text="Email customer" _note="Gửi email thông báo cho khách">
+								<outline text="Subject: Đơn hàng của bạn đang được xử lý - Order #12345"/>
+								<outline text="Body">
+									<outline text="Xin chào,"/>
+									<outline/>
+									<outline text="Cảm ơn bạn đã đặt hàng tại VidieuVN!"/>
+									<outline/>
+									<outline text="Đơn hàng #12345 của bạn đã được thanh toán thành công. Tuy nhiên, do số lượng tài khoản hiện tại đã đầy, chúng tôi đang xử lý để bổ sung thêm tài khoản."/>
+									<outline/>
+									<outline text="Chúng tôi sẽ gửi thông tin license key cho bạn trong vòng 1-24 giờ."/>
+									<outline/>
+									<outline text="Xin lỗi vì sự bất tiện này. Nếu cần hỗ trợ, vui lòng liên hệ: support@vidieu.vn"/>
+									<outline/>
+									<outline text="Trân trọng,"/>
+									<outline text="VidieuVN Team"/>
+								</outline>
+								<outline text="Note: Email này professional, không để lộ technical details"/>
+							</outline>
+							<outline text="License behavior">
+								<outline text="LMfWC license: Vẫn tồn tại (id=789, key=A3F9-K2L4-M8N1-P5Q7)"/>
+								<outline text="VD license: CHƯA được sync (bz_vd_license_keys không có record)"/>
+								<outline text="Reason: Không có pool available → Skip sync"/>
+							</outline>
+							<outline text="What happens next?" _note="Admin phải làm gì để fix">
+								<outline text="Admin actions">
+									<outline text="Option 1: Add more accounts to pools">
+										<outline text="Go to: VD Admin → Accounts → Add New"/>
+										<outline text="Add new provider account (Netflix, etc.)"/>
+										<outline text="Assign to pool (Pool 1 or Pool 2)"/>
+									</outline>
+									<outline text="Option 2: Increase account capacity">
+										<outline text="Go to: VD Admin → Accounts → Edit"/>
+										<outline text="Edit existing account"/>
+										<outline text="Increase capacity (e.g., 4 → 5)"/>
+									</outline>
+									<outline text="Option 3: Create new pool">
+										<outline text="Go to: VD Admin → Pools → Add New"/>
+										<outline text="Create Pool 3"/>
+										<outline text="Assign new account"/>
+									</outline>
+								</outline>
+								<outline text="After admin fixes capacity">
+									<outline text="Admin manually retry sync">
+										<outline text="Go to: Order #12345"/>
+										<outline text="Click: Retry VD Sync (custom button)"/>
+										<outline text="OR: Change order status back to Processing → Completed (trigger hook lại)"/>
+									</outline>
+									<outline text="System re-runs Bước 5">
+										<outline text="Re-check pool capacity (now has space)"/>
+										<outline text="Sync license to VD"/>
+										<outline text="Email customer với license info"/>
+									</outline>
+								</outline>
+							</outline>
+							<outline text="→ STOP sync process (do NOT continue to Bước 5.5)"/>
+							<outline text="→ Return early"/>
+						</outline>
+					</outline>
+				</outline>
+				<outline text="5.5. VD Plugin check duplicate" _note="Chỉ chạy NẾU đã pass 5.4 (có pool available)">
+					<outline text="Query bz_vd_license_keys">
+						<outline text="SQL: SELECT id FROM bz_vd_license_keys WHERE lmfwc_license_id = 789" _note="Check license này đã sync chưa bằng foreign key lmfwc_license_id"/>
+					</outline>
+					<outline text="Result: Empty (chưa sync)" _note="Lần đầu tiên sync license này">
+						<outline text="→ Continue insert"/>
+					</outline>
+					<outline text="Nếu đã tồn tại" _note="Hook chạy lại hoặc manual trigger">
+						<outline text="VD license đã sync rồi"/>
+						<outline text="→ Skip insert, return existing VD license ID"/>
+						<outline text="→ Prevent duplicate"/>
+					</outline>
+				</outline>
+				<outline text="5.6. VD Plugin insert vào bz_vd_license_keys" _note="Copy license từ LMfWC sang VD table để quản lý pool/devices">
+					<outline text="Prepare data" _note="Map data từ LMfWC sang VD format">
+						<outline text="From LMfWC license">
+							<outline text="license_key: A3F9-K2L4-M8N1-P5Q7 (copy từ LMfWC)"/>
+							<outline text="lmfwc_license_id: 789 (foreign key link đến LMfWC)"/>
+							<outline text="order_id: 12345 (from LMfWC)"/>
+							<outline text="product_id: 100 (from LMfWC)"/>
+							<outline text="customer_id: 456 (from LMfWC user_id)"/>
+							<outline text="valid_until: 2025-11-07 23:59:59 (from LMfWC expires_at)"/>
+						</outline>
+						<outline text="VD specific fields" _note="Fields mà VD quản lý, không có trong LMfWC">
+							<outline text="status: active" _note="Map từ LMfWC status &apos;sold&apos; → VD &apos;active&apos;"/>
+							<outline text="valid_from: 2025-10-08 00:00:00" _note="Start of order date"/>
+							<outline text="assigned_pool_id: NULL" _note="Chưa assign pool, sẽ assign khi khách access portal lần đầu (Flow 3)"/>
+							<outline text="assigned_account_id: NULL" _note="Chưa có account"/>
+							<outline text="assigned_at: NULL" _note="Thời điểm assign pool (NULL = chưa assign)"/>
+							<outline text="last_accessed_at: NULL" _note="Lần cuối khách access portal (NULL = chưa access)"/>
+							<outline text="access_count: 0" _note="Số lần access portal (0 = chưa dùng)"/>
+						</outline>
+					</outline>
+					<outline text="INSERT INTO bz_vd_license_keys" _note="Table VD tự quản lý, chứa thông tin pool assignment và device tracking">
+						<outline text="Field mapping">
+							<outline text="id: 50 (auto increment)" _note="Primary key trong VD system"/>
+							<outline text="license_key: A3F9-K2L4-M8N1-P5Q7 (VARCHAR 19)"/>
+							<outline text="lmfwc_license_id: 789 (BIGINT, FK → lmfwc_licenses.id)" _note="Link 2 tables: VD ← → LMfWC"/>
+							<outline text="product_id: 100 (BIGINT, FK → wp_posts.ID)"/>
+							<outline text="order_id: 12345 (BIGINT, FK → wp_wc_orders.id)"/>
+							<outline text="customer_id: 456 (BIGINT, FK → wp_users.ID)"/>
+							<outline text="status: active (VARCHAR 20)" _note="active, expired, suspended, revoked"/>
+							<outline text="valid_from: 2025-10-08 00: 00:00 (DATETIME)"/>
+							<outline text="valid_until: 2025-11-07 23: 59:59 (DATETIME)"/>
+							<outline text="assigned_pool_id: NULL (BIGINT, FK → bz_vd_product_pools.id)" _note="Pool nào được assign cho license này. NULL = chưa assign."/>
+							<outline text="assigned_account_id: NULL (BIGINT, FK → bz_vd_provider_accounts.id)" _note="Account nào trong pool đó. NULL = chưa assign."/>
+							<outline text="assigned_at: NULL (DATETIME)" _note="Timestamp lúc assign pool. NULL = chưa assign."/>
+							<outline text="last_accessed_at: NULL (DATETIME)" _note="Lần cuối khách vào portal lấy thông tin. NULL = chưa dùng."/>
+							<outline text="access_count: 0 (INT)" _note="Số lần tổng cộng khách đã access portal. 0 = chưa dùng."/>
+							<outline text="created_at: 2025-10-08 14: 15:00 (DATETIME)"/>
+							<outline text="updated_at: 2025-10-08 14: 15:00 (DATETIME)"/>
+						</outline>
+						<outline text="SQL Example">
+							<outline text="INSERT INTO bz_vd_license_keys (license_key, lmfwc_license_id, product_id, order_id, customer_id, status, valid_from, valid_until, assigned_pool_id, assigned_account_id, assigned_at, last_accessed_at, access_count, created_at, updated_at) VALUES (&apos;A3F9-K2L4-M8N1-P5Q7&apos;, 789, 100, 12345, 456, &apos;active&apos;, &apos;2025-10-08 00:00:00&apos;, &apos;2025-11-07 23:59:59&apos;, NULL, NULL, NULL, NULL, 0, NOW(), NOW())"/>
+						</outline>
+					</outline>
+					<outline text="INSERT successful ✓">
+						<outline text="VD License ID: 50" _note="License đã được sync vào VD system"/>
+						<outline text="Linked to LMfWC: lmfwc_license_id = 789"/>
+					</outline>
+				</outline>
+				<outline text="5.7. VD Plugin add order meta" _note="Thêm metadata vào order để tracking">
+					<outline text="update_post_meta()" _note="Hoặc $order→update_meta_data() cho WooCommerce HPOS">
+						<outline text="_vd_license_synced: yes" _note="Đánh dấu order này đã sync license vào VD system"/>
+						<outline text="_vd_sync_status: &apos;success&apos;"/>
+						<outline text="_vd_license_ids: [50]" _note="Array of VD license IDs. Có thể có nhiều nếu order nhiều products."/>
+						<outline text="_vd_lmfwc_license_ids: [789]" _note="Array of LMfWC license IDs tương ứng. Để map ngược lại nếu cần."/>
+					</outline>
+				</outline>
+				<outline text="5.8. VD Plugin log sync event" _note="Logging để debug và audit">
+					<outline text="INSERT INTO bz_vd_license_sync_log" _note="Table log riêng (optional), không bắt buộc nhưng hữu ích cho debug">
+						<outline text="vd_license_id: 50"/>
+						<outline text="lmfwc_license_id: 789"/>
+						<outline text="order_id: 12345"/>
+						<outline text="product_id: 100"/>
+						<outline text="synced_at: 2025-10-08 14:15:05" _note="Timestamp sync"/>
+						<outline text="sync_status: success" _note="success, failed_no_pools, failed_pools_full, skipped"/>
+						<outline text="error_message: NULL" _note="Nếu có lỗi thì ghi message"/>
+						<outline text="pool_checked: JSON array of pools checked">
+							<outline text="Example: [{&apos;pool_id&apos;:1,&apos;capacity&apos;:4, &apos;assigned&apos;:3,&apos;available&apos;:1},{&apos;pool_id&apos;:2, &apos;capacity&apos;:3,&apos;assigned&apos;:3,&apos;available&apos;:0}]"/>
+						</outline>
+					</outline>
+				</outline>
+				<outline text="Kết quả bước 5" _note="License đã sync xong HOẶC failed với proper handling">
+					<outline text="Success Case (Pool available)">
+						<outline text="Database state">
+							<outline text="lmfwc_licenses: License #789 (LMfWC table)"/>
+							<outline text="bz_vd_license_keys: License #50 (VD table)"/>
+							<outline text="Relationship: vd.lmfwc_license_id = 789 → lmfwc.id = 789"/>
+						</outline>
+						<outline text="VD license status">
+							<outline text="license_key: A3F9-K2L4-M8N1-P5Q7 ✓"/>
+							<outline text="status: active ✓"/>
+							<outline text="assigned_pool_id: NULL (chưa assign) ⏳"/>
+							<outline text="assigned_account_id: NULL (chưa assign) ⏳"/>
+							<outline text="Pool sẽ được assign ở Flow 3 khi khách access portal lần đầu"/>
+						</outline>
+						<outline text="Order status: completed ✓"/>
+						<outline text="Customer: Nhận email với license key"/>
+					</outline>
+					<outline text="Failed Case (All pools full)" _note="NEW - Proper error handling">
+						<outline text="Database state">
+							<outline text="lmfwc_licenses: License #789 (vẫn tồn tại)"/>
+							<outline text="bz_vd_license_keys: NO record (không sync)"/>
+						</outline>
+						<outline text="Order status: on-hold ⏳">
+							<outline text="Order note: VD License sync failed - All pools full"/>
+							<outline text="Meta: _vd_sync_status = &apos;failed_pools_full&apos;"/>
+						</outline>
+						<outline text="Notifications sent">
+							<outline text="Admin email: URGENT - Pools full"/>
+							<outline text="Customer email: Order being processed"/>
+							<outline text="Dashboard alert: Red banner"/>
+						</outline>
+						<outline text="Next steps">
+							<outline text="Admin adds capacity (more accounts/increase capacity/new pool)"/>
+							<outline text="Admin manually retry sync (button in order page)"/>
+							<outline text="System re-runs Bước 5 → Success"/>
+							<outline text="Customer receives license info"/>
+						</outline>
+					</outline>
+				</outline>
+			</outline>
+			<outline text="Bước 6: VD Plugin gửi email custom cho khách" _note="Sau khi sync xong, VD gửi email với hướng dẫn chi tiết cách sử dụng license key và lấy thông tin pool từ portal. Email này thay thế email mặc định của LMfWC (đã disable).">
+				<outline text="6.1. Trigger email" _note="Sau khi sync license thành công">
+					<outline text="VD Plugin function: vd_send_license_email($license_id)" _note="Hàm gửi email với VD license ID"/>
+					<outline text="Input: VD license ID = 50"/>
+				</outline>
+				<outline text="6.2. Gather email data" _note="Thu thập tất cả thông tin cần thiết cho email">
+					<outline text="Query VD license" _note="Lấy thông tin license vừa sync">
+						<outline text="SELECT * FROM bz_vd_license_keys WHERE id = 50">
+							<outline text="license_key: A3F9-K2L4-M8N1-P5Q7"/>
+							<outline text="product_id: 100"/>
+							<outline text="order_id: 12345"/>
+							<outline text="customer_id: 456"/>
+							<outline text="valid_until: 2025-11-07 23:59:59"/>
+						</outline>
+					</outline>
+					<outline text="Query customer info" _note="Lấy thông tin khách hàng">
+						<outline text="SELECT * FROM wp_users WHERE ID = 456">
+							<outline text="user_email: khach@example.com"/>
+							<outline text="display_name: Nguyễn Văn A"/>
+						</outline>
+					</outline>
+					<outline text="Query product info" _note="Lấy tên sản phẩm">
+						<outline text="SELECT post_title FROM wp_posts WHERE ID = 100">
+							<outline text="post_title: Netflix Premium 4K - 30 ngày"/>
+						</outline>
+					</outline>
+					<outline text="Query order info" _note="Lấy thông tin đơn hàng">
+						<outline text="SELECT * FROM wp_wc_orders WHERE id = 12345">
+							<outline text="order_number: #12345"/>
+							<outline text="date_created: 2025-10-08 14:00:00"/>
+						</outline>
+					</outline>
+					<outline text="Query Share Config" _note="Lấy rules để hiển thị trong email">
+						<outline text="SELECT * FROM bz_vd_product_share_configs WHERE product_id = 100">
+							<outline text="max_devices_per_license: 2"/>
+							<outline text="device_reset_days: 7"/>
+							<outline text="max_requests_per_day: 10"/>
+						</outline>
+					</outline>
+					<outline text="Compiled data for email">
+						<outline text="Customer">
+							<outline text="Name: Nguyễn Văn A"/>
+							<outline text="Email: khach@example.com"/>
+						</outline>
+						<outline text="Order">
+							<outline text="Order #: 12345"/>
+							<outline text="Date: 08/10/2025"/>
+						</outline>
+						<outline text="License">
+							<outline text="Key: A3F9-K2L4-M8N1-P5Q7"/>
+							<outline text="Product: Netflix Premium 4K - 30 ngày"/>
+							<outline text="Valid until: 07/11/2025 (30 ngày)"/>
+							<outline text="Max devices: 2"/>
+							<outline text="Max requests: 10/ngày"/>
+							<outline text="Device reset: 7 ngày"/>
+						</outline>
+						<outline text="Portal">
+							<outline text="URL: https://vidieu.vn/license-portal"/>
+						</outline>
+					</outline>
+				</outline>
+				<outline text="6.3. Load email template" _note="Sử dụng template HTML được thiết kế sẵn">
+					<outline text="Template file: /templates/emails/vd-license-delivery. php" _note="File PHP template trong thư mục plugin VD">
+						<outline text="Variables passed to template">
+							<outline text="$customer_name = &apos;Nguyễn Văn A&apos;"/>
+							<outline text="$license_key = &apos;A3F9-K2L4-M8N1-P5Q7&apos;"/>
+							<outline text="$product_name = &apos;Netflix Premium 4K - 30 ngày&apos;"/>
+							<outline text="$valid_until = &apos;07/11/2025&apos;"/>
+							<outline text="$portal_url = &apos;https: //vidieu.vn/license-portal&apos;"/>
+							<outline text="$max_devices = 2"/>
+							<outline text="$max_requests = 10"/>
+							<outline text="$device_reset_days = 7"/>
+						</outline>
+					</outline>
+					<outline text="Email HTML structure" _note="Cấu trúc email với styling inline CSS">
+						<outline text="Header" _note="Logo và branding">
+							<outline text="&lt;img src=&apos;logo.png&apos; alt=&apos;VidieuVN&apos;/&gt;"/>
+							<outline text="Background color: brand colors"/>
+						</outline>
+						<outline text="Body sections">
+							<outline text="Section 1: Greeting" _note="Chào mừng khách hàng">
+								<outline text="Xin chào Nguyễn Văn A,"/>
+								<outline text="Cảm ơn bạn đã mua Netflix Premium!"/>
+							</outline>
+							<outline text="Section 2: License Key Box" _note="Highlight license key, có nút copy">
+								<outline text="📋 LICENSE KEY CỦA BẠN"/>
+								<outline text="Styled box với background đậm"/>
+								<outline text="License: A3F9-K2L4-M8N1-P5Q7"/>
+								<outline text="Font size lớn, bold, easy to read"/>
+								<outline text="[Copy License Key] button" _note="JavaScript onclick copy to clipboard"/>
+							</outline>
+							<outline text="Section 3: Thông tin chi tiết" _note="Chi tiết về license">
+								<outline text="📦 THÔNG TIN SẢN PHẨM"/>
+								<outline text="Sản phẩm: Netflix Premium 4K - 30 ngày"/>
+								<outline text="Hạn sử dụng: 07/11/2025 (30 ngày)"/>
+								<outline text="Số thiết bị: 2 thiết bị"/>
+								<outline text="Request/ngày: 10 lần"/>
+								<outline text="Đổi thiết bị sau: 7 ngày"/>
+							</outline>
+							<outline text="Section 4: Hướng dẫn sử dụng" _note="Step-by-step instructions">
+								<outline text="🔗 CÁCH LẤY TÀI KHOẢN NETFLIX"/>
+								<outline text="Numbered steps với icons">
+									<outline text="1️⃣ Truy cập: https: //vidieu.vn/license-portal" _note="Clickable link"/>
+									<outline text="2️⃣ Nhập license key: A3F9-K2L4-M8N1-P5Q7"/>
+									<outline text="3️⃣ Đặt tên thiết bị (VD: Laptop nhà) - Tùy chọn"/>
+									<outline text="4️⃣ Nhấn nút Lấy thông tin"/>
+									<outline text="5️⃣ Bạn sẽ nhận được:">
+										<outline text="• Email đăng nhập Netflix"/>
+										<outline text="• Password"/>
+										<outline text="• Cookie (nếu có)"/>
+									</outline>
+									<outline text="6️⃣ Vào netflix.com → Đăng nhập với thông tin trên"/>
+									<outline text="7️⃣ Chọn profile của bạn → Bắt đầu xem phim!"/>
+								</outline>
+							</outline>
+							<outline text="Section 5: Lưu ý quan trọng" _note="Important notes với icons cảnh báo">
+								<outline text="⚠️ LƯU Ý QUAN TRỌNG"/>
+								<outline text="Checkmarks và X marks">
+									<outline text="✓ License key chỉ dùng được trên 2 thiết bị"/>
+									<outline text="✓ Sau 7 ngày mới có thể đổi thiết bị"/>
+									<outline text="✓ Giới hạn 10 lần lấy thông tin mỗi ngày"/>
+									<outline text="✗ Không chia sẻ license key cho người khác"/>
+									<outline text="✗ Không đổi password tài khoản Netflix"/>
+									<outline text="✗ Không thay đổi thông tin profile"/>
+									<outline text="✗ Không thay đổi settings tài khoản"/>
+								</outline>
+							</outline>
+							<outline text="Section 6: Mật khẩu có thể thay đổi" _note="Thông báo về credential updates">
+								<outline text="🔄 NẾU MẬT KHẨU THAY ĐỔI"/>
+								<outline text="Mật khẩu Netflix có thể được cập nhật định kỳ để bảo mật"/>
+								<outline text="Khi đó bạn chỉ cần:">
+									<outline text="1. Vào lại portal: https: //vidieu.vn/license-portal"/>
+									<outline text="2. Nhập license key của bạn"/>
+									<outline text="3. Lấy mật khẩu mới"/>
+								</outline>
+								<outline text="💡 Giới hạn request sẽ được reset khi mật khẩu thay đổi" _note="Feature từ Flow 1 - Admin Setup"/>
+							</outline>
+							<outline text="Section 7: Hỗ trợ" _note="Contact info">
+								<outline text="💬 CẦN HỖ TRỢ?"/>
+								<outline text="📧 Email: support@vidieu.vn"/>
+								<outline text="📞 Hotline: 1900-xxxx"/>
+								<outline text="💬 Zalo: xxx-xxx-xxxx"/>
+								<outline text="📱 Telegram: @vidieuvn"/>
+								<outline text="Thời gian hỗ trợ: 8:00 - 22:00 hàng ngày"/>
+							</outline>
+						</outline>
+						<outline text="Footer" _note="Copyright và social links">
+							<outline text="© 2025 VidieuVN. All rights reserved."/>
+							<outline text="Social icons: Facebook, Telegram, Zalo"/>
+							<outline text="Unsubscribe link (if required)"/>
+						</outline>
+					</outline>
+				</outline>
+				<outline text="6.4. Render và send email" _note="WordPress email API">
+					<outline text="Render template to HTML">
+						<outline text="ob_start();" _note="Start output buffering"/>
+						<outline text="include(&apos;vd-license-delivery.php&apos;);" _note="Template file với variables"/>
+						<outline text="$html_content = ob_get_clean();" _note="Get rendered HTML"/>
+					</outline>
+					<outline text="Prepare email">
+						<outline text="$to = &apos;khach@example.com&apos;" _note="Recipient email"/>
+						<outline text="$subject = &apos;[VidieuVN] 🎬 License Netflix Premium - Hướng dẫn lấy tài khoản&apos;" _note="Subject line với emoji"/>
+						<outline text="$message = $html_content" _note="HTML body"/>
+						<outline text="$headers" _note="Email headers array">
+							<outline text="&apos;From: VidieuVN &lt;noreply@vidieu.vn&gt;&apos;" _note="Sender name và email"/>
+							<outline text="&apos;Reply-To: support@vidieu.vn&apos;" _note="Reply address"/>
+							<outline text="&apos;Content-Type: text/html; charset=UTF-8&apos;" _note="HTML email"/>
+						</outline>
+					</outline>
+					<outline text="Send với wp_mail()" _note="WordPress core email function">
+						<outline text="wp_mail($to, $subject, $message, $headers)">
+							<outline text="Return: true/false" _note="Success or failure"/>
+						</outline>
+						<outline text="SMTP recommended" _note="Sử dụng SMTP thay vì PHP mail()">
+							<outline text="Plugin: WP Mail SMTP" _note="Plugin phổ biến để config SMTP"/>
+							<outline text="SMTP providers">
+								<outline text="Gmail (free, limited)"/>
+								<outline text="SendGrid (reliable)"/>
+								<outline text="Mailgun (developer-friendly)"/>
+								<outline text="Amazon SES (cheap, scalable)"/>
+							</outline>
+							<outline text="Why SMTP?">
+								<outline text="Deliverability tốt hơn (không vào spam)"/>
+								<outline text="Tracking được (opened, clicked)"/>
+								<outline text="Reputation management"/>
+							</outline>
+						</outline>
+					</outline>
+					<outline text="Email delivery result">
+						<outline text="Success (wp_mail returns true)">
+							<outline text="Email queued/sent successfully"/>
+							<outline text="Log: Email sent to khach@example.com at 14:16: 00"/>
+							<outline text="Update order meta: _vd_license_email_sent = yes"/>
+							<outline text="Update order meta: _vd_license_email_sent_at = 2025-10-08 14:16:00"/>
+						</outline>
+						<outline text="Failure (wp_mail returns false)">
+							<outline text="Log error: Email failed for order 12345"/>
+							<outline text="Error reasons">
+								<outline text="SMTP not configured"/>
+								<outline text="Invalid recipient email"/>
+								<outline text="Server mail() disabled"/>
+								<outline text="SMTP credentials wrong"/>
+							</outline>
+							<outline text="Admin notification: Dashboard notice hoặc admin email"/>
+							<outline text="Retry mechanism (optional)">
+								<outline text="Queue email để retry sau"/>
+								<outline text="hoặc Admin manual resend"/>
+							</outline>
+						</outline>
+					</outline>
+				</outline>
+				<outline text="6.5. Note về LMfWC email" _note="Tại sao disable LMfWC email">
+					<outline text="LMfWC default behavior">
+						<outline text="LMfWC tự động gửi email sau khi generate license"/>
+						<outline text="Email template của LMfWC:">
+							<outline text="Subject: Your license key"/>
+							<outline text="Body: Generic license info"/>
+							<outline text="Không có hướng dẫn về portal"/>
+							<outline text="Không có thông tin về Share Config rules"/>
+						</outline>
+					</outline>
+					<outline text="VD Plugin setup">
+						<outline text="Admin vào: LMfWC → Settings → Email Settings"/>
+						<outline text="Uncheck: Enable license delivery email"/>
+						<outline text="Save settings"/>
+						<outline text="→ LMfWC KHÔNG gửi email"/>
+						<outline text="→ Chỉ VD Plugin gửi email custom (detailed)"/>
+					</outline>
+					<outline text="Lý do">
+						<outline text="Tránh gửi 2 emails (confusing cho khách)"/>
+						<outline text="VD email có thông tin chi tiết hơn"/>
+						<outline text="VD email có branding riêng"/>
+						<outline text="VD email có instructions về portal và rules"/>
+					</outline>
+				</outline>
+				<outline text="Kết quả bước 6" _note="Email đã được gửi cho khách">
+					<outline text="Email delivered: khach@example.com"/>
+					<outline text="Send time: 14:16:00 (1 phút sau order complete)"/>
+					<outline text="Content: Full instructions với license key"/>
+					<outline text="Order meta updated: _vd_license_email_sent = yes"/>
+				</outline>
+			</outline>
+			<outline text="Bước 7: Tổng hợp Order Metadata" _note="Tất cả metadata được thêm vào order để tracking và display">
+				<outline text="Order metadata sau khi hoàn tất" _note="Metadata lưu trong wp_wc_orders_meta (HPOS) hoặc wp_postmeta (legacy)">
+					<outline text="LMfWC meta" _note="Metadata do LMfWC tự động thêm">
+						<outline text="_lmfwc_order_complete: yes" _note="Đánh dấu order đã generate license"/>
+						<outline text="_lmfwc_license_keys: [789]" _note="Array of LMfWC license IDs (có thể nhiều nếu nhiều products)"/>
+						<outline text="_lmfwc_generator_id: 5" _note="Generator nào được dùng"/>
+					</outline>
+					<outline text="VD Plugin meta" _note="Metadata do VD thêm">
+						<outline text="_vd_license_synced: yes" _note="Đánh dấu license đã sync vào VD system"/>
+						<outline text="_vd_license_ids: [50]" _note="Array of VD license IDs tương ứng"/>
+						<outline text="_vd_lmfwc_license_ids: [789]" _note="Map với LMfWC IDs (để reference ngược lại)"/>
+						<outline text="_vd_license_email_sent: yes" _note="Email đã gửi"/>
+						<outline text="_vd_license_email_sent_at: 2025-10-08 14:16:00" _note="Timestamp email sent"/>
+					</outline>
+				</outline>
+				<outline text="Purpose của metadata" _note="Tại sao cần metadata">
+					<outline text="Tracking">
+						<outline text="Biết order nào đã có license"/>
+						<outline text="Biết license nào thuộc order nào"/>
+					</outline>
+					<outline text="Prevent duplicates">
+						<outline text="Nếu hook chạy lại, check meta để skip"/>
+						<outline text="Tránh tạo nhiều licenses cho 1 order"/>
+					</outline>
+					<outline text="Admin display">
+						<outline text="Hiển thị license keys trong order admin page"/>
+						<outline text="Admin có thể xem, copy license"/>
+					</outline>
+					<outline text="Customer My Orders">
+						<outline text="Khách có thể xem license trong My Account → Orders"/>
+						<outline text="Download license key PDF (optional feature)"/>
+					</outline>
+					<outline text="Reports">
+						<outline text="Query orders có licenses"/>
+						<outline text="Statistics: bao nhiêu licenses đã bán"/>
+					</outline>
+				</outline>
+			</outline>
+			<outline text="Bước 8: Khách nhận và sử dụng email" _note="Khách hàng nhận email và chuẩn bị sử dụng license">
+				<outline text="8.1. Khách check email" _note="Khách mở email inbox">
+					<outline text="Email client: Gmail, Outlook, Yahoo, etc."/>
+					<outline text="Inbox: khach@example.com"/>
+					<outline text="Time received: ~14:17:00" _note="Vài giây sau khi send"/>
+					<outline text="Tìm email từ VidieuVN">
+						<outline text="From: VidieuVN &lt;noreply@vidieu.vn&gt;"/>
+						<outline text="Subject: [VidieuVN] 🎬 License Netflix Premium..."/>
+						<outline text="Preview: Xin chào Nguyễn Văn A, Cảm ơn..."/>
+					</outline>
+				</outline>
+				<outline text="8.2. Khách mở email" _note="Click vào email để đọc">
+					<outline text="Email HTML renders">
+						<outline text="VidieuVN logo hiển thị"/>
+						<outline text="License key box highlighted:">
+							<outline text="📋 LICENSE KEY CỦA BẠN"/>
+							<outline text="A3F9-K2L4-M8N1-P5Q7"/>
+						</outline>
+						<outline text="Detailed instructions visible"/>
+						<outline text="Portal link: https: //vidieu.vn/license-portal"/>
+						<outline text="Important notes với checkmarks"/>
+					</outline>
+					<outline text="Khách đọc nội dung">
+						<outline text="Hiểu rõ license key là gì"/>
+						<outline text="Hiểu cách lấy tài khoản Netflix"/>
+						<outline text="Hiểu giới hạn: 2 devices, 10 requests/day, 7 days reset"/>
+						<outline text="Biết link portal"/>
+					</outline>
+				</outline>
+				<outline text="8.3. Khách lưu thông tin" _note="Khách có nhiều options để lưu license">
+					<outline text="Option 1: Copy license key">
+						<outline text="Click [Copy License Key] button trong email" _note="JavaScript copy to clipboard"/>
+						<outline text="hoặc Select text → Ctrl+C"/>
+						<outline text="Paste vào notes app (Notes, Evernote, Google Keep, etc.)"/>
+						<outline text="Save với label: Netflix Premium License"/>
+					</outline>
+					<outline text="Option 2: Screenshot email">
+						<outline text="Take screenshot of email"/>
+						<outline text="Save to Photos/Gallery"/>
+						<outline text="Easy to reference later"/>
+					</outline>
+					<outline text="Option 3: Keep email">
+						<outline text="Star/Flag email để dễ tìm"/>
+						<outline text="Create folder: VidieuVN Licenses"/>
+						<outline text="Move email to folder"/>
+					</outline>
+					<outline text="Option 4: Click portal link immediately">
+						<outline text="Click: https://vidieu.vn/license-portal"/>
+						<outline text="Browser opens portal page"/>
+						<outline text="→ Directly proceed to Flow 3 (Customer Access)"/>
+					</outline>
+				</outline>
+				<outline text="8.4. Khách ready to access" _note="Khách đã có đầy đủ thông tin để lấy tài khoản">
+					<outline text="Has license key: A3F9-K2L4-M8N1-P5Q7 ✓"/>
+					<outline text="Knows portal URL: https: //vidieu.vn/license-portal ✓"/>
+					<outline text="Understands instructions ✓"/>
+					<outline text="Understands limits (devices, requests, reset) ✓"/>
+					<outline text="Ready to get Netflix account ✓"/>
+				</outline>
+			</outline>
+			<outline text="TỔNG KẾT FLOW 2: PURCHASE FLOW" _note="Summary toàn bộ flow từ đặt hàng đến nhận license">
+				<outline text="Timeline chi tiết" _note="Thời gian mỗi bước">
+					<outline text="14:00:00 - Khách place order → Order #12345 created (status: pending)"/>
+					<outline text="14:15:00 - Payment confirmed → Order status: processing"/>
+					<outline text="14:15:00 - Admin/System complete order → status: completed"/>
+					<outline text="14:15:00 - Hook fired: woocommerce_order_status_completed"/>
+					<outline text="14:15:01 - LMfWC generate license (priority 10) → License #789"/>
+					<outline text="14:15:02 - VD Plugin sync license (priority 20) → License #50"/>
+					<outline text="14:16:00 - VD Plugin send email → Email delivered"/>
+					<outline text="14:17:00 - Khách nhận email"/>
+					<outline text="Total time: ~2 minutes (từ order complete đến khách nhận email)"/>
+				</outline>
+				<outline text="Database state sau Flow 2" _note="Các tables đã thay đổi">
+					<outline text="wp_wc_orders (WooCommerce)">
+						<outline text="Order #12345">
+							<outline text="status: completed"/>
+							<outline text="customer_id: 456"/>
+							<outline text="total: 149000"/>
+							<outline text="date_completed: 2025-10-08 14:15:00"/>
+						</outline>
+					</outline>
+					<outline text="lmfwc_licenses (LMfWC table)">
+						<outline text="License #789">
+							<outline text="license_key: A3F9-K2L4-M8N1-P5Q7"/>
+							<outline text="order_id: 12345"/>
+							<outline text="product_id: 100"/>
+							<outline text="user_id: 456"/>
+							<outline text="status: sold"/>
+							<outline text="expires_at: 2025-11-07 23:59:59"/>
+						</outline>
+					</outline>
+					<outline text="bz_vd_license_keys (VD table)">
+						<outline text="License #50">
+							<outline text="license_key: A3F9-K2L4-M8N1-P5Q7 (same as LMfWC)"/>
+							<outline text="lmfwc_license_id: 789 (FK to LMfWC)"/>
+							<outline text="order_id: 12345"/>
+							<outline text="product_id: 100"/>
+							<outline text="customer_id: 456"/>
+							<outline text="status: active"/>
+							<outline text="valid_until: 2025-11-07 23:59:59"/>
+							<outline text="assigned_pool_id: NULL ← Chưa assign pool"/>
+							<outline text="assigned_account_id: NULL ← Chưa có account"/>
+							<outline text="last_accessed_at: NULL ← Chưa access portal"/>
+						</outline>
+					</outline>
+					<outline text="wp_wc_orders_meta (Order metadata)">
+						<outline text="Order #12345 meta">
+							<outline text="_lmfwc_order_complete: yes"/>
+							<outline text="_lmfwc_license_keys: [789]"/>
+							<outline text="_vd_license_synced: yes"/>
+							<outline text="_vd_license_ids: [50]"/>
+							<outline text="_vd_license_email_sent: yes"/>
+						</outline>
+					</outline>
+				</outline>
+				<outline text="Relationships giữa các tables" _note="Cách các tables link với nhau">
+					<outline text="wp_wc_orders (Order #12345)">
+						<outline text="↓ references ↓"/>
+						<outline text="lmfwc_licenses.order_id = 12345 (License #789)"/>
+						<outline text="↓ references ↓"/>
+						<outline text="bz_vd_license_keys. lmfwc_license_id = 789 (License #50)"/>
+					</outline>
+					<outline text="Chain: Order → LMfWC License → VD License"/>
+					<outline text="Mỗi level có purpose riêng">
+						<outline text="Order: WooCommerce quản lý sale"/>
+						<outline text="LMfWC License: LMfWC quản lý license keys và expiry"/>
+						<outline text="VD License: VD quản lý pool assignment và device tracking"/>
+					</outline>
+				</outline>
+				<outline text="Kết quả cuối cùng" _note="Tất cả đã hoàn tất">
+					<outline text="✅ Order completed successfully"/>
+					<outline text="✅ License key generated: A3F9-K2L4-M8N1-P5Q7"/>
+					<outline text="✅ License synced vào VD system"/>
+					<outline text="✅ Email delivered với full instructions"/>
+					<outline text="✅ Khách có license key và biết cách dùng"/>
+					<outline text="⏳ Pool assignment: Chưa (sẽ assign ở Flow 3)"/>
+					<outline text="⏳ Device tracking: Chưa (sẽ track ở Flow 3)"/>
+				</outline>
+				<outline text="Next step: FLOW 3" _note="Khách sẽ làm gì tiếp theo">
+					<outline text="Khách click portal link trong email"/>
+					<outline text="hoặc Khách vào https: //vidieu.vn/license-portal"/>
+					<outline text="Khách nhập license key: A3F9-K2L4-M8N1-P5Q7"/>
+					<outline text="→ Chuyển sang FLOW 3: CUSTOMER ACCESS FLOW"/>
+					<outline text="Flow 3 sẽ:">
+						<outline text="1. Validate license key"/>
+						<outline text="2. Assign pool lần đầu (nếu chưa assign)"/>
+						<outline text="3. Validate device"/>
+						<outline text="4. Register device (nếu mới)"/>
+						<outline text="5. Return pool credentials (email/password Netflix)"/>
+						<outline text="6. Khách đăng nhập Netflix và xem phim"/>
+					</outline>
+				</outline>
+			</outline>
+		</outline>
+	</body>
+</opml>

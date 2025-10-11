@@ -1,0 +1,384 @@
+/**
+ * VD License Manager - Admin Styles
+ *
+ * @package    VD_License_Manager
+ * @subpackage VD_License_Manager/admin/css
+ * @since      1.0.0
+ */
+
+/* =============================================================================
+   Main Admin Wrapper
+   ============================================================================= */
+
+.vd-admin-wrap {
+    margin: 20px 0;
+}
+
+.vd-page-title {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.vd-page-title::before {
+    content: "\f325";
+    font-family: dashicons;
+    font-size: 24px;
+    margin-right: 10px;
+    color: #0073aa;
+}
+
+/* =============================================================================
+   Breadcrumb Navigation
+   ============================================================================= */
+
+.vd-breadcrumb {
+    margin-bottom: 20px;
+    padding: 10px 15px;
+    background: #f1f1f1;
+    border-left: 4px solid #0073aa;
+    font-size: 13px;
+}
+
+.vd-breadcrumb a {
+    color: #0073aa;
+    text-decoration: none;
+}
+
+.vd-breadcrumb a:hover {
+    text-decoration: underline;
+}
+
+.vd-breadcrumb .current {
+    font-weight: 600;
+    color: #555;
+}
+
+/* =============================================================================
+   Dashboard Styles
+   ============================================================================= */
+
+.vd-dashboard {
+    max-width: 1200px;
+}
+
+.vd-dashboard-stats {
+    margin-bottom: 30px;
+}
+
+.vd-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    margin-top: 20px;
+}
+
+.vd-stat-card {
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 20px;
+    text-align: center;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    transition: box-shadow 0.2s ease;
+}
+
+.vd-stat-card:hover {
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+.vd-stat-card .stat-number {
+    font-size: 32px;
+    font-weight: 700;
+    color: #0073aa;
+    margin-bottom: 5px;
+}
+
+.vd-stat-card .stat-label {
+    font-size: 14px;
+    color: #666;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* =============================================================================
+   Quick Actions
+   ============================================================================= */
+
+.vd-dashboard-quick-actions {
+    margin-bottom: 30px;
+}
+
+.vd-quick-actions-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 15px;
+    margin-top: 15px;
+}
+
+.vd-quick-action {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+    background: #fff;
+    border: 2px solid #ddd;
+    border-radius: 6px;
+    text-decoration: none;
+    color: #0073aa;
+    transition: all 0.2s ease;
+    min-height: 100px;
+    justify-content: center;
+}
+
+.vd-quick-action:hover {
+    border-color: #0073aa;
+    background: #f8fafc;
+    color: #005177;
+    text-decoration: none;
+}
+
+.vd-quick-action .dashicons {
+    font-size: 24px;
+    margin-bottom: 8px;
+}
+
+/* =============================================================================
+   System Status
+   ============================================================================= */
+
+.vd-dashboard-system-status {
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 20px;
+}
+
+.vd-status-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.vd-status-table td {
+    padding: 8px 12px;
+    border-bottom: 1px solid #eee;
+}
+
+.vd-status-table td:first-child {
+    font-weight: 600;
+    width: 200px;
+}
+
+.vd-status-ok {
+    color: #46b450;
+    font-weight: 600;
+}
+
+.vd-status-warning {
+    color: #ffb900;
+    font-weight: 600;
+}
+
+.vd-status-error {
+    color: #dc3232;
+    font-weight: 600;
+}
+
+/* =============================================================================
+   Placeholder Content
+   ============================================================================= */
+
+.vd-placeholder {
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 30px;
+    text-align: center;
+}
+
+.vd-placeholder-content h3 {
+    color: #0073aa;
+    margin-bottom: 15px;
+}
+
+.vd-placeholder-content p {
+    margin-bottom: 20px;
+    color: #666;
+}
+
+.vd-placeholder-content h4 {
+    margin: 25px 0 15px 0;
+    text-align: left;
+}
+
+.vd-placeholder-content ul {
+    text-align: left;
+    max-width: 600px;
+    margin: 0 auto 25px auto;
+}
+
+.vd-placeholder-content li {
+    margin-bottom: 5px;
+    color: #555;
+}
+
+.vd-mock-buttons {
+    margin: 25px 0;
+}
+
+.vd-mock-buttons .button {
+    margin: 0 5px;
+}
+
+.vd-mock-table {
+    margin-top: 30px;
+    text-align: left;
+}
+
+.vd-mock-table .no-items {
+    text-align: center;
+    padding: 40px 20px;
+    color: #999;
+    font-style: italic;
+}
+
+/* =============================================================================
+   Encryption Status
+   ============================================================================= */
+
+.vd-encryption-status {
+    margin-top: 30px;
+    padding: 20px;
+    background: #f9f9f9;
+    border-left: 4px solid #0073aa;
+    border-radius: 0 4px 4px 0;
+}
+
+.vd-encryption-status h4 {
+    margin-top: 0;
+    color: #0073aa;
+}
+
+.vd-encryption-status p {
+    margin: 10px 0;
+    display: flex;
+    align-items: center;
+}
+
+.vd-encryption-status .dashicons {
+    margin-right: 8px;
+}
+
+/* =============================================================================
+   Current Configuration
+   ============================================================================= */
+
+.vd-current-config {
+    margin-top: 30px;
+}
+
+.vd-current-config h4 {
+    color: #0073aa;
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 10px;
+}
+
+.vd-current-config .form-table th {
+    width: 200px;
+    font-weight: 600;
+}
+
+.vd-current-config code {
+    background: #f1f1f1;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-family: 'Courier New', Courier, monospace;
+}
+
+/* =============================================================================
+   Log Viewer
+   ============================================================================= */
+
+.vd-current-logs {
+    margin-top: 30px;
+}
+
+.vd-log-viewer {
+    background: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 15px;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.vd-log-content {
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 12px;
+    line-height: 1.4;
+    margin: 0;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+
+/* =============================================================================
+   Responsive Design
+   ============================================================================= */
+
+@media (max-width: 768px) {
+    .vd-stats-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .vd-quick-actions-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .vd-breadcrumb {
+        font-size: 12px;
+        padding: 8px 12px;
+    }
+
+    .vd-page-title {
+        font-size: 20px;
+    }
+
+    .vd-placeholder {
+        padding: 20px;
+    }
+}
+
+/* =============================================================================
+   WordPress Admin Compatibility
+   ============================================================================= */
+
+.toplevel_page_vd-license-manager .wp-menu-image:before,
+.vd-license-manager_page_vd-pools .wp-menu-image:before,
+.vd-license-manager_page_vd-accounts .wp-menu-image:before,
+.vd-license-manager_page_vd-licenses .wp-menu-image:before,
+.vd-license-manager_page_vd-devices .wp-menu-image:before,
+.vd-license-manager_page_vd-logs .wp-menu-image:before,
+.vd-license-manager_page_vd-settings .wp-menu-image:before {
+    content: "\f325";
+}
+
+/* =============================================================================
+   Print Styles
+   ============================================================================= */
+
+@media print {
+    .vd-breadcrumb,
+    .vd-mock-buttons,
+    .vd-quick-actions-grid {
+        display: none;
+    }
+
+    .vd-admin-wrap {
+        margin: 0;
+    }
+
+    .vd-placeholder {
+        border: none;
+        box-shadow: none;
+    }
+}

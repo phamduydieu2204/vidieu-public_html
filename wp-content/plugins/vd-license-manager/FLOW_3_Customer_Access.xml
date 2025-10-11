@@ -1,0 +1,1869 @@
+<?xml version="1.0"?>
+<opml version="1.0">
+	<head>
+		<title>
+FLOW 2: CUSTOMER
+PURCHASE FLOW - Khách
+mua hàng (Tích hợp LMfWC)
+		</title>
+	</head>
+	<body>
+		<outline text="FLOW 3: CUSTOMER ACCESS FLOW" _note="Tiếp tục từ khi API đã nhận request. Các bước validate license, check request limit, assign pool, và validate device.">
+			<outline text="Bước 3: Plugin validate License Key" _note="Kiểm tra license key có hợp lệ không: format, tồn tại, status, validity period">
+				<outline text="3.1. Validate format" _note="Kiểm tra format đúng chuẩn không">
+					<outline text="Check license key format">
+						<outline text="Regex pattern: ^[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}$"/>
+						<outline text="Length: 19 chars (16 + 3 dashes)"/>
+						<outline text="Characters: Only A-Z, 0-9, và dấu gạch ngang"/>
+					</outline>
+					<outline text="License key: A3F9-K2L4-M8N1-P5Q7">
+						<outline text="Match pattern? YES ✓"/>
+						<outline text="→ Format valid"/>
+					</outline>
+					<outline text="If format invalid" _note="Trường hợp license key sai format">
+						<outline text="Return error 400 (Bad Request)">
+							<outline text="status: error"/>
+							<outline text="code: invalid_format"/>
+							<outline text="message: License key không đúng định dạng"/>
+							<outline text="expected_format: XXXX-XXXX-XXXX-XXXX"/>
+						</outline>
+						<outline text="→ Stop processing"/>
+						<outline text="→ Return error to client"/>
+					</outline>
+				</outline>
+				<outline text="3.2. Query database" _note="Tìm license trong database VD">
+					<outline text="Query bz_vd_license_keys" _note="Table chứa licenses đã sync từ LMfWC (Flow 2)">
+						<outline text="SQL: SELECT * FROM bz_vd_license_keys WHERE license_key = &apos;A3F9-K2L4-M8N1-P5Q7&apos;"/>
+						<outline text="Purpose: Tìm license record để lấy tất cả thông tin"/>
+					</outline>
+					<outline text="Result found" _note="License tồn tại (đã được tạo ở Flow 2)">
+						<outline text="License data">
+							<outline text="id: 50" _note="VD license ID - Primary key"/>
+							<outline text="license_key: A3F9-K2L4-M8N1-P5Q7"/>
+							<outline text="lmfwc_license_id: 789" _note="Foreign key link to LMfWC table"/>
+							<outline text="product_id: 100" _note="Product: Netflix Premium 4K - 30 ngày"/>
+							<outline text="order_id: 12345" _note="Order tạo license này"/>
+							<outline text="customer_id: 456" _note="Khách hàng sở hữu"/>
+							<outline text="status: active" _note="Current status: active, expired, suspended, revoked"/>
+							<outline text="valid_from: 2025-10-08 00:00:00" _note="Bắt đầu có hiệu lực"/>
+							<outline text="valid_until: 2025-11-07 23:59:59" _note="Hết hạn"/>
+							<outline text="assigned_pool_id: NULL" _note="Chưa assign pool (lần đầu tiên access)"/>
+							<outline text="assigned_account_id: NULL" _note="Chưa có account"/>
+							<outline text="assigned_at: NULL" _note="Timestamp assign pool"/>
+							<outline text="last_accessed_at: NULL" _note="Lần cuối access portal"/>
+							<outline text="access_count: 0" _note="Số lần đã access"/>
+							<outline text="created_at: 2025-10-08 14:15:00"/>
+							<outline text="updated_at: 2025-10-08 14:15:00"/>
+						</outline>
+						<outline text="→ License exists ✓"/>
+						<outline text="Store license data in variable $license" _note="Dùng cho các bước sau"/>
+					</outline>
+					<outline text="If not found" _note="License không tồn tại trong database">
+						<outline text="Possible reasons">
+							<outline text="License key typo (khách gõ sai)"/>
+							<outline text="License chưa được tạo (order chưa complete - Flow 2 chưa chạy)"/>
+							<outline text="License từ hệ thống khác (không phải VidieuVN)"/>
+							<outline text="License đã bị xóa khỏi database"/>
+						</outline>
+						<outline text="Return error 404 (Not Found)">
+							<outline text="status: error"/>
+							<outline text="code: license_not_found"/>
+							<outline text="message: License key không tồn tại trong hệ thống"/>
+							<outline text="suggestion: Vui lòng kiểm tra lại license key hoặc liên hệ support"/>
+							<outline text="support_email: support@vidieu.vn"/>
+						</outline>
+						<outline text="→ Stop processing"/>
+						<outline text="→ Return error to client"/>
+					</outline>
+				</outline>
+				<outline text="3.3. Check license status" _note="Kiểm tra trạng thái license có cho phép access không">
+					<outline text="Possible statuses" _note="Các trạng thái license có thể có">
+						<outline text="active: Đang hoạt động → ALLOW"/>
+						<outline text="expired: Đã hết hạn → BLOCK"/>
+						<outline text="suspended: Bị tạm ngưng → BLOCK"/>
+						<outline text="revoked: Bị thu hồi → BLOCK"/>
+					</outline>
+					<outline text="Current status: active">
+						<outline text="$license[&apos;status&apos;] = &apos;active&apos;"/>
+						<outline text="Status = active ✓"/>
+						<outline text="→ Continue processing"/>
+					</outline>
+					<outline text="If status = expired" _note="License đã hết hạn">
+						<outline text="Return error 403 (Forbidden)">
+							<outline text="status: error"/>
+							<outline text="code: license_expired"/>
+							<outline text="message: License đã hết hạn"/>
+							<outline text="expired_at: 2025-11-07 23:59:59"/>
+							<outline text="suggestion: Vui lòng gia hạn license hoặc mua mới"/>
+						</outline>
+						<outline text="→ Stop processing"/>
+					</outline>
+					<outline text="If status = suspended" _note="License bị tạm ngưng (admin action)">
+						<outline text="Reasons for suspension">
+							<outline text="Vi phạm điều khoản sử dụng"/>
+							<outline text="Chia sẻ license key cho nhiều người"/>
+							<outline text="Chargeback / refund dispute"/>
+							<outline text="Admin manual suspend"/>
+						</outline>
+						<outline text="Return error 403 (Forbidden)">
+							<outline text="status: error"/>
+							<outline text="code: license_suspended"/>
+							<outline text="message: License đã bị tạm ngưng"/>
+							<outline text="reason: Vi phạm điều khoản sử dụng (example)"/>
+							<outline text="suggestion: Vui lòng liên hệ support để được hỗ trợ"/>
+							<outline text="support_email: support@vidieu.vn"/>
+						</outline>
+						<outline text="→ Stop processing"/>
+					</outline>
+					<outline text="If status = revoked" _note="License bị thu hồi vĩnh viễn">
+						<outline text="Reasons for revocation">
+							<outline text="Vi phạm nghiêm trọng"/>
+							<outline text="Fraud / scam"/>
+							<outline text="Refunded order"/>
+						</outline>
+						<outline text="Return error 403 (Forbidden)">
+							<outline text="status: error"/>
+							<outline text="code: license_revoked"/>
+							<outline text="message: License đã bị thu hồi do vi phạm điều khoản"/>
+							<outline text="revoked_at: [timestamp]"/>
+							<outline text="suggestion: License này không thể sử dụng. Vui lòng mua license mới."/>
+						</outline>
+						<outline text="→ Stop processing"/>
+					</outline>
+				</outline>
+				<outline text="3.4. Check validity period" _note="Kiểm tra license còn trong thời hạn hiệu lực không">
+					<outline text="Get timestamps">
+						<outline text="valid_from: 2025-10-08 00:00:00" _note="Từ $license[&apos;valid_from&apos;]"/>
+						<outline text="valid_until: 2025-11-07 23:59:59" _note="Từ $license[&apos;valid_until&apos;]"/>
+						<outline text="current_time: 2025-10-08 14:30:00" _note="current_time(&apos;mysql&apos;) hoặc NOW()"/>
+					</outline>
+					<outline text="Check: current_time between valid_from AND valid_until">
+						<outline text="Convert to timestamps for comparison">
+							<outline text="$valid_from_ts = strtotime(&apos;2025-10-08 00:00: 00&apos;)"/>
+							<outline text="$valid_until_ts = strtotime(&apos;2025-11-07 23:59: 59&apos;)"/>
+							<outline text="$current_ts = strtotime(&apos;2025-10-08 14: 30:00&apos;)"/>
+						</outline>
+						<outline text="Check current &gt;= valid_from">
+							<outline text="$current_ts &gt;= $valid_from_ts?"/>
+							<outline text="1728374400 &gt;= 1728316800? YES ✓"/>
+						</outline>
+						<outline text="Check current &lt;= valid_until">
+							<outline text="$current_ts &lt;= $valid_until_ts?"/>
+							<outline text="1728374400 &lt;= 1731001199? YES ✓"/>
+						</outline>
+						<outline text="Result: License còn hạn ✓"/>
+						<outline text="Days remaining: 30 days" _note="Calculate: (valid_until - current) / 86400"/>
+					</outline>
+					<outline text="If current &lt; valid_from" _note="License chưa bắt đầu hiệu lực">
+						<outline text="Case: Rare (license có valid_from trong tương lai)"/>
+						<outline text="Return error 403 (Forbidden)">
+							<outline text="status: error"/>
+							<outline text="code: license_not_active_yet"/>
+							<outline text="message: License chưa được kích hoạt"/>
+							<outline text="valid_from: 2025-10-08 00:00:00"/>
+							<outline text="suggestion: License sẽ có hiệu lực từ [valid_from]"/>
+						</outline>
+						<outline text="→ Stop processing"/>
+					</outline>
+					<outline text="If current &gt; valid_until" _note="License đã quá hạn">
+						<outline text="License expired but status still &apos;active&apos;" _note="Cron job chưa chạy hoặc status chưa update"/>
+						<outline text="Auto-update status to expired">
+							<outline text="UPDATE bz_vd_license_keys">
+								<outline text="SET status = &apos;expired&apos;, updated_at = NOW()"/>
+								<outline text="WHERE id = 50"/>
+							</outline>
+							<outline text="Status updated: active → expired"/>
+						</outline>
+						<outline text="Return error 403 (Forbidden)">
+							<outline text="status: error"/>
+							<outline text="code: license_expired"/>
+							<outline text="message: License đã hết hạn"/>
+							<outline text="valid_until: 2025-11-07 23:59:59"/>
+							<outline text="expired_days_ago: X days" _note="Calculate: (current - valid_until) / 86400"/>
+							<outline text="suggestion: Vui lòng gia hạn hoặc mua license mới"/>
+						</outline>
+						<outline text="→ Stop processing"/>
+					</outline>
+				</outline>
+				<outline text="Kết quả bước 3" _note="License đã được validate thành công">
+					<outline text="✓ Format valid (XXXX-XXXX-XXXX-XXXX)"/>
+					<outline text="✓ License exists (ID: 50)"/>
+					<outline text="✓ Status: active (cho phép sử dụng)"/>
+					<outline text="✓ Validity: Trong thời hạn">
+						<outline text="Valid from: 2025-10-08 00:00:00"/>
+						<outline text="Valid until: 2025-11-07 23:59:59"/>
+						<outline text="Days remaining: 30 days"/>
+					</outline>
+					<outline text="✓ License data stored in $license variable"/>
+					<outline text="→ License validation PASSED"/>
+					<outline text="→ Continue to Step 4: Check Request Limit"/>
+				</outline>
+			</outline>
+			<outline text="Bước 4: Check giới hạn request trong ngày" _note="Kiểm tra khách đã vượt quá số lần request/ngày chưa (từ Share Config ở Flow 1). Logic reset khi admin update credentials.">
+				<outline text="4.6. If limit reached (hypothetical)" _note="Logic khi đã vượt quá giới hạn">
+					<outline text="Example: request_count = 10, max = 10">
+						<outline text="Check: 10 &gt;= 10? YES"/>
+						<outline text="→ Đã đạt giới hạn"/>
+					</outline>
+					<outline text="Calculate reset time">
+						<outline text="tomorrow_start: 2025-10-09 00:00:00"/>
+						<outline text="current_time: 2025-10-08 14:30:00"/>
+						<outline text="hours_until_reset: Calculate">
+							<outline text="$diff = strtotime(tomorrow_start) - strtotime(current_time)"/>
+							<outline text="$hours = floor($diff / 3600)"/>
+							<outline text="$minutes = floor(($diff % 3600) / 60)"/>
+							<outline text="Result: 9 giờ 30 phút"/>
+						</outline>
+					</outline>
+					<outline text="Return error 429 (Too Many Requests)">
+						<outline text="status: error"/>
+						<outline text="code: request_limit_exceeded"/>
+						<outline text="message: Đã vượt quá giới hạn request trong ngày"/>
+						<outline text="details">
+							<outline text="requests_today: 10"/>
+							<outline text="requests_limit: 10"/>
+							<outline text="reset_at: 2025-10-09 00:00:00" _note="00:00 ngày mai"/>
+							<outline text="hours_until_reset: 9"/>
+							<outline text="minutes_until_reset: 30"/>
+						</outline>
+						<outline text="suggestion: Vui lòng đợi đến 00:00 ngày mai hoặc lưu lại thông tin đã lấy"/>
+					</outline>
+					<outline text="Log blocked attempt">
+						<outline text="INSERT INTO bz_vd_device_access_log">
+							<outline text="license_key_id: 50"/>
+							<outline text="device_combined_id: [device_id]"/>
+							<outline text="access_result: blocked_request_limit"/>
+							<outline text="ip_address: 123.45.67.89"/>
+							<outline text="accessed_at: NOW()"/>
+						</outline>
+					</outline>
+					<outline text="→ Stop processing"/>
+					<outline text="→ Return error to client"/>
+				</outline>
+				<outline text="4.3. Determine count_from timestamp" _note="Xác định đếm requests từ thời điểm nào - Logic quan trọng cho credential update reset">
+					<outline text="Logic: Đếm từ MAX(today_start, last_credential_update)" _note="Nếu credentials vừa update thì counter reset">
+						<outline text="Get today_start">
+							<outline text="today_start: 2025-10-08 00:00:00" _note="Start of current day"/>
+							<outline text="$today_start = date(&apos;Y-m-d 00:00:00&apos;)"/>
+						</outline>
+						<outline text="Get last_credential_update (if license assigned)" _note="Nếu license đã có account thì check last credential update">
+							<outline text="Check: $license[&apos;assigned_account_id&apos;]">
+								<outline text="Current value: NULL" _note="License chưa assign account (lần đầu)"/>
+								<outline text="→ assigned_account_id is NULL"/>
+							</outline>
+							<outline text="IF assigned_account_id NOT NULL">
+								<outline text="Query provider account">
+									<outline text="SELECT last_credential_update FROM bz_vd_provider_accounts"/>
+									<outline text="WHERE id = $license[&apos;assigned_account_id&apos;]"/>
+								</outline>
+								<outline text="Result: last_credential_update timestamp"/>
+								<outline text="Purpose: Nếu admin vừa đổi password/cookie">
+									<outline text="→ Requests trước đó không tính"/>
+									<outline text="→ Counter reset về 0"/>
+									<outline text="→ Khách có thể lấy credentials mới ngay"/>
+								</outline>
+							</outline>
+							<outline text="ELSE (assigned_account_id is NULL - our case)">
+								<outline text="last_credential_update: NULL" _note="Chưa có account nên không có credential update"/>
+							</outline>
+						</outline>
+						<outline text="Calculate count_from">
+							<outline text="Formula: count_from = MAX(today_start, last_credential_update)"/>
+							<outline text="today_start: 2025-10-08 00:00:00"/>
+							<outline text="last_credential_update: NULL"/>
+							<outline text="MAX(2025-10-08 00:00:00, NULL)">
+								<outline text="→ Result: 2025-10-08 00:00:00" _note="NULL bị bỏ qua, chọn today_start"/>
+							</outline>
+							<outline text="count_from: 2025-10-08 00:00:00"/>
+							<outline text="Meaning: Đếm requests từ 00:00 hôm nay"/>
+						</outline>
+					</outline>
+					<outline text="Example: Credential update scenario" _note="Giải thích logic khi credentials được update">
+						<outline text="Scenario: Admin đổi password lúc 15:30">
+							<outline text="today_start: 2025-10-08 00:00:00"/>
+							<outline text="last_credential_update: 2025-10-08 15:30:00" _note="Admin vừa đổi password"/>
+							<outline text="count_from = MAX(00:00:00, 15:30:00) = 15:30:00" _note="Chọn timestamp mới hơn"/>
+						</outline>
+						<outline text="Before credential update">
+							<outline text="08:00 - Request 1 ✓"/>
+							<outline text="09:00 - Request 2 ✓"/>
+							<outline text="..."/>
+							<outline text="14:00 - Request 10 ✓ (đã đạt limit)"/>
+							<outline text="14:30 - Request 11 ✗ BLOCKED (quá limit)"/>
+						</outline>
+						<outline text="15:30 - ADMIN UPDATE CREDENTIALS">
+							<outline text="Password changed: old → new"/>
+							<outline text="last_credential_update: 2025-10-08 15:30:00"/>
+							<outline text="Effect: Counter reset về 0"/>
+						</outline>
+						<outline text="After credential update">
+							<outline text="16:00 - Request 12 (but count from 15:30)">
+								<outline text="Count requests WHERE accessed_at &gt;= 15:30:00"/>
+								<outline text="Result: 0 requests (requests trước 15:30 không tính)"/>
+								<outline text="0 &lt; 10 → ALLOW ✓"/>
+							</outline>
+							<outline text="Benefit: Khách có thể lấy password mới ngay"/>
+						</outline>
+					</outline>
+				</outline>
+				<outline text="4.1. Get Share Config" _note="Lấy config của product này để biết giới hạn requests VÀ VPS blocking">
+					<outline text="Query bz_vd_product_share_configs" _note="Config đã được admin setup ở Flow 1">
+						<outline text="SQL: SELECT * FROM bz_vd_product_share_configs WHERE product_id = 100"/>
+						<outline text="Product ID: 100 (từ $license[&apos;product_id&apos;])"/>
+					</outline>
+					<outline text="Config data (ĐÃ CẬP NHẬT)">
+						<outline text="id: 1"/>
+						<outline text="product_id: 100"/>
+						<outline text="pool_assignment_rule: priority"/>
+						<outline text="max_devices_per_license: 2" _note="Tối đa 2 thiết bị"/>
+						<outline text="max_requests_per_day: 10" _note="Giới hạn 10 requests/ngày"/>
+						<outline text="block_vps: 1" _note="MỚI - 1=Chặn VPS, 0=Cho phép VPS"/>
+						<outline text="response_fields: {fields:[{key:&apos;account_login&apos;,label: &apos;Email đăng nhập&apos;,required:true},{key:&apos;login_password&apos;, label:&apos;Mật khẩu&apos;,required:true},{key:&apos;cookie&apos;,label: &apos;Cookie Session&apos;,required:false}]}" _note="MỚI - Format JSON object với label"/>
+					</outline>
+					<outline text="Store in $config variable"/>
+					<outline text="LƯU Ý: Config này sẽ được dùng cho">
+						<outline text="Bước 2.5: VPS blocking (block_vps)"/>
+						<outline text="Bước 4: Request limit (max_requests_per_day)"/>
+						<outline text="Bước 6: Device limit (max_devices_per_license)"/>
+						<outline text="Bước 8: Credential fields (response_fields)"/>
+					</outline>
+				</outline>
+				<outline text="4.2. Check if limit enabled" _note="Xem có giới hạn không">
+					<outline text="Get max_requests_per_day">
+						<outline text="$max_requests = $config[&apos;max_requests_per_day&apos;]"/>
+						<outline text="Value: 10"/>
+					</outline>
+					<outline text="IF $max_requests = 0">
+						<outline text="→ No limit (unlimited requests)"/>
+						<outline text="→ Skip check, allow access"/>
+						<outline text="→ Jump to Step 5"/>
+					</outline>
+					<outline text="ELSE ($max_requests &gt; 0)">
+						<outline text="→ Limit enabled: 10 requests/day"/>
+						<outline text="→ Continue checking"/>
+					</outline>
+					<outline text="Our case: max_requests = 10">
+						<outline text="→ Limit enabled"/>
+						<outline text="→ Must check request count"/>
+					</outline>
+				</outline>
+				<outline text="4.4. Count today&apos;s successful requests" _note="Đếm số lần request thành công SAU count_from">
+					<outline text="Query bz_vd_device_access_log" _note="Table log tất cả access attempts">
+						<outline text="SQL: SELECT COUNT(*) FROM bz_vd_device_access_log">
+							<outline text="WHERE license_key_id = 50" _note="License này"/>
+							<outline text="AND access_result = &apos;success&apos;" _note="Chỉ đếm success, không đếm blocked/failed"/>
+							<outline text="AND accessed_at &gt;= &apos;2025-10-08 00:00:00&apos;" _note="Từ count_from timestamp"/>
+						</outline>
+						<outline text="Explanation of conditions">
+							<outline text="license_key_id = 50: Chỉ đếm requests của license này"/>
+							<outline text="access_result = &apos;success&apos;: Chỉ đếm requests thành công">
+								<outline text="&apos;success&apos;: Access granted, credentials returned"/>
+								<outline text="&apos;blocked_device&apos;: Device limit reached (không tính)"/>
+								<outline text="&apos;blocked_request_limit&apos;: Request limit reached (không tính)"/>
+								<outline text="&apos;blocked_vps&apos;: VPS detected (không tính) - MỚI"/>
+								<outline text="&apos;error&apos;: Other errors (không tính)"/>
+							</outline>
+							<outline text="accessed_at &gt;= count_from: Chỉ đếm sau timestamp count_from"/>
+						</outline>
+					</outline>
+					<outline text="Result: 0 requests" _note="Chưa có request nào hôm nay (lần đầu tiên access)">
+						<outline text="$request_count = 0"/>
+						<outline text="Reason: Đây là lần đầu tiên khách access portal"/>
+						<outline text="Table bz_vd_device_access_log chưa có record nào cho license này"/>
+					</outline>
+				</outline>
+				<outline text="4.5. Check against limit" _note="So sánh request count với giới hạn">
+					<outline text="Compare">
+						<outline text="Current requests: 0"/>
+						<outline text="Max allowed: 10"/>
+						<outline text="Check: 0 &lt; 10?"/>
+					</outline>
+					<outline text="Result: YES (0 &lt; 10) ✓">
+						<outline text="→ Chưa đạt giới hạn"/>
+						<outline text="→ Allow access"/>
+						<outline text="→ Continue processing"/>
+					</outline>
+					<outline text="Available requests remaining: 10 - 0 = 10" _note="Còn 10 requests có thể dùng"/>
+				</outline>
+				<outline text="Kết quả bước 4" _note="Request limit check passed">
+					<outline text="✓ Limit enabled: 10 requests/day"/>
+					<outline text="✓ count_from calculated: 2025-10-08 00:00:00"/>
+					<outline text="✓ Current requests: 0"/>
+					<outline text="✓ Check: 0 &lt; 10 → Under limit ✓"/>
+					<outline text="✓ Remaining requests: 10"/>
+					<outline text="✓ VPS config loaded: block_vps = 1 (sẽ dùng ở Bước 2.5)"/>
+					<outline text="✓ Response fields config loaded (sẽ dùng ở Bước 8)"/>
+					<outline text="→ Request limit check PASSED"/>
+					<outline text="→ Continue to Step 5: Check Pool Assignment"/>
+				</outline>
+			</outline>
+			<outline text="Bước 5: Check Pool Assignment và Gán Pool (lần đầu)" _note="Kiểm tra license đã được gán pool chưa. Nếu chưa thì gán pool theo rules. Đây là lúc license được map với tài khoản Netflix thật lần đầu tiên.">
+				<outline text="5.1. Check current pool assignment" _note="License này đã có pool chưa?">
+					<outline text="From license data (Step 3)">
+						<outline text="$license[&apos;assigned_pool_id&apos;]: NULL" _note="Chưa được assign pool"/>
+						<outline text="$license[&apos;assigned_account_id&apos;]: NULL" _note="Chưa có account"/>
+						<outline text="$license[&apos;assigned_at&apos;]: NULL" _note="Chưa có timestamp assign"/>
+					</outline>
+					<outline text="Check: assigned_pool_id is NULL?">
+						<outline text="Result: YES (NULL) ✓"/>
+						<outline text="→ License chưa được assign pool"/>
+						<outline text="→ Đây là lần đầu tiên khách access"/>
+						<outline text="→ Need to assign pool now"/>
+					</outline>
+					<outline text="If assigned_pool_id NOT NULL" _note="License đã có pool rồi (returning user)">
+						<outline text="Pool already assigned"/>
+						<outline text="Skip assignment process"/>
+						<outline text="Use existing pool: $license[&apos;assigned_pool_id&apos;]"/>
+						<outline text="Use existing account: $license[&apos;assigned_account_id&apos;]"/>
+						<outline text="→ Jump to Step 6 (Device Validation)"/>
+					</outline>
+				</outline>
+				<outline text="5.2. Get Share Config assignment rule" _note="Lấy rule để assign pool từ config đã load ở Step 4">
+					<outline text="From $config (Step 4)">
+						<outline text="pool_assignment_rule: priority" _note="Gán theo thứ tự ưu tiên"/>
+					</outline>
+					<outline text="Available rules" _note="2 loại rules có thể config">
+						<outline text="priority: Gán pool theo priority ASC (số nhỏ trước)">
+							<outline text="Logic: Loop pools theo priority, chọn pool đầu tiên còn capacity"/>
+							<outline text="Use case: Dùng hết pool này trước khi sang pool khác"/>
+						</outline>
+						<outline text="balanced: Gán pool có ít licenses nhất (load balancing)">
+							<outline text="Logic: Count licenses mỗi pool, chọn pool có count nhỏ nhất"/>
+							<outline text="Use case: Phân bổ đều licenses giữa các pools"/>
+						</outline>
+					</outline>
+					<outline text="Our rule: priority" _note="Admin đã chọn priority ở Flow 1"/>
+				</outline>
+				<outline text="5.3. Get available pools for product" _note="Lấy tất cả pools của product này để assign">
+					<outline text="Query bz_vd_product_pools" _note="Pools đã được admin setup ở Flow 1 - Bước 2">
+						<outline text="SQL: SELECT * FROM bz_vd_product_pools">
+							<outline text="WHERE product_id = 100" _note="Product của license này - từ $license[&apos;product_id&apos;]"/>
+							<outline text="AND is_active = 1" _note="Chỉ lấy pools đang active, bỏ qua pools bị disable"/>
+							<outline text="ORDER BY priority ASC" _note="Sort theo priority tăng dần (1, 2, 3...)"/>
+						</outline>
+					</outline>
+					<outline text="Result: Available pools" _note="Giả sử admin đã setup 2 pools cho backup">
+						<outline text="Pool #1" _note="Pool chính, ưu tiên cao nhất">
+							<outline text="id: 1" _note="Pool ID trong database"/>
+							<outline text="product_id: 100"/>
+							<outline text="account_id: 1" _note="Netflix001 - Account đầu tiên"/>
+							<outline text="priority: 1" _note="Ưu tiên cao nhất (số nhỏ = priority cao)"/>
+							<outline text="is_active: 1" _note="Pool đang hoạt động"/>
+						</outline>
+						<outline text="Pool #2 (backup)" _note="Pool dự phòng">
+							<outline text="id: 2"/>
+							<outline text="product_id: 100"/>
+							<outline text="account_id: 2" _note="Netflix002 - Account backup"/>
+							<outline text="priority: 2" _note="Ưu tiên thấp hơn"/>
+							<outline text="is_active: 1"/>
+						</outline>
+					</outline>
+					<outline text="Store in $pools array"/>
+					<outline text="If no pools found" _note="Admin chưa setup pool cho product này">
+						<outline text="Error: No pools configured"/>
+						<outline text="Return error 500 (Internal Server Error)">
+							<outline text="status: error"/>
+							<outline text="code: no_pools_available"/>
+							<outline text="message: Sản phẩm chưa được cấu hình pool"/>
+							<outline text="suggestion: Vui lòng liên hệ admin để cấu hình pool"/>
+							<outline text="admin_note: Setup pool trong VD License Manager → Product Pools"/>
+						</outline>
+						<outline text="→ Stop processing"/>
+						<outline text="→ Admin cần vào Flow 1 - Bước 2 để setup pool"/>
+					</outline>
+				</outline>
+				<outline text="5.4. Apply assignment rule: PRIORITY" _note="Gán pool theo priority rule (rule hiện tại của chúng ta)">
+					<outline text="Algorithm: Priority Rule" _note="Loop qua pools theo priority ASC, chọn pool đầu tiên còn capacity">
+						<outline text="Loop through $pools (sorted by priority ASC)">
+							<outline text="Iteration 1: Check Pool #1 (priority 1)" _note="Pool có priority thấp nhất = ưu tiên cao nhất">
+								<outline text="Pool info">
+									<outline text="pool_id: 1"/>
+									<outline text="account_id: 1 (Netflix001)"/>
+									<outline text="priority: 1"/>
+								</outline>
+								<outline text="Step 1: Get account info" _note="Lấy thông tin account để biết capacity">
+									<outline text="Query bz_vd_provider_accounts">
+										<outline text="WHERE id = 1" _note="account_id từ pool"/>
+									</outline>
+									<outline text="Account data: Netflix001">
+										<outline text="id: 1"/>
+										<outline text="provider: Netflix"/>
+										<outline text="account_login: netflix001@provider. com"/>
+										<outline text="login_password: abc123xyz"/>
+										<outline text="cookie: {...session data...}"/>
+										<outline text="capacity: 4" _note="Tối đa 4 profiles/licenses có thể dùng account này"/>
+										<outline text="status: active" _note="Account đang hoạt động"/>
+										<outline text="expires_at: 2025-12-31 23:59:59"/>
+										<outline text="last_credential_update: 2025-10-01 14:30:00"/>
+										<outline text="next_credential_update: 2025-10-15"/>
+									</outline>
+								</outline>
+								<outline text="Step 2: Check account status" _note="Account có đang active không">
+									<outline text="IF account.status != &apos;active&apos;">
+										<outline text="Skip this pool (account không khả dụng)"/>
+										<outline text="Continue to next pool"/>
+									</outline>
+									<outline text="Account status: active ✓"/>
+									<outline text="→ Account khả dụng, tiếp tục check capacity"/>
+								</outline>
+								<outline text="Step 3: Count current licenses using this pool" _note="Đếm bao nhiêu licenses đang dùng pool này">
+									<outline text="Query bz_vd_license_keys" _note="Đếm licenses đã assign pool này">
+										<outline text="SQL: SELECT COUNT(*) FROM bz_vd_license_keys">
+											<outline text="WHERE assigned_pool_id = 1" _note="Pool #1"/>
+											<outline text="AND status = &apos;active&apos;" _note="Chỉ đếm licenses còn active, không đếm expired/suspended"/>
+										</outline>
+									</outline>
+									<outline text="Result: 2 licenses" _note="Giả sử đã có 2 licenses khác đang dùng pool này">
+										<outline text="$current_licenses = 2"/>
+										<outline text="Meaning: Có 2 profiles Netflix đang được dùng"/>
+									</outline>
+								</outline>
+								<outline text="Step 4: Check capacity available" _note="Còn chỗ không?">
+									<outline text="Compare">
+										<outline text="Current licenses: 2"/>
+										<outline text="Max capacity: 4"/>
+										<outline text="Check: 2 &lt; 4?"/>
+									</outline>
+									<outline text="Result: YES (2 &lt; 4) ✓">
+										<outline text="→ Pool #1 còn capacity"/>
+										<outline text="→ Available slots: 4 - 2 = 2"/>
+										<outline text="→ SELECT Pool #1"/>
+										<outline text="→ Break loop (không cần check Pool #2)"/>
+									</outline>
+								</outline>
+								<outline text="Pool #1 selected ✓">
+									<outline text="$selected_pool_id = 1"/>
+									<outline text="$selected_account_id = 1"/>
+								</outline>
+							</outline>
+							<outline text="(Loop stopped - Pool found)" _note="Đã tìm thấy pool phù hợp, không cần iteration 2"/>
+						</outline>
+					</outline>
+					<outline text="Scenario: Pool #1 đầy (giải thích fallback logic)" _note="Nếu Pool #1 không còn chỗ thì sẽ như nào">
+						<outline text="Hypothetical: current_licenses = 4, capacity = 4">
+							<outline text="Check: 4 &lt; 4? NO (4 &gt;= 4)"/>
+							<outline text="→ Pool #1 đã đầy"/>
+							<outline text="→ Continue to Iteration 2"/>
+						</outline>
+						<outline text="Iteration 2: Check Pool #2 (priority 2)">
+							<outline text="Pool info">
+								<outline text="pool_id: 2"/>
+								<outline text="account_id: 2 (Netflix002)"/>
+								<outline text="priority: 2"/>
+							</outline>
+							<outline text="Get account: Netflix002, capacity: 4"/>
+							<outline text="Count licenses: 1 license"/>
+							<outline text="Check: 1 &lt; 4? YES ✓"/>
+							<outline text="→ SELECT Pool #2"/>
+						</outline>
+						<outline text="Result: Pool #2 selected as backup"/>
+					</outline>
+					<outline text="Scenario: All pools full" _note="Nếu tất cả pools đều hết capacity">
+						<outline text="Pool #1: 4/4 (full)"/>
+						<outline text="Pool #2: 4/4 (full)"/>
+						<outline text="Loop finished, no pool selected"/>
+						<outline text="Return error 503 (Service Unavailable)">
+							<outline text="status: error"/>
+							<outline text="code: no_capacity_available"/>
+							<outline text="message: Hiện tại đã hết slot, vui lòng thử lại sau"/>
+							<outline text="details">
+								<outline text="total_pools: 2"/>
+								<outline text="all_pools_full: true"/>
+							</outline>
+							<outline text="suggestion">
+								<outline text="Vui lòng thử lại sau ít phút"/>
+								<outline text="hoặc liên hệ support@vidieu.vn"/>
+							</outline>
+						</outline>
+						<outline text="→ Stop processing"/>
+						<outline text="Admin action needed: Thêm pools mới hoặc tăng capacity"/>
+					</outline>
+				</outline>
+				<outline text="5.5. Alternative rule: BALANCED (giải thích)" _note="Nếu admin chọn balanced rule thì sẽ như nào (không dùng trong case này)">
+					<outline text="Algorithm: Balanced Rule" _note="Chọn pool có ít licenses nhất để phân bổ đều">
+						<outline text="Step 1: Count licenses for each pool">
+							<outline text="Pool #1">
+								<outline text="COUNT licenses WHERE assigned_pool_id = 1"/>
+								<outline text="Result: 2 licenses"/>
+							</outline>
+							<outline text="Pool #2">
+								<outline text="COUNT licenses WHERE assigned_pool_id = 2"/>
+								<outline text="Result: 5 licenses"/>
+							</outline>
+							<outline text="Pool #3">
+								<outline text="COUNT licenses WHERE assigned_pool_id = 3"/>
+								<outline text="Result: 3 licenses"/>
+							</outline>
+						</outline>
+						<outline text="Step 2: Sort pools by license count ASC">
+							<outline text="Pool #1: 2 licenses (ít nhất) ← Choose this"/>
+							<outline text="Pool #3: 3 licenses"/>
+							<outline text="Pool #2: 5 licenses (nhiều nhất)"/>
+						</outline>
+						<outline text="Step 3: Select pool with minimum count">
+							<outline text="Selected: Pool #1 (2 licenses)"/>
+							<outline text="Check capacity: 2 &lt; 4? YES"/>
+							<outline text="→ Assign Pool #1"/>
+						</outline>
+					</outline>
+					<outline text="Purpose: Load balancing" _note="Phân bổ đều licenses giữa các pools, tránh 1 pool quá tải">
+						<outline text="Benefit: Đều load giữa các accounts"/>
+						<outline text="Drawback: Không tận dụng hết pool trước khi sang pool khác"/>
+					</outline>
+				</outline>
+				<outline text="5.6. Assign pool to license" _note="UPDATE license với pool đã chọn vào database">
+					<outline text="Selected pool">
+						<outline text="pool_id: 1"/>
+						<outline text="account_id: 1 (Netflix001)"/>
+					</outline>
+					<outline text="UPDATE bz_vd_license_keys" _note="Lưu assignment vào database">
+						<outline text="SQL: UPDATE bz_vd_license_keys SET">
+							<outline text="assigned_pool_id = 1" _note="Pool ID được chọn"/>
+							<outline text="assigned_account_id = 1" _note="Account ID trong pool"/>
+							<outline text="assigned_at = NOW()" _note="Timestamp lúc assign: 2025-10-08 14:30:00"/>
+							<outline text="updated_at = NOW()"/>
+						</outline>
+						<outline text="WHERE id = 50" _note="License ID của khách"/>
+					</outline>
+					<outline text="UPDATE successful ✓">
+						<outline text="Affected rows: 1"/>
+						<outline text="License #50 now assigned to:">
+							<outline text="Pool #1 (priority 1)"/>
+							<outline text="Account Netflix001"/>
+						</outline>
+					</outline>
+					<outline text="Update $license variable" _note="Update biến để dùng các bước sau">
+						<outline text="$license[&apos;assigned_pool_id&apos;] = 1"/>
+						<outline text="$license[&apos;assigned_account_id&apos;] = 1"/>
+						<outline text="$license[&apos;assigned_at&apos;] = &apos;2025-10-08 14:30:00&apos;"/>
+					</outline>
+				</outline>
+				<outline text="5.7. Log assignment event (optional)" _note="Logging để audit và troubleshooting">
+					<outline text="INSERT INTO bz_vd_pool_assignment_log" _note="Optional table để track pool assignments">
+						<outline text="license_key_id: 50"/>
+						<outline text="pool_id: 1"/>
+						<outline text="account_id: 1"/>
+						<outline text="assignment_rule: priority" _note="Rule được dùng"/>
+						<outline text="assigned_at: NOW()"/>
+						<outline text="previous_pool_id: NULL" _note="NULL vì lần đầu assign"/>
+					</outline>
+					<outline text="Purpose">
+						<outline text="Track assignment history"/>
+						<outline text="Debug pool distribution"/>
+						<outline text="Analytics: Pool usage over time"/>
+					</outline>
+				</outline>
+				<outline text="Kết quả bước 5" _note="Pool đã được assign thành công">
+					<outline text="✓ Pool selection algorithm executed (priority rule)"/>
+					<outline text="✓ Pool #1 selected (capacity available: 2/4)"/>
+					<outline text="✓ Account: Netflix001 (netflix001@provider.com)"/>
+					<outline text="✓ Database updated">
+						<outline text="assigned_pool_id: 1"/>
+						<outline text="assigned_account_id: 1"/>
+						<outline text="assigned_at: 2025-10-08 14:30:00"/>
+					</outline>
+					<outline text="✓ License giờ đã có tài khoản Netflix thật"/>
+					<outline text="→ Pool assignment COMPLETED"/>
+					<outline text="→ Continue to Step 6: Device Validation (CRITICAL STEP)"/>
+				</outline>
+			</outline>
+			<outline text="Bước 6: Xác thực và Đăng ký Thiết bị (UPDATED V3)" _note="Bước quan trọng nhất với logic mới: Thiết bị removed = thiết bị mới. Chỉ chặn khi status = blocked.">
+				<outline text="6.1. Truy vấn tất cả thiết bị của license này" _note="Lấy TẤT CẢ thiết bị từ database để kiểm tra và hiển thị cho khách">
+					<outline text="Truy vấn bảng bz_vd_license_devices" _note="Bảng chứa tất cả thiết bị với các trạng thái khác nhau">
+						<outline text="SQL: SELECT * FROM bz_vd_license_devices WHERE license_key_id = 50 ORDER BY registered_at ASC" _note="WHERE license_key_id = 50 (ID của license khách hàng). ORDER BY registered_at ASC (Sắp xếp theo thời gian đăng ký)"/>
+						<outline text="LƯU Ý: Lấy TẤT CẢ thiết bị (không filter) để kiểm tra trạng thái"/>
+					</outline>
+					<outline text="Device statuses trong database" _note="Giải thích các trạng thái thiết bị">
+						<outline text="is_active = 1, status = &apos;active&apos;: Thiết bị đang hoạt động, được phép truy cập"/>
+						<outline text="is_active = 0, status = &apos;removed&apos;: Thiết bị đã gỡ bởi admin, CỐI NHƯ THIẾT BỊ MỚI (có thể đăng ký lại nếu còn slot)"/>
+						<outline text="is_active = 0, status = &apos;blocked&apos;: Thiết bị bị chặn bởi admin, KHÔNG được phép truy cập"/>
+					</outline>
+					<outline text="Kết quả: Tìm thấy 0 thiết bị" _note="Chưa có thiết bị nào được đăng ký (lần đầu tiên truy cập)">
+						<outline text="$all_devices = [] (Mảng rỗng)"/>
+						<outline text="Số lượng: 0"/>
+						<outline text="Ý nghĩa: Đây là lần đầu tiên license này được truy cập → Thiết bị hiện tại sẽ là thiết bị đầu tiên"/>
+					</outline>
+					<outline text="Ví dụ: Trường hợp người dùng quay lại" _note="Nếu không phải lần đầu thì sẽ có thiết bị">
+						<outline text="Kết quả: Tìm thấy 4 thiết bị (2 active, 1 removed, 1 blocked)">
+							<outline text="Thiết bị 1 (Active): id=10, device_combined_id=&apos;abc123...&apos;, device_name=&apos;PC nhà - Windows 10 - Chrome 119&apos;, is_active=1, status=&apos;active&apos;, registered_at=&apos;2025-10-01 10:00:00&apos;, last_accessed_at=&apos;2025-10-07 20:15:00&apos;"/>
+							<outline text="Thiết bị 2 (Active): id=11, device_combined_id=&apos;def456...&apos;, device_name=&apos;iPhone 14 - iOS 17 - Safari&apos;, is_active=1, status=&apos;active&apos;, registered_at=&apos;2025-10-05 15:30:00&apos;, last_accessed_at=&apos;2025-10-06 18:45:00&apos;"/>
+							<outline text="Thiết bị 3 (Removed - CỐI NHƯ MỚI): id=9, device_combined_id=&apos;ghi789...&apos;, device_name=&apos;iPad Pro - iPadOS 16 - Safari&apos;, is_active=0, status=&apos;removed&apos;, registered_at=&apos;2025-09-28 14:00: 00&apos;, removed_at=&apos;2025-10-02 09:15:00&apos;, removed_by=1"/>
+							<outline text="Thiết bị 4 (Blocked - BỊ CHẶN): id=8, device_combined_id=&apos;jkl012.. .&apos;, device_name=&apos;Android Phone - Android 13 - Chrome&apos;, is_active=0, status=&apos;blocked&apos;, registered_at=&apos;2025-09-25 11:00:00&apos;, blocked_at=&apos;2025-10-03 16:20:00&apos;, blocked_by=1, blocked_reason=&apos;Vi phạm điều khoản&apos;"/>
+						</outline>
+					</outline>
+				</outline>
+				<outline text="6.2. Phân loại thiết bị theo trạng thái" _note="Chia thiết bị thành 3 nhóm: active, removed, blocked">
+					<outline text="Lọc thiết bị đang hoạt động (Active)" _note="Những thiết bị đang được phép sử dụng">
+						<outline text="Code: $active_devices = array_filter($all_devices, function($d) { return $d[&apos;is_active&apos;] == 1 &amp;&amp; $d[&apos;status&apos;] == &apos;active&apos;; });"/>
+						<outline text="Kết quả: 0 thiết bị đang hoạt động (Trường hợp của chúng ta - chưa có thiết bị nào)"/>
+					</outline>
+					<outline text="Lọc thiết bị đã gỡ (Removed)" _note="Những thiết bị đã bị admin gỡ - CỐI NHƯ THIẾT BỊ MỚI">
+						<outline text="Code: $removed_devices = array_filter($all_devices, function($d) { return $d[&apos;is_active&apos;] == 0 &amp;&amp; $d[&apos;status&apos;] == &apos;removed&apos;; });"/>
+						<outline text="Kết quả: 0 thiết bị đã gỡ"/>
+						<outline text="LƯU Ý QUAN TRỌNG: Thiết bị removed KHÔNG tính vào active devices, được coi như chưa từng đăng ký"/>
+					</outline>
+					<outline text="Lọc thiết bị bị chặn (Blocked)" _note="Những thiết bị bị admin chặn - KHÔNG được phép truy cập">
+						<outline text="Code: $blocked_devices = array_filter($all_devices, function($d) { return $d[&apos;is_active&apos;] == 0 &amp;&amp; $d[&apos;status&apos;] == &apos;blocked&apos;; });"/>
+						<outline text="Kết quả: 0 thiết bị bị chặn"/>
+						<outline text="LƯU Ý: Thiết bị blocked sẽ bị CHẶN HOÀN TOÀN, không thể đăng ký lại"/>
+					</outline>
+					<outline text="Mục đích phân loại">
+						<outline text="Active devices: Đếm để kiểm tra giới hạn, cho phép truy cập"/>
+						<outline text="Removed devices: Hiển thị lịch sử, CỐI NHƯ THIẾT BỊ MỚI khi truy cập lại"/>
+						<outline text="Blocked devices: Chặn hoàn toàn, không cho phép truy cập"/>
+					</outline>
+				</outline>
+				<outline text="6.3. Kiểm tra thiết bị hiện tại trong database" _note="Kiểm tra thiết bị hiện tại có trong danh sách không và xác định trạng thái">
+					<outline text="Lấy device_combined_id từ request: $request_device_combined_id = &apos;d5f6e89a12bc34de56fa...&apos; (từ $request[&apos;device_combined_id&apos;])"/>
+					<outline text="Tìm kiếm trong mảng $all_devices">
+						<outline text="Duyệt qua từng thiết bị và kiểm tra: device[&apos;device_combined_id&apos;] == $request_device_combined_id?"/>
+						<outline text="Trường hợp của chúng ta: $all_devices rỗng (0 thiết bị) → KHÔNG tìm thấy thiết bị"/>
+					</outline>
+					<outline text="Case 1: Không tìm thấy thiết bị" _note="Thiết bị hoàn toàn mới">
+						<outline text="$device_found = false"/>
+						<outline text="$existing_device = null"/>
+						<outline text="Ý nghĩa: Đây là thiết bị hoàn toàn mới, chưa từng đăng ký"/>
+						<outline text="→ Chuyển đến Bước 6.4 (Kiểm tra slot và đăng ký mới)"/>
+					</outline>
+					<outline text="Case 2: Tìm thấy - Thiết bị Active" _note="Thiết bị đã đăng ký và đang hoạt động - Người dùng quay lại">
+						<outline text="Điều kiện: device_combined_id trùng VÀ is_active=1 VÀ status=&apos;active&apos;">
+							<outline text="$device_found = true"/>
+							<outline text="$existing_device = [Dữ liệu thiết bị]"/>
+							<outline text="$existing_device[&apos;is_active&apos;] = 1"/>
+							<outline text="$existing_device[&apos;status&apos;] = &apos;active&apos;"/>
+						</outline>
+						<outline text="Trạng thái: THIẾT BỊ CŨ - ĐANG HOẠT ĐỘNG">
+							<outline text="→ Cho phép truy cập ngay lập tức"/>
+							<outline text="→ Cập nhật last_accessed_at"/>
+							<outline text="→ Chuyển đến Bước 6.6 (Cập nhật thiết bị active)"/>
+						</outline>
+					</outline>
+					<outline text="Case 3: Tìm thấy - Thiết bị Removed (LOGIC MỚI)" _note="Thiết bị đã bị gỡ - CỐI NHƯ THIẾT BỊ MỚI">
+						<outline text="Điều kiện: device_combined_id trùng VÀ is_active=0 VÀ status=&apos;removed&apos;">
+							<outline text="$device_found = true"/>
+							<outline text="$existing_device = [Dữ liệu thiết bị]"/>
+							<outline text="$existing_device[&apos;is_active&apos;] = 0"/>
+							<outline text="$existing_device[&apos;status&apos;] = &apos;removed&apos;"/>
+						</outline>
+						<outline text="Trạng thái: THIẾT BỊ ĐÃ GỠ - CỐI NHƯ MỚI">
+							<outline text="Logic: Admin đã gỡ thiết bị này → Slot đã được giải phóng → Thiết bị này được coi như chưa đăng ký"/>
+							<outline text="$treat_as_new_device = true" _note="Cờ đánh dấu coi như thiết bị mới"/>
+							<outline text="→ KHÔNG chặn truy cập"/>
+							<outline text="→ Chuyển đến Bước 6.4 (Kiểm tra slot và đăng ký lại)"/>
+						</outline>
+						<outline text="Note cho response" _note="Thông tin để trả về client">
+							<outline text="Thiết bị này sẽ hiển thị trong danh sách với status=&apos;removed&apos;"/>
+							<outline text="Nếu đăng ký lại thành công: Tạo record mới hoặc update record cũ lên active"/>
+						</outline>
+					</outline>
+					<outline text="Case 4: Tìm thấy - Thiết bị Blocked" _note="Thiết bị bị admin chặn - CHẶN HOÀN TOÀN">
+						<outline text="Điều kiện: device_combined_id trùng VÀ is_active=0 VÀ status=&apos;blocked&apos;">
+							<outline text="$device_found = true"/>
+							<outline text="$existing_device = [Dữ liệu thiết bị]"/>
+							<outline text="$existing_device[&apos;is_active&apos;] = 0"/>
+							<outline text="$existing_device[&apos;status&apos;] = &apos;blocked&apos;"/>
+						</outline>
+						<outline text="Trạng thái: THIẾT BỊ BỊ CHẶN - KHÔNG CHO PHÉP">
+							<outline text="Lý do chặn: $existing_device[&apos;blocked_reason&apos;] (VD: &apos;Vi phạm điều khoản&apos;, &apos;Spam&apos;, &apos;Fraud&apos;)"/>
+							<outline text="Bị chặn lúc: $existing_device[&apos;blocked_at&apos;]"/>
+							<outline text="Bị chặn bởi: $existing_device[&apos;blocked_by&apos;] (Admin user ID)"/>
+						</outline>
+						<outline text="Trả về lỗi 403 (Forbidden) - Thiết bị bị chặn">
+							<outline text="status: error"/>
+							<outline text="code: device_blocked"/>
+							<outline text="message: Thiết bị này đã bị chặn"/>
+							<outline text="details: [device_name=&apos;Android Phone - Android 13 - Chrome&apos;, registered_at=&apos;2025-09-25 11:00:00&apos;, blocked_at=&apos;2025-10-03 16:20:00&apos;, blocked_reason=&apos;Vi phạm điều khoản&apos;]"/>
+							<outline text="suggestion: Thiết bị này đã bị quản trị viên chặn vĩnh viễn. Lý do: [blocked_reason]. Vui lòng liên hệ support@vidieu.vn nếu bạn cho rằng đây là nhầm lẫn"/>
+						</outline>
+						<outline text="Ghi log lần truy cập bị chặn">
+							<outline text="INSERT INTO bz_vd_device_access_log (license_key_id=50, device_combined_id=&apos;jkl012...&apos;, device_id=8, access_result=&apos;blocked_device_banned&apos;, ip_address=&apos;123.45.67. 89&apos;, accessed_at=NOW(), error_code=&apos;device_blocked&apos;)"/>
+						</outline>
+						<outline text="→ Dừng xử lý → Trả về lỗi cho client → Thiết bị blocked KHÔNG BAO GIỜ được phép truy cập lại"/>
+					</outline>
+				</outline>
+				<outline text="6.4. Kiểm tra slot và đăng ký thiết bị (mới hoặc removed)" _note="Thiết bị chưa có hoặc removed - kiểm tra còn slot không">
+					<outline text="Thiết bị cần đăng ký" _note="2 trường hợp đến đây">
+						<outline text="Trường hợp A: Thiết bị hoàn toàn mới ($device_found = false)"/>
+						<outline text="Trường hợp B: Thiết bị removed ($device_found = true VÀ $existing_device[&apos;status&apos;] = &apos;removed&apos;)"/>
+					</outline>
+					<outline text="Lấy giới hạn max_devices từ config">
+						<outline text="$max_devices = $config[&apos;max_devices_per_license&apos;] = 2"/>
+						<outline text="Ý nghĩa: License này cho phép tối đa 2 thiết bị ACTIVE đồng thời"/>
+					</outline>
+					<outline text="Đếm số thiết bị ACTIVE hiện tại">
+						<outline text="$current_device_count = count($active_devices) = 0"/>
+						<outline text="LƯU Ý QUAN TRỌNG: Chỉ đếm thiết bị Active. Thiết bị Removed và Blocked KHÔNG tính"/>
+					</outline>
+					<outline text="Kiểm tra: current_count &lt; max_devices?">
+						<outline text="Kiểm tra: 0 &lt; 2? Kết quả: CÓ ✓"/>
+						<outline text="→ Còn slot trống: 2 - 0 = 2 slot"/>
+						<outline text="→ Có thể đăng ký thiết bị"/>
+					</outline>
+					<outline text="Nếu current_count &gt;= max_devices (Đã hết slot)">
+						<outline text="Ví dụ: current_count = 2, max = 2 → 2 &gt;= 2? CÓ → Đã đạt giới hạn"/>
+						<outline text="Trả về lỗi 403 (Forbidden) - Đạt giới hạn thiết bị">
+							<outline text="status: error, code: device_limit_reached, message: Đã đạt giới hạn số lượng thiết bị"/>
+							<outline text="details: [current_active_devices=2, max_devices=2, available_slots=0]"/>
+							<outline text="active_devices_list: Danh sách 2 thiết bị đang active"/>
+							<outline text="suggestion: Bạn đã đăng ký đủ 2 thiết bị. Để sử dụng thiết bị này, vui lòng: 1. Truy cập từ thiết bị đã đăng ký, 2. Liên hệ support để admin gỡ thiết bị cũ. Support: support@vidieu.vn"/>
+						</outline>
+						<outline text="Ghi log: INSERT INTO bz_vd_device_access_log (license_key_id=50, access_result=&apos;blocked_device_limit&apos;, accessed_at=NOW())"/>
+						<outline text="→ Dừng xử lý → Trả về lỗi"/>
+					</outline>
+				</outline>
+				<outline text="6.5. Đăng ký thiết bị (mới hoặc update removed)" _note="Còn slot - đăng ký thiết bị vào database">
+					<outline text="Xác định action: INSERT mới hay UPDATE removed?">
+						<outline text="IF $device_found = false (Thiết bị hoàn toàn mới)">
+							<outline text="Action: INSERT record mới"/>
+							<outline text="→ Chuyển đến 6.5.1"/>
+						</outline>
+						<outline text="IF $device_found = true VÀ $existing_device[&apos;status&apos;] = &apos;removed&apos; (Thiết bị removed)">
+							<outline text="Action: UPDATE record cũ"/>
+							<outline text="→ Chuyển đến 6.5.2"/>
+						</outline>
+					</outline>
+					<outline text="6.5.1. INSERT thiết bị hoàn toàn mới" _note="Thiết bị chưa từng có trong database">
+						<outline text="Chuẩn bị dữ liệu: $device_data = [license_key_id=50, device_combined_id=&apos;d5f6e89a...&apos;, device_fingerprint=&apos;e3b0c44...&apos;, device_token=&apos;dt_a3f9k2l4m8n1p5q7&apos;, device_name=&apos;Laptop - Windows 11 - Chrome 120&apos;, ip_address=&apos;123.45.67.89&apos;, user_agent=&apos;Mozilla/5.0...&apos;, is_active=1, status=&apos;active&apos;, registered_at=NOW(), last_accessed_at=NOW(), removed_at=NULL, removed_by=NULL, blocked_at=NULL, blocked_by=NULL, blocked_reason=NULL]"/>
+						<outline text="INSERT vào bảng bz_vd_license_devices">
+							<outline text="SQL: INSERT INTO bz_vd_license_devices (license_key_id, device_combined_id, device_fingerprint, device_token, device_name, ip_address, user_agent, is_active, status, registered_at, last_accessed_at, removed_at, removed_by, blocked_at, blocked_by, blocked_reason, created_at, updated_at) VALUES (50, &apos;d5f6e89a...&apos;, &apos;e3b0c44...&apos;, &apos;dt_a3f9k2l4m8n1p5q7&apos;, &apos;Laptop - Windows 11 - Chrome 120&apos;, &apos;123.45.67.89&apos;, &apos;Mozilla/5.0...&apos;, 1, &apos;active&apos;, NOW(), NOW(), NULL, NULL, NULL, NULL, NULL, NOW(), NOW())"/>
+						</outline>
+						<outline text="INSERT thành công ✓: ID thiết bị mới = 15"/>
+						<outline text="Thiết lập cờ: $is_new_device=true, $device_id=15, $device_slot=1, $device_status=&apos;active&apos;"/>
+					</outline>
+					<outline text="6.5.2. UPDATE thiết bị removed lên active" _note="Thiết bị đã có trong database với status=removed">
+						<outline text="Lấy existing device: $existing_device_id = $existing_device[&apos;id&apos;] = 9"/>
+						<outline text="UPDATE bảng bz_vd_license_devices">
+							<outline text="SQL: UPDATE bz_vd_license_devices SET is_active=1, status=&apos;active&apos;, last_accessed_at=NOW(), ip_address=&apos;123. 45.67.89&apos;, user_agent=&apos;Mozilla/5.0...&apos;, reactivated_at=NOW(), removed_at=NULL, removed_by=NULL, updated_at=NOW() WHERE id=9"/>
+							<outline text="Note: reactivated_at là field mới (optional) để tracking khi nào thiết bị được active lại"/>
+						</outline>
+						<outline text="UPDATE thành công ✓: Thiết bị #9 đã chuyển từ removed → active"/>
+						<outline text="Thiết lập cờ: $is_new_device=false (vì đã từng đăng ký), $was_removed=true (đã từng bị gỡ), $device_id=9, $device_slot=1, $device_status=&apos;active&apos;"/>
+					</outline>
+				</outline>
+				<outline text="6.6. Cập nhật thiết bị active (returning user)" _note="Thiết bị đã đăng ký và đang active - chỉ update timestamp">
+					<outline text="Flow này chỉ chạy khi: $device_found=true VÀ $existing_device[&apos;is_active&apos;]=1 VÀ $existing_device[&apos;status&apos;]=&apos;active&apos;">
+						<outline text="Thiết bị đã active → Không cần INSERT hay re-activate → Chỉ update last_accessed"/>
+						<outline text="UPDATE bz_vd_license_devices SET last_accessed_at=NOW(), ip_address=&apos;123.45.67. 89&apos;, user_agent=&apos;Mozilla/5.0...&apos;, updated_at=NOW() WHERE id=[existing_device_id]"/>
+						<outline text="Tính slot: Duyệt $active_devices, tìm vị trí → $device_slot = vị_trí + 1"/>
+						<outline text="Thiết lập cờ: $is_new_device=false, $device_id=[existing_device_id], $device_slot=[tính được], $device_status=&apos;active&apos;"/>
+					</outline>
+				</outline>
+				<outline text="6.7. Chuẩn bị danh sách thiết bị cho response" _note="Tất cả thiết bị để hiển thị trên portal">
+					<outline text="Xây dựng mảng: $response_devices = []"/>
+					<outline text="Duyệt $all_devices và thêm mỗi thiết bị: [device_id, device_name, registered_at, last_accessed_at, status, removed_at, blocked_at, blocked_reason, is_current_device, slot]"/>
+					<outline text="Trường hợp của chúng ta: 1 thiết bị (vừa đăng ký)">
+						<outline text="$response_devices = [{device_id:15, device_name:&apos;Laptop - Windows 11 - Chrome 120&apos;, registered_at:&apos;2025-10-08 14:30:00&apos;, last_accessed_at: &apos;2025-10-08 14:30:00&apos;, status:&apos;active&apos;, removed_at:null, blocked_at:null, is_current_device:true, slot:1}]"/>
+					</outline>
+					<outline text="Ví dụ: Nhiều thiết bị (2 active + 1 removed + 1 blocked)">
+						<outline text="$response_devices = [{device_id:10, status:&apos;active&apos;, slot:1}, {device_id:11, status:&apos;active&apos;, slot:2}, {device_id:9, status:&apos;removed&apos;, removed_at:&apos;2025-10-02 09:15:00&apos;, slot:null}, {device_id:8, status: &apos;blocked&apos;, blocked_at:&apos;2025-10-03 16:20:00&apos;, blocked_reason:&apos;Vi phạm điều khoản&apos;, slot:null}]"/>
+						<outline text="Portal UI: Active (xanh), Removed (xám, có thể dùng lại), Blocked (đỏ, bị chặn vĩnh viễn)"/>
+					</outline>
+				</outline>
+				<outline text="Kết quả bước 6 (UPDATED V3)">
+					<outline text="✓ Đã truy vấn tất cả thiết bị: 0 thiết bị"/>
+					<outline text="✓ Đã phân loại: 0 active, 0 removed, 0 blocked"/>
+					<outline text="✓ Đã kiểm tra thiết bị hiện tại: Không tìm thấy (hoàn toàn mới)"/>
+					<outline text="✓ Đã kiểm tra giới hạn: 0 &lt; 2 → Còn slot ✓"/>
+					<outline text="✓ Đã đăng ký thiết bị mới: Device ID=15, status=&apos;active&apos;"/>
+					<outline text="✓ Đã xác định trạng thái: is_new_device=true, device_slot=1"/>
+					<outline text="✓ Đã chuẩn bị danh sách thiết bị cho response"/>
+					<outline text="✓ Xác thực thiết bị THÀNH CÔNG → Tiếp tục Bước 7"/>
+				</outline>
+				<outline text="Admin actions" _note="Các hành động admin có thể làm">
+					<outline text="Action 1: Remove device (Gỡ tạm thời)">
+						<outline text="Admin Dashboard → VD License Manager → License Devices → Click Remove"/>
+						<outline text="UPDATE bz_vd_license_devices SET is_active=0, status=&apos;removed&apos;, removed_at=NOW(), removed_by=[admin_id] WHERE id=[device_id]"/>
+						<outline text="Effect: Giải phóng slot, thiết bị có thể đăng ký lại nếu còn slot"/>
+					</outline>
+					<outline text="Action 2: Block device (Chặn vĩnh viễn)">
+						<outline text="Admin Dashboard → VD License Manager → License Devices → Click Block"/>
+						<outline text="Admin nhập lý do: &apos;Vi phạm điều khoản&apos;, &apos;Spam&apos;, &apos;Fraud&apos;..."/>
+						<outline text="UPDATE bz_vd_license_devices SET is_active=0, status=&apos;blocked&apos;, blocked_at=NOW(), blocked_by=[admin_id], blocked_reason=&apos;[lý do]&apos; WHERE id=[device_id]"/>
+						<outline text="Effect: Thiết bị bị chặn vĩnh viễn, không thể truy cập lại"/>
+					</outline>
+					<outline text="Action 3: Unblock device (Mở chặn - optional)">
+						<outline text="Admin có thể mở chặn nếu cần"/>
+						<outline text="UPDATE bz_vd_license_devices SET is_active=0, status=&apos;removed&apos;, blocked_at=NULL, blocked_by=NULL, blocked_reason=NULL WHERE id=[device_id]"/>
+						<outline text="Effect: Thiết bị chuyển từ blocked → removed, có thể dùng lại"/>
+					</outline>
+				</outline>
+			</outline>
+			<outline text="Bước 7: Ghi Log Truy Cập" _note="Ghi lại thông tin truy cập vào bảng bz_vd_device_access_log để tracking và analytics">
+				<outline text="7.1. Chuẩn bị dữ liệu log" _note="Thu thập tất cả thông tin cần thiết cho log entry">
+					<outline text="Dữ liệu từ các bước trước: license_id=50, device_id=15, device_combined_id=&apos;d5f6e89a...&apos;, device_fingerprint=&apos;e3b0c44...&apos;, device_token=&apos;dt_a3f9k2l4m8n1p5q7&apos;, device_name=&apos;Laptop - Windows 11 - Chrome 120&apos;, ip_address=&apos;123.45.67.89&apos;, user_agent=&apos;Mozilla/5.0...&apos;, pool_id=1, account_id=1"/>
+					<outline text="Kết quả xử lý: access_result=&apos;success&apos;, is_new_device=true, device_slot=1"/>
+					<outline text="Dữ liệu VPS từ Bước 2.5 (MỚI): is_vps=0, vps_provider=NULL, datacenter_info=NULL" _note="Đã pass VPS check - không phải VPS"/>
+				</outline>
+				<outline text="7.2. INSERT log vào database (ĐÃ CẬP NHẬT)" _note="Tạo record log trong bảng bz_vd_device_access_log với thông tin VPS">
+					<outline text="Cấu trúc bảng bz_vd_device_access_log (CẬP NHẬT)">
+						<outline text="Fields cũ: id (PK), license_key_id, device_id, device_combined_id, device_fingerprint, device_token, device_name, ip_address, user_agent, pool_id, account_id, access_result ENUM(&apos;success&apos;, &apos;blocked_device_limit&apos;,&apos;blocked_device_removed&apos;, &apos;blocked_device_banned&apos;,&apos;blocked_request_limit&apos;,&apos;blocked_vps&apos;,&apos;error&apos;), error_code, accessed_at, created_at"/>
+						<outline text="Fields MỚI (thêm vào): is_vps TINYINT(1) DEFAULT 0 (0=Không phải VPS, 1=Là VPS), vps_provider VARCHAR(50) NULL (Tên provider), datacenter_info TEXT NULL (JSON data)"/>
+						<outline text="LƯU Ý: access_result ENUM thêm giá trị &apos;blocked_vps&apos;"/>
+					</outline>
+					<outline text="SQL INSERT (ĐÃ CẬP NHẬT): INSERT INTO bz_vd_device_access_log (license_key_id, device_id, device_combined_id, device_fingerprint, device_token, device_name, ip_address, user_agent, pool_id, account_id, access_result, error_code, is_vps, vps_provider, datacenter_info, accessed_at, created_at) VALUES (50, 15, &apos;d5f6e89a...&apos;, &apos;e3b0c44...&apos;, &apos;dt_a3f9k2l4m8n1p5q7&apos;, &apos;Laptop - Windows 11 - Chrome 120&apos;, &apos;123.45.67.89&apos;, &apos;Mozilla/5.0...&apos;, 1, 1, &apos;success&apos;, NULL, 0, NULL, NULL, NOW(), NOW())"/>
+					<outline text="Giá trị VPS fields: is_vps=0 (không phải VPS), vps_provider=NULL, datacenter_info=NULL"/>
+					<outline text="INSERT thành công: Log ID=1001"/>
+					<outline text="Ví dụ nếu là VPS (block_vps=0 - cho phép): is_vps=1, vps_provider=&apos;DigitalOcean&apos;, datacenter_info=&apos;{asn:AS14061,org:DigitalOcean LLC}&apos;, access_result vẫn là &apos;success&apos;"/>
+				</outline>
+				<outline text="7.3. Cập nhật license statistics" _note="Cập nhật thống kê truy cập của license">
+					<outline text="UPDATE bz_vd_license_keys SET last_accessed_at=NOW(), access_count=access_count+1, updated_at=NOW() WHERE id=50"/>
+					<outline text="Fields cập nhật: last_accessed_at=&apos;2025-10-08 14:30: 00&apos;, access_count=1 (0+1), updated_at=NOW()"/>
+				</outline>
+				<outline text="7.4. Mục đích của log (CẬP NHẬT)" _note="Tại sao cần ghi log - thêm VPS analytics">
+					<outline text="Analytics: Thống kê truy cập, phân tích thiết bị, theo dõi IP, user behavior, THÊM: % users dùng VPS, VPS providers phổ biến"/>
+					<outline text="Security: Phát hiện VPN hopping, access từ nhiều locations, track blocked attempts, THÊM: Pattern VPS abuse, datacenter clustering"/>
+					<outline text="Support: Xem lịch sử, debug issues, verify claims, THÊM: Giải thích tại sao bị chặn VPS"/>
+					<outline text="Compliance: Audit trail, lưu trữ đầy đủ logs"/>
+					<outline text="Request History (MỚI): Log này sẽ được hiển thị cho khách hàng ở response (Bước 9)"/>
+				</outline>
+				<outline text="Kết quả bước 7 (CẬP NHẬT): ✓ Đã ghi log (ID=1001) với VPS info ✓ is_vps=0 ✓ Cập nhật license stats ✓ Log dùng cho request history → Tiếp tục Bước 8"/>
+			</outline>
+			<outline text="Bước 8: Lấy Thông tin Đăng Nhập từ Pool" _note="Lấy credentials từ provider account để trả về cho khách">
+				<outline text="8.1. Lấy thông tin account từ pool" _note="Query account đã được assign ở Bước 5">
+					<outline text="Account đã assign: assigned_account_id=1 (Netflix001)"/>
+					<outline text="Query: SELECT * FROM bz_vd_provider_accounts WHERE id=1"/>
+					<outline text="Kết quả: id=1, provider=&apos;Netflix&apos;, account_login=&apos;netflix001@provider.com&apos;, login_password=&apos;[encrypted]&apos;, cookie={session_id, auth_token,expires}, capacity=4, status=&apos;active&apos;, expires_at=&apos;2025-12-31 23:59:59&apos;, last_credential_update=&apos;2025-10-01 14:30:00&apos;"/>
+					<outline text="Lưu vào: $account = [account data]"/>
+				</outline>
+				<outline text="8.2. Decrypt password" _note="Giải mã password từ database">
+					<outline text="Password mã hóa: Encryption method=AES-256-CBC, Encrypted value=&apos;U2FsdGVkX1...&apos;, Key lưu trong wp-config.php"/>
+					<outline text="Decrypt: $decrypted_password = decrypt_password($account[&apos;login_password&apos;], ENCRYPTION_KEY)"/>
+					<outline text="Kết quả: $decrypted_password = &apos;abc123xyz&apos;"/>
+				</outline>
+				<outline text="8.3. Get Account Info &amp; Build Response (REFACTORED)" _note="hỗ trợ nhiều loại credentials khác nhau theo từng sản phẩm">
+					<outline text="Architecture Overview: Service-based approach">
+						<outline text="Main orchestrator: getAccountCredentials($license_key)"/>
+						<outline text="Services (independent, testable):">
+							<outline text="1. AccountService:: getAccount($account_id)"/>
+							<outline text="2. CredentialDecryptionService:: decryptField($encrypted_value, $field_type)"/>
+							<outline text="3. ResponseFieldsService:: parseConfig($response_fields_json)"/>
+							<outline text="4. FieldValueResolver:: resolveValue($field_key, $account, $custom_fields)"/>
+							<outline text="5. CredentialsBuilder:: build($fields_config, $account)"/>
+							<outline text="6. ValidationService:: validateRequiredFields($credentials, $fields_config)"/>
+						</outline>
+					</outline>
+					<outline text="8.3.1. Main Orchestrator Method">
+						<outline text="Method: getAccountCredentials($license_key)">
+							<outline text="Purpose: High-level orchestration - gọi các services theo thứ tự"/>
+							<outline text="Code structure">
+								<outline text="function getAccountCredentials($license_key) {"/>
+								<outline text="// Step 1: Get license and account ID"/>
+								<outline text="$license = LicenseService:: getLicense($license_key);"/>
+								<outline text="$account_id = $license[&apos;assigned_account_id&apos;];"/>
+								<outline text="  "/>
+								<outline text="  // Step 2: Get account data"/>
+								<outline text="$account = AccountService:: getAccount($account_id);"/>
+								<outline text="  "/>
+								<outline text="// Step 3: Parse response fields config"/>
+								<outline text="$fields_config = ResponseFieldsService:: parseConfig($config[&apos;response_fields&apos;]);"/>
+								<outline text="  "/>
+								<outline text="  // Step 4: Build credentials"/>
+								<outline text="$credentials = CredentialsBuilder:: build($fields_config, $account);"/>
+								<outline text="  "/>
+								<outline text="  // Step 5: Validate required fields"/>
+								<outline text="ValidationService:: validateRequiredFields($credentials, $fields_config);"/>
+								<outline text="  "/>
+								<outline text="  // Step 6: Return credentials"/>
+								<outline text="  return $credentials;"/>
+								<outline text="}"/>
+							</outline>
+							<outline text="Benefits">
+								<outline text="✅ Clean, readable"/>
+								<outline text="✅ Easy to follow flow"/>
+								<outline text="✅ Each step isolated"/>
+								<outline text="✅ Easy to add logging/monitoring"/>
+							</outline>
+						</outline>
+					</outline>
+					<outline text="8.3.2. Service: AccountService">
+						<outline text="Method: getAccount($account_id)">
+							<outline text="Purpose: Fetch account from database"/>
+							<outline text="Code">
+								<outline text="class AccountService {"/>
+								<outline text="public static function getAccount($account_id) {"/>
+								<outline text="$account = DB::query(&quot;SELECT * FROM bz_vd_provider_accounts WHERE id = ?&quot;, [$account_id]);"/>
+								<outline text="    "/>
+								<outline text="    if (!$account) {"/>
+								<outline text="throw new AccountNotFoundException(&quot;Account {$account_id} not found&quot;);"/>
+								<outline text="    }"/>
+								<outline text="    "/>
+								<outline text="    return $account;"/>
+								<outline text="  }"/>
+								<outline text="}"/>
+							</outline>
+							<outline text="Responsibilities: Database query only"/>
+							<outline text="Testable: Mock database"/>
+						</outline>
+					</outline>
+					<outline text="8.3.3. Service: ResponseFieldsService">
+						<outline text="Method: parseConfig($response_fields_json)">
+							<outline text="Purpose: Parse and validate response_fields config"/>
+							<outline text="Code">
+								<outline text="class ResponseFieldsService {"/>
+								<outline text="public static function parseConfig($response_fields_json) {"/>
+								<outline text="$config = json_decode($response_fields_json, true);"/>
+								<outline text="    "/>
+								<outline text="    // Validation"/>
+								<outline text="if (json_last_error() !== JSON_ERROR_NONE) {"/>
+								<outline text="throw new InvalidConfigException(&quot;Invalid response_fields JSON&quot;);"/>
+								<outline text="    }"/>
+								<outline text="    "/>
+								<outline text="    if (empty($config[&apos;fields&apos;])) {"/>
+								<outline text="throw new InvalidConfigException(&quot;No fields configured&quot;);"/>
+								<outline text="    }"/>
+								<outline text="    "/>
+								<outline text="    // Sort by order"/>
+								<outline text="usort($config[&apos;fields&apos;], fn($a, $b) =&gt; $a[&apos;order&apos;] - $b[&apos;order&apos;]);"/>
+								<outline text="    "/>
+								<outline text="    return $config[&apos;fields&apos;];"/>
+								<outline text="  }"/>
+								<outline text="}"/>
+							</outline>
+							<outline text="Responsibilities: JSON parsing, validation, sorting"/>
+							<outline text="Testable: Pass various JSON configs"/>
+						</outline>
+					</outline>
+					<outline text="8.3.4. Service: CredentialDecryptionService">
+						<outline text="Method: decryptField($encrypted_value, $field_type)">
+							<outline text="Purpose: Centralized decryption logic"/>
+							<outline text="Code">
+								<outline text="class CredentialDecryptionService {"/>
+								<outline text="private const ENCRYPTED_FIELDS = [&apos;login_password&apos;, &apos;pin_code&apos;, &apos;security_answer&apos;, &apos;api_secret&apos;];"/>
+								<outline text="  "/>
+								<outline text="public static function decryptField($encrypted_value, $field_type = &apos;password&apos;) {"/>
+								<outline text="    if (empty($encrypted_value)) {"/>
+								<outline text="      return null;"/>
+								<outline text="    }"/>
+								<outline text="    "/>
+								<outline text="    try {"/>
+								<outline text="return openssl_decrypt($encrypted_value, &apos;AES-256-CBC&apos;, ENCRYPTION_KEY);"/>
+								<outline text="    } catch (Exception $e) {"/>
+								<outline text="throw new DecryptionException(&quot;Failed to decrypt field&quot;, 0, $e);"/>
+								<outline text="    }"/>
+								<outline text="  }"/>
+								<outline text="  "/>
+								<outline text="public static function isEncryptedField($field_key) {"/>
+								<outline text="return in_array($field_key, self:: ENCRYPTED_FIELDS);"/>
+								<outline text="  }"/>
+								<outline text="}"/>
+							</outline>
+							<outline text="Responsibilities: Encryption/decryption only"/>
+							<outline text="Testable: Pass encrypted strings, verify output"/>
+						</outline>
+					</outline>
+					<outline text="8.3.5. Service: FieldValueResolver (CORE - Replaces nested IFs)">
+						<outline text="Method: resolveValue($field_key, $account, $custom_fields)">
+							<outline text="Purpose: Resolve field value from 3 tiers (Special → Standard → Custom)"/>
+							<outline text="Code">
+								<outline text="class FieldValueResolver {"/>
+								<outline text="public static function resolveValue($field_key, $account, $custom_fields) {"/>
+								<outline text="// Tier 1: Special handling (decrypt, JSON parse)"/>
+								<outline text="if ($value = self:: resolveSpecialField($field_key, $account)) {"/>
+								<outline text="      return $value;"/>
+								<outline text="    }"/>
+								<outline text="    "/>
+								<outline text="    // Tier 2: Standard columns"/>
+								<outline text="    if (isset($account[$field_key])) {"/>
+								<outline text="      return $account[$field_key];"/>
+								<outline text="    }"/>
+								<outline text="    "/>
+								<outline text="    // Tier 3: Custom fields"/>
+								<outline text="if (isset($custom_fields[$field_key])) {"/>
+								<outline text="return self:: resolveCustomField($custom_fields[$field_key]);"/>
+								<outline text="    }"/>
+								<outline text="    "/>
+								<outline text="    return null;"/>
+								<outline text="  }"/>
+								<outline text="  "/>
+								<outline text="private static function resolveSpecialField($field_key, $account) {"/>
+								<outline text="    $handlers = ["/>
+								<outline text="&apos;login_password&apos; =&gt; fn() =&gt; CredentialDecryptionService:: decryptField($account[&apos;login_password&apos;]),"/>
+								<outline text="&apos;pin_code&apos; =&gt; fn() =&gt; CredentialDecryptionService:: decryptField($account[&apos;pin_code&apos;]),"/>
+								<outline text="&apos;security_answer&apos; =&gt; fn() =&gt; CredentialDecryptionService:: decryptField($account[&apos;security_answer&apos;]),"/>
+								<outline text="&apos;api_secret&apos; =&gt; fn() =&gt; CredentialDecryptionService:: decryptField($account[&apos;api_secret&apos;]),"/>
+								<outline text="&apos;cookie&apos; =&gt; fn() =&gt; json_decode($account[&apos;cookie&apos;], true),"/>
+								<outline text="&apos;backup_codes&apos; =&gt; fn() =&gt; json_decode($account[&apos;backup_codes&apos;], true),"/>
+								<outline text="    ];"/>
+								<outline text="    "/>
+								<outline text="if (isset($handlers[$field_key]) &amp;&amp; !empty($account[$field_key])) {"/>
+								<outline text="      return $handlers[$field_key]();"/>
+								<outline text="    }"/>
+								<outline text="    "/>
+								<outline text="    return null;"/>
+								<outline text="  }"/>
+								<outline text="  "/>
+								<outline text="private static function resolveCustomField($custom_field_data) {"/>
+								<outline text="$value = $custom_field_data[&apos;value&apos;];"/>
+								<outline text="$type = $custom_field_data[&apos;type&apos;] ?? &apos;text&apos;;"/>
+								<outline text="    "/>
+								<outline text="    // Decrypt if password type"/>
+								<outline text="    if ($type === &apos;password&apos;) {"/>
+								<outline text="return CredentialDecryptionService:: decryptField($value);"/>
+								<outline text="    }"/>
+								<outline text="    "/>
+								<outline text="    // Parse if JSON type"/>
+								<outline text="    if ($type === &apos;json&apos;) {"/>
+								<outline text="      return json_decode($value, true);"/>
+								<outline text="    }"/>
+								<outline text="    "/>
+								<outline text="    return $value;"/>
+								<outline text="  }"/>
+								<outline text="}"/>
+							</outline>
+							<outline text="Benefits">
+								<outline text="✅ NO nested IFs - Flat structure"/>
+								<outline text="✅ Map-based handlers - Easy to extend"/>
+								<outline text="✅ Separation of concerns - Each tier isolated"/>
+								<outline text="✅ Testable - Mock account data"/>
+							</outline>
+						</outline>
+					</outline>
+					<outline text="8.3.6. Service: CredentialsBuilder (CORE - Main logic)">
+						<outline text="Method: build($fields_config, $account)">
+							<outline text="Purpose: Build credentials object from config and account data"/>
+							<outline text="Code">
+								<outline text="class CredentialsBuilder {"/>
+								<outline text="public static function build($fields_config, $account) {"/>
+								<outline text="    $credentials = [];"/>
+								<outline text="$custom_fields = self:: parseCustomFields($account[&apos;account_fields&apos;]);"/>
+								<outline text="    "/>
+								<outline text="    foreach ($fields_config as $field) {"/>
+								<outline text="      $field_key = $field[&apos;key&apos;];"/>
+								<outline text="      $field_label = $field[&apos;label&apos;];"/>
+								<outline text="      "/>
+								<outline text="      // Resolve value"/>
+								<outline text="$value = FieldValueResolver:: resolveValue($field_key, $account, $custom_fields);"/>
+								<outline text="      "/>
+								<outline text="      // Add to credentials if has value"/>
+								<outline text="if ($value !== null &amp;&amp; $value !== &apos;&apos;) {"/>
+								<outline text="        $credentials[$field_key] = ["/>
+								<outline text="          &apos;value&apos; =&gt; $value,"/>
+								<outline text="          &apos;label&apos; =&gt; $field_label,"/>
+								<outline text="        ];"/>
+								<outline text="      }"/>
+								<outline text="    }"/>
+								<outline text="    "/>
+								<outline text="    return $credentials;"/>
+								<outline text="  }"/>
+								<outline text="  "/>
+								<outline text="private static function parseCustomFields($account_fields_json) {"/>
+								<outline text="    if (empty($account_fields_json)) {"/>
+								<outline text="      return [];"/>
+								<outline text="    }"/>
+								<outline text="    "/>
+								<outline text="return json_decode($account_fields_json, true) ?? [];"/>
+								<outline text="  }"/>
+								<outline text="}"/>
+							</outline>
+							<outline text="Benefits">
+								<outline text="✅ Simple loop - No nested logic"/>
+								<outline text="✅ Delegates to FieldValueResolver"/>
+								<outline text="✅ Clean output"/>
+							</outline>
+						</outline>
+					</outline>
+					<outline text="8.3.7. Service: ValidationService">
+						<outline text="Method: validateRequiredFields($credentials, $fields_config)">
+							<outline text="Purpose: Validate required fields are present"/>
+							<outline text="Code">
+								<outline text="class ValidationService {"/>
+								<outline text="public static function validateRequiredFields($credentials, $fields_config) {"/>
+								<outline text="    $missing_fields = [];"/>
+								<outline text="    "/>
+								<outline text="    foreach ($fields_config as $field) {"/>
+								<outline text="if ($field[&apos;required&apos;] &amp;&amp; !isset($credentials[$field[&apos;key&apos;]])) {"/>
+								<outline text="        $missing_fields[] = $field[&apos;label&apos;];"/>
+								<outline text="      }"/>
+								<outline text="    }"/>
+								<outline text="    "/>
+								<outline text="    if (!empty($missing_fields)) {"/>
+								<outline text="self:: handleMissingFields($missing_fields);"/>
+								<outline text="    }"/>
+								<outline text="  }"/>
+								<outline text="  "/>
+								<outline text="private static function handleMissingFields($missing_fields) {"/>
+								<outline text="    // Log error"/>
+								<outline text="Logger::error(&quot;Missing required fields&quot;, [&apos;fields&apos; =&gt; $missing_fields]);"/>
+								<outline text="    "/>
+								<outline text="    // Notify admin"/>
+								<outline text="NotificationService:: notifyAdmin(&quot;Account missing required fields&quot;, $missing_fields);"/>
+								<outline text="    "/>
+								<outline text="    // Throw exception"/>
+								<outline text="throw new MissingRequiredFieldsException("/>
+								<outline text="&quot;Account configuration incomplete. Please contact support.&quot;"/>
+								<outline text="    );"/>
+								<outline text="  }"/>
+								<outline text="}"/>
+							</outline>
+							<outline text="Benefits">
+								<outline text="✅ Separated validation logic"/>
+								<outline text="✅ Batch validation (all missing fields at once)"/>
+								<outline text="✅ Centralized error handling"/>
+							</outline>
+						</outline>
+					</outline>
+					<outline text="8.3.8. Complete Flow Example">
+						<outline text="Scenario: Netflix với Email + Password + Cookie + Profile + PIN">
+							<outline text="Step 1: getAccountCredentials(&apos;ABC-123&apos;) called"/>
+							<outline text="Step 2: AccountService:: getAccount(1) → Returns $account"/>
+							<outline text="Step 3: ResponseFieldsService:: parseConfig() → Returns 5 fields config"/>
+							<outline text="Step 4: CredentialsBuilder: :build() starts loop">
+								<outline text="Iteration 1: account_login">
+									<outline text="FieldValueResolver:: resolveValue(&apos;account_login&apos;) → Tier 2 (standard) → &apos;netflix@example.com&apos;"/>
+									<outline text="Add to credentials"/>
+								</outline>
+								<outline text="Iteration 2: login_password">
+									<outline text="FieldValueResolver:: resolveValue(&apos;login_password&apos;) → Tier 1 (special) → Call CredentialDecryptionService → &apos;Abc123&apos;"/>
+									<outline text="Add to credentials"/>
+								</outline>
+								<outline text="Iteration 3: cookie">
+									<outline text="FieldValueResolver:: resolveValue(&apos;cookie&apos;) → Tier 1 (special) → json_decode() → {session_id:...}"/>
+									<outline text="Add to credentials"/>
+								</outline>
+								<outline text="Iteration 4: profile_name">
+									<outline text="FieldValueResolver::resolveValue(&apos;profile_name&apos;) → Tier 2 (standard) → &apos;Profile 1&apos;"/>
+									<outline text="Add to credentials"/>
+								</outline>
+								<outline text="Iteration 5: pin_code">
+									<outline text="FieldValueResolver:: resolveValue(&apos;pin_code&apos;) → Tier 1 (special) → Decrypt → &apos;1234&apos;"/>
+									<outline text="Add to credentials"/>
+								</outline>
+							</outline>
+							<outline text="Step 5: ValidationService:: validateRequiredFields() → All present → Pass"/>
+							<outline text="Step 6: Return $credentials"/>
+						</outline>
+					</outline>
+					<outline text="8.3.9. Benefits of Refactored Architecture">
+						<outline text="✅ Readability">
+							<outline text="Main flow is 10 lines (vs 200+ lines nested IFs)"/>
+							<outline text="Each service has single responsibility"/>
+						</outline>
+						<outline text="✅ Testability">
+							<outline text="Each service independently testable"/>
+							<outline text="Easy to mock dependencies"/>
+							<outline text="Example tests">
+								<outline text="AccountServiceTest::testGetAccount()"/>
+								<outline text="FieldValueResolverTest:: testResolvePassword()"/>
+								<outline text="ValidationServiceTest:: testMissingRequiredField()"/>
+							</outline>
+						</outline>
+						<outline text="✅ Maintainability">
+							<outline text="Add new field type? Update FieldValueResolver only"/>
+							<outline text="Change decryption? Update CredentialDecryptionService only"/>
+							<outline text="Add new validation? Update ValidationService only"/>
+						</outline>
+						<outline text="✅ Reusability">
+							<outline text="CredentialDecryptionService used across flows"/>
+							<outline text="ValidationService reusable for other validations"/>
+						</outline>
+						<outline text="✅ Error Handling">
+							<outline text="Centralized in each service"/>
+							<outline text="Custom exceptions (AccountNotFoundException, DecryptionException...)"/>
+							<outline text="Easy to add logging/monitoring"/>
+						</outline>
+					</outline>
+					<outline text="Kết quả Bước 8.3 - Refactored">
+						<outline text="✅ From 4-5 levels nesting → Flat 1-2 levels"/>
+						<outline text="✅ From 200+ lines monolithic → 6 services ~20 lines each"/>
+						<outline text="✅ From hard to test → Fully testable"/>
+						<outline text="✅ From hard to extend → Easy to add features"/>
+						<outline text="✅ SAME functionality, BETTER structure"/>
+					</outline>
+				</outline>
+				<outline text="8.4. Thêm metadata về account" _note="Thông tin bổ sung (không phải credentials)">
+					<outline text="$account_info = {provider:&apos;Netflix&apos;, status:&apos;active&apos;, expires_at: &apos;2025-12-31 23:59:59&apos;, last_credential_update:&apos;2025-10-01 14:30: 00&apos;, next_credential_update:&apos;2025-10-15&apos;}"/>
+				</outline>
+				<outline text="8.5. Lưu ý security" _note="Bảo mật khi trả credentials">
+					<outline text="HTTPS required: API endpoint PHẢI dùng HTTPS"/>
+					<outline text="Rate limiting: Đã check ở Bước 4"/>
+					<outline text="No caching: Cache-Control: no-store, no-cache"/>
+					<outline text="Audit logging: Đã log ở Bước 7"/>
+				</outline>
+				<outline text="Kết quả bước 8: ✓ Lấy account ✓ Decrypt password ✓ Xây dựng credentials ✓ Chuẩn bị account_info → Tiếp tục Bước 9"/>
+			</outline>
+			<outline text="Bước 9: Trả về Response cho Client" _note="Xây dựng và trả về response đầy đủ">
+				<outline text="9.1. Xây dựng response structure" _note="Cấu trúc response hoàn chỉnh">
+					<outline text="Response chính: {status:&apos;success&apos;, message:&apos;Truy cập thành công&apos;, data:{...}, timestamp:&apos;2025-10-08 14:30:00&apos;}"/>
+					<outline text="Data object (CẬP NHẬT): {license:{...}, device:{...}, devices:[...], credentials:{...}, account_info:{...}, usage:{...}, request_history:[...]}"/>
+				</outline>
+				<outline text="9.2. License information" _note="Thông tin về license">
+					<outline text="license = {license_key:&apos;A3F9-K2L4-M8N1-P5Q7&apos;, product_id: 100, product_name:&apos;Netflix Premium 4K - 30 ngày&apos;, status: &apos;active&apos;, valid_from:&apos;2025-10-08 00:00:00&apos;, valid_until:&apos;2025-11-07 23:59:59&apos;, days_remaining:30}"/>
+				</outline>
+				<outline text="9.3. Current device information" _note="Thông tin thiết bị hiện tại">
+					<outline text="device = {device_id:15, device_name:&apos;Laptop - Windows 11 - Chrome 120&apos;, is_new_device:true, device_slot:1, registered_at: &apos;2025-10-08 14:30:00&apos;, status:&apos;active&apos;}"/>
+				</outline>
+				<outline text="9.4. All devices list" _note="Danh sách tất cả thiết bị (từ Bước 6.7)">
+					<outline text="devices = [{device_id:15, device_name:&apos;Laptop - Windows 11 - Chrome 120&apos;, registered_at:&apos;2025-10-08 14:30:00&apos;, last_accessed_at:&apos;2025-10-08 14:30:00&apos;, status:&apos;active&apos;, is_current_device:true, slot:1}]"/>
+					<outline text="Nếu có nhiều: [{id:10,name:&apos;PC&apos;,status:&apos;active&apos;,slot:1}, {id:11,name: &apos;iPhone&apos;,status:&apos;active&apos;,slot:2}, {id:15,name:&apos;Laptop&apos;,status:&apos;active&apos;,slot:1, is_current:true}, {id:9,name:&apos;iPad&apos;,status:&apos;removed&apos;}, {id:8,name:&apos;Android&apos;, status:&apos;blocked&apos;,reason:&apos;Vi phạm&apos;}]"/>
+				</outline>
+				<outline text="9.5. Credentials (ĐÃ CẬP NHẬT - Format mới)" _note="Thông tin đăng nhập với label (từ Bước 8.3)">
+					<outline text="Format MỚI (với label): credentials = {account_login:{value: &apos;netflix001@provider.com&apos;,label:&apos;Email đăng nhập&apos;}, login_password:{value:&apos;abc123xyz&apos;,label:&apos;Mật khẩu&apos;}, cookie: {value:{session_id:&apos;xyz789&apos;,auth_token:&apos;abc123&apos;,expires: &apos;2025-12-31&apos;},label:&apos;Cookie Session&apos;}}"/>
+					<outline text="Ví dụ Spotify: credentials = {account_login:{value: &apos;user123&apos;,label:&apos;Username Spotify&apos;}, login_password: {value:&apos;pass456&apos;,label:&apos;Password&apos;}}"/>
+					<outline text="Ví dụ chỉ Cookie: credentials = {cookie:{value:{...},label:&apos;Cookie đăng nhập YouTube&apos;}}"/>
+				</outline>
+				<outline text="9.6. Account info" _note="Metadata về account (từ Bước 8.4)">
+					<outline text="account_info = {provider:&apos;Netflix&apos;, status:&apos;active&apos;, expires_at: &apos;2025-12-31 23:59:59&apos;, last_credential_update:&apos;2025-10-01 14:30: 00&apos;, next_credential_update:&apos;2025-10-15&apos;}"/>
+				</outline>
+				<outline text="9.7. Usage statistics" _note="Thống kê sử dụng">
+					<outline text="usage = {current_devices:1, max_devices:2, available_slots:1, requests_today:1, requests_limit:10, requests_remaining:9, total_access_count:1, last_accessed_at:&apos;2025-10-08 14:30:00&apos;}"/>
+				</outline>
+				<outline text="9.8. Request History (MỚI)" _note="Lịch sử request từ bz_vd_device_access_log">
+					<outline text="9.8.1. Query request history">
+						<outline text="SQL: SELECT id, device_name, ip_address, is_vps, vps_provider, access_result, error_code, accessed_at FROM bz_vd_device_access_log WHERE license_key_id = 50 ORDER BY accessed_at DESC LIMIT 20"/>
+						<outline text="Purpose: Lấy 20 requests gần nhất để hiển thị cho khách"/>
+						<outline text="Note: Có thể thêm pagination sau này (offset, limit params)"/>
+					</outline>
+					<outline text="9.8.2. Format history data">
+						<outline text="Loop qua records và build array: Mỗi record = {id, device_name, ip_address, is_vps, vps_provider, access_result, error_code, accessed_at}"/>
+						<outline text="Ví dụ request_history = [{id:1001,device_name:&apos;Laptop - Windows 11 - Chrome 120&apos;,ip_address:&apos;123.45.67.89&apos;,is_vps:0,vps_provider:null, access_result:&apos;success&apos;,accessed_at:&apos;2025-10-08 14:30:00&apos;}, {id:1000, device_name:&apos;iPhone 14&apos;,ip_address:&apos;123.45.67.90&apos;,is_vps:0,access_result: &apos;success&apos;,accessed_at:&apos;2025-10-08 10:15:00&apos;}, {id:999,device_name: &apos;Unknown Device&apos;,ip_address:&apos;45.67.89.12&apos;,is_vps:1,vps_provider:&apos;AWS&apos;, access_result:&apos;blocked_vps&apos;,error_code:&apos;vps_detected&apos;,accessed_at: &apos;2025-10-07 18:20:00&apos;}]"/>
+					</outline>
+					<outline text="9.8.3. Thống kê history">
+						<outline text="request_history_count: 20 (số records trả về)"/>
+						<outline text="total_requests: COUNT(*) FROM bz_vd_device_access_log WHERE license_key_id=50 (tổng số tất cả requests)"/>
+						<outline text="Ví dụ: request_history_count=20, total_requests=45 (còn 25 requests cũ hơn không hiển thị)"/>
+					</outline>
+				</outline>
+				<outline text="9.9. Response JSON hoàn chỉnh (CẬP NHẬT)" _note="Full response với tất cả thay đổi">
+					<outline text="Full JSON = {status:&apos;success&apos;, message:&apos;Truy cập thành công&apos;, data:{license:{license_key: &apos;A3F9-K2L4-M8N1-P5Q7&apos;,product_name:&apos;Netflix Premium 4K&apos;,status:&apos;active&apos;,valid_until: &apos;2025-11-07 23:59:59&apos;,days_remaining:30}, device:{device_id:15,device_name:&apos;Laptop - Windows 11&apos;,is_new_device:true,slot:1,status:&apos;active&apos;}, devices:[{...}], credentials: {account_login:{value:&apos;netflix001@provider.com&apos;,label:&apos;Email đăng nhập&apos;},login_password: {value:&apos;abc123xyz&apos;,label:&apos;Mật khẩu&apos;},cookie:{value:{...},label:&apos;Cookie Session&apos;}}, account_info:{provider:&apos;Netflix&apos;,status:&apos;active&apos;,expires_at:&apos;2025-12-31 23:59:59&apos;}, usage: {current_devices:1,max_devices:2,available_slots:1,requests_today:1,requests_limit:10, requests_remaining:9}, request_history:[{id:1001,device_name:&apos;Laptop&apos;,ip_address:&apos;123.45. 67.89&apos;,is_vps:0,access_result:&apos;success&apos;,accessed_at:&apos;2025-10-08 14:30:00&apos;},{id:1000, device_name:&apos;iPhone 14&apos;,ip_address:&apos;123.45.67.90&apos;,is_vps:0,access_result:&apos;success&apos;, accessed_at:&apos;2025-10-08 10:15:00&apos;},...], request_history_count:20, total_requests:45}, timestamp:&apos;2025-10-08 14:30:00&apos;}"/>
+				</outline>
+				<outline text="9.10. Set response headers" _note="HTTP headers cho security">
+					<outline text="Security headers: Content-Type:application/json, Cache-Control:no-store no-cache must-revalidate, Pragma: no-cache, Expires:0, X-Content-Type-Options:nosniff, X-Frame-Options:DENY, X-XSS-Protection:1"/>
+					<outline text="CORS (nếu cần): Access-Control-Allow-Origin: https://yourdomain.com (KHÔNG dùng *), Access-Control-Allow-Methods:POST, Access-Control-Allow-Credentials:true"/>
+				</outline>
+				<outline text="9.11. Return response" _note="Gửi response về client">
+					<outline text="HTTP Status: 200 OK"/>
+					<outline text="PHP code: header(&apos;Content-Type: application/json&apos;); header(&apos;Cache-Control: no-store&apos;); echo json_encode($response); exit;"/>
+				</outline>
+				<outline text="Kết quả bước 9 (CẬP NHẬT): ✓ Xây dựng response đầy đủ với request history ✓ Credentials có label (flexible format) ✓ Set security headers ✓ Trả về JSON ✓ HTTP 200 → FLOW HOÀN TẤT ✓"/>
+			</outline>
+			<outline text="Bước 1: Khách truy cập License Portal (UPDATED V2)" _note="Khách mở trình duyệt và vào trang portal để nhập license key. Device fingerprint và device name được tự động tạo nhưng KHÔNG hiển thị device status (lần đầu/cũ) cho đến khi check với server.">
+				<outline text="1.1. Khách mở browser" _note="Khách có thể dùng bất kỳ device nào: laptop, PC, điện thoại">
+					<outline text="Device: Laptop văn phòng" _note="Đây sẽ là device đầu tiên được register"/>
+					<outline text="Browser: Chrome 120.0.6099.109"/>
+					<outline text="OS: Windows 11 Pro"/>
+					<outline text="Location: Office / Home / Cafe"/>
+					<outline text="IP Address: 123.45.67.89" _note="IP này sẽ được log để tracking"/>
+				</outline>
+				<outline text="1.2. Vào URL portal" _note="Có 2 cách vào portal">
+					<outline text="Cách 1: Click link trong email" _note="Cách phổ biến nhất">
+						<outline text="Mở email từ VidieuVN"/>
+						<outline text="Click: https://vidieu.vn/license-portal"/>
+						<outline text="Browser auto navigate đến portal"/>
+					</outline>
+					<outline text="Cách 2: Nhập URL trực tiếp">
+						<outline text="Type: vidieu.vn/license-portal"/>
+						<outline text="hoặc Google search: VidieuVN license portal"/>
+					</outline>
+				</outline>
+				<outline text="1.3. Portal page load (UPDATED V2)" _note="WordPress shortcode hoặc custom page template. JavaScript tự động collect device info nhưng KHÔNG hiển thị status cho đến khi submit.">
+					<outline text="Page structure">
+						<outline text="Header: VidieuVN logo, navigation"/>
+						<outline text="Title: 🔑 Lấy thông tin tài khoản"/>
+						<outline text="Description: Nhập license key để nhận thông tin đăng nhập"/>
+					</outline>
+					<outline text="Main form hiển thị (SIMPLE)" _note="Chỉ có 1 input duy nhất - License Key">
+						<outline text="Input: License Key (required)" _note="Input duy nhất khách cần điền">
+							<outline text="Label: License Key của bạn"/>
+							<outline text="Placeholder: Nhập license key (VD: A3F9-K2L4-M8N1-P5Q7)"/>
+							<outline text="Type: text"/>
+							<outline text="Pattern: ####-####-####-####" _note="HTML5 pattern validation"/>
+							<outline text="Maxlength: 19 chars"/>
+							<outline text="Auto-format: Tự động thêm dấu gạch ngang khi gõ" _note="JavaScript format on keyup: A3F9 → A3F9-, A3F9K2L4 → A3F9-K2L4-"/>
+							<outline text="Required: true"/>
+						</outline>
+						<outline text="Button: Lấy thông tin">
+							<outline text="Primary button, large size"/>
+							<outline text="Icon: 🔓"/>
+							<outline text="onclick: submitLicenseForm()"/>
+						</outline>
+					</outline>
+					<outline text="Device info display area (Initial state - NO STATUS)" _note="Hiển thị device info cơ bản đã detect, NHƯNG KHÔNG hiển thị status (lần đầu/cũ) vì chưa check database">
+						<outline text="Section title: 📱 Thiết bị của bạn"/>
+						<outline text="Style: Light background box, subtle border, read-only"/>
+						<outline text="Initial display (before submit)" _note="Trước khi submit, chỉ hiển thị thông tin cơ bản">
+							<outline text="Device icon" _note="Icon tùy theo device type: 💻 laptop, 🖥️ desktop, 📱 mobile, ⌚ tablet">
+								<outline text="Logic detect device type">
+									<outline text="IF screen width &gt;= 1024px AND touch = false → 💻 Laptop/Desktop"/>
+									<outline text="IF screen width &lt; 768px OR touch = true → 📱 Mobile/Tablet"/>
+								</outline>
+								<outline text="Our case: 💻 (Laptop)"/>
+							</outline>
+							<outline text="Device name (auto-generated)" _note="Hiển thị thông tin cơ bản">
+								<outline text="Format: [DeviceType] - [OS] - [Browser]"/>
+								<outline text="Example: Laptop - Windows 11 - Chrome 120"/>
+								<outline text="Generated from user agent và screen info"/>
+							</outline>
+							<outline text="Status: KHÔNG hiển thị" _note="QUAN TRỌNG: Không hiển thị lần đầu/cũ vì chưa check database">
+								<outline text="KHÔNG hiển thị: Lần truy cập đầu tiên"/>
+								<outline text="KHÔNG hiển thị: Đã từng truy cập trước đây"/>
+								<outline text="Reason: Device token trong localStorage không đủ để xác định">
+									<outline text="Token có trong localStorage ≠ Device được phép"/>
+									<outline text="Phải check database: License này mapping với devices nào?"/>
+									<outline text="Chỉ server mới biết device này có trong danh sách allowed không"/>
+								</outline>
+							</outline>
+							<outline text="Placeholder text (optional)" _note="Có thể hiển thị text chờ">
+								<outline text="Đang xác định trạng thái thiết bị..." _note="Hoặc để trống"/>
+								<outline text="Hoặc không hiển thị gì cả" _note="Chỉ hiển thị sau khi submit"/>
+							</outline>
+						</outline>
+						<outline text="Purpose của section này" _note="Tại sao cần hiển thị nhưng không có status">
+							<outline text="Transparency: Cho khách biết hệ thống đang detect device"/>
+							<outline text="No premature info: KHÔNG đưa ra kết luận trước khi check database"/>
+							<outline text="Security: Status chính xác chỉ có sau khi validate với server"/>
+						</outline>
+					</outline>
+					<outline text="JavaScript auto-run (Background)" _note="Script chạy ngầm khi page load, khách không thấy, không cần tương tác">
+						<outline text="Step 1: Device fingerprinting" _note="Tạo unique fingerprint cho device/browser">
+							<outline text="Library: FingerprintJS hoặc custom implementation"/>
+							<outline text="Collect browser/device data" _note="Thu thập nhiều thông tin để tạo fingerprint unique">
+								<outline text="Canvas fingerprint" _note="Render canvas và hash pixel data để tạo unique signature">
+									<outline text="Draw text + shapes trên canvas"/>
+									<outline text="Get pixel data → toDataURL()"/>
+									<outline text="Hash result → unique per device/GPU"/>
+								</outline>
+								<outline text="WebGL fingerprint" _note="WebGL rendering info cũng unique">
+									<outline text="Get WebGL renderer info"/>
+									<outline text="Get supported extensions"/>
+									<outline text="Hash all data"/>
+								</outline>
+								<outline text="Screen info">
+									<outline text="Screen resolution: 1920x1080"/>
+									<outline text="Available screen size: 1920x1040 (minus taskbar)"/>
+									<outline text="Color depth: 24 bits"/>
+									<outline text="Pixel ratio: 1 or 2 (retina)"/>
+								</outline>
+								<outline text="Browser info">
+									<outline text="User agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"/>
+									<outline text="Platform: Win32 / MacIntel / Linux x86_64"/>
+									<outline text="Language: vi-VN, en-US"/>
+									<outline text="Timezone: Asia/Ho_Chi_Minh (GMT+7)"/>
+									<outline text="Timezone offset: -420 minutes"/>
+								</outline>
+								<outline text="Fonts detection" _note="Detect installed fonts via CSS">
+									<outline text="Check common fonts: Arial, Times New Roman, etc."/>
+									<outline text="Create unique fonts signature"/>
+								</outline>
+								<outline text="Plugins list (if available)" _note="Chrome đã deprecate, nhưng Firefox còn">
+									<outline text="PDF viewer, Flash (legacy), etc."/>
+								</outline>
+								<outline text="Hardware info">
+									<outline text="Hardware concurrency: 8 (CPU cores)"/>
+									<outline text="Device memory: 8 GB (if available)"/>
+								</outline>
+								<outline text="Other signals">
+									<outline text="Touch support: false"/>
+									<outline text="Do Not Track: 1 or null"/>
+									<outline text="Cookie enabled: true"/>
+									<outline text="Local storage enabled: true"/>
+								</outline>
+							</outline>
+							<outline text="Combine all data into string" _note="Nối tất cả data thành 1 string dài">
+								<outline text="Format: canvas|webgl|1920x1080|24|vi-VN|GMT+7|Win32|. .."/>
+								<outline text="Example combined string (shortened)">
+									<outline text="aHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmc. .."/>
+								</outline>
+							</outline>
+							<outline text="Hash SHA256" _note="Hash string để tạo fingerprint cố định 64 chars">
+								<outline text="Input: combined string"/>
+								<outline text="Algorithm: SHA-256"/>
+								<outline text="Output: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"/>
+								<outline text="Length: 64 chars (256 bits = 64 hex chars)"/>
+							</outline>
+							<outline text="Result: device_fingerprint ✓" _note="Fingerprint sẽ giống nhau trên cùng device/browser combo">
+								<outline text="Value: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"/>
+								<outline text="Stable: Sẽ không đổi trừ khi đổi hardware/browser major"/>
+								<outline text="Purpose: Unique identifier cho device"/>
+							</outline>
+						</outline>
+						<outline text="Step 2: Device token management" _note="Tạo hoặc lấy token đã lưu trong localStorage - token này CHỈ để tracking, KHÔNG xác định quyền truy cập">
+							<outline text="Check localStorage for existing token" _note="Kiểm tra đã có token lưu sẵn chưa">
+								<outline text="Key: vd_device_token"/>
+								<outline text="Try: localStorage. getItem(&apos;vd_device_token&apos;)"/>
+							</outline>
+							<outline text="Case A: Token exists (device đã lưu token)" _note="Device này đã vào portal trước đây và có token">
+								<outline text="Token found: dt_a3f9k2l4m8n1"/>
+								<outline text="→ Reuse existing token"/>
+								<outline text="→ Token này chỉ là identifier, KHÔNG có nghĩa là được phép" _note="QUAN TRỌNG"/>
+								<outline text="Meaning" _note="Ý nghĩa của việc có token">
+									<outline text="✓ Device này đã từng vào portal (technical fact)"/>
+									<outline text="✗ KHÔNG nghĩa là device được phép access (phải check database)"/>
+									<outline text="✗ KHÔNG nghĩa là lần truy cập cũ (có thể khách đã reset devices)"/>
+								</outline>
+								<outline text="Example scenarios" _note="Các trường hợp có token nhưng không được phép">
+									<outline text="Scenario 1: Khách đã dùng 2 devices (Laptop + PC)">
+										<outline text="Device 1 (Laptop): Token dt_abc123 - Đã register, slot 1"/>
+										<outline text="Device 2 (PC): Token dt_def456 - Đã register, slot 2"/>
+										<outline text="Device 3 (Điện thoại): Token dt_ghi789 - Chưa register, BLOCKED"/>
+										<outline text="→ Điện thoại có token (đã vào portal trước) nhưng không được phép"/>
+									</outline>
+									<outline text="Scenario 2: Khách đã reset device">
+										<outline text="Ngày 1: Laptop register → Token dt_abc123, Slot 1"/>
+										<outline text="Ngày 8: Khách reset Laptop, dùng PC → Slot 1 freed"/>
+										<outline text="Ngày 9: Laptop vào lại (vẫn có token dt_abc123 trong localStorage)"/>
+										<outline text="→ Laptop có token nhưng đã bị remove khỏi allowed list"/>
+									</outline>
+								</outline>
+								<outline text="Conclusion: Token ≠ Permission" _note="Token chỉ là tracking ID"/>
+							</outline>
+							<outline text="Case B: No token (first time on this device/browser)" _note="Lần đầu tiên device này vào portal, hoặc đã clear localStorage">
+								<outline text="Token not found"/>
+								<outline text="→ Generate new token">
+									<outline text="Algorithm: Random string">
+										<outline text="Prefix: dt_ (device token)"/>
+										<outline text="Random: 16 chars alphanumeric"/>
+										<outline text="Charset: abcdefghijklmnopqrstuvwxyz0123456789"/>
+										<outline text="Example: dt_a3f9k2l4m8n1p5q7"/>
+									</outline>
+									<outline text="Save to localStorage">
+										<outline text="localStorage. setItem(&apos;vd_device_token&apos;, &apos;dt_a3f9k2l4m8n1p5q7&apos;)"/>
+										<outline text="Persistent: Sẽ tồn tại cho đến khi clear browser data"/>
+									</outline>
+								</outline>
+								<outline text="→ New token generated"/>
+								<outline text="Meaning: Device chưa có token tracking"/>
+								<outline text="Note: Vẫn phải check database để biết device này có permission không"/>
+							</outline>
+							<outline text="Our case: First time" _note="Chưa có token trong localStorage">
+								<outline text="Generated token: dt_a3f9k2l4m8n1p5q7"/>
+								<outline text="Saved to localStorage ✓"/>
+								<outline text="Status unknown: Phải đợi API response để biết allowed hay không"/>
+							</outline>
+							<outline text="Purpose của device_token" _note="Tại sao cần device_token">
+								<outline text="Primary purpose: Persistent tracking ID across sessions"/>
+								<outline text="Combine với fingerprint: Robust device identification">
+									<outline text="Fingerprint: Hardware/software signature (có thể thay đổi nhẹ)"/>
+									<outline text="Token: Persistent ID trong storage (stable nếu không clear)"/>
+									<outline text="Combined: device_combined_id = SHA256(fingerprint|token)"/>
+								</outline>
+								<outline text="NOT for authorization: Token không dùng để xác định quyền truy cập"/>
+								<outline text="Authorization comes from database: bz_vd_license_devices table"/>
+							</outline>
+						</outline>
+						<outline text="Step 3: Generate device_combined_id" _note="Kết hợp fingerprint + token để tạo ID cuối cùng cho database matching">
+							<outline text="Combine fingerprint + token">
+								<outline text="device_fingerprint: e3b0c44298fc1c149afb..."/>
+								<outline text="device_token: dt_a3f9k2l4m8n1p5q7"/>
+								<outline text="combined_string: e3b0c44... |dt_a3f9k2l4m8n1p5q7" _note="Dùng | làm separator"/>
+							</outline>
+							<outline text="Hash SHA256 combined_string">
+								<outline text="Input: e3b0c44... |dt_a3f9k2l4m8n1p5q7"/>
+								<outline text="Output: d5f6e89a12bc34de56fa78b90c1d23ef45a67b89c01d23ef45a67b89c01d23ef" _note="Hash mới, khác fingerprint ban đầu"/>
+							</outline>
+							<outline text="Result: device_combined_id ✓">
+								<outline text="Value: d5f6e89a12bc34de56fa78b90c1d23ef45a67b89c01d23ef45a67b89c01d23ef"/>
+								<outline text="Purpose: ID cuối cùng để match với database (bz_vd_license_devices. device_combined_id)"/>
+								<outline text="This ID will be checked against database">
+									<outline text="Query: SELECT * FROM bz_vd_license_devices WHERE device_combined_id = &apos;d5f6e89a...&apos;"/>
+									<outline text="Found? → Device đã được register trước đây"/>
+									<outline text="Not found? → Device chưa được register"/>
+								</outline>
+								<outline text="Unique: Kết hợp cả fingerprint (hardware) và token (browser storage)"/>
+								<outline text="Stable: Chỉ thay đổi khi:">
+									<outline text="1. Đổi device/browser hoàn toàn (fingerprint khác)"/>
+									<outline text="2. Clear localStorage (token mất)"/>
+									<outline text="3. Cả 2"/>
+								</outline>
+							</outline>
+						</outline>
+						<outline text="Step 4: Auto-generate device_name" _note="Tạo tên device tự động từ user agent và device info">
+							<outline text="Parse user agent string" _note="Extract OS, browser, device type">
+								<outline text="User agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"/>
+								<outline text="Parsed data">
+									<outline text="OS: Windows 11" _note="From &apos;Windows NT 10.0&apos; → Windows 11"/>
+									<outline text="Browser: Chrome 120" _note="From &apos;Chrome/120.0.0.0&apos;"/>
+									<outline text="Architecture: 64-bit" _note="From &apos;Win64; x64&apos;"/>
+								</outline>
+							</outline>
+							<outline text="Detect device type" _note="Laptop, Desktop, Mobile, Tablet">
+								<outline text="Check screen size + touch">
+									<outline text="IF width &gt;= 1024px AND touch = false">
+										<outline text="Device type: Laptop"/>
+										<outline text="Icon: 💻"/>
+									</outline>
+									<outline text="IF width &gt;= 768px AND width &lt; 1024px">
+										<outline text="Device type: Tablet"/>
+										<outline text="Icon: ⌚"/>
+									</outline>
+									<outline text="IF width &lt; 768px OR touch = true">
+										<outline text="Device type: Mobile"/>
+										<outline text="Icon: 📱"/>
+									</outline>
+								</outline>
+								<outline text="Our case: width=1920, touch=false">
+									<outline text="Device type: Laptop"/>
+									<outline text="Icon: 💻"/>
+								</outline>
+							</outline>
+							<outline text="Generate device_name" _note="Format: [Type] - [OS] - [Browser]">
+								<outline text="Template: {device_type} - {os} - {browser}"/>
+								<outline text="Example: Laptop - Windows 11 - Chrome 120"/>
+							</outline>
+							<outline text="Result: device_name (auto-generated) ✓">
+								<outline text="Value: Laptop - Windows 11 - Chrome 120"/>
+								<outline text="Purpose: Hiển thị cho khách biết device nào"/>
+								<outline text="User-friendly: Dễ đọc, dễ nhận biết"/>
+							</outline>
+						</outline>
+						<outline text="Step 5: Display device info (WITHOUT status)" _note="Update UI với device info đã generate, NHƯNG KHÔNG có status">
+							<outline text="Update device info section">
+								<outline text="Icon: 💻 (Laptop)"/>
+								<outline text="Name: Laptop - Windows 11 - Chrome 120"/>
+								<outline text="Status: KHÔNG hiển thị" _note="Chờ API response"/>
+								<outline text="Style: Subtle animation fade-in"/>
+							</outline>
+							<outline text="Visible to user: Device name only" _note="Khách chỉ thấy thông tin device cơ bản, không thấy status"/>
+						</outline>
+						<outline text="All data ready (client-side)" _note="Tất cả data đã được chuẩn bị sẵn, ẩn trong JavaScript variables">
+							<outline text="device_fingerprint: e3b0c44... (hidden)"/>
+							<outline text="device_token: dt_a3f9k2l4m8n1p5q7 (hidden, saved in localStorage)"/>
+							<outline text="device_combined_id: d5f6e89a... (hidden, will send to API)"/>
+							<outline text="device_name: Laptop - Windows 11 - Chrome 120 (visible)"/>
+							<outline text="Device status: UNKNOWN (phải đợi API check database)"/>
+							<outline text="Ready to submit when user clicks button ✓"/>
+						</outline>
+					</outline>
+				</outline>
+				<outline text="1.4. Khách điền form" _note="Khách chỉ cần nhập 1 field duy nhất">
+					<outline text="Khách nhập License Key">
+						<outline text="Input: A3F9K2L4M8N1P5Q7" _note="Nhập liền không có dấu gạch ngang"/>
+						<outline text="JavaScript auto-format while typing">
+							<outline text="A → A"/>
+							<outline text="A3 → A3"/>
+							<outline text="A3F9 → A3F9-" _note="Tự động thêm dash"/>
+							<outline text="A3F9K → A3F9-K"/>
+							<outline text="A3F9K2L4 → A3F9-K2L4-"/>
+							<outline text="..."/>
+							<outline text="Final: A3F9-K2L4-M8N1-P5Q7"/>
+						</outline>
+					</outline>
+					<outline text="Device info đã hiển thị sẵn (không cần nhập, NO STATUS)">
+						<outline text="💻 Laptop - Windows 11 - Chrome 120"/>
+						<outline text="Status: (chưa hiển thị, đợi API response)"/>
+					</outline>
+					<outline text="Khách KHÔNG cần nhập gì khác" _note="Device token và device name đã tự động"/>
+				</outline>
+				<outline text="1.5. Khách click Lấy thông tin" _note="Submit form">
+					<outline text="JavaScript validate form">
+						<outline text="Check license key not empty"/>
+						<outline text="Check license key format: ####-####-####-####"/>
+						<outline text="Validation OK → Continue"/>
+						<outline text="Validation FAIL → Show error">
+							<outline text="Example errors">
+								<outline text="Vui lòng nhập license key"/>
+								<outline text="License key không đúng định dạng (phải có 16 ký tự)"/>
+							</outline>
+						</outline>
+					</outline>
+					<outline text="Show loading state">
+						<outline text="Button disabled"/>
+						<outline text="Button text: 🔄 Đang xử lý..."/>
+						<outline text="Loading spinner visible"/>
+						<outline text="Disable license input (prevent changes)"/>
+						<outline text="Device info section: Show loading state" _note="Đang kiểm tra thiết bị..."/>
+					</outline>
+				</outline>
+				<outline text="Kết quả bước 1 (UPDATED V2)" _note="Form đã được điền và ready to submit, device status chưa biết">
+					<outline text="✓ License key: A3F9-K2L4-M8N1-P5Q7 (user input)"/>
+					<outline text="✓ Device fingerprint: e3b0c44... (auto-generated, hidden)"/>
+					<outline text="✓ Device token: dt_a3f9k2l4m8n1p5q7 (auto-generated, saved localStorage)">
+						<outline text="Token presence: Does NOT indicate permission"/>
+						<outline text="Token purpose: Tracking ID only"/>
+					</outline>
+					<outline text="✓ Device combined_id: d5f6e89a... (auto-generated, hidden)">
+						<outline text="This ID will be checked against bz_vd_license_devices"/>
+					</outline>
+					<outline text="✓ Device name: Laptop - Windows 11 - Chrome 120 (auto-generated, visible)"/>
+					<outline text="✓ User agent: Mozilla/5.0.. . (browser header)"/>
+					<outline text="✓ IP address: Will be captured by server ($_SERVER[&apos;REMOTE_ADDR&apos;])"/>
+					<outline text="⏳ Device status: UNKNOWN (must check database via API)">
+						<outline text="NOT determined by localStorage token"/>
+						<outline text="ONLY determined by API checking bz_vd_license_devices"/>
+						<outline text="API will check: device_combined_id trong license&apos;s devices?"/>
+					</outline>
+					<outline text="→ Ready to send AJAX request"/>
+				</outline>
+			</outline>
+			<outline text="Bước 2: Portal gửi AJAX request đến API" _note="JavaScript gọi REST API endpoint của VD Plugin với data đã tự động generate">
+				<outline text="2.1. JavaScript prepare request data" _note="Tập hợp tất cả data cần gửi, bao gồm cả data tự động">
+					<outline text="Request payload">
+						<outline text="license_key: A3F9-K2L4-M8N1-P5Q7" _note="User input"/>
+						<outline text="device_fingerprint: e3b0c44298fc1c149afb..." _note="SHA256 hash từ fingerprinting, 64 chars"/>
+						<outline text="device_token: dt_a3f9k2l4m8n1p5q7" _note="Auto-generated or from localStorage, 20 chars"/>
+						<outline text="device_combined_id: d5f6e89a12bc34de56fa..." _note="SHA256(fingerprint|token), 64 chars - KEY FOR DATABASE MATCHING"/>
+						<outline text="device_name: Laptop - Windows 11 - Chrome 120" _note="Auto-generated, user-friendly name"/>
+						<outline text="user_agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64)..." _note="Browser user agent string, ~200 chars"/>
+						<outline text="ip_address: 123.45.67.89" _note="Will be captured by server-side from $_SERVER[&apos;REMOTE_ADDR&apos;]"/>
+					</outline>
+				</outline>
+				<outline text="2.2. Send AJAX POST request" _note="Gọi WordPress REST API">
+					<outline text="Endpoint: /wp-json/vd/v1/license/access" _note="VD Plugin đã register REST API route này">
+						<outline text="Full URL: https://vidieu. vn/wp-json/vd/v1/license/access"/>
+						<outline text="Method: POST"/>
+						<outline text="Content-Type: application/json"/>
+					</outline>
+					<outline text="Request body (JSON)">
+						<outline text="{"/>
+						<outline text="&quot;license_key&quot;: &quot;A3F9-K2L4-M8N1-P5Q7&quot;,"/>
+						<outline text="&quot;device_fingerprint&quot;: &quot;e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855&quot;,"/>
+						<outline text="&quot;device_token&quot;: &quot;dt_a3f9k2l4m8n1p5q7&quot;,"/>
+						<outline text="&quot;device_combined_id&quot;: &quot;d5f6e89a12bc34de56fa78b90c1d23ef45a67b89c01d23ef45a67b89c01d23ef&quot;,"/>
+						<outline text="&quot;device_name&quot;: &quot;Laptop - Windows 11 - Chrome 120&quot;,"/>
+						<outline text="&quot;user_agent&quot;: &quot;Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36...&quot;,"/>
+						<outline text="  &quot;ip_address&quot;: &quot;123.45.67.89&quot;"/>
+						<outline text="}"/>
+					</outline>
+					<outline text="Request sent to server ✓"/>
+				</outline>
+				<outline text="2.3. API endpoint receive request" _note="VD Plugin REST API callback được trigger">
+					<outline text="WordPress REST API system">
+						<outline text="Route: /vd/v1/license/access"/>
+						<outline text="Callback: vd_api_license_access($request)" _note="Function trong VD Plugin"/>
+						<outline text="$request object chứa tất cả data từ POST body"/>
+					</outline>
+					<outline text="Plugin extract data">
+						<outline text="$license_key = $request[&apos;license_key&apos;]" _note="A3F9-K2L4-M8N1-P5Q7"/>
+						<outline text="$device_fingerprint = $request[&apos;device_fingerprint&apos;]" _note="e3b0c44..."/>
+						<outline text="$device_token = $request[&apos;device_token&apos;]" _note="dt_a3f9k2l4m8n1p5q7"/>
+						<outline text="$device_combined_id = $request[&apos;device_combined_id&apos;]" _note="d5f6e89a... - WILL BE USED TO CHECK DATABASE"/>
+						<outline text="$device_name = $request[&apos;device_name&apos;]" _note="Laptop - Windows 11 - Chrome 120"/>
+						<outline text="$user_agent = $request[&apos;user_agent&apos;]" _note="Mozilla/5.0..."/>
+						<outline text="$ip_address = $_SERVER[&apos;REMOTE_ADDR&apos;]" _note="123.45.67.89 - Captured from server, SẼ DÙNG CHO VPS DETECTION"/>
+					</outline>
+					<outline text="All data extracted ✓"/>
+					<outline text="Start processing..."/>
+				</outline>
+				<outline text="Kết quả bước 2" _note="Request đã đến server với đầy đủ auto-generated data">
+					<outline text="✓ AJAX request sent successfully"/>
+					<outline text="✓ API endpoint received all data"/>
+					<outline text="✓ device_combined_id ready for database matching" _note="Đây là key để check device status"/>
+					<outline text="✓ ip_address captured: 123.45.67.89" _note="Sẽ dùng cho VPS detection ở Bước 2.5"/>
+					<outline text="→ NEXT: Bước 2.5 - VPS Detection &amp; Blocking (MỚI)"/>
+					<outline text="→ THEN: Bước 3 - Validate License Key"/>
+					<outline text="→ LATER: Bước 6 - Validate Device (will check if device_combined_id exists in bz_vd_license_devices)"/>
+				</outline>
+			</outline>
+			<outline text="Bước 2.5: VPS Detection &amp; Blocking (MỚI)" _note="Bước mới thêm vào GIỮA Bước 2 và Bước 3. Detect VPS/Datacenter IP và chặn nếu product config yêu cầu. Chặn sớm để tiết kiệm resources.">
+				<outline text="2.5.1. Lấy product_id từ license key" _note="Cần product_id để lấy config VPS blocking">
+					<outline text="Vấn đề: Chưa validate license (Bước 3 chưa chạy)">
+						<outline text="Bước 3 sẽ validate đầy đủ: format, tồn tại, status, validity"/>
+						<outline text="Nhưng cần product_id NGAY để check VPS config"/>
+					</outline>
+					<outline text="Giải pháp: Quick query để lấy product_id">
+						<outline text="SQL: SELECT product_id FROM bz_vd_license_keys WHERE license_key = &apos;A3F9-K2L4-M8N1-P5Q7&apos; LIMIT 1"/>
+						<outline text="Purpose: Chỉ lấy product_id, không validate gì cả (validate để Bước 3 lo)"/>
+					</outline>
+					<outline text="Kết quả">
+						<outline text="IF found: $product_id = 100 → Continue VPS check"/>
+						<outline text="IF not found: $product_id = NULL → Skip VPS check, để Bước 3 báo lỗi license_not_found"/>
+					</outline>
+					<outline text="Trường hợp của chúng ta: $product_id = 100"/>
+				</outline>
+				<outline text="2.5.2. Lấy VPS blocking config" _note="Check xem product này có chặn VPS không">
+					<outline text="Query config: SELECT block_vps FROM bz_vd_product_share_configs WHERE product_id = 100"/>
+					<outline text="Kết quả: $block_vps = 1 (Product này BẬT chặn VPS)"/>
+					<outline text="Giá trị có thể">
+						<outline text="0 = Cho phép VPS (không check, skip bước này)"/>
+						<outline text="1 = Chặn VPS (phải detect và block nếu phát hiện)"/>
+					</outline>
+				</outline>
+				<outline text="2.5.3. Nếu block_vps = 0 (Không chặn VPS)" _note="Skip VPS detection">
+					<outline text="IF $block_vps = 0 OR $block_vps = NULL">
+						<outline text="→ Product cho phép VPS"/>
+						<outline text="→ Skip tất cả VPS detection logic"/>
+						<outline text="→ Set $is_vps = NULL (không check)"/>
+						<outline text="→ Jump to Bước 3 (Validate License)"/>
+					</outline>
+					<outline text="Use case: Sản phẩm giá rẻ, không cần strict"/>
+				</outline>
+				<outline text="2.5.4. Nếu block_vps = 1 (Chặn VPS) - Bắt đầu detection" _note="Detect IP có phải VPS/Datacenter không">
+					<outline text="2.5.4.1. Lấy IP address từ request">
+						<outline text="Get raw IP: $raw_ip = $_SERVER[&apos;REMOTE_ADDR&apos;]"/>
+						<outline text="Handle proxy/CDN (lấy real IP)">
+							<outline text="Check X-Forwarded-For header: $forwarded = $_SERVER[&apos;HTTP_X_FORWARDED_FOR&apos;]"/>
+							<outline text="Check CF-Connecting-IP (Cloudflare): $cf_ip = $_SERVER[&apos;HTTP_CF_CONNECTING_IP&apos;]"/>
+							<outline text="Priority: CF-Connecting-IP &gt; X-Forwarded-For (first IP) &gt; REMOTE_ADDR"/>
+						</outline>
+						<outline text="Final IP: $ip_address = &apos;123.45.67.89&apos;"/>
+						<outline text="Validate IP: filter_var($ip_address, FILTER_VALIDATE_IP) - đảm bảo IP hợp lệ"/>
+					</outline>
+					<outline text="2.5.4.2. Check whitelist (optional)" _note="Cho phép một số IPs đặc biệt">
+						<outline text="Whitelist IPs: [&apos;127.0.0.1&apos;, &apos;::1&apos;, custom IPs từ admin config]"/>
+						<outline text="IF $ip_address in whitelist">
+							<outline text="→ Skip detection"/>
+							<outline text="→ $is_vps = 0"/>
+							<outline text="→ Continue to Bước 3"/>
+						</outline>
+						<outline text="Purpose: Allow localhost testing, admin IPs, trusted partners"/>
+					</outline>
+					<outline text="2.5.4.3. Method 1: Check local IP ranges database (Recommended)" _note="Fast, free, offline">
+						<outline text="Database: bz_vd_datacenter_ip_ranges">
+							<outline text="Cấu trúc bảng: id INT PRIMARY KEY, provider VARCHAR(50), ip_range_start INT UNSIGNED, ip_range_end INT UNSIGNED, asn VARCHAR(20), org VARCHAR(255), country CHAR(2), updated_at DATETIME, INDEX(ip_range_start, ip_range_end)"/>
+						</outline>
+						<outline text="Convert IP to integer: $ip_int = ip2long(&apos;123.45.67.89&apos;) = 2066563929"/>
+						<outline text="Query IP ranges: SELECT provider, asn, org, country FROM bz_vd_datacenter_ip_ranges WHERE $ip_int BETWEEN ip_range_start AND ip_range_end LIMIT 1"/>
+						<outline text="Kết quả: Not found (0 rows)">
+							<outline text="IP này KHÔNG nằm trong ranges của VPS providers"/>
+							<outline text="→ $is_vps = 0 (Residential IP - IP gia đình/công ty)"/>
+							<outline text="→ ISP: Viettel, VNPT, FPT, hoặc ISP bình thường"/>
+							<outline text="→ ALLOW access"/>
+						</outline>
+						<outline text="Ví dụ nếu found (VPS detected): IP=&apos;45.67.89.12&apos; (DigitalOcean) → Result: {provider:&apos;DigitalOcean&apos;, asn: &apos;AS14061&apos;, org:&apos;DigitalOcean LLC&apos;, country:&apos;US&apos;} → $is_vps=1, $vps_provider=&apos;DigitalOcean&apos; → BLOCK"/>
+						<outline text="Ưu điểm Method 1: ✓ Rất nhanh (local, indexed) ✓ Free ✓ Không rate limit ✓ Offline ready"/>
+						<outline text="Nhược điểm: ✗ Cần update monthly ✗ Chỉ detect VPS/datacenter"/>
+					</outline>
+					<outline text="2.5.4.4. Method 2: Third-party API (Fallback/Alternative)" _note="Accurate nhưng có cost">
+						<outline text="Services: IPHub.info ($5/month 1000 req/day), IPQualityScore (free 5k/month), IP2Location (free 30k/month), MaxMind GeoIP2 (paid)"/>
+						<outline text="Ví dụ IPHub API: GET https://v2.api.iphub.info/ip/123.45.67. 89, Header: X-Key:YOUR_API_KEY, Response: {ip, countryCode,isp,block:0/1,hostname}"/>
+						<outline text="Parse: IF block=1 → VPS, IF block=0 → Residential"/>
+						<outline text="Ưu điểm: ✓ Chính xác 90-95% ✓ Tự động update ✓ Detect cả proxy/VPN/Tor"/>
+						<outline text="Nhược điểm: ✗ Có phí ✗ Phụ thuộc API ✗ Latency cao (100-300ms)"/>
+					</outline>
+					<outline text="2.5.4.5. Hybrid Approach (Recommended)" _note="Kết hợp cả 2 methods">
+						<outline text="Strategy: Step 1: Check local DB (fast,free) → Step 2: IF found → Use result → Step 3: IF not found → Check cache → Step 4: IF not cached → Call API → Step 5: Cache result (TTL 7 days)"/>
+						<outline text="Caching: Key=vps_check_{IP}, Value={is_vps, vps_provider,datacenter_info}, TTL=7 days, Storage: Redis/Memcached/WP transients"/>
+						<outline text="Benefits: ✓ 95% requests dùng local DB ✓ 5% dùng API (cached sau đó) ✓ Giảm costs ✓ Giảm latency"/>
+					</outline>
+				</outline>
+				<outline text="2.5.5. Kết quả detection: is_vps = 0 (Residential IP)" _note="Trường hợp của chúng ta">
+					<outline text="Detection result: $is_vps=0, $vps_provider=NULL, $datacenter_info=NULL, ISP: Viettel/VNPT/FPT"/>
+					<outline text="Action: CHO PHÉP TIẾP TỤC → IP hợp lệ (residential/business) → Lưu VPS info để log ở Bước 7 → Continue to Bước 3"/>
+					<outline text="Store detection result: $vps_detection_result = [&apos;is_vps&apos;=&gt;0, &apos;vps_provider&apos;=&gt;NULL, &apos;datacenter_info&apos;=&gt;NULL]"/>
+				</outline>
+				<outline text="2.5.6. Kết quả detection: is_vps = 1 (VPS Detected) - CHẶN" _note="Kịch bản nếu detect VPS">
+					<outline text="Detection result (ví dụ): IP=&apos;45.67.89.12&apos;, $is_vps=1, $vps_provider=&apos;DigitalOcean&apos;, $datacenter_info={asn: &apos;AS14061&apos;,org:&apos;DigitalOcean LLC&apos;,country:&apos;US&apos;}"/>
+					<outline text="Action: CHẶN HOÀN TOÀN - Return error 403">
+						<outline text="Response: {status:&apos;error&apos;, code:&apos;vps_detected&apos;, message:&apos;Hệ thống phát hiện bạn đang sử dụng VPS/Server&apos;, details:{ip_address:&apos;45.67.89.12&apos;,detected_as: &apos;VPS/Datacenter&apos;,provider:&apos;DigitalOcean&apos;,reason:&apos;Sản phẩm này không cho phép truy cập từ VPS/Server/Datacenter&apos;}, suggestion:&apos;Vui lòng sử dụng kết nối internet thông thường. Nếu cho rằng đây là nhầm lẫn, liên hệ support@vidieu.vn với IP của bạn.&apos;}"/>
+					</outline>
+					<outline text="Ghi log blocked: INSERT INTO bz_vd_device_access_log (..., access_result=&apos;blocked_vps&apos;, error_code=&apos;vps_detected&apos;, is_vps=1, vps_provider=&apos;DigitalOcean&apos;, ...) - LƯU Ý: license_key_id=NULL (chưa validate)"/>
+					<outline text="→ DỪNG XỬ LÝ → Không tiếp tục Bước 3 → HTTP 403 Forbidden"/>
+				</outline>
+				<outline text="2.5.7. Update IP ranges database (Admin task)" _note="Maintenance">
+					<outline text="Frequency: Monthly (hoặc quarterly)"/>
+					<outline text="Data sources: AWS (ip-ranges.amazonaws.com/ip-ranges.json), Google Cloud (gstatic.com/ipranges/cloud.json), Azure (microsoft. com download), DigitalOcean/Linode/Vultr (ASN lookup), GitHub repos (firehol, datacenter-iplist)"/>
+					<outline text="Import process: Download JSON/CSV → Parse CIDR to start/end integers → INSERT/UPDATE bz_vd_datacenter_ip_ranges → Set updated_at=NOW()"/>
+					<outline text="WP-CLI command (optional): wp vd-license update-vps-ranges (tự động download và import)"/>
+				</outline>
+				<outline text="2.5.8. False positive handling" _note="Xử lý nhầm lẫn">
+					<outline text="Scenarios: Corporate IPs (công ty lớn), University IPs (trường học), Mobile carrier IPs"/>
+					<outline text="Solutions: Whitelist (admin thêm IP vào bz_vd_ip_whitelist), Appeal process (khách liên hệ support → admin verify → whitelist), Manual override (tắt VPS check cho license cụ thể)"/>
+				</outline>
+				<outline text="Kết quả Bước 2.5 (Trường hợp hiện tại)">
+					<outline text="✓ Product config: block_vps = 1 (Chặn VPS)"/>
+					<outline text="✓ IP address: 123.45.67.89"/>
+					<outline text="✓ VPS detection: is_vps = 0 (Residential IP - Viettel)"/>
+					<outline text="✓ Result: CHO PHÉP TIẾP TỤC"/>
+					<outline text="✓ VPS info stored: {is_vps:0, vps_provider: NULL, datacenter_info:NULL}"/>
+					<outline text="→ Continue to Bước 3: Validate License Key"/>
+				</outline>
+				<outline text="Lưu ý quan trọng về Bước 2.5">
+					<outline text="Thứ tự: Chạy SAU Bước 2 (Receive Request), TRƯỚC Bước 3 (Validate License)"/>
+					<outline text="Purpose: Chặn VPS sớm để tiết kiệm resources (không cần validate license nếu VPS)"/>
+					<outline text="Performance: Nếu dùng local DB + cache, latency chỉ thêm ~5-10ms"/>
+					<outline text="Flexibility: Admin config per-product (sản phẩm cao cấp block, sản phẩm rẻ allow)"/>
+					<outline text="Logging: Tất cả attempts (allowed + blocked) đều được log để analytics"/>
+				</outline>
+			</outline>
+		</outline>
+	</body>
+</opml>
