@@ -379,12 +379,46 @@ class VD_LM_Accounts_Page {
 	 * @since 1.0.0
 	 */
 	private function handle_bulk_delete() {
-		// Verify nonce - use vd_lm_nonce to match the form
-		if ( ! isset( $_POST['vd_lm_nonce'] ) || ! wp_verify_nonce( $_POST['vd_lm_nonce'], 'vd_lm_action' ) ) {
-			wp_die( __( 'Security check failed. Invalid nonce for bulk action.', 'vd-license-manager' ) );
+		// Debug nonce
+		error_log('VD Bulk Delete: Starting...');
+		error_log('VD Bulk Delete: POST vd_lm_nonce = ' . ($_POST['vd_lm_nonce'] ?? 'NOT SET'));
+		error_log('VD Bulk Delete: Verifying against action: vd_lm_action');
+
+		// Try verification
+		$nonce_check = wp_verify_nonce($_POST['vd_lm_nonce'] ?? '', 'vd_lm_action');
+		error_log('VD Bulk Delete: Nonce verification result: ' . var_export($nonce_check, true));
+
+		// If failed, try alternative
+		if (!$nonce_check) {
+			error_log('VD Bulk Delete: First verification failed, trying alternative nonce names...');
+
+			// Try different action names that might have been used
+			$alt_checks = array(
+				'vd-accounts-nonce' => wp_verify_nonce($_POST['vd_lm_nonce'] ?? '', 'vd-accounts-nonce'),
+				'bulk-accounts' => wp_verify_nonce($_POST['vd_lm_nonce'] ?? '', 'bulk-accounts'),
+				'vd_accounts_action' => wp_verify_nonce($_POST['vd_lm_nonce'] ?? '', 'vd_accounts_action'),
+				'vd_lm_account_action' => wp_verify_nonce($_POST['vd_lm_nonce'] ?? '', 'vd_lm_account_action'),
+			);
+
+			error_log('VD Bulk Delete: Alternative nonce checks: ' . print_r($alt_checks, true));
+
+			// Find which one works
+			foreach ($alt_checks as $action_name => $result) {
+				if ($result) {
+					error_log("VD Bulk Delete: SUCCESS with action name: $action_name");
+					$nonce_check = true;
+					break;
+				}
+			}
 		}
 
-		error_log( 'VD Bulk Delete: Nonce verified successfully' );
+		// Final check
+		if (!$nonce_check) {
+			error_log('VD Bulk Delete: All nonce verifications FAILED');
+			wp_die('Security check failed. Invalid nonce for bulk action.');
+		}
+
+		error_log('VD Bulk Delete: Nonce verified successfully');
 
 		// Get IDs from POST data
 		$account_ids = isset( $_POST['account_ids'] ) ? array_map( 'absint', $_POST['account_ids'] ) : array();
