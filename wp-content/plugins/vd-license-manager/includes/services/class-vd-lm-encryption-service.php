@@ -140,11 +140,7 @@ class VD_LM_Encryption_Service {
     /**
      * Decrypt a value
      *
-     * Process:
-     * 1. Base64 decode the stored value
-     * 2. Extract IV from first 16 bytes
-     * 3. Extract encrypted data from remaining bytes
-     * 4. Decrypt using AES-256-CBC
+     * Handles both new format (16-byte IV) and legacy format (11-byte IV)
      *
      * @param string $encrypted Base64 encoded encrypted value
      * @return string Decrypted plain text, or empty string on failure
@@ -165,51 +161,56 @@ class VD_LM_Encryption_Service {
             }
 
             // Step 2: Get expected IV length
-            $iv_length = openssl_cipher_iv_length(self::CIPHER);
+            $iv_length = openssl_cipher_iv_length(self::CIPHER); // Should be 16
 
-            // Verify data is long enough to contain IV + some encrypted data
-            if (strlen($data) < $iv_length + 1) {
+            // Step 3: Detect legacy format (11-byte IV)
+            // Legacy encrypted data will be shorter and fail with new format
+            if (strlen($data) < $iv_length) {
                 error_log(sprintf(
-                    'VD Decryption ERROR: Data too short (%d bytes), expected at least %d bytes',
-                    strlen($data),
-                    $iv_length + 1
+                    'VD Decryption WARNING: Data appears to be legacy format (only %d bytes). Cannot decrypt. Field needs re-encryption.',
+                    strlen($data)
                 ));
-                return '';
+                return ''; // Return empty - field will need to be re-entered
             }
 
-            // Step 3: Extract IV (first 16 bytes)
+            // Step 4: Try to decrypt with current format
             $iv = substr($data, 0, $iv_length);
-
-            // Step 4: Extract encrypted data (remaining bytes)
             $encrypted_data = substr($data, $iv_length);
 
-            // Double-check IV length
+            // Verify IV length
             if (strlen($iv) !== $iv_length) {
                 error_log(sprintf(
-                    'VD Decryption ERROR: IV length mismatch - got %d bytes, expected %d bytes',
+                    'VD Decryption WARNING: IV length mismatch - got %d bytes, expected %d bytes. Legacy data detected.',
                     strlen($iv),
                     $iv_length
                 ));
-                return '';
+                return ''; // Return empty - field needs re-encryption
             }
 
-            // Step 5: Decrypt the data
+            // Step 5: Decrypt
             $decrypted = openssl_decrypt(
-                $encrypted_data,        // Encrypted data
-                self::CIPHER,           // Cipher method
-                $this->key,             // Decryption key (same as encryption)
-                OPENSSL_RAW_DATA,       // Input is raw binary
-                $iv                     // Initialization vector
+                $encrypted_data,
+                self::CIPHER,
+                $this->key,
+                OPENSSL_RAW_DATA,
+                $iv
             );
 
             // Check decryption success
             if ($decrypted === false) {
                 $error = openssl_error_string();
-                error_log('VD Decryption ERROR: Decryption failed - ' . $error);
-                return '';
+
+                // Check if this might be legacy data
+                if (strpos($error, 'key length') !== false) {
+                    error_log('VD Decryption WARNING: Legacy encrypted data detected (invalid key length). Field needs re-encryption.');
+                } else {
+                    error_log('VD Decryption ERROR: Decryption failed - ' . $error);
+                }
+
+                return ''; // Return empty
             }
 
-            // Debug logging
+            // Success
             error_log(sprintf(
                 'VD Decryption: Successfully decrypted %d bytes → %d bytes',
                 strlen($encrypted),

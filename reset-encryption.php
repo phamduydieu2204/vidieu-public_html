@@ -199,7 +199,7 @@ if (!$confirmed) {
 
 // User confirmed - proceed with reset
 global $wpdb;
-$table = $wpdb->prefix . 'bz_vd_provider_accounts';
+$table = $wpdb->prefix . 'vd_provider_accounts';
 
 // List of encrypted fields
 $encrypted_fields = array(

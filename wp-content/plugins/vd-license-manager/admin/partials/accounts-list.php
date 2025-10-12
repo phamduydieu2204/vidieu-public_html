@@ -15,6 +15,29 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+/**
+ * Check if account has legacy encrypted data
+ */
+function vd_has_legacy_encryption($account) {
+	$encrypted_fields = array(
+		'account_password', 'cookies', 'phone_recovery',
+		'email_recovery', 'security_answer', 'backup_codes',
+		'two_factor_secret', 'api_key', 'secret_key', 'api_token'
+	);
+
+	foreach ($encrypted_fields as $field) {
+		if (!empty($account->$field)) {
+			// Check if it's short (legacy format)
+			$decoded = base64_decode($account->$field, true);
+			if ($decoded && strlen($decoded) < 20) { // Legacy data is typically < 20 bytes
+				return true;
+			}
+		}
+	}
+
+	return false;
+}
+
 // Variables available from controller:
 // $accounts - array of account objects
 // $total_accounts - total number of accounts
@@ -163,6 +186,13 @@ $order = isset( $_GET['order'] ) ? sanitize_text_field( $_GET['order'] ) : 'DESC
 									<a href="<?php echo esc_url( admin_url( 'admin.php?page=vd-accounts&action=edit&id=' . $account->id ) ); ?>" class="row-title">
 										<?php echo esc_html( $account->provider ); ?>
 									</a>
+									<?php if (vd_has_legacy_encryption($account)): ?>
+										<span class="vd-legacy-badge"
+											  title="This account has old encrypted data that cannot be decrypted. Please edit and re-enter credentials."
+											  style="background: #fff3cd; color: #856404; padding: 2px 6px; border-radius: 3px; font-size: 11px; margin-left: 5px;">
+											⚠️ Legacy
+										</span>
+									<?php endif; ?>
 								</strong>
 
 								<div class="row-actions">

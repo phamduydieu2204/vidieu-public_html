@@ -306,10 +306,13 @@ class VD_LM_Account_Repository extends VD_LM_Base_Repository {
 				return new WP_Error( 'account_not_found', 'Account not found' );
 			}
 
-			// Remove empty password field (don't update if blank)
-			if ( isset( $data['account_password'] ) && empty( $data['account_password'] ) ) {
-				unset( $data['account_password'] );
-				error_log( 'VD: Removed empty password field from update' );
+			// Remove empty password and other sensitive fields (don't update if blank in edit mode)
+			$sensitive_fields_to_preserve = array('account_password', 'security_answer', 'secret_key', 'api_token');
+			foreach ($sensitive_fields_to_preserve as $field) {
+				if ( isset( $data[$field] ) && empty( $data[$field] ) ) {
+					unset( $data[$field] );
+					error_log( 'VD: Removed empty ' . $field . ' field from update (preserving existing value)' );
+				}
 			}
 
 			// Encrypt sensitive fields before update
