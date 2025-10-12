@@ -248,6 +248,9 @@ class VD_LM_Database {
             }
         }
 
+        // Fix encrypted column sizes if needed
+        self::fix_encrypted_columns_size( $table_name );
+
         // Update migration flag
         update_option( 'vd_accounts_migrated_v2', time() );
 
@@ -260,6 +263,79 @@ class VD_LM_Database {
         ) );
 
         return empty( $migration_errors );
+    }
+
+    /**
+     * Fix encrypted column sizes for proper encryption storage
+     *
+     * Encrypted data can be 100+ characters long. This method ensures
+     * all encrypted fields have sufficient space.
+     *
+     * @since 1.0.0
+     * @param string $table_name Table name with prefix
+     */
+    private static function fix_encrypted_columns_size( $table_name ) {
+        global $wpdb;
+
+        // Check if already fixed
+        if ( get_option( 'vd_encrypted_columns_fixed' ) ) {
+            return;
+        }
+
+        VD_LM_Logger_Service::info( 'Starting encrypted columns size fix' );
+
+        $alterations = array(
+            "ALTER TABLE {$table_name} MODIFY COLUMN account_password LONGTEXT NULL COMMENT 'Account password (encrypted)'",
+            "ALTER TABLE {$table_name} MODIFY COLUMN cookies LONGTEXT NULL COMMENT 'Session cookies (encrypted, can be very long)'",
+            "ALTER TABLE {$table_name} MODIFY COLUMN phone_recovery TEXT NULL COMMENT 'Recovery phone number (encrypted)'",
+            "ALTER TABLE {$table_name} MODIFY COLUMN email_recovery TEXT NULL COMMENT 'Recovery email address (encrypted)'",
+            "ALTER TABLE {$table_name} MODIFY COLUMN security_answer LONGTEXT NULL COMMENT 'Security question answer (encrypted)'",
+            "ALTER TABLE {$table_name} MODIFY COLUMN backup_codes LONGTEXT NULL COMMENT 'Account backup codes (encrypted)'",
+            "ALTER TABLE {$table_name} MODIFY COLUMN two_factor_secret TEXT NULL COMMENT '2FA secret key (encrypted)'",
+            "ALTER TABLE {$table_name} MODIFY COLUMN api_key TEXT NULL COMMENT 'Provider API key (encrypted)'",
+            "ALTER TABLE {$table_name} MODIFY COLUMN secret_key TEXT NULL COMMENT 'Provider secret key (encrypted)'",
+            "ALTER TABLE {$table_name} MODIFY COLUMN api_token LONGTEXT NULL COMMENT 'API authentication token (encrypted)'"
+        );
+
+        $success_count = 0;
+        $error_count = 0;
+
+        foreach ( $alterations as $sql ) {
+            $result = $wpdb->query( $sql );
+            if ( $result === false ) {
+                VD_LM_Logger_Service::error( 'Failed to modify column size', array(
+                    'sql' => $sql,
+                    'error' => $wpdb->last_error,
+                ) );
+                $error_count++;
+            } else {
+                VD_LM_Logger_Service::info( 'Column size modified successfully', array(
+                    'sql' => $sql,
+                ) );
+                $success_count++;
+            }
+        }
+
+        // Mark as fixed even if some errors occurred (partial fix is better than none)
+        update_option( 'vd_encrypted_columns_fixed', true );
+
+        VD_LM_Logger_Service::info( 'Encrypted columns size fix completed', array(
+            'success_count' => $success_count,
+            'error_count' => $error_count,
+        ) );
+    }
+
+    /**
+     * Check and fix encrypted columns size on admin init
+     *
+     * @since 1.0.0
+     */
+    public static function check_and_fix_encrypted_columns() {
+        if ( ! get_option( 'vd_encrypted_columns_fixed' ) ) {
+            global $wpdb;
+            $table_name = $wpdb->prefix . 'bz_vd_provider_accounts';
+            self::fix_encrypted_columns_size( $table_name );
+        }
     }
 
     /**

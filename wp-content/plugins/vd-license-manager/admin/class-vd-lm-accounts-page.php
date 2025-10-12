@@ -71,6 +71,9 @@ class VD_LM_Accounts_Page {
 
 		// Enqueue assets for accounts page
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_assets' ) );
+
+		// Check and fix database schema on accounts page access
+		add_action( 'admin_init', array( $this, 'check_database_schema' ) );
 	}
 
 	/**
@@ -550,5 +553,25 @@ class VD_LM_Accounts_Page {
 				),
 			)
 		);
+	}
+
+	/**
+	 * Check and fix database schema if needed
+	 *
+	 * @since 1.0.0
+	 */
+	public function check_database_schema() {
+		// Only check on accounts pages
+		if ( ! isset( $_GET['page'] ) || $_GET['page'] !== 'vd-accounts' ) {
+			return;
+		}
+
+		// Load database class if not already loaded
+		if ( ! class_exists( 'VD_LM_Database' ) ) {
+			require_once VD_PLUGIN_DIR . 'includes/class-vd-lm-database.php';
+		}
+
+		// Check and fix encrypted columns
+		VD_LM_Database::check_and_fix_encrypted_columns();
 	}
 }

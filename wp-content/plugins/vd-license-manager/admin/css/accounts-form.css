@@ -1,61 +1,230 @@
 /**
- * Account Form Styles
+ * VD Account Form Styles - Professional UI/UX
  *
- * CSS styles for the provider account add/edit form interface.
- * Provides responsive layout and professional WordPress admin styling.
+ * Complete styling for provider account management with modern design,
+ * responsive layout, and enhanced user experience.
  *
  * @package    VD_License_Manager
  * @subpackage Admin/CSS
  * @since      1.0.0
  */
 
-/* Main Layout */
+/* ==========================================
+   MAIN LAYOUT & CONTAINER
+   ========================================== */
+
 .vd-account-form-wrapper {
     max-width: 1200px;
+    margin: 20px 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, sans-serif;
 }
 
 .vd-form-container {
     display: flex;
-    gap: 20px;
+    gap: 30px;
+    align-items: flex-start;
 }
 
 .vd-form-main {
     flex: 1;
+    min-width: 0; /* Prevent flex overflow */
 }
 
 .vd-form-sidebar {
-    width: 280px;
+    width: 300px;
     flex-shrink: 0;
 }
 
 .vd-page-navigation {
-    margin-bottom: 10px;
+    margin-bottom: 20px;
 }
 
-/* Form Elements */
-.required {
-    color: #d63638;
+.vd-page-navigation .page-title-action {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    background: #f6f7f7;
+    border: 1px solid #c3c4c7;
+    border-radius: 4px;
+    text-decoration: none;
+    color: #2c3338;
+    font-size: 13px;
+    font-weight: 500;
+    transition: all 0.2s ease;
 }
+
+.vd-page-navigation .page-title-action:hover {
+    background: #fff;
+    border-color: #2271b1;
+    color: #2271b1;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+/* ==========================================
+   FORM SECTIONS & POSTBOXES
+   ========================================== */
+
+/* Enhanced Postbox Styling */
+.postbox {
+    background: #fff;
+    border: 1px solid #c3c4c7;
+    border-radius: 6px;
+    margin-bottom: 20px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    transition: box-shadow 0.2s ease;
+}
+
+.postbox:hover {
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.postbox-header {
+    background: linear-gradient(135deg, #f8f9fa 0%, #f1f3f4 100%);
+    border-bottom: 1px solid #e1e5e9;
+    border-radius: 5px 5px 0 0;
+    padding: 16px 20px;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    user-select: none;
+    transition: background 0.2s ease;
+}
+
+.postbox-header:hover {
+    background: linear-gradient(135deg, #f1f3f4 0%, #e8eaf6 100%);
+}
+
+.postbox-header .hndle {
+    margin: 0;
+    font-size: 15px;
+    font-weight: 600;
+    color: #1e293b;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.postbox-header .hndle::before {
+    content: "";
+    width: 4px;
+    height: 20px;
+    background: linear-gradient(135deg, #2563eb, #3b82f6);
+    border-radius: 2px;
+    flex-shrink: 0;
+}
+
+.postbox-header .handlediv {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 4px;
+    transition: background 0.2s ease;
+}
+
+.postbox-header .handlediv:hover {
+    background: rgba(37, 99, 235, 0.1);
+}
+
+.postbox-header .toggle-indicator {
+    color: #64748b;
+    font-size: 16px;
+    transition: transform 0.3s ease, color 0.2s ease;
+}
+
+.postbox-header .handlediv:hover .toggle-indicator {
+    color: #2563eb;
+}
+
+.postbox-header .handlediv[aria-expanded="false"] .toggle-indicator {
+    transform: rotate(-90deg);
+}
+
+.postbox .inside {
+    padding: 24px;
+    transition: opacity 0.3s ease;
+}
+
+/* ==========================================
+   FORM GROUPS & FIELDS
+   ========================================== */
 
 .vd-form-section {
-    padding: 0;
+    margin: 0;
 }
 
 .vd-form-row {
-    margin-bottom: 20px;
+    margin-bottom: 24px;
+}
+
+.vd-form-row:last-child {
+    margin-bottom: 0;
 }
 
 .vd-form-row label {
     display: block;
     font-weight: 600;
-    margin-bottom: 5px;
-    color: #1d2327;
+    margin-bottom: 8px;
+    color: #1e293b;
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+.vd-form-row label .required {
+    color: #dc2626;
+    margin-left: 2px;
 }
 
 .vd-form-row .description {
-    margin-top: 5px;
-    font-style: italic;
-    color: #646970;
+    margin: 8px 0 0 0;
+    font-size: 13px;
+    color: #64748b;
+    line-height: 1.5;
+    display: flex;
+    align-items: flex-start;
+    gap: 6px;
+}
+
+.vd-form-row .description .dashicons {
+    flex-shrink: 0;
+    margin-top: 2px;
+    color: #3b82f6;
+}
+
+/* Enhanced Input Styling */
+.vd-form-row input[type="text"],
+.vd-form-row input[type="email"],
+.vd-form-row input[type="tel"],
+.vd-form-row input[type="url"],
+.vd-form-row input[type="number"],
+.vd-form-row input[type="date"],
+.vd-form-row input[type="password"],
+.vd-form-row select,
+.vd-form-row textarea {
+    width: 100%;
+    max-width: 600px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    padding: 10px 12px;
+    font-size: 14px;
+    line-height: 1.5;
+    transition: all 0.2s ease;
+    background: #fff;
+}
+
+.vd-form-row input:focus,
+.vd-form-row select:focus,
+.vd-form-row textarea:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    outline: none;
+}
+
+.vd-form-row textarea {
+    resize: vertical;
+    min-height: 80px;
 }
 
 /* Grid Layouts */
@@ -67,190 +236,380 @@
 
 .vd-grid-4 {
     display: grid;
-    grid-template-columns: 2fr 2fr 1.5fr 1fr;
-    gap: 10px;
+    grid-template-columns: 2fr 2fr 1.5fr auto;
+    gap: 12px;
     align-items: center;
 }
 
-/* Password Fields */
-.vd-password-field {
+/* ==========================================
+   PASSWORD FIELDS & TOGGLES
+   ========================================== */
+
+.vd-password-field,
+.vd-password-wrapper {
     display: flex;
-    gap: 5px;
-    align-items: center;
+    gap: 8px;
+    align-items: flex-start;
+    max-width: 600px;
 }
 
-.vd-password-field input {
+.vd-password-field input,
+.vd-password-wrapper input {
     flex: 1;
 }
 
 .vd-toggle-password {
     flex-shrink: 0;
+    padding: 10px 16px;
+    background: #f8fafc;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    color: #374151;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
     white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.vd-toggle-password:hover {
+    background: #f1f5f9;
+    border-color: #94a3b8;
+    color: #1e293b;
+}
+
+.vd-toggle-password.active {
+    background: #dbeafe;
+    border-color: #3b82f6;
+    color: #1e40af;
 }
 
 .vd-toggle-password .dashicons {
-    vertical-align: middle;
-    margin-right: 4px;
+    font-size: 16px;
+    line-height: 1;
 }
 
-/* Encryption Notice */
+/* ==========================================
+   SECURITY & NOTICES
+   ========================================== */
+
+.vd-security-notice,
 .vd-encryption-notice {
-    background: #fff3cd;
-    padding: 10px 15px;
-    border-left: 4px solid #ffc107;
-    margin-bottom: 20px;
-    border-radius: 3px;
+    background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+    border: 1px solid #f59e0b;
+    border-left: 4px solid #f59e0b;
+    border-radius: 6px;
+    padding: 16px 20px;
+    margin: 0 0 20px 0;
+    position: relative;
+    overflow: hidden;
 }
 
-.vd-encryption-notice p {
+.vd-security-notice::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: linear-gradient(90deg, #f59e0b, #fbbf24, #f59e0b);
+    animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+}
+
+.vd-security-notice p {
     margin: 0;
     font-size: 13px;
-    color: #856404;
+    color: #92400e;
+    line-height: 1.6;
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
 }
 
-/* Custom Fields */
+.vd-security-notice .dashicons {
+    color: #f59e0b;
+    flex-shrink: 0;
+    margin-top: 1px;
+}
+
+/* ==========================================
+   CUSTOM FIELDS
+   ========================================== */
+
+#custom-fields-container {
+    margin-bottom: 20px;
+}
+
 .vd-custom-field-row {
-    padding: 15px;
-    background: #f9f9f9;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    margin-bottom: 10px;
+    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 16px;
+    transition: all 0.3s ease;
+    position: relative;
 }
 
-.vd-custom-field-row .vd-grid-4 {
-    margin-bottom: 10px;
+.vd-custom-field-row::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+    border-radius: 8px 0 0 8px;
 }
 
+.vd-custom-field-row:hover {
+    border-color: #3b82f6;
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+    transform: translateY(-1px);
+}
+
+.vd-custom-field-inputs {
+    margin-bottom: 12px;
+}
+
+.vd-custom-field-value input,
+.vd-custom-field-value textarea {
+    width: 100%;
+    max-width: none;
+    margin-top: 0;
+}
+
+.vd-remove-custom-field,
 .vd-remove-field {
-    color: #b32d2e !important;
-    border-color: #b32d2e !important;
-}
-
-.vd-remove-field:hover {
-    color: #d63638 !important;
-    border-color: #d63638 !important;
-    background: #fef2f2 !important;
-}
-
-/* Account Info */
-.vd-account-info {
-    margin: 0;
-    padding: 0;
-    list-style: none;
-}
-
-.vd-account-info li {
-    margin-bottom: 8px;
-    padding-bottom: 8px;
-    border-bottom: 1px solid #f0f0f1;
+    background: #fee2e2;
+    border: 1px solid #fca5a5;
+    color: #dc2626;
+    padding: 8px 12px;
+    border-radius: 6px;
     font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 4px;
 }
 
-.vd-account-info li:last-child {
-    border-bottom: none;
-    margin-bottom: 0;
-    padding-bottom: 0;
+.vd-remove-custom-field:hover,
+.vd-remove-field:hover {
+    background: #fecaca;
+    border-color: #f87171;
+    color: #b91c1c;
+    transform: scale(1.05);
 }
 
-/* Security Tips */
+.vd-remove-custom-field .dashicons,
+.vd-remove-field .dashicons {
+    font-size: 14px;
+}
+
+#add-custom-field,
+#vd-add-custom-field {
+    background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+    border: none;
+    color: #fff;
+    padding: 12px 20px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 2px 4px rgba(59, 130, 246, 0.2);
+}
+
+#add-custom-field:hover,
+#vd-add-custom-field:hover {
+    background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(59, 130, 246, 0.3);
+}
+
+#add-custom-field .dashicons,
+#vd-add-custom-field .dashicons {
+    font-size: 16px;
+}
+
+/* ==========================================
+   SIDEBAR STYLING
+   ========================================== */
+
+.vd-form-sidebar .postbox {
+    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+}
+
+.vd-form-sidebar .postbox-header {
+    background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 100%);
+}
+
+.vd-account-info,
 .vd-security-tips {
     margin: 0;
     padding: 0;
     list-style: none;
 }
 
+.vd-account-info li,
 .vd-security-tips li {
-    margin-bottom: 8px;
-    font-size: 12px;
-    color: #666;
-    line-height: 1.4;
-}
-
-/* Form Section Toggles */
-.postbox .handlediv {
-    cursor: pointer;
-}
-
-.postbox .handle-actions {
+    padding: 12px 0;
+    border-bottom: 1px solid #e2e8f0;
+    font-size: 13px;
+    line-height: 1.5;
     display: flex;
-    align-items: center;
+    align-items: flex-start;
+    gap: 8px;
 }
 
-.postbox .toggle-indicator {
-    transition: transform 0.2s ease;
+.vd-account-info li:last-child,
+.vd-security-tips li:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
 }
 
-.postbox .handlediv[aria-expanded="true"] .toggle-indicator {
-    transform: rotate(180deg);
+.vd-account-info li {
+    color: #374151;
 }
 
-/* Status Indicators */
-.vd-status-active {
-    color: #00a32a;
+.vd-account-info li strong {
+    color: #1f2937;
     font-weight: 600;
 }
 
-.vd-status-inactive {
-    color: #d63638;
-    font-weight: 600;
+.vd-security-tips li {
+    color: #64748b;
 }
 
-.vd-status-expired {
-    color: #ff922b;
-    font-weight: 600;
+.vd-security-tips li::before {
+    content: "🛡️";
+    flex-shrink: 0;
+    margin-right: 4px;
 }
 
-/* Field Groups */
-.vd-field-group {
-    border: 1px solid #e5e5e5;
-    border-radius: 4px;
-    padding: 15px;
-    margin-bottom: 15px;
-    background: #fff;
-}
+/* ==========================================
+   FORM VALIDATION & ERRORS
+   ========================================== */
 
-.vd-field-group-title {
-    margin: 0 0 15px 0;
-    font-size: 14px;
-    font-weight: 600;
-    color: #1d2327;
-    border-bottom: 1px solid #e5e5e5;
-    padding-bottom: 8px;
-}
-
-/* Validation Styles */
 .vd-form-row.error input,
 .vd-form-row.error textarea,
 .vd-form-row.error select {
-    border-color: #d63638;
-    box-shadow: 0 0 0 1px #d63638;
+    border-color: #dc2626;
+    box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
 }
 
 .vd-error-message {
-    color: #d63638;
+    color: #dc2626;
     font-size: 12px;
-    margin-top: 5px;
-    display: block;
+    margin-top: 6px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: 500;
 }
 
-/* Loading States */
+.vd-error-message::before {
+    content: "⚠️";
+    flex-shrink: 0;
+}
+
+.vd-form-message {
+    padding: 16px 20px;
+    margin: 20px 0;
+    border-radius: 6px;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.vd-form-message.success {
+    background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
+    border: 1px solid #22c55e;
+    color: #15803d;
+}
+
+.vd-form-message.error {
+    background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+    border: 1px solid #dc2626;
+    color: #b91c1c;
+}
+
+/* ==========================================
+   LOADING & INTERACTION STATES
+   ========================================== */
+
 .vd-loading {
     opacity: 0.6;
     pointer-events: none;
+    position: relative;
 }
 
-.vd-spinner {
-    display: inline-block;
-    width: 16px;
-    height: 16px;
-    margin-left: 8px;
-    vertical-align: middle;
+.vd-loading::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 20px;
+    height: 20px;
+    margin: -10px 0 0 -10px;
+    border: 2px solid #3b82f6;
+    border-radius: 50%;
+    border-top-color: transparent;
+    animation: spin 1s linear infinite;
 }
 
-/* Responsive Design */
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Button Enhancements */
+.button-primary {
+    background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+    border-color: #1d4ed8;
+    text-shadow: none;
+    box-shadow: 0 2px 4px rgba(59, 130, 246, 0.2);
+    transition: all 0.2s ease;
+}
+
+.button-primary:hover {
+    background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%);
+    border-color: #1e40af;
+    box-shadow: 0 4px 8px rgba(59, 130, 246, 0.3);
+    transform: translateY(-1px);
+}
+
+/* ==========================================
+   RESPONSIVE DESIGN
+   ========================================== */
+
+@media screen and (max-width: 1024px) {
+    .vd-form-container {
+        gap: 20px;
+    }
+
+    .vd-form-sidebar {
+        width: 280px;
+    }
+}
+
 @media screen and (max-width: 850px) {
     .vd-form-container {
         flex-direction: column;
+        gap: 20px;
     }
 
     .vd-form-sidebar {
@@ -260,37 +619,69 @@
 
     .vd-grid-2 {
         grid-template-columns: 1fr;
-        gap: 15px;
+        gap: 16px;
     }
 
     .vd-grid-4 {
         grid-template-columns: 1fr;
-        gap: 10px;
+        gap: 12px;
     }
 
-    .vd-password-field {
+    .vd-password-field,
+    .vd-password-wrapper {
         flex-direction: column;
         align-items: stretch;
         gap: 8px;
+    }
+
+    .vd-form-row input,
+    .vd-form-row select,
+    .vd-form-row textarea {
+        max-width: none;
     }
 }
 
 @media screen and (max-width: 600px) {
     .vd-account-form-wrapper {
-        margin: 0 -20px;
+        margin: 10px -20px;
         padding: 0 20px;
     }
 
-    .vd-form-container {
-        gap: 15px;
+    .postbox .inside {
+        padding: 16px;
     }
 
     .vd-custom-field-row {
-        padding: 10px;
+        padding: 16px;
     }
 
     .vd-form-row {
-        margin-bottom: 15px;
+        margin-bottom: 20px;
+    }
+}
+
+/* ==========================================
+   ACCESSIBILITY & PERFORMANCE
+   ========================================== */
+
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+@media (prefers-contrast: high) {
+    .postbox,
+    .vd-custom-field-row {
+        border: 2px solid #000;
+    }
+
+    .vd-security-notice {
+        background: #fff;
+        border: 2px solid #000;
+        color: #000;
     }
 }
 
@@ -299,7 +690,8 @@
     .vd-form-sidebar,
     .vd-toggle-password,
     .vd-remove-field,
-    #add-custom-field {
+    #add-custom-field,
+    .postbox-header .handlediv {
         display: none !important;
     }
 
@@ -307,27 +699,12 @@
         flex-direction: column;
     }
 
+    .postbox {
+        box-shadow: none;
+        border: 1px solid #000;
+    }
+
     .vd-password-field input {
         border: 1px solid #000 !important;
-    }
-}
-
-/* Accessibility Improvements */
-@media (prefers-reduced-motion: reduce) {
-    .postbox .toggle-indicator {
-        transition: none;
-    }
-}
-
-/* High Contrast Mode */
-@media (prefers-contrast: high) {
-    .vd-encryption-notice {
-        background: #fff;
-        border: 2px solid #000;
-    }
-
-    .vd-custom-field-row {
-        border: 2px solid #000;
-        background: #fff;
     }
 }
