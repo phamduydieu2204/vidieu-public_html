@@ -36,7 +36,7 @@ class VD_LM_Database {
      *
      * @since 1.0.0
      */
-    const DB_VERSION = '1.0.0';
+    const DB_VERSION = '1.1.0';
 
     /**
      * Option name for storing database version
@@ -567,23 +567,16 @@ class VD_LM_Database {
         $sql = "CREATE TABLE {$table_name} (
             id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
             product_id bigint(20) unsigned NOT NULL COMMENT 'WooCommerce product ID',
-            share_type enum('cookie','userpass','userpass_2fa','api_key','custom') NOT NULL DEFAULT 'userpass' COMMENT 'Type of credentials to share',
-            response_fields longtext NOT NULL COMMENT 'JSON config of fields to return to customer',
-            field_mapping longtext NULL COMMENT 'JSON mapping of internal fields to response fields',
-            max_devices int(11) NOT NULL DEFAULT 2 COMMENT 'Maximum devices per license for this product',
-            max_requests_per_day int(11) NOT NULL DEFAULT 10 COMMENT 'API rate limit per day',
-            max_requests_per_hour int(11) NOT NULL DEFAULT 5 COMMENT 'API rate limit per hour',
-            vps_detection_enabled tinyint(1) NOT NULL DEFAULT 1 COMMENT 'Enable VPS detection for this product',
-            vps_block_enabled tinyint(1) NOT NULL DEFAULT 1 COMMENT 'Block VPS usage for this product',
-            auto_rotation_enabled tinyint(1) NOT NULL DEFAULT 0 COMMENT 'Enable automatic account rotation',
-            rotation_interval_hours int(11) NULL COMMENT 'Hours between rotations (if enabled)',
-            session_timeout_minutes int(11) NOT NULL DEFAULT 60 COMMENT 'Session timeout in minutes',
-            concurrent_sessions_allowed int(11) NOT NULL DEFAULT 1 COMMENT 'Max concurrent sessions per license',
+            max_devices int(11) NOT NULL DEFAULT 2 COMMENT 'Maximum devices per license (1-10)',
+            validity_days int(11) NOT NULL DEFAULT 30 COMMENT 'License validity in days (1-3650)',
+            max_requests_per_day int(11) NOT NULL DEFAULT 100 COMMENT 'API rate limit per day (10-10000)',
+            allow_vps tinyint(1) NOT NULL DEFAULT 0 COMMENT 'Allow VPS access (0=No, 1=Yes)',
             created_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
             updated_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
             PRIMARY KEY (id),
             UNIQUE KEY uk_product_id (product_id),
-            KEY idx_share_type (share_type),
+            KEY idx_max_devices (max_devices),
+            KEY idx_validity_days (validity_days),
             KEY idx_created_at (created_at)
         ) $charset_collate;";
 
