@@ -20,10 +20,10 @@ defined('ABSPATH') || exit;
 class VD_LM_Email_Handler {
 
     /**
-     * Send license credentials email to customer
+     * Send license key email to customer
      *
-     * Loads email templates, substitutes variables, and sends both HTML
-     * and plain text versions of the credentials email.
+     * Sends simple email with license key and portal link only.
+     * Customer accesses portal to view account credentials.
      *
      * @since 1.0.0
      * @param array $email_data {
@@ -33,12 +33,10 @@ class VD_LM_Email_Handler {
      *     @type string $customer_email Customer's email address
      *     @type string $product_name Product name
      *     @type string $license_key License key from LMfWC
-     *     @type string $account_login Account username/email
-     *     @type string $account_password Decrypted account password
      *     @type int    $max_devices Maximum devices allowed
      *     @type int    $validity_days License validity in days
      *     @type string $expiry_date License expiration date (formatted)
-     *     @type int    $max_requests_per_day API rate limit
+     *     @type string $portal_url License portal URL
      *     @type string $order_id WooCommerce order ID
      *     @type string $site_name WordPress site name
      *     @type string $site_url WordPress site URL
@@ -46,10 +44,9 @@ class VD_LM_Email_Handler {
      * @return bool|WP_Error True on success, WP_Error on failure
      */
     public function send_credentials_email($email_data) {
-        // Validate required email data
+        // Validate required email data (NO PASSWORD FIELDS!)
         $required_fields = [
-            'customer_name', 'customer_email', 'product_name',
-            'license_key', 'account_login', 'account_password'
+            'customer_name', 'customer_email', 'product_name', 'license_key'
         ];
 
         foreach ($required_fields as $field) {
@@ -65,8 +62,8 @@ class VD_LM_Email_Handler {
         $email_data = wp_parse_args($email_data, [
             'max_devices' => 1,
             'validity_days' => 0,
-            'expiry_date' => __('Lifetime', 'vd-license-manager'),
-            'max_requests_per_day' => 1000,
+            'expiry_date' => 'Trọn đời',
+            'portal_url' => home_url('/license-portal/'),
             'order_id' => 'N/A',
             'site_name' => get_bloginfo('name'),
             'site_url' => home_url()
@@ -94,7 +91,8 @@ class VD_LM_Email_Handler {
 
         // Email subject
         $subject = sprintf(
-            __('Your %s Account Credentials - Order #%s', 'vd-license-manager'),
+            '[%s] 🔑 License Key - %s - Đơn #%s',
+            $email_data['site_name'],
             $email_data['product_name'],
             $email_data['order_id']
         );
@@ -284,16 +282,14 @@ class VD_LM_Email_Handler {
         }
 
         $test_data = [
-            'customer_name' => 'Test Customer',
+            'customer_name' => 'Khách Hàng Test',
             'customer_email' => $test_email,
-            'product_name' => 'Test Product',
+            'product_name' => 'Sản Phẩm Test',
             'license_key' => 'TEST-1234-5678-9012',
-            'account_login' => 'test@example.com',
-            'account_password' => 'TestPassword123',
             'max_devices' => 3,
             'validity_days' => 365,
-            'expiry_date' => date('F j, Y', strtotime('+365 days')),
-            'max_requests_per_day' => 1000,
+            'expiry_date' => date('d/m/Y', strtotime('+365 days')),
+            'portal_url' => home_url('/license-portal/'),
             'order_id' => 'TEST-001',
             'site_name' => get_bloginfo('name'),
             'site_url' => home_url()

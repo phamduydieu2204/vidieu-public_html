@@ -1,21 +1,19 @@
 <?php
 /**
- * Email Template: License Credentials
+ * Email Template: License Delivery
  *
- * Sent to customers after successful license assignment
- * Contains account login credentials and usage instructions
+ * Simple email with license key and portal link only
+ * Customer accesses portal to view account credentials
  *
  * Available variables:
  * @var string $customer_name Customer's full name
  * @var string $customer_email Customer's email
  * @var string $product_name Product name
  * @var string $license_key License key from LMfWC
- * @var string $account_login Account username/email
- * @var string $account_password Decrypted account password
  * @var int $max_devices Maximum devices allowed
  * @var int $validity_days License validity in days
  * @var string $expiry_date License expiration date (formatted)
- * @var int $max_requests_per_day API rate limit
+ * @var string $portal_url License portal URL
  * @var string $order_id WooCommerce order ID
  * @var string $site_name WordPress site name
  * @var string $site_url WordPress site URL
@@ -27,14 +25,14 @@
 defined('ABSPATH') || exit;
 ?>
 <!DOCTYPE html>
-<html lang="en">
+<html lang="vi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Your <?php echo esc_html($product_name); ?> Account Credentials</title>
+    <title>License Key - <?php echo esc_html($product_name); ?></title>
     <style>
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
             line-height: 1.6;
             color: #333333;
             background-color: #f5f5f5;
@@ -67,43 +65,58 @@ defined('ABSPATH') || exit;
             font-size: 18px;
             font-weight: 600;
             margin-bottom: 15px;
-            color: #333333;
         }
-        .intro-text {
-            margin-bottom: 25px;
-            color: #666666;
-        }
-        .credentials-box {
-            background-color: #f8f9fa;
-            border-left: 4px solid #667eea;
-            padding: 20px;
+        .license-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px;
             margin: 25px 0;
-            border-radius: 4px;
+            border-radius: 8px;
+            text-align: center;
         }
-        .credentials-box h2 {
+        .license-box h2 {
             margin-top: 0;
             margin-bottom: 15px;
             font-size: 18px;
-            color: #333333;
         }
-        .credential-item {
-            margin-bottom: 15px;
-        }
-        .credential-label {
-            font-weight: 600;
-            color: #555555;
-            display: block;
-            margin-bottom: 5px;
-        }
-        .credential-value {
+        .license-key {
             font-family: 'Courier New', monospace;
-            font-size: 14px;
-            color: #333333;
-            background-color: #ffffff;
-            padding: 10px 12px;
-            border: 1px solid #e0e0e0;
-            border-radius: 4px;
+            font-size: 20px;
+            font-weight: bold;
+            background-color: rgba(255,255,255,0.2);
+            padding: 15px;
+            border-radius: 6px;
+            letter-spacing: 2px;
             word-break: break-all;
+        }
+        .portal-button {
+            display: inline-block;
+            background-color: #667eea;
+            color: white !important;
+            text-decoration: none;
+            padding: 15px 40px;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 16px;
+            margin: 20px 0;
+        }
+        .instructions {
+            background-color: #f8f9fa;
+            border-left: 4px solid #667eea;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        .instructions h3 {
+            margin-top: 0;
+            color: #667eea;
+        }
+        .instructions ol {
+            margin: 10px 0;
+            padding-left: 25px;
+        }
+        .instructions li {
+            margin-bottom: 10px;
         }
         .info-box {
             background-color: #e3f2fd;
@@ -112,30 +125,12 @@ defined('ABSPATH') || exit;
             margin: 20px 0;
             border-radius: 4px;
         }
-        .info-box h3 {
-            margin-top: 0;
-            margin-bottom: 10px;
-            font-size: 16px;
-            color: #1976d2;
+        .info-box ul {
+            margin: 10px 0;
+            padding-left: 25px;
         }
-        .info-list {
-            margin: 0;
-            padding-left: 20px;
-        }
-        .info-list li {
+        .info-box li {
             margin-bottom: 8px;
-            color: #555555;
-        }
-        .warning-box {
-            background-color: #fff3cd;
-            border-left: 4px solid #ffc107;
-            padding: 15px;
-            margin: 20px 0;
-            border-radius: 4px;
-        }
-        .warning-box p {
-            margin: 0;
-            color: #856404;
         }
         .email-footer {
             background-color: #f8f9fa;
@@ -145,13 +140,6 @@ defined('ABSPATH') || exit;
             color: #666666;
             font-size: 14px;
         }
-        .support-link {
-            color: #667eea;
-            text-decoration: none;
-        }
-        .support-link:hover {
-            text-decoration: underline;
-        }
         @media only screen and (max-width: 600px) {
             .email-container {
                 margin: 0;
@@ -160,6 +148,9 @@ defined('ABSPATH') || exit;
             .email-body {
                 padding: 20px 15px;
             }
+            .license-key {
+                font-size: 16px;
+            }
         }
     </style>
 </head>
@@ -167,88 +158,83 @@ defined('ABSPATH') || exit;
     <div class="email-container">
         <!-- Header -->
         <div class="email-header">
-            <h1>🎉 Your Account Is Ready!</h1>
+            <h1>🎉 License Key Của Bạn!</h1>
         </div>
 
         <!-- Body -->
         <div class="email-body">
             <div class="greeting">
-                Hi <?php echo esc_html($customer_name); ?>,
+                Xin chào <?php echo esc_html($customer_name); ?>,
             </div>
 
-            <div class="intro-text">
-                Thank you for your purchase! Your <strong><?php echo esc_html($product_name); ?></strong> account has been activated and is ready to use.
-            </div>
-
-            <!-- Account Credentials -->
-            <div class="credentials-box">
-                <h2>🔑 Your Account Credentials</h2>
-
-                <div class="credential-item">
-                    <span class="credential-label">License Key:</span>
-                    <div class="credential-value"><?php echo esc_html($license_key); ?></div>
-                </div>
-
-                <div class="credential-item">
-                    <span class="credential-label">Account Login:</span>
-                    <div class="credential-value"><?php echo esc_html($account_login); ?></div>
-                </div>
-
-                <div class="credential-item">
-                    <span class="credential-label">Account Password:</span>
-                    <div class="credential-value"><?php echo esc_html($account_password); ?></div>
-                </div>
-            </div>
-
-            <!-- Account Details -->
-            <div class="info-box">
-                <h3>📋 Account Details</h3>
-                <ul class="info-list">
-                    <li><strong>Maximum Devices:</strong> <?php echo esc_html($max_devices); ?> device<?php echo $max_devices > 1 ? 's' : ''; ?></li>
-                    <?php if ($validity_days > 0): ?>
-                    <li><strong>Valid Until:</strong> <?php echo esc_html($expiry_date); ?> (<?php echo esc_html($validity_days); ?> days)</li>
-                    <?php else: ?>
-                    <li><strong>Validity:</strong> Lifetime</li>
-                    <?php endif; ?>
-                    <li><strong>Daily API Limit:</strong> <?php echo number_format($max_requests_per_day); ?> requests per day</li>
-                    <li><strong>Order ID:</strong> #<?php echo esc_html($order_id); ?></li>
-                </ul>
-            </div>
-
-            <!-- Important Notice -->
-            <div class="warning-box">
-                <p>
-                    <strong>⚠️ Important:</strong> Please keep these credentials safe and do not share them with anyone.
-                    You are responsible for all activity under this account.
-                </p>
-            </div>
-
-            <!-- Getting Started -->
-            <div class="info-box">
-                <h3>🚀 Getting Started</h3>
-                <ul class="info-list">
-                    <li>Use the credentials above to log in to your <?php echo esc_html($product_name); ?> account</li>
-                    <li>You can use this account on up to <?php echo esc_html($max_devices); ?> device<?php echo $max_devices > 1 ? 's' : ''; ?> simultaneously</li>
-                    <li>If you encounter any issues, please contact our support team</li>
-                </ul>
-            </div>
-
-            <p style="margin-top: 30px; color: #666666;">
-                If you have any questions or need assistance, please don't hesitate to
-                <a href="<?php echo esc_url($site_url); ?>/contact" class="support-link">contact our support team</a>.
+            <p>
+                Cảm ơn bạn đã mua <strong><?php echo esc_html($product_name); ?></strong>!
+                License của bạn đã được kích hoạt thành công.
             </p>
 
-            <p style="margin-top: 20px; color: #666666;">
-                Best regards,<br>
-                <strong>The <?php echo esc_html($site_name); ?> Team</strong>
+            <!-- License Key Box -->
+            <div class="license-box">
+                <h2>🔑 LICENSE KEY CỦA BẠN</h2>
+                <div class="license-key"><?php echo esc_html($license_key); ?></div>
+            </div>
+
+            <!-- Instructions -->
+            <div class="instructions">
+                <h3>📋 Cách Sử Dụng</h3>
+                <ol>
+                    <li>Click vào nút bên dưới để truy cập License Portal</li>
+                    <li>Nhập license key ở trên vào ô "Nhập License Key"</li>
+                    <li>Xem thông tin tài khoản và bắt đầu sử dụng</li>
+                </ol>
+            </div>
+
+            <!-- Portal Button -->
+            <div style="text-align: center;">
+                <a href="<?php echo esc_url($portal_url); ?>" class="portal-button">
+                    Truy Cập License Portal
+                </a>
+            </div>
+
+            <!-- License Info -->
+            <div class="info-box">
+                <h3 style="margin-top: 0; color: #1976d2;">ℹ️ Thông Tin License</h3>
+                <ul>
+                    <li><strong>Sản phẩm:</strong> <?php echo esc_html($product_name); ?></li>
+                    <li><strong>Tối đa thiết bị:</strong> <?php echo esc_html($max_devices); ?> thiết bị</li>
+                    <?php if ($validity_days > 0): ?>
+                    <li><strong>Hiệu lực đến:</strong> <?php echo esc_html($expiry_date); ?> (<?php echo esc_html($validity_days); ?> ngày)</li>
+                    <?php else: ?>
+                    <li><strong>Hiệu lực:</strong> Trọn đời</li>
+                    <?php endif; ?>
+                    <li><strong>Mã đơn hàng:</strong> #<?php echo esc_html($order_id); ?></li>
+                </ul>
+            </div>
+
+            <!-- Important Notes -->
+            <div class="info-box" style="background-color: #fff3cd; border-left-color: #ffc107;">
+                <p style="margin: 0;"><strong>⚠️ Lưu ý quan trọng:</strong></p>
+                <ul>
+                    <li>Vui lòng lưu lại license key này</li>
+                    <li>Bạn có thể truy cập portal bất cứ lúc nào bằng license key</li>
+                    <li>Nếu cần hỗ trợ, vui lòng liên hệ support với mã đơn hàng</li>
+                </ul>
+            </div>
+
+            <p style="margin-top: 30px;">
+                Nếu bạn có bất kỳ câu hỏi nào, đừng ngần ngại liên hệ với chúng tôi.
+            </p>
+
+            <p style="margin-top: 20px;">
+                Trân trọng,<br>
+                <strong><?php echo esc_html($site_name); ?> Team</strong>
             </p>
         </div>
 
         <!-- Footer -->
         <div class="email-footer">
             <p>
-                This email was sent to <?php echo esc_html($customer_email); ?><br>
-                <a href="<?php echo esc_url($site_url); ?>" class="support-link"><?php echo esc_html($site_name); ?></a>
+                Email này được gửi đến <?php echo esc_html($customer_email); ?><br>
+                <a href="<?php echo esc_url($site_url); ?>" style="color: #667eea;"><?php echo esc_html($site_name); ?></a>
             </p>
         </div>
     </div>

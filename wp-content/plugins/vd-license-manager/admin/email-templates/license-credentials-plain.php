@@ -1,21 +1,19 @@
 <?php
 /**
- * Email Template: License Credentials (Plain Text)
+ * Email Template: License Delivery (Plain Text)
  *
- * Plain text version for email clients that don't support HTML
- * Contains account login credentials and usage instructions
+ * Simple plain text email with license key and portal link only
+ * Customer accesses portal to view account credentials
  *
  * Available variables:
  * @var string $customer_name Customer's full name
  * @var string $customer_email Customer's email
  * @var string $product_name Product name
  * @var string $license_key License key from LMfWC
- * @var string $account_login Account username/email
- * @var string $account_password Decrypted account password
  * @var int $max_devices Maximum devices allowed
  * @var int $validity_days License validity in days
  * @var string $expiry_date License expiration date (formatted)
- * @var int $max_requests_per_day API rate limit
+ * @var string $portal_url License portal URL
  * @var string $order_id WooCommerce order ID
  * @var string $site_name WordPress site name
  * @var string $site_url WordPress site URL
@@ -26,51 +24,49 @@
 
 defined('ABSPATH') || exit;
 ?>
-=== YOUR <?php echo strtoupper(esc_html($product_name)); ?> ACCOUNT IS READY! ===
+=== 🎉 LICENSE KEY CỦA BẠN! ===
 
-Hi <?php echo esc_html($customer_name); ?>,
+Xin chào <?php echo esc_html($customer_name); ?>,
 
-Thank you for your purchase! Your <?php echo esc_html($product_name); ?> account has been activated and is ready to use.
+Cảm ơn bạn đã mua <?php echo esc_html($product_name); ?>! License của bạn đã được kích hoạt thành công.
 
-=== YOUR ACCOUNT CREDENTIALS ===
+=== 🔑 LICENSE KEY CỦA BẠN ===
 
-License Key: <?php echo esc_html($license_key); ?>
-
-Account Login: <?php echo esc_html($account_login); ?>
-
-Account Password: <?php echo esc_html($account_password); ?>
+<?php echo esc_html($license_key); ?>
 
 
-=== ACCOUNT DETAILS ===
+=== 📋 CÁCH SỬ DỤNG ===
 
-* Maximum Devices: <?php echo esc_html($max_devices); ?> device<?php echo $max_devices > 1 ? 's' : ''; ?>
+1. Truy cập License Portal: <?php echo esc_url($portal_url); ?>
 
+2. Nhập license key ở trên vào ô "Nhập License Key"
+3. Xem thông tin tài khoản và bắt đầu sử dụng
+
+=== ℹ️ THÔNG TIN LICENSE ===
+
+* Sản phẩm: <?php echo esc_html($product_name); ?>
+
+* Tối đa thiết bị: <?php echo esc_html($max_devices); ?> thiết bị
 <?php if ($validity_days > 0): ?>
-* Valid Until: <?php echo esc_html($expiry_date); ?> (<?php echo esc_html($validity_days); ?> days)
+* Hiệu lực đến: <?php echo esc_html($expiry_date); ?> (<?php echo esc_html($validity_days); ?> ngày)
 <?php else: ?>
-* Validity: Lifetime
+* Hiệu lực: Trọn đời
 <?php endif; ?>
-* Daily API Limit: <?php echo number_format($max_requests_per_day); ?> requests per day
-* Order ID: #<?php echo esc_html($order_id); ?>
+* Mã đơn hàng: #<?php echo esc_html($order_id); ?>
 
 
-=== IMPORTANT WARNING ===
+=== ⚠️ LƯU Ý QUAN TRỌNG ===
 
-Please keep these credentials safe and do not share them with anyone. You are responsible for all activity under this account.
+* Vui lòng lưu lại license key này
+* Bạn có thể truy cập portal bất cứ lúc nào bằng license key
+* Nếu cần hỗ trợ, vui lòng liên hệ support với mã đơn hàng
 
-=== GETTING STARTED ===
+Nếu bạn có bất kỳ câu hỏi nào, đừng ngần ngại liên hệ với chúng tôi.
 
-1. Use the credentials above to log in to your <?php echo esc_html($product_name); ?> account
-2. You can use this account on up to <?php echo esc_html($max_devices); ?> device<?php echo $max_devices > 1 ? 's' : ''; ?> simultaneously
-3. If you encounter any issues, please contact our support team
-
-If you have any questions or need assistance, please contact our support team at:
-<?php echo esc_url($site_url); ?>/contact
-
-Best regards,
-The <?php echo esc_html($site_name); ?> Team
+Trân trọng,
+<?php echo esc_html($site_name); ?> Team
 
 ---
-This email was sent to <?php echo esc_html($customer_email); ?>
+Email này được gửi đến <?php echo esc_html($customer_email); ?>
 
 <?php echo esc_html($site_name); ?>: <?php echo esc_url($site_url); ?>
