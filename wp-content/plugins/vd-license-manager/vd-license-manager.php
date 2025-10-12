@@ -126,6 +126,13 @@ require_once VD_PLUGIN_DIR . 'includes/class-vd-lm-license-manager.php';
 require_once VD_PLUGIN_DIR . 'includes/class-vd-lm-activator.php';
 require_once VD_PLUGIN_DIR . 'includes/class-vd-lm-deactivator.php';
 
+// Load Cron Handler
+$cron_file = VD_PLUGIN_DIR . 'includes/class-vd-lm-cron.php';
+if (file_exists($cron_file)) {
+    require_once $cron_file;
+    error_log('VD Loader: Loaded Cron Handler from: ' . $cron_file);
+}
+
 /**
  * Plugin activation hook
  *
@@ -135,6 +142,7 @@ require_once VD_PLUGIN_DIR . 'includes/class-vd-lm-deactivator.php';
  */
 function activate_vd_license_manager() {
     VD_LM_Activator::activate();
+    do_action('vd_lm_activated');
 }
 
 /**
@@ -146,6 +154,7 @@ function activate_vd_license_manager() {
  */
 function deactivate_vd_license_manager() {
     VD_LM_Deactivator::deactivate();
+    do_action('vd_lm_deactivated');
 }
 
 register_activation_hook( __FILE__, 'activate_vd_license_manager' );

@@ -324,4 +324,159 @@ class VD_LM_Email_Handler {
 
         return $this->send_credentials_email($test_data);
     }
+
+    /**
+     * Send license renewal reminder email
+     *
+     * @since 1.0.0
+     * @param int $license_id License ID from bz_vd_license_keys
+     * @return bool True on success, false on failure
+     */
+    public static function send_renewal_reminder($license_id) {
+        error_log('VD Email: === SENDING RENEWAL REMINDER ===');
+        error_log('VD Email: License ID: ' . $license_id);
+
+        try {
+            global $wpdb;
+
+            // Get license data
+            $license = $wpdb->get_row($wpdb->prepare(
+                "SELECT * FROM {$wpdb->prefix}vd_license_keys WHERE id = %d",
+                $license_id
+            ), ARRAY_A);
+
+            if (!$license) {
+                error_log('VD Email: License not found: ' . $license_id);
+                return false;
+            }
+
+            // Check if already expired
+            $expires_at = strtotime($license['expires_at']);
+            $now = current_time('timestamp');
+
+            if ($expires_at <= $now) {
+                error_log('VD Email: License already expired, not sending renewal reminder');
+                return false;
+            }
+
+            // Calculate days remaining
+            $days_remaining = ceil(($expires_at - $now) / DAY_IN_SECONDS);
+
+            error_log('VD Email: Days remaining: ' . $days_remaining);
+
+            // Get product
+            $product = wc_get_product($license['product_id']);
+            if (!$product) {
+                error_log('VD Email: Product not found: ' . $license['product_id']);
+                return false;
+            }
+
+            // Get customer info
+            $customer_email = $license['customer_email'];
+
+            // Try to get customer name from order
+            $customer_name = 'Quý khách';
+            if ($license['order_id']) {
+                $order = wc_get_order($license['order_id']);
+                if ($order) {
+                    $customer_name = $order->get_billing_first_name() . ' ' . $order->get_billing_last_name();
+                }
+            }
+
+            // Decrypt license key
+            $decrypted_license_key = $license['license_key'];
+            if (function_exists('lmfwc_decrypt')) {
+                $decrypted_license_key = lmfwc_decrypt($license['license_key']);
+            }
+
+            // Prepare template variables
+            $template_vars = array(
+                'customer_name' => trim($customer_name),
+                'product_name' => $product->get_name(),
+                'license_key' => $decrypted_license_key,
+                'expiry_date' => date_i18n('d/m/Y', $expires_at),
+                'days_remaining' => $days_remaining,
+                'renewal_url' => $product->get_permalink(),
+                'portal_url' => home_url('/license-portal/'),
+                'site_name' => get_bloginfo('name'),
+                'site_url' => home_url()
+            );
+
+            error_log('VD Email: Renewal reminder vars prepared for: ' . $customer_email);
+
+            // Get email content
+            $html_content = self::get_email_template('license-renewal-reminder', $template_vars);
+
+            // Email headers
+            $headers = array(
+                'Content-Type: text/html; charset=UTF-8',
+                'From: ' . get_bloginfo('name') . ' <' . get_option('admin_email') . '>'
+            );
+
+            // Subject
+            $subject = sprintf(
+                '[%s] ⏰ License %s sắp hết hạn - Còn %d ngày',
+                get_bloginfo('name'),
+                $product->get_name(),
+                $days_remaining
+            );
+
+            error_log('VD Email: Sending renewal reminder to: ' . $customer_email);
+            error_log('VD Email: Subject: ' . $subject);
+
+            // Send email
+            $sent = wp_mail($customer_email, $subject, $html_content, $headers);
+
+            if ($sent) {
+                error_log('VD Email: ✅ Renewal reminder sent successfully to ' . $customer_email);
+
+                // Record email sent
+                $wpdb->update(
+                    $wpdb->prefix . 'vd_license_keys',
+                    array(
+                        'renewal_reminder_sent_at' => current_time('mysql')
+                    ),
+                    array('id' => $license_id),
+                    array('%s'),
+                    array('%d')
+                );
+
+                return true;
+            } else {
+                error_log('VD Email: ❌ Failed to send renewal reminder to ' . $customer_email);
+                return false;
+            }
+
+        } catch (Exception $e) {
+            error_log('VD Email: Exception in renewal reminder: ' . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Get email template content
+     *
+     * @since 1.0.0
+     * @param string $template_name Template name without .php extension
+     * @param array $variables Template variables
+     * @return string Template content
+     */
+    private static function get_email_template($template_name, $variables) {
+        $template_path = VD_PLUGIN_DIR . 'admin/email-templates/' . $template_name . '.php';
+
+        if (!file_exists($template_path)) {
+            error_log('VD Email: Template not found: ' . $template_path);
+            return 'Email template not found.';
+        }
+
+        // Extract variables for use in template
+        extract($variables, EXTR_SKIP);
+
+        // Capture template output
+        ob_start();
+        include $template_path;
+        $content = ob_get_clean();
+
+        return $content;
+    }
 }
