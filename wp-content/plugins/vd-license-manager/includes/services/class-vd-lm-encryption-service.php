@@ -2,264 +2,381 @@
 /**
  * Encryption Service
  *
- * Handles encryption and decryption of sensitive data using AES-256-CBC.
- * Used for encrypting account passwords, API keys, and other credentials.
+ * Handles all encryption/decryption operations for sensitive data
+ * Uses AES-256-CBC with proper IV and key handling
  *
- * @package    VD_License_Manager
- * @subpackage VD_License_Manager/includes/services
- * @since      1.0.0
+ * SECURITY NOTES:
+ * - Cipher: AES-256-CBC (industry standard)
+ * - IV: 16 bytes (required by cipher)
+ * - Key: 32 bytes (256 bits)
+ * - Format: base64(IV + encrypted_data)
+ *
+ * @package VD_License_Manager
+ * @since 1.0.0
  */
 
-// Prevent direct access
-if ( ! defined( 'ABSPATH' ) ) {
-    exit;
+if (!defined('ABSPATH')) {
+    exit; // Exit if accessed directly
 }
 
-/**
- * Encryption Service Class
- *
- * Provides secure encryption and decryption functionality for the plugin.
- * Uses AES-256-CBC encryption with the key defined in VD_ENCRYPTION_KEY constant.
- *
- * @since      1.0.0
- * @package    VD_License_Manager
- * @subpackage VD_License_Manager/includes/services
- * @author     Vidieu Team <admin@vidieu.vn>
- */
 class VD_LM_Encryption_Service {
 
     /**
-     * Encryption method
-     *
-     * @since  1.0.0
-     * @access private
-     * @var    string $method The encryption method to use
+     * Cipher method
+     * AES-256-CBC is the industry standard for symmetric encryption
      */
-    private static $method = 'AES-256-CBC';
+    const CIPHER = 'aes-256-cbc';
 
     /**
-     * Encrypt a string value
+     * Encryption key
      *
-     * @since  1.0.0
-     * @param  string $value The string to encrypt
-     * @return string|false  The encrypted string or false on failure
+     * @var string Binary string of exactly 32 bytes
      */
-    public static function encrypt( $value ) {
-        if ( empty( $value ) ) {
-            return '';
-        }
+    private $key;
 
-        // Check if OpenSSL is available
-        if ( ! extension_loaded( 'openssl' ) ) {
-            if ( function_exists( 'error_log' ) ) {
-                error_log( 'VD License Manager: OpenSSL extension is required for encryption' );
-            }
-            return false;
-        }
-
-        // Check if encryption key is defined
-        if ( ! defined( 'VD_ENCRYPTION_KEY' ) || empty( VD_ENCRYPTION_KEY ) ) {
-            if ( function_exists( 'error_log' ) ) {
-                error_log( 'VD License Manager: VD_ENCRYPTION_KEY constant is not defined' );
-            }
-            return false;
-        }
-
-        try {
-            // Get the encryption key
-            $key = self::get_encryption_key();
-            if ( ! $key ) {
-                return false;
-            }
-
-            // Generate a random IV
-            $iv_length = openssl_cipher_iv_length( self::$method );
-            $iv = openssl_random_pseudo_bytes( $iv_length );
-
-            // Encrypt the data
-            $encrypted = openssl_encrypt( $value, self::$method, $key, 0, $iv );
-
-            if ( false === $encrypted ) {
-                if ( function_exists( 'error_log' ) ) {
-                    error_log( 'VD License Manager: Encryption failed - ' . openssl_error_string() );
-                }
-                return false;
-            }
-
-            // Combine IV and encrypted data, then base64 encode
-            return base64_encode( $encrypted . '::' . $iv );
-
-        } catch ( Exception $e ) {
-            if ( function_exists( 'error_log' ) ) {
-                error_log( 'VD License Manager: Encryption exception - ' . $e->getMessage() );
-            }
-            return false;
-        }
+    /**
+     * Constructor
+     * Initializes the encryption key
+     */
+    public function __construct() {
+        $this->key = $this->get_encryption_key();
     }
 
     /**
-     * Decrypt a string value
+     * Get or create encryption key
      *
-     * @since  1.0.0
-     * @param  string $value The encrypted string to decrypt
-     * @return string|false  The decrypted string or false on failure
-     */
-    public static function decrypt( $value ) {
-        if ( empty( $value ) ) {
-            return '';
-        }
-
-        // Check if OpenSSL is available
-        if ( ! extension_loaded( 'openssl' ) ) {
-            if ( function_exists( 'error_log' ) ) {
-                error_log( 'VD License Manager: OpenSSL extension is required for decryption' );
-            }
-            return false;
-        }
-
-        // Check if encryption key is defined
-        if ( ! defined( 'VD_ENCRYPTION_KEY' ) || empty( VD_ENCRYPTION_KEY ) ) {
-            if ( function_exists( 'error_log' ) ) {
-                error_log( 'VD License Manager: VD_ENCRYPTION_KEY constant is not defined' );
-            }
-            return false;
-        }
-
-        try {
-            // Get the encryption key
-            $key = self::get_encryption_key();
-            if ( ! $key ) {
-                return false;
-            }
-
-            // Base64 decode the value
-            $data = base64_decode( $value, true );
-            if ( false === $data ) {
-                return false;
-            }
-
-            // Split the encrypted data and IV
-            $parts = explode( '::', $data, 2 );
-            if ( count( $parts ) !== 2 ) {
-                return false;
-            }
-
-            list( $encrypted_data, $iv ) = $parts;
-
-            // Decrypt the data
-            $decrypted = openssl_decrypt( $encrypted_data, self::$method, $key, 0, $iv );
-
-            if ( false === $decrypted ) {
-                if ( function_exists( 'error_log' ) ) {
-                    error_log( 'VD License Manager: Decryption failed - ' . openssl_error_string() );
-                }
-                return false;
-            }
-
-            return $decrypted;
-
-        } catch ( Exception $e ) {
-            if ( function_exists( 'error_log' ) ) {
-                error_log( 'VD License Manager: Decryption exception - ' . $e->getMessage() );
-            }
-            return false;
-        }
-    }
-
-    /**
-     * Get the encryption key from the constant
+     * Creates a new key if one doesn't exist.
+     * Key is stored in wp_options table.
      *
-     * @since  1.0.0
-     * @access private
-     * @return string|false The encryption key or false on failure
+     * @return string Binary encryption key (32 bytes)
      */
-    private static function get_encryption_key() {
-        $key_string = VD_ENCRYPTION_KEY;
+    private function get_encryption_key() {
+        $key_option = get_option('vd_lm_encryption_key');
 
-        // Check if the key is base64 encoded (starts with 'base64:')
-        if ( strpos( $key_string, 'base64:' ) === 0 ) {
-            $key = base64_decode( substr( $key_string, 7 ), true );
-            if ( false === $key ) {
-                if ( function_exists( 'error_log' ) ) {
-                    error_log( 'VD License Manager: Invalid base64 encryption key' );
-                }
-                return false;
-            }
-        } else {
-            $key = $key_string;
+        if (!$key_option) {
+            // Generate a new 32-byte (256-bit) random key
+            $new_key = bin2hex(random_bytes(32)); // 64 hex chars
+            update_option('vd_lm_encryption_key', $new_key, false); // Don't autoload
+            error_log('VD Encryption: Generated new encryption key');
+            $key_option = $new_key;
         }
 
-        // Validate key length (AES-256 requires 32 bytes)
-        if ( strlen( $key ) !== 32 ) {
-            if ( function_exists( 'error_log' ) ) {
-                error_log( 'VD License Manager: Encryption key must be 32 bytes for AES-256' );
-            }
-            return false;
-        }
+        // Convert hex to binary and ensure exactly 32 bytes
+        // Use SHA256 hash to guarantee 32-byte output
+        $key = substr(hash('sha256', $key_option, true), 0, 32);
 
         return $key;
     }
 
     /**
-     * Generate a new encryption key
+     * Encrypt a value
      *
-     * This is a utility method for generating new encryption keys.
-     * The generated key should be added to wp-config.php.
+     * Process:
+     * 1. Generate random 16-byte IV
+     * 2. Encrypt data using AES-256-CBC
+     * 3. Prepend IV to encrypted data
+     * 4. Base64 encode for storage
      *
-     * @since  1.0.0
-     * @return string The base64 encoded encryption key
+     * @param string $value Plain text value to encrypt
+     * @return string Base64 encoded encrypted value, or empty string on failure
      */
-    public static function generate_key() {
-        if ( ! extension_loaded( 'openssl' ) ) {
+    public function encrypt($value) {
+        // Empty values don't need encryption
+        if (empty($value)) {
+            return '';
+        }
+
+        try {
+            // Step 1: Generate IV
+            // AES-256-CBC requires exactly 16 bytes
+            $iv_length = openssl_cipher_iv_length(self::CIPHER);
+            $iv = openssl_random_pseudo_bytes($iv_length);
+
+            // Verify IV was generated correctly
+            if ($iv === false || strlen($iv) !== $iv_length) {
+                error_log('VD Encryption ERROR: Failed to generate IV (expected ' . $iv_length . ' bytes)');
+                return '';
+            }
+
+            // Step 2: Encrypt the data
+            $encrypted = openssl_encrypt(
+                $value,                 // Data to encrypt
+                self::CIPHER,           // Cipher method
+                $this->key,             // Encryption key
+                OPENSSL_RAW_DATA,       // Return raw binary (not base64)
+                $iv                     // Initialization vector
+            );
+
+            // Check encryption success
+            if ($encrypted === false) {
+                $error = openssl_error_string();
+                error_log('VD Encryption ERROR: Encryption failed - ' . $error);
+                return '';
+            }
+
+            // Step 3: Combine IV + encrypted data
+            // Format: [16 bytes IV][encrypted data]
+            $combined = $iv . $encrypted;
+
+            // Step 4: Base64 encode for safe storage in database
+            $result = base64_encode($combined);
+
+            // Debug logging
+            error_log(sprintf(
+                'VD Encryption: Successfully encrypted %d bytes → %d bytes (IV: %d bytes)',
+                strlen($value),
+                strlen($result),
+                $iv_length
+            ));
+
+            return $result;
+
+        } catch (Exception $e) {
+            error_log('VD Encryption EXCEPTION: ' . $e->getMessage());
+            return '';
+        }
+    }
+
+    /**
+     * Decrypt a value
+     *
+     * Process:
+     * 1. Base64 decode the stored value
+     * 2. Extract IV from first 16 bytes
+     * 3. Extract encrypted data from remaining bytes
+     * 4. Decrypt using AES-256-CBC
+     *
+     * @param string $encrypted Base64 encoded encrypted value
+     * @return string Decrypted plain text, or empty string on failure
+     */
+    public function decrypt($encrypted) {
+        // Empty values don't need decryption
+        if (empty($encrypted)) {
+            return '';
+        }
+
+        try {
+            // Step 1: Decode from base64
+            $data = base64_decode($encrypted, true); // Strict mode
+
+            if ($data === false) {
+                error_log('VD Decryption ERROR: Invalid base64 encoding');
+                return '';
+            }
+
+            // Step 2: Get expected IV length
+            $iv_length = openssl_cipher_iv_length(self::CIPHER);
+
+            // Verify data is long enough to contain IV + some encrypted data
+            if (strlen($data) < $iv_length + 1) {
+                error_log(sprintf(
+                    'VD Decryption ERROR: Data too short (%d bytes), expected at least %d bytes',
+                    strlen($data),
+                    $iv_length + 1
+                ));
+                return '';
+            }
+
+            // Step 3: Extract IV (first 16 bytes)
+            $iv = substr($data, 0, $iv_length);
+
+            // Step 4: Extract encrypted data (remaining bytes)
+            $encrypted_data = substr($data, $iv_length);
+
+            // Double-check IV length
+            if (strlen($iv) !== $iv_length) {
+                error_log(sprintf(
+                    'VD Decryption ERROR: IV length mismatch - got %d bytes, expected %d bytes',
+                    strlen($iv),
+                    $iv_length
+                ));
+                return '';
+            }
+
+            // Step 5: Decrypt the data
+            $decrypted = openssl_decrypt(
+                $encrypted_data,        // Encrypted data
+                self::CIPHER,           // Cipher method
+                $this->key,             // Decryption key (same as encryption)
+                OPENSSL_RAW_DATA,       // Input is raw binary
+                $iv                     // Initialization vector
+            );
+
+            // Check decryption success
+            if ($decrypted === false) {
+                $error = openssl_error_string();
+                error_log('VD Decryption ERROR: Decryption failed - ' . $error);
+                return '';
+            }
+
+            // Debug logging
+            error_log(sprintf(
+                'VD Decryption: Successfully decrypted %d bytes → %d bytes',
+                strlen($encrypted),
+                strlen($decrypted)
+            ));
+
+            return $decrypted;
+
+        } catch (Exception $e) {
+            error_log('VD Decryption EXCEPTION: ' . $e->getMessage());
+            return '';
+        }
+    }
+
+    /**
+     * Encrypt multiple fields in an array
+     *
+     * Useful for batch encryption of account data
+     *
+     * @param array $data Data array with fields to encrypt
+     * @param array $fields List of field names to encrypt
+     * @return array Data array with encrypted fields
+     */
+    public function encrypt_fields($data, $fields) {
+        foreach ($fields as $field) {
+            if (isset($data[$field]) && !empty($data[$field])) {
+                $encrypted = $this->encrypt($data[$field]);
+                if ($encrypted !== '') {
+                    $data[$field] = $encrypted;
+                } else {
+                    error_log('VD Encryption: Failed to encrypt field: ' . $field);
+                    // Keep original value on encryption failure
+                }
+            }
+        }
+        return $data;
+    }
+
+    /**
+     * Decrypt multiple fields in an array
+     *
+     * Useful for batch decryption when loading account data
+     *
+     * @param array $data Data array with encrypted fields
+     * @param array $fields List of field names to decrypt
+     * @return array Data array with decrypted fields
+     */
+    public function decrypt_fields($data, $fields) {
+        foreach ($fields as $field) {
+            if (isset($data[$field]) && !empty($data[$field])) {
+                $decrypted = $this->decrypt($data[$field]);
+                if ($decrypted !== '') {
+                    $data[$field] = $decrypted;
+                } else {
+                    error_log('VD Decryption: Failed to decrypt field: ' . $field);
+                    // Set to empty on decryption failure
+                    $data[$field] = '';
+                }
+            }
+        }
+        return $data;
+    }
+
+    /**
+     * Check if a value appears to be encrypted
+     *
+     * Performs basic validation:
+     * - Is valid base64
+     * - Is long enough to contain IV + data
+     *
+     * @param string $value Value to check
+     * @return bool True if value appears encrypted
+     */
+    public function is_encrypted($value) {
+        if (empty($value)) {
             return false;
         }
 
-        $key = openssl_random_pseudo_bytes( 32 );
-        return 'base64:' . base64_encode( $key );
+        // Check if it's valid base64
+        $decoded = base64_decode($value, true);
+        if ($decoded === false) {
+            return false;
+        }
+
+        // Check if it's long enough to contain IV + some data
+        $iv_length = openssl_cipher_iv_length(self::CIPHER);
+        return strlen($decoded) > $iv_length;
+    }
+
+    /**
+     * Get encryption key info (for debugging)
+     *
+     * @return array Key information
+     */
+    public function get_key_info() {
+        return array(
+            'cipher' => self::CIPHER,
+            'iv_length' => openssl_cipher_iv_length(self::CIPHER),
+            'key_length' => strlen($this->key),
+            'key_hash' => substr(hash('sha256', $this->key), 0, 16) . '...' // First 16 chars of hash only
+        );
     }
 
     /**
      * Check if encryption is properly configured
      *
-     * @since  1.0.0
-     * @return bool True if encryption is properly configured
+     * @return bool True if encryption is ready to use
      */
     public static function is_configured() {
-        // Check if OpenSSL is available
-        if ( ! extension_loaded( 'openssl' ) ) {
+        try {
+            // Check if OpenSSL is available
+            if (!function_exists('openssl_encrypt')) {
+                return false;
+            }
+
+            // Check if cipher is supported
+            if (!in_array('aes-256-cbc', openssl_get_cipher_methods())) {
+                return false;
+            }
+
+            // Check if we can get IV length
+            $iv_length = openssl_cipher_iv_length('aes-256-cbc');
+            if ($iv_length !== 16) {
+                return false;
+            }
+
+            return true;
+
+        } catch (Exception $e) {
             return false;
         }
-
-        // Check if encryption key is defined
-        if ( ! defined( 'VD_ENCRYPTION_KEY' ) || empty( VD_ENCRYPTION_KEY ) ) {
-            return false;
-        }
-
-        // Check if key is valid
-        $key = self::get_encryption_key();
-        return false !== $key;
     }
 
     /**
-     * Test encryption/decryption functionality
+     * Test encryption functionality
      *
-     * @since  1.0.0
-     * @return bool True if encryption is working properly
+     * @return bool True if encryption test passes
      */
     public static function test() {
-        if ( ! self::is_configured() ) {
+        try {
+            $service = new self();
+
+            $test_value = 'test_encryption_' . time();
+            $encrypted = $service->encrypt($test_value);
+            $decrypted = $service->decrypt($encrypted);
+
+            return ($decrypted === $test_value);
+
+        } catch (Exception $e) {
+            error_log('VD Encryption Test Failed: ' . $e->getMessage());
             return false;
         }
+    }
 
-        $test_string = 'VD License Manager Test String ' . wp_generate_password( 16, false );
-        $encrypted = self::encrypt( $test_string );
+    /**
+     * Static encrypt method for backward compatibility
+     */
+    public static function encrypt_static($value) {
+        $service = new self();
+        return $service->encrypt($value);
+    }
 
-        if ( false === $encrypted ) {
-            return false;
-        }
-
-        $decrypted = self::decrypt( $encrypted );
-
-        return $test_string === $decrypted;
+    /**
+     * Static decrypt method for backward compatibility
+     */
+    public static function decrypt_static($value) {
+        $service = new self();
+        return $service->decrypt($value);
     }
 }
