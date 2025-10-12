@@ -13,6 +13,40 @@ defined('ABSPATH') || exit;
 class VD_LM_Order_Handler {
 
     /**
+     * Column mapping for bz_vd_provider_accounts table
+     *
+     * EXACT DATABASE SCHEMA (from class-vd-lm-database.php:397-429):
+     * - id (bigint) - Primary key
+     * - provider (varchar 100) - Provider name: Netflix, Spotify, Helium10, etc.
+     * - account_login (varchar 255) - Login username or email
+     * - display_name (varchar 255) - Admin display name
+     * - account_password (text) - Login password (encrypted)
+     * - capacity (int) - Maximum licenses this account can serve
+     * - status (enum) - active, inactive, suspended
+     * - current_usage (int) - Current number of active licenses
+     * - expires_at (datetime) - Provider account expiration date
+     * - cookies, phone_recovery, email_recovery, security_question,
+     *   security_answer, backup_codes, two_factor_secret, api_key,
+     *   secret_key, api_token, custom_fields (all encrypted fields)
+     * - created_at, updated_at (datetime)
+     *
+     * Maps logical names to actual database column names for safety
+     */
+    const ACCOUNT_COLUMNS = array(
+        'id' => 'id',
+        'login' => 'account_login',
+        'password' => 'account_password',
+        'provider' => 'provider',
+        'display_name' => 'display_name',
+        'status' => 'status',
+        'capacity' => 'capacity',
+        'current_usage' => 'current_usage',
+        'expires_at' => 'expires_at',
+        'created_at' => 'created_at',
+        'updated_at' => 'updated_at'
+    );
+
+    /**
      * Constructor
      */
     public function __construct() {
@@ -20,6 +54,7 @@ class VD_LM_Order_Handler {
         add_action('woocommerce_order_status_completed', array($this, 'handle_order_completed'), 10, 2);
 
         error_log('VD Order Handler: Registered WooCommerce hooks');
+        error_log('VD Order Handler: Expected account table schema: ' . implode(', ', self::ACCOUNT_COLUMNS));
     }
 
     /**
@@ -416,17 +451,94 @@ class VD_LM_Order_Handler {
 
         if ($account) {
             error_log('VD License Assignment: ✓ Found available account');
+
+            // COMPREHENSIVE SCHEMA DEBUG - Shows exact database columns
+            error_log('VD SCHEMA DEBUG: Account Full Data: ' . print_r($account, true));
+            error_log('VD SCHEMA DEBUG: Available Keys: ' . implode(', ', array_keys($account)));
+
+            // Standard account info using actual column names
             error_log('VD License Assignment: Account ID: ' . $account['id']);
-            error_log('VD License Assignment: Account Login: ' . $account['account_login']);
-            error_log('VD License Assignment: Current Usage: ' . $account['current_usage'] . '/' . $account['capacity']);
-            error_log('VD License Assignment: Provider: ' . $account['provider']);
-            error_log('VD License Assignment: Weight: ' . $account['weight']);
+            error_log('VD License Assignment: Account Login: ' . $this->get_account_field($account, 'login'));
+            error_log('VD License Assignment: Provider: ' . $this->get_account_field($account, 'provider'));
+            error_log('VD License Assignment: Current Usage: ' . $this->get_account_field($account, 'current_usage') .
+                     '/' . $this->get_account_field($account, 'capacity'));
+            error_log('VD License Assignment: Status: ' . $this->get_account_field($account, 'status'));
+            error_log('VD License Assignment: Weight: ' . (isset($account['weight']) ? $account['weight'] : 'N/A'));
+
+            // Verify expected vs actual schema
+            $this->verify_account_schema($account);
         } else {
             error_log('VD License Assignment: ✗ No available account found in pool ' . $pool_id);
             error_log('VD License Assignment: All accounts may be at capacity or inactive');
         }
 
         return $account;
+    }
+
+    /**
+     * Get account field safely using column mapping
+     *
+     * @param array $account Account data array
+     * @param string $field Logical field name
+     * @return mixed Field value or default
+     */
+    private function get_account_field($account, $field) {
+        if (!is_array($account)) {
+            return 'NULL_ACCOUNT';
+        }
+
+        // Use column mapping to get actual database column name
+        $actual_column = isset(self::ACCOUNT_COLUMNS[$field]) ? self::ACCOUNT_COLUMNS[$field] : $field;
+
+        if (isset($account[$actual_column])) {
+            return $account[$actual_column];
+        }
+
+        // Fallback - try the logical name directly
+        if (isset($account[$field])) {
+            return $account[$field];
+        }
+
+        return 'MISSING_' . strtoupper($field);
+    }
+
+    /**
+     * Verify account schema matches expected columns
+     *
+     * @param array $account Account data
+     */
+    private function verify_account_schema($account) {
+        error_log('VD SCHEMA VERIFICATION: === Checking Account Schema ===');
+
+        $expected_columns = array_values(self::ACCOUNT_COLUMNS);
+        $actual_columns = array_keys($account);
+
+        error_log('VD SCHEMA VERIFICATION: Expected columns: ' . implode(', ', $expected_columns));
+        error_log('VD SCHEMA VERIFICATION: Actual columns: ' . implode(', ', $actual_columns));
+
+        // Check for missing expected columns
+        $missing_columns = array_diff($expected_columns, $actual_columns);
+        if (!empty($missing_columns)) {
+            error_log('VD SCHEMA VERIFICATION: ⚠️ Missing expected columns: ' . implode(', ', $missing_columns));
+        }
+
+        // Check for unexpected columns
+        $extra_columns = array_diff($actual_columns, $expected_columns);
+        if (!empty($extra_columns)) {
+            error_log('VD SCHEMA VERIFICATION: ℹ️ Extra columns found: ' . implode(', ', $extra_columns));
+        }
+
+        // Verify critical columns exist
+        $critical_columns = ['id', 'account_login', 'provider', 'status', 'capacity', 'current_usage'];
+        foreach ($critical_columns as $column) {
+            if (!isset($account[$column])) {
+                error_log('VD SCHEMA VERIFICATION: ❌ CRITICAL MISSING: ' . $column);
+            } else {
+                error_log('VD SCHEMA VERIFICATION: ✅ Found critical column: ' . $column . ' = ' . $account[$column]);
+            }
+        }
+
+        error_log('VD SCHEMA VERIFICATION: === Schema Check Complete ===');
     }
 
     /**
