@@ -394,7 +394,7 @@ class VD_LM_Accounts_Page {
 		error_log('VD Bulk Delete: Count: ' . count($account_ids));
 
 		if (empty($account_ids)) {
-			$this->add_admin_notice('No accounts selected.', 'error');
+			$this->add_notice('No accounts selected.', 'error');
 			return;
 		}
 
@@ -417,14 +417,14 @@ class VD_LM_Accounts_Page {
 
 		// Show results
 		if ($deleted > 0) {
-			$this->add_admin_notice(
+			$this->add_notice(
 				sprintf('%d account(s) deleted successfully.', $deleted),
 				'success'
 			);
 		}
 
 		if (!empty($errors)) {
-			$this->add_admin_notice(
+			$this->add_notice(
 				'Some accounts could not be deleted: ' . implode('; ', $errors),
 				'error'
 			);
