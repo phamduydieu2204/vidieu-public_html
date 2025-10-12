@@ -36,7 +36,7 @@ if ( ! isset( $account ) || ! $account ) {
 					<th scope="row"><?php _e( 'Provider', 'vd-license-manager' ); ?></th>
 					<td>
 						<strong><?php echo esc_html( $account->provider ); ?></strong>
-						<?php if ( $account->provider_url ): ?>
+						<?php if ( isset( $account->provider_url ) && ! empty( $account->provider_url ) ): ?>
 							<br><a href="<?php echo esc_url( $account->provider_url ); ?>" target="_blank" rel="noopener">
 								<?php echo esc_html( $account->provider_url ); ?>
 							</a>
