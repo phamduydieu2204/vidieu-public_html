@@ -312,8 +312,10 @@ class VD_LM_Admin {
             wp_die( __( 'You do not have sufficient permissions to access this page.', 'vd-license-manager' ) );
         }
 
-        $this->render_page_header( __( 'Product Pools', 'vd-license-manager' ) );
-        $this->load_partial( 'pools' );
+        // Load and use the new Pools Page Controller
+        require_once VD_PLUGIN_DIR . 'admin/class-vd-lm-pools-page.php';
+        $pools_page = new VD_LM_Pools_Page();
+        $pools_page->render();
     }
 
     /**

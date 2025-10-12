@@ -36,7 +36,7 @@ class VD_LM_Database {
      *
      * @since 1.0.0
      */
-    const DB_VERSION = '1.1.0';
+    const DB_VERSION = '1.2.0';
 
     /**
      * Option name for storing database version
@@ -69,6 +69,7 @@ class VD_LM_Database {
 
         // Create tables in dependency order to respect foreign key relationships
         self::create_provider_accounts_table( $charset_collate );
+        self::create_pools_table( $charset_collate );
         self::create_product_pools_table( $charset_collate );
         self::create_pool_accounts_table( $charset_collate );
         self::create_license_keys_table( $charset_collate );
@@ -433,6 +434,35 @@ class VD_LM_Database {
     }
 
     /**
+     * Create pools table
+     *
+     * @since 1.0.0
+     * @access private
+     * @param string $charset_collate Database charset collation
+     * @return void
+     */
+    private static function create_pools_table( $charset_collate ) {
+        global $wpdb;
+        $table_name = $wpdb->prefix . 'vd_pools';
+
+        $sql = "CREATE TABLE {$table_name} (
+            id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+            name varchar(255) NOT NULL COMMENT 'Pool name (e.g., Helium10 Pool, ChatGPT Pool)',
+            description text NULL COMMENT 'Pool description',
+            status enum('active','inactive') NOT NULL DEFAULT 'active' COMMENT 'Pool status',
+            created_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            updated_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            PRIMARY KEY (id),
+            KEY idx_status (status),
+            KEY idx_name (name),
+            KEY idx_created_at (created_at)
+        ) $charset_collate;";
+
+        dbDelta( $sql );
+        VD_LM_Logger_Service::info( "Table created: {$table_name}" );
+    }
+
+    /**
      * Create product pools table
      *
      * @since 1.0.0
@@ -446,22 +476,13 @@ class VD_LM_Database {
 
         $sql = "CREATE TABLE {$table_name} (
             id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-            pool_name varchar(255) NOT NULL COMMENT 'Human-readable pool name',
             product_id bigint(20) unsigned NOT NULL COMMENT 'WooCommerce product ID',
-            priority int(11) NOT NULL DEFAULT 0 COMMENT 'Pool priority (0 = highest)',
-            capacity int(11) NOT NULL DEFAULT 10 COMMENT 'Maximum licenses this pool can handle',
-            status enum('active','inactive') NOT NULL DEFAULT 'active' COMMENT 'Pool status',
-            assignment_strategy enum('random','sticky','weighted','priority') NOT NULL DEFAULT 'random' COMMENT 'How to assign accounts from this pool',
-            rotation_enabled tinyint(1) NOT NULL DEFAULT 0 COMMENT 'Whether to rotate accounts periodically',
-            rotation_interval int(11) NULL COMMENT 'Rotation interval in hours (if enabled)',
-            description text NULL COMMENT 'Pool description for admin reference',
-            created_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-            updated_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            pool_id bigint(20) unsigned NOT NULL COMMENT 'Foreign key to vd_pools.id',
+            assigned_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
             PRIMARY KEY (id),
+            UNIQUE KEY uk_product_pool (product_id, pool_id),
             KEY idx_product_id (product_id),
-            KEY idx_priority (priority),
-            KEY idx_status (status),
-            KEY idx_created_at (created_at)
+            KEY idx_pool_id (pool_id)
         ) $charset_collate;";
 
         dbDelta( $sql );
