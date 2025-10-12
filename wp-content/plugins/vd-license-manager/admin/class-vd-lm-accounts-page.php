@@ -147,12 +147,18 @@ class VD_LM_Accounts_Page {
 			return;
 		}
 
-		// Check for bulk actions first (they use different nonce)
+		// Check for bulk actions - WordPress uses different field names
 		$action = '';
+
+		// Method 1: Standard WordPress bulk actions (action/action2)
 		if ( ! empty( $_POST['action'] ) && $_POST['action'] !== '-1' ) {
 			$action = sanitize_text_field( $_POST['action'] );
 		} elseif ( ! empty( $_POST['action2'] ) && $_POST['action2'] !== '-1' ) {
 			$action = sanitize_text_field( $_POST['action2'] );
+		}
+		// Method 2: Custom bulk action field (your form uses this)
+		elseif ( ! empty( $_POST['bulk_action'] ) ) {
+			$action = sanitize_text_field( $_POST['bulk_action'] );
 		}
 
 		error_log( 'VD Actions: Detected action: ' . $action );
@@ -340,29 +346,30 @@ class VD_LM_Accounts_Page {
 	 * @since 1.0.0
 	 */
 	private function handle_delete() {
-		// Get ID from GET or POST
-		$id = isset( $_GET['id'] ) ? absint( $_GET['id'] ) : ( isset( $_POST['account_id'] ) ? absint( $_POST['account_id'] ) : 0 );
+		// Get account ID
+		$account_id = isset( $_GET['id'] ) ? absint( $_GET['id'] ) : 0;
 
-		error_log( "VD Individual Delete: ID = $id" );
-
-		if ( ! $id ) {
+		if ( ! $account_id ) {
 			$this->add_notice( __( 'Invalid account ID.', 'vd-license-manager' ), 'error' );
 			return;
 		}
 
-		// Verify nonce for GET requests
-		if ( $_SERVER['REQUEST_METHOD'] === 'GET' ) {
-			check_admin_referer( 'vd_lm_account_action' );
+		// Verify nonce - use WordPress nonce for GET requests
+		if ( ! isset( $_GET['_wpnonce'] ) || ! wp_verify_nonce( $_GET['_wpnonce'], 'delete-account-' . $account_id ) ) {
+			wp_die( __( 'Security check failed. Invalid nonce.', 'vd-license-manager' ) );
 		}
 
-		$result = $this->service->delete_account( $id );
+		error_log( "VD Delete: Attempting to delete account ID $account_id" );
+
+		// Delete account
+		$result = $this->service->delete_account( $account_id );
 
 		if ( is_wp_error( $result ) ) {
-			error_log( "VD Individual Delete: Failed - " . $result->get_error_message() );
 			$this->add_notice( $result->get_error_message(), 'error' );
+			error_log( "VD Delete: Failed - " . $result->get_error_message() );
 		} else {
-			error_log( "VD Individual Delete: Success - Account $id deleted" );
-			$this->add_notice( __( 'Account deleted successfully!', 'vd-license-manager' ), 'success' );
+			$this->add_notice( __( 'Account deleted successfully.', 'vd-license-manager' ), 'success' );
+			error_log( "VD Delete: Account $account_id deleted successfully" );
 			wp_safe_redirect( admin_url( 'admin.php?page=vd-accounts' ) );
 			exit;
 		}

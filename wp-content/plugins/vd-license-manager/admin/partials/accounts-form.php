@@ -89,9 +89,24 @@ $current_capacity = get_field_value('capacity', $form_data, $account) ?: 1;
 $current_status = get_field_value('status', $form_data, $account) ?: 'active';
 // Format expires_at for date input (YYYY-MM-DD only, no time)
 $expires_value = vd_get_field_value('expires_at', $form_data ?? array(), $account ?? array());
+
+// Ensure it's a string before using substr()
 if (!empty($expires_value)) {
-    // Strip time part if present (convert "2025-10-31 00:00:00" to "2025-10-31")
-    $expires_value = substr($expires_value, 0, 10);
+    // Handle array case (shouldn't happen, but defensive programming)
+    if (is_array($expires_value)) {
+        error_log('VD Form: expires_at is unexpectedly an array: ' . print_r($expires_value, true));
+        $expires_value = '';
+    }
+    // Handle object case
+    elseif (is_object($expires_value)) {
+        error_log('VD Form: expires_at is unexpectedly an object');
+        $expires_value = '';
+    }
+    // String - strip time part if present
+    elseif (is_string($expires_value)) {
+        // Only take first 10 characters (YYYY-MM-DD)
+        $expires_value = substr($expires_value, 0, 10);
+    }
 }
 $current_expires_at = $expires_value;
 $current_security_question = get_field_value('security_question', $form_data, $account);

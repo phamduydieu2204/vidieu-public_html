@@ -219,7 +219,17 @@ $order = isset( $_GET['order'] ) ? sanitize_text_field( $_GET['order'] ) : 'DESC
 										</a> |
 									</span>
 									<span class="trash">
-										<a href="#" class="delete-account" data-account-id="<?php echo esc_attr( $account->id ); ?>" data-account-name="<?php echo esc_attr( $account->display_name ); ?>" aria-label="<?php esc_attr_e( 'Delete this account', 'vd-license-manager' ); ?>">
+										<?php
+										// Generate delete URL with nonce
+										$delete_url = wp_nonce_url(
+											admin_url( 'admin.php?page=vd-accounts&action=delete&id=' . $account->id ),
+											'delete-account-' . $account->id
+										);
+										?>
+										<a href="<?php echo esc_url( $delete_url ); ?>"
+										   class="delete"
+										   onclick="return confirm('<?php echo esc_js( sprintf( __( 'Are you sure you want to delete the account: %s?', 'vd-license-manager' ), $account->display_name ) ); ?>');"
+										   aria-label="<?php esc_attr_e( 'Delete this account', 'vd-license-manager' ); ?>">
 											<?php esc_html_e( 'Delete', 'vd-license-manager' ); ?>
 										</a>
 									</span>
@@ -314,13 +324,7 @@ $order = isset( $_GET['order'] ) ? sanitize_text_field( $_GET['order'] ) : 'DESC
 </div>
 
 <!-- Delete Confirmation Modal (will be added via JavaScript) -->
-<div id="delete-account-modal" style="display: none;">
-	<form method="post" id="delete-account-form">
-		<?php wp_nonce_field( 'vd_lm_account_action', 'vd_lm_nonce' ); ?>
-		<input type="hidden" name="action" value="delete">
-		<input type="hidden" name="account_id" id="delete-account-id">
-	</form>
-</div>
+<!-- Delete forms removed - using GET links with nonces now -->
 
 <style>
 .status-badge {
@@ -394,18 +398,7 @@ jQuery(document).ready(function($) {
 		$('#cb-select-all-1, #cb-select-all-2').prop('checked', total === checked);
 	});
 
-	// Handle delete account links
-	$('.delete-account').on('click', function(e) {
-		e.preventDefault();
-
-		var accountId = $(this).data('account-id');
-		var accountName = $(this).data('account-name');
-
-		if (confirm('<?php echo esc_js( __( 'Are you sure you want to delete this account?', 'vd-license-manager' ) ); ?>\n\n' + accountName)) {
-			$('#delete-account-id').val(accountId);
-			$('#delete-account-form').submit();
-		}
-	});
+	// Delete account links now use GET with nonce - no JavaScript needed
 
 	// Handle bulk actions
 	$('#doaction').on('click', function(e) {
