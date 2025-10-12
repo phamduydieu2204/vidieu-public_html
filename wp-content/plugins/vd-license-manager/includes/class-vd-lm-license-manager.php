@@ -110,6 +110,17 @@ class VD_LM_License_Manager {
         // The class responsible for defining all actions that occur in the public-facing side of the site
         require_once VD_PLUGIN_DIR . 'public/class-vd-lm-public.php';
 
+        // Load Share Configs AJAX Handler
+        if ( is_admin() ) {
+            $ajax_file = VD_PLUGIN_DIR . 'admin/class-vd-lm-share-configs-ajax.php';
+            if ( file_exists( $ajax_file ) ) {
+                require_once $ajax_file;
+                error_log( 'VD Loader: Loaded Share Configs AJAX handler from: ' . $ajax_file );
+            } else {
+                error_log( 'VD Loader: AJAX handler file NOT FOUND: ' . $ajax_file );
+            }
+        }
+
         $this->loader = new VD_LM_Loader();
     }
 
@@ -141,10 +152,7 @@ class VD_LM_License_Manager {
         $this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_scripts' );
         $this->loader->add_action( 'admin_menu', $plugin_admin, 'add_plugin_admin_menu' );
 
-        // Load Share Configs AJAX handler
-        if ( is_admin() ) {
-            new VD_LM_Share_Configs_Ajax();
-        }
+        // Note: Share Configs AJAX handler auto-initializes via init hook
     }
 
     /**

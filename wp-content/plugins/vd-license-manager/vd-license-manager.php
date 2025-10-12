@@ -66,6 +66,9 @@ define( 'VD_PLUGIN_BASENAME', plugin_basename( __FILE__ ) );
  */
 define( 'VD_TEXT_DOMAIN', 'vd-license-manager' );
 
+// Debug: Verify constants are set
+error_log( 'VD Constants: DIR=' . VD_PLUGIN_DIR . ', URL=' . VD_PLUGIN_URL );
+
 /**
  * Manual autoloader for VD_LM_* classes
  *
