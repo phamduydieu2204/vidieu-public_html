@@ -301,7 +301,7 @@ class VD_LM_Account_Repository extends VD_LM_Base_Repository {
 			}
 
 			// Check if account exists
-			$existing = $this->find_by_id( $id );
+			$existing = $this->find( $id );
 			if ( ! $existing ) {
 				return new WP_Error( 'account_not_found', 'Account not found' );
 			}
@@ -436,21 +436,12 @@ class VD_LM_Account_Repository extends VD_LM_Base_Repository {
 		// DEBUG: Log after decryption
 		error_log( 'VD DEBUG: format_result - After decryption, provider: ' . ( isset( $result->provider ) ? $result->provider : 'NOT SET' ) );
 
-		// Parse custom fields if they exist
-		if ( isset( $result->custom_fields ) && ! empty( $result->custom_fields ) ) {
-			error_log( 'VD DEBUG: format_result - Parsing custom_fields JSON: ' . substr( $result->custom_fields, 0, 200 ) );
-			$custom_fields = json_decode( $result->custom_fields, true );
-			if ( json_last_error() !== JSON_ERROR_NONE ) {
-				error_log( 'VD DEBUG: format_result - JSON decode error: ' . json_last_error_msg() );
-				$result->custom_fields = array();
-			} else {
-				$result->custom_fields = is_array( $custom_fields ) ? $custom_fields : array();
-				error_log( 'VD DEBUG: format_result - Parsed custom_fields: ' . count( $result->custom_fields ) . ' fields' );
-			}
-		} else {
-			error_log( 'VD DEBUG: format_result - No custom_fields to parse' );
+		// Ensure custom_fields is always an array (JSON parsing handled in decrypt_sensitive_fields)
+		if ( ! isset( $result->custom_fields ) || ! is_array( $result->custom_fields ) ) {
 			$result->custom_fields = array();
 		}
+
+		error_log( 'VD DEBUG: format_result - Final custom_fields: ' . ( is_array( $result->custom_fields ) ? count( $result->custom_fields ) . ' fields' : 'not an array' ) );
 
 		// DEBUG: Final result
 		error_log( 'VD DEBUG: format_result - Final result provider: ' . ( isset( $result->provider ) ? $result->provider : 'NOT SET' ) );
@@ -480,7 +471,7 @@ class VD_LM_Account_Repository extends VD_LM_Base_Repository {
 					error_log( 'VD DEBUG: encrypt_sensitive_fields - custom_fields is array, JSON encoding: ' . wp_json_encode( $data[ $field ] ) );
 					$data[ $field ] = wp_json_encode( $data[ $field ] );
 				} elseif ( $field === 'custom_fields' ) {
-					error_log( 'VD DEBUG: encrypt_sensitive_fields - custom_fields is not array, value: ' . substr( $data[ $field ], 0, 100 ) );
+					error_log( 'VD DEBUG: encrypt_sensitive_fields - custom_fields is not array, type: ' . gettype( $data[ $field ] ) . ', value: ' . substr( (string) $data[ $field ], 0, 100 ) );
 				}
 
 				// Encrypt the field
@@ -518,7 +509,15 @@ class VD_LM_Account_Repository extends VD_LM_Base_Repository {
 		foreach ( $this->encrypted_fields as $field ) {
 			if ( isset( $result->$field ) && ! empty( $result->$field ) ) {
 				try {
-					$result->$field = $this->encryption_service->decrypt( $result->$field );
+					$decrypted = $this->encryption_service->decrypt( $result->$field );
+
+					// Special handling for custom_fields (JSON decode after decryption)
+					if ( $field === 'custom_fields' && ! empty( $decrypted ) ) {
+						$parsed = json_decode( $decrypted, true );
+						$result->$field = ( json_last_error() === JSON_ERROR_NONE ) ? $parsed : array();
+					} else {
+						$result->$field = $decrypted;
+					}
 				} catch ( Exception $e ) {
 					VD_LM_Logger_Service::error( 'Failed to decrypt field', array(
 						'field' => $field,
@@ -526,8 +525,12 @@ class VD_LM_Account_Repository extends VD_LM_Base_Repository {
 						'error' => $e->getMessage(),
 					) );
 
-					// Set to empty string if decryption fails
-					$result->$field = '';
+					// Set to empty string/array if decryption fails
+					if ( $field === 'custom_fields' ) {
+						$result->$field = array();
+					} else {
+						$result->$field = '';
+					}
 				}
 			}
 		}

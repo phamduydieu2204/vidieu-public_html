@@ -77,6 +77,12 @@ $current_custom_fields = get_field_value('custom_fields', $form_data, $account) 
 if (is_string($current_custom_fields)) {
     $current_custom_fields = json_decode($current_custom_fields, true) ?: array();
 }
+
+// Get current password (decrypted for edit mode)
+$current_password = '';
+if ($is_edit && $account && !empty($account->account_password)) {
+    $current_password = $account->account_password; // This should already be decrypted by the repository
+}
 ?>
 
 <div class="vd-account-form-wrapper">
@@ -136,14 +142,14 @@ if (is_string($current_custom_fields)) {
 							<div class="vd-form-row">
 								<label for="account_password"><?php esc_html_e( 'Password', 'vd-license-manager' ); ?> <?php if ( ! $is_edit ) : ?><span class="required">*</span><?php endif; ?></label>
 								<div class="vd-password-wrapper">
-									<input type="password" name="account_password" id="account_password" value="" class="regular-text <?php echo isset($form_errors['account_password']) ? 'vd-error-field' : ''; ?>" placeholder="<?php echo $is_edit ? 'Leave blank to keep current password' : 'Enter account password'; ?>" <?php echo $is_edit ? '' : 'required'; ?> autocomplete="new-password">
+									<input type="password" name="account_password" id="account_password" value="<?php echo esc_attr( $current_password ); ?>" class="regular-text <?php echo isset($form_errors['account_password']) ? 'vd-error-field' : ''; ?>" placeholder="<?php echo $is_edit ? 'Current password (leave unchanged or enter new)' : 'Enter account password'; ?>" <?php echo $is_edit ? '' : 'required'; ?> autocomplete="new-password">
 									<button type="button" class="button button-secondary vd-toggle-password" data-target="account_password" aria-label="Toggle password visibility">
 										<span class="dashicons dashicons-visibility"></span>
 										<span class="toggle-text">Show</span>
 									</button>
 								</div>
 								<?php if ( $is_edit ) : ?>
-									<p class="description"><span class="dashicons dashicons-lock"></span> Leave blank to keep current password</p>
+									<p class="description"><span class="dashicons dashicons-lock"></span> Current decrypted password shown. Modify to change or leave unchanged.</p>
 								<?php else : ?>
 									<p class="description"><span class="dashicons dashicons-lock"></span> Account password (will be encrypted)</p>
 								<?php endif; ?>

@@ -98,7 +98,6 @@ $order = isset( $_GET['order'] ) ? sanitize_text_field( $_GET['order'] ) : 'DESC
 		<div class="alignleft actions">
 			<form method="post" action="">
 				<?php wp_nonce_field( 'vd_lm_account_action', 'vd_lm_nonce' ); ?>
-				<input type="hidden" name="action" value="bulk_delete">
 
 				<select name="bulk_action" id="bulk-action-selector-top">
 					<option value="-1"><?php esc_html_e( 'Bulk Actions', 'vd-license-manager' ); ?></option>

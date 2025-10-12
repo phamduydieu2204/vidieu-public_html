@@ -133,19 +133,33 @@ class VD_LM_Accounts_Page {
 
 		$action = isset( $_POST['action'] ) ? sanitize_text_field( $_POST['action'] ) : '';
 
-		switch ( $action ) {
-			case 'create':
-				$this->handle_create();
-				break;
-			case 'update':
-				$this->handle_update();
-				break;
-			case 'delete':
-				$this->handle_delete();
-				break;
-			case 'bulk_delete':
-				$this->handle_bulk_delete();
-				break;
+		// Check for bulk actions (WordPress uses bulk_action dropdown)
+		$bulk_action = '';
+		if ( isset( $_POST['bulk_action'] ) && $_POST['bulk_action'] !== '-1' ) {
+			$bulk_action = sanitize_text_field( $_POST['bulk_action'] );
+		} elseif ( isset( $_POST['bulk_action2'] ) && $_POST['bulk_action2'] !== '-1' ) {
+			$bulk_action = sanitize_text_field( $_POST['bulk_action2'] );
+		}
+
+		// Priority: bulk actions first, then regular actions
+		if ( ! empty( $bulk_action ) ) {
+			switch ( $bulk_action ) {
+				case 'bulk_delete':
+					$this->handle_bulk_delete();
+					break;
+			}
+		} else {
+			switch ( $action ) {
+				case 'create':
+					$this->handle_create();
+					break;
+				case 'update':
+					$this->handle_update();
+					break;
+				case 'delete':
+					$this->handle_delete();
+					break;
+			}
 		}
 	}
 
@@ -454,7 +468,7 @@ class VD_LM_Accounts_Page {
 			error_log( 'VD DEBUG: Account login: ' . ( isset( $account->account_login ) ? $account->account_login : 'NOT SET' ) );
 			error_log( 'VD DEBUG: Account display_name: ' . ( isset( $account->display_name ) ? $account->display_name : 'NOT SET' ) );
 			error_log( 'VD DEBUG: Account capacity: ' . ( isset( $account->capacity ) ? $account->capacity : 'NOT SET' ) );
-			error_log( 'VD DEBUG: Account custom_fields: ' . ( isset( $account->custom_fields ) ? $account->custom_fields : 'NOT SET' ) );
+			error_log( 'VD DEBUG: Account custom_fields: ' . ( isset( $account->custom_fields ) ? ( is_array( $account->custom_fields ) ? wp_json_encode( $account->custom_fields ) : $account->custom_fields ) : 'NOT SET' ) );
 			error_log( 'VD DEBUG: Full account object type: ' . gettype( $account ) );
 
 			// Log all available properties
@@ -526,13 +540,48 @@ class VD_LM_Accounts_Page {
 			'capacity' => absint( $post['capacity'] ?? 1 ),
 			'status' => sanitize_text_field( $post['status'] ?? 'active' ),
 			'expires_at' => sanitize_text_field( $post['expires_at'] ?? '' ),
-			'custom_fields' => $this->sanitize_custom_fields( $post['custom_fields'] ?? array() ),
+			'custom_fields' => $this->process_custom_fields( $post ),
 			'notes' => sanitize_textarea_field( $post['notes'] ?? '' ),
 		);
 	}
 
 	/**
-	 * Sanitize custom fields
+	 * Process custom fields from form data
+	 *
+	 * @since 1.0.0
+	 * @param array $post POST data
+	 * @return array Processed custom fields
+	 */
+	private function process_custom_fields( $post ) {
+		$custom_fields = array();
+
+		// Check if we have custom field arrays from the form
+		if ( isset( $post['custom_field_key'] ) && is_array( $post['custom_field_key'] ) ) {
+			$keys = $post['custom_field_key'];
+			$values = $post['custom_field_value'] ?? array();
+			$types = $post['custom_field_type'] ?? array();
+
+			foreach ( $keys as $index => $key ) {
+				$key = sanitize_key( $key );
+				$value = isset( $values[$index] ) ? sanitize_text_field( $values[$index] ) : '';
+				$type = isset( $types[$index] ) ? sanitize_text_field( $types[$index] ) : 'text';
+
+				// Only add non-empty keys and values
+				if ( ! empty( $key ) && ! empty( $value ) ) {
+					$custom_fields[ $key ] = $value;
+				}
+			}
+		}
+		// Fallback: check for direct custom_fields array (for backward compatibility)
+		elseif ( isset( $post['custom_fields'] ) && is_array( $post['custom_fields'] ) ) {
+			$custom_fields = $this->sanitize_custom_fields( $post['custom_fields'] );
+		}
+
+		return $custom_fields;
+	}
+
+	/**
+	 * Sanitize custom fields (legacy method)
 	 *
 	 * @since 1.0.0
 	 * @param array $custom_fields Custom fields data

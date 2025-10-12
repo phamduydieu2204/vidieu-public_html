@@ -543,23 +543,64 @@ class VD_LM_Account_Service {
 
 		// Check pool assignments (if table exists)
 		$pool_table = $wpdb->prefix . 'vd_pool_accounts';
-		$pool_count = $wpdb->get_var(
+
+		// Check if the pool table exists first
+		$pool_table_exists = $wpdb->get_var(
 			$wpdb->prepare(
-				"SELECT COUNT(*) FROM {$pool_table} WHERE account_id = %d",
-				$account_id
+				"SHOW TABLES LIKE %s",
+				$pool_table
 			)
-		);
-		$dependencies['pools'] = absint( $pool_count );
+		) === $pool_table;
+
+		if ( $pool_table_exists ) {
+			$pool_count = $wpdb->get_var(
+				$wpdb->prepare(
+					"SELECT COUNT(*) FROM {$pool_table} WHERE account_id = %d",
+					$account_id
+				)
+			);
+			$dependencies['pools'] = absint( $pool_count );
+		} else {
+			// Table doesn't exist, no pool dependencies
+			$dependencies['pools'] = 0;
+		}
 
 		// Check license assignments (if table exists)
 		$license_table = $wpdb->prefix . 'vd_license_keys';
-		$license_count = $wpdb->get_var(
+
+		// Check if the license table exists first
+		$table_exists = $wpdb->get_var(
 			$wpdb->prepare(
-				"SELECT COUNT(*) FROM {$license_table} WHERE assigned_account_id = %d",
-				$account_id
+				"SHOW TABLES LIKE %s",
+				$license_table
 			)
-		);
-		$dependencies['licenses'] = absint( $license_count );
+		) === $license_table;
+
+		if ( $table_exists ) {
+			// Check if assigned_account_id column exists
+			$column_exists = $wpdb->get_var(
+				$wpdb->prepare(
+					"SHOW COLUMNS FROM {$license_table} LIKE %s",
+					'assigned_account_id'
+				)
+			);
+
+			if ( $column_exists ) {
+				$license_count = $wpdb->get_var(
+					$wpdb->prepare(
+						"SELECT COUNT(*) FROM {$license_table} WHERE assigned_account_id = %d",
+						$account_id
+					)
+				);
+				$dependencies['licenses'] = absint( $license_count );
+			} else {
+				// Column doesn't exist, no license dependencies
+				$dependencies['licenses'] = 0;
+			}
+		} else {
+			// Table doesn't exist, no license dependencies
+			$dependencies['licenses'] = 0;
+		}
 
 		return $dependencies;
 	}
