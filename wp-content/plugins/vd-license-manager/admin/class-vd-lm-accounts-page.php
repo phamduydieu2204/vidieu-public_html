@@ -163,10 +163,8 @@ class VD_LM_Accounts_Page {
 
 		error_log( 'VD Actions: Detected action: ' . $action );
 
-		// Handle bulk delete (uses WordPress bulk nonce)
+		// Handle bulk delete
 		if ( $action === 'delete' ) {
-			// Verify bulk nonce
-			check_admin_referer( 'bulk-accounts' );
 			error_log( 'VD Actions: Calling handle_bulk_delete()' );
 			$this->handle_bulk_delete();
 			return;
@@ -381,6 +379,13 @@ class VD_LM_Accounts_Page {
 	 * @since 1.0.0
 	 */
 	private function handle_bulk_delete() {
+		// Verify nonce - use vd_lm_nonce to match the form
+		if ( ! isset( $_POST['vd_lm_nonce'] ) || ! wp_verify_nonce( $_POST['vd_lm_nonce'], 'vd_lm_action' ) ) {
+			wp_die( __( 'Security check failed. Invalid nonce for bulk action.', 'vd-license-manager' ) );
+		}
+
+		error_log( 'VD Bulk Delete: Nonce verified successfully' );
+
 		// Get IDs from POST data
 		$account_ids = isset( $_POST['account_ids'] ) ? array_map( 'absint', $_POST['account_ids'] ) : array();
 
