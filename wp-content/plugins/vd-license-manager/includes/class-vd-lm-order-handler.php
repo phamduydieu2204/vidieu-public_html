@@ -13,6 +13,13 @@ defined('ABSPATH') || exit;
 class VD_LM_Order_Handler {
 
     /**
+     * Email handler instance
+     *
+     * @var VD_LM_Email_Handler
+     */
+    private $email_handler;
+
+    /**
      * Column mapping for bz_vd_provider_accounts table
      *
      * EXACT DATABASE SCHEMA (CONFIRMED from user specification):
@@ -57,6 +64,9 @@ class VD_LM_Order_Handler {
      * Constructor
      */
     public function __construct() {
+        // Initialize email handler
+        $this->email_handler = new VD_LM_Email_Handler();
+
         // Hook into order status change
         add_action('woocommerce_order_status_completed', array($this, 'handle_order_completed'), 10, 2);
 
@@ -144,6 +154,9 @@ class VD_LM_Order_Handler {
                 if ($result['success']) {
                     $licenses_assigned++;
                     error_log('VD Order Handler: License assigned successfully: ' . $license_key);
+
+                    // Send credentials email to customer
+                    $this->send_credentials_email($order, $product_id, $license_key, $result['account_id']);
                 } else {
                     $licenses_failed++;
                     error_log('VD Order Handler: License assignment failed: ' . $license_key . ' - Reason: ' . $result['message']);
@@ -700,6 +713,133 @@ class VD_LM_Order_Handler {
                     error_log('VD License Assignment: ⚠ Usage did not increment as expected');
                 }
             }
+        }
+    }
+
+    /**
+     * Send credentials email to customer
+     *
+     * Collects order and account data to send professional email
+     * with license credentials to the customer.
+     *
+     * @since 1.0.0
+     * @param WC_Order $order Order object
+     * @param int $product_id Product ID
+     * @param string $license_key License key
+     * @param int $account_id Assigned account ID
+     */
+    private function send_credentials_email($order, $product_id, $license_key, $account_id) {
+        try {
+            // Get customer information
+            $customer_name = $order->get_billing_first_name() . ' ' . $order->get_billing_last_name();
+            $customer_email = $order->get_billing_email();
+
+            // Get product information
+            $product = wc_get_product($product_id);
+            $product_name = $product ? $product->get_name() : 'Product #' . $product_id;
+
+            // Get account information
+            $account = $this->get_account_by_id($account_id);
+            if (!$account) {
+                error_log('VD Email: Account not found for ID: ' . $account_id);
+                return;
+            }
+
+            // Decrypt account password
+            $account_password = $this->decrypt_account_password($account['login_password']);
+
+            // Get share config for this product
+            $share_config = $this->get_share_config($product_id);
+            $max_devices = $share_config ? $share_config['max_devices'] : 1;
+            $validity_days = $share_config ? $share_config['validity_days'] : 0;
+            $max_requests_per_day = $share_config ? $share_config['max_requests_per_day'] : 1000;
+
+            // Calculate expiry date
+            $expiry_date = $validity_days > 0
+                ? date('F j, Y', strtotime('+' . $validity_days . ' days'))
+                : __('Lifetime', 'vd-license-manager');
+
+            // Prepare email data
+            $email_data = [
+                'customer_name' => trim($customer_name),
+                'customer_email' => $customer_email,
+                'product_name' => $product_name,
+                'license_key' => $license_key,
+                'account_login' => $account['account_login'],
+                'account_password' => $account_password,
+                'max_devices' => $max_devices,
+                'validity_days' => $validity_days,
+                'expiry_date' => $expiry_date,
+                'max_requests_per_day' => $max_requests_per_day,
+                'order_id' => $order->get_order_number(),
+                'site_name' => get_bloginfo('name'),
+                'site_url' => home_url()
+            ];
+
+            // Send email
+            $result = $this->email_handler->send_credentials_email($email_data);
+
+            if (is_wp_error($result)) {
+                error_log('VD Email: Failed to send credentials email for license ' . $license_key . ': ' . $result->get_error_message());
+            } else {
+                error_log('VD Email: Credentials email sent successfully for license ' . $license_key . ' to ' . $customer_email);
+            }
+
+        } catch (Exception $e) {
+            error_log('VD Email: Exception sending credentials email for license ' . $license_key . ': ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Get account by ID with decryption support
+     *
+     * @since 1.0.0
+     * @param int $account_id Account ID
+     * @return array|null Account data or null if not found
+     */
+    private function get_account_by_id($account_id) {
+        global $wpdb;
+
+        $table_name = $wpdb->prefix . 'vd_provider_accounts';
+
+        $account = $wpdb->get_row(
+            $wpdb->prepare(
+                "SELECT * FROM {$table_name} WHERE id = %d",
+                $account_id
+            ),
+            ARRAY_A
+        );
+
+        return $account ?: null;
+    }
+
+    /**
+     * Decrypt account password
+     *
+     * @since 1.0.0
+     * @param string $encrypted_password Encrypted password from database
+     * @return string Decrypted password
+     */
+    private function decrypt_account_password($encrypted_password) {
+        if (empty($encrypted_password)) {
+            return '';
+        }
+
+        // Use the same encryption method from VD_LM_Database
+        if (!defined('VD_ENCRYPTION_KEY')) {
+            return $encrypted_password; // Return as-is if encryption not configured
+        }
+
+        try {
+            $key = VD_ENCRYPTION_KEY;
+            $method = 'AES-256-CBC';
+
+            list($encrypted_data, $iv) = explode('::', base64_decode($encrypted_password), 2);
+
+            return openssl_decrypt($encrypted_data, $method, base64_decode(substr($key, 7)), 0, $iv);
+        } catch (Exception $e) {
+            error_log('VD Email: Failed to decrypt password: ' . $e->getMessage());
+            return $encrypted_password; // Return encrypted if decryption fails
         }
     }
 }

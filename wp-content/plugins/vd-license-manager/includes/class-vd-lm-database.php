@@ -36,7 +36,7 @@ class VD_LM_Database {
      *
      * @since 1.0.0
      */
-    const DB_VERSION = '1.2.0';
+    const DB_VERSION = '1.3.0';
 
     /**
      * Option name for storing database version
@@ -551,6 +551,7 @@ class VD_LM_Database {
             max_requests_per_day int(11) NOT NULL DEFAULT 10 COMMENT 'Maximum API requests per day',
             max_requests_per_hour int(11) NOT NULL DEFAULT 5 COMMENT 'Maximum API requests per hour',
             assigned_at datetime NULL COMMENT 'When account was assigned to this license',
+            email_sent_at datetime NULL COMMENT 'When credentials email was sent to customer',
             last_rotation_at datetime NULL COMMENT 'Last time account was rotated',
             synced_at datetime NULL COMMENT 'Last sync from LMfWC',
             sync_hash varchar(64) NULL COMMENT 'Hash of synced data for change detection',
@@ -566,7 +567,8 @@ class VD_LM_Database {
             KEY idx_account_id (account_id),
             KEY idx_status (status),
             KEY idx_expires_at (expires_at),
-            KEY idx_assigned_at (assigned_at)
+            KEY idx_assigned_at (assigned_at),
+            KEY idx_email_sent_at (email_sent_at)
         ) $charset_collate;";
 
         dbDelta( $sql );
