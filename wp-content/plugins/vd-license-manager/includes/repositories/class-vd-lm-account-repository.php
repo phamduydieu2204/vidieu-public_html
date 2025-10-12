@@ -238,7 +238,7 @@ class VD_LM_Account_Repository extends VD_LM_Base_Repository {
 			$existing = $this->find_by_provider_and_login( $data['provider'], $data['account_login'] );
 			if ( $existing ) {
 				$error_msg = sprintf(
-					'Account with login \%s\ already exists for provider \%s\',
+					'Account with login "%s" already exists for provider "%s"',
 					$data['account_login'],
 					$data['provider']
 				);
