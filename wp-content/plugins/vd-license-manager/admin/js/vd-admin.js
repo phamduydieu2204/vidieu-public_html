@@ -39,6 +39,9 @@
 
             // Placeholder button clicks (for future implementation)
             $(document).on('click', 'button[disabled]', this.placeholderClick);
+
+            // Share Configs functionality
+            $(document).on('click', '.vd-save-config', this.saveShareConfig);
         },
 
         /**
@@ -267,6 +270,88 @@
          */
         hideLoading: function($element) {
             $element.find('.vd-loading').remove();
+        },
+
+        /**
+         * Save share config via AJAX
+         */
+        saveShareConfig: function(e) {
+            e.preventDefault();
+
+            var $button = $(this);
+            var productId = $button.data('product-id');
+            var $row = $button.closest('tr');
+
+            // Get values from row
+            var maxDevices = $row.find('input[name*="[max_devices]"]').val();
+            var validityDays = $row.find('input[name*="[validity_days]"]').val();
+            var maxRequests = $row.find('input[name*="[max_requests_per_day]"]').val();
+            var allowVps = $row.find('input[name*="[allow_vps]"]').is(':checked') ? 1 : 0;
+
+            // Validate
+            if (maxDevices < 1 || maxDevices > 10) {
+                VDAdmin.showNotice('Max devices must be between 1 and 10.', 'error');
+                return;
+            }
+
+            if (validityDays < 1 || validityDays > 3650) {
+                VDAdmin.showNotice('Validity days must be between 1 and 3650.', 'error');
+                return;
+            }
+
+            if (maxRequests < 10 || maxRequests > 10000) {
+                VDAdmin.showNotice('Max requests per day must be between 10 and 10000.', 'error');
+                return;
+            }
+
+            // Show loading state
+            var originalText = $button.text();
+            $button.prop('disabled', true).text('Saving...').addClass('saving');
+
+            // Send AJAX
+            $.ajax({
+                url: vd_admin_ajax.ajax_url,
+                type: 'POST',
+                data: {
+                    action: 'vd_save_share_config',
+                    nonce: vd_admin_ajax.nonce,
+                    product_id: productId,
+                    max_devices: maxDevices,
+                    validity_days: validityDays,
+                    max_requests_per_day: maxRequests,
+                    allow_vps: allowVps
+                },
+                success: function(response) {
+                    if (response.success) {
+                        // Show success state
+                        $button.text('Saved!').removeClass('saving').addClass('saved');
+                        $row.removeClass('not-configured').addClass('configured');
+
+                        // Show success message
+                        VDAdmin.showNotice(response.data.message, 'success');
+
+                        // If this was a new config, add delete button
+                        if (response.data.action === 'created' && response.data.config_id) {
+                            var deleteUrl = 'admin.php?page=vd-share-configs&action=delete_config&id=' + response.data.config_id;
+                            var $deleteBtn = $('<a href="' + deleteUrl + '" class="button button-small button-link-delete" onclick="return confirm(\'Are you sure you want to delete this config?\');">Delete</a>');
+                            $button.after(' ').after($deleteBtn);
+                        }
+
+                        // Reset button after 2 seconds
+                        setTimeout(function() {
+                            $button.text(originalText).removeClass('saved').prop('disabled', false);
+                        }, 2000);
+
+                    } else {
+                        VDAdmin.showNotice('Error: ' + response.data.message, 'error');
+                        $button.text(originalText).removeClass('saving').prop('disabled', false);
+                    }
+                },
+                error: function() {
+                    VDAdmin.showNotice('AJAX error occurred.', 'error');
+                    $button.text(originalText).removeClass('saving').prop('disabled', false);
+                }
+            });
         }
     };
 

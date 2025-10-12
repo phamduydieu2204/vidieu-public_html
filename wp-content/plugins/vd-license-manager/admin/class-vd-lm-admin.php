@@ -230,6 +230,14 @@ class VD_LM_Admin {
             ),
             array(
                 'parent_slug' => 'vd-license-manager',
+                'page_title'  => __( 'Share Configurations', 'vd-license-manager' ),
+                'menu_title'  => __( 'Share Configs', 'vd-license-manager' ),
+                'capability'  => 'manage_options',
+                'menu_slug'   => 'vd-share-configs',
+                'function'    => array( $this, 'display_share_configs_page' ),
+            ),
+            array(
+                'parent_slug' => 'vd-license-manager',
                 'page_title'  => __( 'License Keys', 'vd-license-manager' ),
                 'menu_title'  => __( 'Licenses', 'vd-license-manager' ),
                 'capability'  => 'manage_options',
@@ -320,6 +328,23 @@ class VD_LM_Admin {
         require_once VD_PLUGIN_DIR . 'admin/class-vd-lm-accounts-page.php';
         $accounts_page = new VD_LM_Accounts_Page();
         $accounts_page->render();
+    }
+
+    /**
+     * Display the share configs page
+     *
+     * @since 1.0.0
+     */
+    public function display_share_configs_page() {
+        // Check user capabilities
+        if ( ! current_user_can( 'manage_options' ) ) {
+            wp_die( __( 'You do not have sufficient permissions to access this page.', 'vd-license-manager' ) );
+        }
+
+        // Load and use the Share Configs Page Controller
+        require_once VD_PLUGIN_DIR . 'admin/class-vd-lm-share-configs-page.php';
+        $share_configs_page = new VD_LM_Share_Configs_Page();
+        $share_configs_page->render();
     }
 
     /**
@@ -417,12 +442,13 @@ class VD_LM_Admin {
         // Add current page if not dashboard
         if ( $current_screen && $current_screen->id !== 'toplevel_page_vd-license-manager' ) {
             $page_titles = array(
-                'vd-license-manager_page_vd-pools'    => __( 'Pools', 'vd-license-manager' ),
-                'vd-license-manager_page_vd-accounts' => __( 'Accounts', 'vd-license-manager' ),
-                'vd-license-manager_page_vd-licenses' => __( 'Licenses', 'vd-license-manager' ),
-                'vd-license-manager_page_vd-devices'  => __( 'Devices', 'vd-license-manager' ),
-                'vd-license-manager_page_vd-logs'     => __( 'Logs', 'vd-license-manager' ),
-                'vd-license-manager_page_vd-settings' => __( 'Settings', 'vd-license-manager' ),
+                'vd-license-manager_page_vd-pools'         => __( 'Pools', 'vd-license-manager' ),
+                'vd-license-manager_page_vd-accounts'      => __( 'Accounts', 'vd-license-manager' ),
+                'vd-license-manager_page_vd-share-configs' => __( 'Share Configs', 'vd-license-manager' ),
+                'vd-license-manager_page_vd-licenses'      => __( 'Licenses', 'vd-license-manager' ),
+                'vd-license-manager_page_vd-devices'       => __( 'Devices', 'vd-license-manager' ),
+                'vd-license-manager_page_vd-logs'          => __( 'Logs', 'vd-license-manager' ),
+                'vd-license-manager_page_vd-settings'      => __( 'Settings', 'vd-license-manager' ),
             );
 
             if ( isset( $page_titles[ $current_screen->id ] ) ) {
@@ -506,6 +532,7 @@ class VD_LM_Admin {
             'toplevel_page_vd-license-manager',
             'vd-license-manager_page_vd-pools',
             'vd-license-manager_page_vd-accounts',
+            'vd-license-manager_page_vd-share-configs',
             'vd-license-manager_page_vd-licenses',
             'vd-license-manager_page_vd-devices',
             'vd-license-manager_page_vd-logs',
