@@ -121,45 +121,66 @@ class VD_LM_Accounts_Page {
 	 * @since 1.0.0
 	 */
 	private function handle_actions() {
+		// Debug ALL request data
+		error_log( 'VD Actions: POST data: ' . print_r( $_POST, true ) );
+		error_log( 'VD Actions: GET data: ' . print_r( $_GET, true ) );
+
+		// Handle GET requests (individual actions like edit, delete, view)
+		if ( $_SERVER['REQUEST_METHOD'] === 'GET' && isset( $_GET['action'] ) ) {
+			switch ( $_GET['action'] ) {
+				case 'delete':
+					error_log( 'VD Actions: Individual delete, ID: ' . ( $_GET['id'] ?? 'MISSING' ) );
+					$this->handle_delete();
+					break;
+				case 'edit':
+					$this->render_edit_form();
+					break;
+				case 'view':
+					$this->render_view();
+					break;
+			}
+			return;
+		}
+
+		// Handle POST requests
 		if ( $_SERVER['REQUEST_METHOD'] !== 'POST' ) {
 			return;
 		}
 
-		// Verify nonce
+		// Check for bulk actions first (they use different nonce)
+		$action = '';
+		if ( ! empty( $_POST['action'] ) && $_POST['action'] !== '-1' ) {
+			$action = sanitize_text_field( $_POST['action'] );
+		} elseif ( ! empty( $_POST['action2'] ) && $_POST['action2'] !== '-1' ) {
+			$action = sanitize_text_field( $_POST['action2'] );
+		}
+
+		error_log( 'VD Actions: Detected action: ' . $action );
+
+		// Handle bulk delete (uses WordPress bulk nonce)
+		if ( $action === 'delete' ) {
+			// Verify bulk nonce
+			check_admin_referer( 'bulk-accounts' );
+			error_log( 'VD Actions: Calling handle_bulk_delete()' );
+			$this->handle_bulk_delete();
+			return;
+		}
+
+		// Handle individual form actions (uses custom nonce)
 		if ( ! isset( $_POST['vd_lm_nonce'] ) || ! wp_verify_nonce( $_POST['vd_lm_nonce'], 'vd_lm_account_action' ) ) {
 			$this->add_notice( __( 'Security check failed. Please try again.', 'vd-license-manager' ), 'error' );
 			return;
 		}
 
-		$action = isset( $_POST['action'] ) ? sanitize_text_field( $_POST['action'] ) : '';
+		$form_action = isset( $_POST['action'] ) ? sanitize_text_field( $_POST['action'] ) : '';
 
-		// Check for bulk actions (WordPress uses bulk_action dropdown)
-		$bulk_action = '';
-		if ( isset( $_POST['bulk_action'] ) && $_POST['bulk_action'] !== '-1' ) {
-			$bulk_action = sanitize_text_field( $_POST['bulk_action'] );
-		} elseif ( isset( $_POST['bulk_action2'] ) && $_POST['bulk_action2'] !== '-1' ) {
-			$bulk_action = sanitize_text_field( $_POST['bulk_action2'] );
-		}
-
-		// Priority: bulk actions first, then regular actions
-		if ( ! empty( $bulk_action ) ) {
-			switch ( $bulk_action ) {
-				case 'bulk_delete':
-					$this->handle_bulk_delete();
-					break;
-			}
-		} else {
-			switch ( $action ) {
-				case 'create':
-					$this->handle_create();
-					break;
-				case 'update':
-					$this->handle_update();
-					break;
-				case 'delete':
-					$this->handle_delete();
-					break;
-			}
+		switch ( $form_action ) {
+			case 'create':
+				$this->handle_create();
+				break;
+			case 'update':
+				$this->handle_update();
+				break;
 		}
 	}
 
@@ -319,18 +340,28 @@ class VD_LM_Accounts_Page {
 	 * @since 1.0.0
 	 */
 	private function handle_delete() {
-		$id = isset( $_POST['account_id'] ) ? absint( $_POST['account_id'] ) : 0;
+		// Get ID from GET or POST
+		$id = isset( $_GET['id'] ) ? absint( $_GET['id'] ) : ( isset( $_POST['account_id'] ) ? absint( $_POST['account_id'] ) : 0 );
+
+		error_log( "VD Individual Delete: ID = $id" );
 
 		if ( ! $id ) {
 			$this->add_notice( __( 'Invalid account ID.', 'vd-license-manager' ), 'error' );
 			return;
 		}
 
+		// Verify nonce for GET requests
+		if ( $_SERVER['REQUEST_METHOD'] === 'GET' ) {
+			check_admin_referer( 'vd_lm_account_action' );
+		}
+
 		$result = $this->service->delete_account( $id );
 
 		if ( is_wp_error( $result ) ) {
+			error_log( "VD Individual Delete: Failed - " . $result->get_error_message() );
 			$this->add_notice( $result->get_error_message(), 'error' );
 		} else {
+			error_log( "VD Individual Delete: Success - Account $id deleted" );
 			$this->add_notice( __( 'Account deleted successfully!', 'vd-license-manager' ), 'success' );
 			wp_safe_redirect( admin_url( 'admin.php?page=vd-accounts' ) );
 			exit;
@@ -343,9 +374,13 @@ class VD_LM_Accounts_Page {
 	 * @since 1.0.0
 	 */
 	private function handle_bulk_delete() {
-		$ids = isset( $_POST['account_ids'] ) ? array_map( 'absint', $_POST['account_ids'] ) : array();
+		// Get IDs from POST data
+		$account_ids = isset( $_POST['account_ids'] ) ? array_map( 'absint', $_POST['account_ids'] ) : array();
 
-		if ( empty( $ids ) ) {
+		error_log( 'VD Bulk Delete: Received account_ids: ' . print_r( $account_ids, true ) );
+		error_log( 'VD Bulk Delete: Count: ' . count( $account_ids ) );
+
+		if ( empty( $account_ids ) ) {
 			$this->add_notice( __( 'No accounts selected.', 'vd-license-manager' ), 'error' );
 			return;
 		}
@@ -353,23 +388,36 @@ class VD_LM_Accounts_Page {
 		$deleted = 0;
 		$errors = array();
 
-		foreach ( $ids as $id ) {
+		foreach ( $account_ids as $id ) {
+			error_log( "VD Bulk Delete: Attempting to delete ID $id" );
 			$result = $this->service->delete_account( $id );
 
 			if ( is_wp_error( $result ) ) {
 				$errors[] = sprintf( __( 'Account ID %d: %s', 'vd-license-manager' ), $id, $result->get_error_message() );
+				error_log( "VD Bulk Delete: Failed ID $id - " . $result->get_error_message() );
 			} else {
 				$deleted++;
+				error_log( "VD Bulk Delete: Deleted ID $id" );
 			}
 		}
 
+		// Show results
 		if ( $deleted > 0 ) {
-			/* translators: %d: number of accounts deleted */
-			$this->add_notice( sprintf( __( '%d account(s) deleted successfully!', 'vd-license-manager' ), $deleted ), 'success' );
+			$this->add_notice(
+				sprintf(
+					/* translators: %d: number of accounts deleted */
+					__( '%d account(s) deleted successfully.', 'vd-license-manager' ),
+					$deleted
+				),
+				'success'
+			);
 		}
 
 		if ( ! empty( $errors ) ) {
-			$this->add_notice( implode( '<br>', $errors ), 'error' );
+			$this->add_notice(
+				__( 'Some accounts could not be deleted: ', 'vd-license-manager' ) . implode( '; ', $errors ),
+				'error'
+			);
 		}
 	}
 

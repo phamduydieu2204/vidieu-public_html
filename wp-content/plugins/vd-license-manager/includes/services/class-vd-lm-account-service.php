@@ -196,7 +196,11 @@ class VD_LM_Account_Service {
 
 		// Check if account is assigned to any pools or licenses
 		$dependencies = $this->check_account_dependencies( $account_id );
-		if ( ! empty( $dependencies ) ) {
+
+		error_log( "VD Delete: Account $account_id has {$dependencies['licenses']} licenses and {$dependencies['pools']} pools" );
+
+		// ONLY block if there ARE dependencies (>0)
+		if ( $dependencies['licenses'] > 0 || $dependencies['pools'] > 0 ) {
 			return new WP_Error(
 				'account_in_use',
 				sprintf(
@@ -222,6 +226,7 @@ class VD_LM_Account_Service {
 		}
 
 		// Log successful deletion
+		error_log( "VD Delete: Account $account_id deleted successfully" );
 		VD_LM_Logger_Service::info( 'Account deleted successfully', array(
 			'account_id' => $account_id,
 			'provider' => $account->provider,

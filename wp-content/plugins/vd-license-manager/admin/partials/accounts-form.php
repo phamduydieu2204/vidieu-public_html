@@ -39,15 +39,35 @@ if (isset($_SESSION['vd_form_errors'])) {
     unset($_SESSION['vd_form_errors']); // Clear after retrieving
 }
 
-// Helper function to get field value
-function get_field_value($field_name, $form_data = array(), $account = null) {
-    if (isset($form_data[$field_name])) {
-        return $form_data[$field_name];
+// Helper function to get field value with debugging
+function vd_get_field_value($name, $form_data = array(), $account = array()) {
+    // Priority: form_data (from error) > account (existing) > empty
+
+    if (isset($form_data[$name]) && $form_data[$name] !== '') {
+        error_log("VD Field Value: $name from form_data = " . substr($form_data[$name], 0, 20) . '...');
+        return $form_data[$name];
     }
-    if ($account && isset($account->$field_name)) {
-        return $account->$field_name;
+
+    // Check if $account is object or array
+    if (is_object($account)) {
+        if (isset($account->$name) && $account->$name !== '') {
+            error_log("VD Field Value: $name from account object = " . substr($account->$name, 0, 20) . '...');
+            return $account->$name;
+        }
+    } elseif (is_array($account)) {
+        if (isset($account[$name]) && $account[$name] !== '') {
+            error_log("VD Field Value: $name from account array = " . substr($account[$name], 0, 20) . '...');
+            return $account[$name];
+        }
     }
+
+    error_log("VD Field Value: $name = EMPTY (not found in form_data or account)");
     return '';
+}
+
+// Legacy helper function for backward compatibility
+function get_field_value($field_name, $form_data = array(), $account = null) {
+    return vd_get_field_value($field_name, $form_data, $account);
 }
 
 // Helper function to show field error
@@ -67,10 +87,13 @@ $current_account_login = get_field_value('account_login', $form_data, $account);
 $current_display_name = get_field_value('display_name', $form_data, $account);
 $current_capacity = get_field_value('capacity', $form_data, $account) ?: 1;
 $current_status = get_field_value('status', $form_data, $account) ?: 'active';
-$current_expires_at = get_field_value('expires_at', $form_data, $account);
-if (!$current_expires_at && $is_edit && !empty($account->expires_at) && $account->expires_at !== '0000-00-00 00:00:00') {
-    $current_expires_at = gmdate('Y-m-d', strtotime($account->expires_at));
+// Format expires_at for date input (YYYY-MM-DD only, no time)
+$expires_value = vd_get_field_value('expires_at', $form_data ?? array(), $account ?? array());
+if (!empty($expires_value)) {
+    // Strip time part if present (convert "2025-10-31 00:00:00" to "2025-10-31")
+    $expires_value = substr($expires_value, 0, 10);
 }
+$current_expires_at = $expires_value;
 $current_security_question = get_field_value('security_question', $form_data, $account);
 $current_notes = get_field_value('notes', $form_data, $account);
 $current_custom_fields = get_field_value('custom_fields', $form_data, $account) ?: array();
@@ -210,7 +233,7 @@ if ($is_edit && $account && !empty($account->account_password)) {
 						<div class="vd-form-section">
 							<div class="vd-form-row">
 								<label for="cookies"><?php esc_html_e( 'Session Cookies', 'vd-license-manager' ); ?></label>
-								<textarea name="cookies" id="cookies" rows="4" class="large-text" placeholder="Paste cookie string here (for session-based authentication)"><?php echo $is_edit && ! empty( $account->cookies ) ? '••••••••••••••••' : ''; ?></textarea>
+								<textarea name="cookies" id="cookies" rows="4" class="large-text" placeholder="Paste cookie string here (for session-based authentication)"><?php echo esc_textarea(vd_get_field_value('cookies', $form_data ?? array(), $account ?? array())); ?></textarea>
 								<p class="description"><?php esc_html_e( 'Session cookies for maintaining logged-in state', 'vd-license-manager' ); ?></p>
 							</div>
 
@@ -246,12 +269,12 @@ if ($is_edit && $account && !empty($account->account_password)) {
 							<div class="vd-form-row vd-grid-2">
 								<div>
 									<label for="phone_recovery"><?php esc_html_e( 'Recovery Phone', 'vd-license-manager' ); ?></label>
-									<input type="tel" name="phone_recovery" id="phone_recovery" value="" class="regular-text" placeholder="+84 xxx xxx xxx">
+									<input type="tel" name="phone_recovery" id="phone_recovery" value="<?php echo esc_attr(vd_get_field_value('phone_recovery', $form_data ?? array(), $account ?? array())); ?>" class="regular-text" placeholder="+84 xxx xxx xxx">
 									<p class="description"><?php esc_html_e( 'Phone for account recovery', 'vd-license-manager' ); ?></p>
 								</div>
 								<div>
 									<label for="email_recovery"><?php esc_html_e( 'Recovery Email', 'vd-license-manager' ); ?></label>
-									<input type="email" name="email_recovery" id="email_recovery" value="" class="regular-text" placeholder="recovery@example.com">
+									<input type="email" name="email_recovery" id="email_recovery" value="<?php echo esc_attr(vd_get_field_value('email_recovery', $form_data ?? array(), $account ?? array())); ?>" class="regular-text" placeholder="recovery@example.com">
 									<p class="description"><?php esc_html_e( 'Email for account recovery', 'vd-license-manager' ); ?></p>
 								</div>
 							</div>
@@ -265,7 +288,7 @@ if ($is_edit && $account && !empty($account->account_password)) {
 							<div class="vd-form-row">
 								<label for="security_answer"><?php esc_html_e( 'Security Answer', 'vd-license-manager' ); ?></label>
 								<div class="vd-password-wrapper">
-									<input type="password" name="security_answer" id="security_answer" value="" class="regular-text <?php echo isset($form_errors['security_answer']) ? 'vd-error-field' : ''; ?>" placeholder="Enter security answer">
+									<input type="password" name="security_answer" id="security_answer" value="<?php echo esc_attr(vd_get_field_value('security_answer', $form_data ?? array(), $account ?? array())); ?>" class="regular-text <?php echo isset($form_errors['security_answer']) ? 'vd-error-field' : ''; ?>" placeholder="Enter security answer">
 									<button type="button" class="button button-secondary vd-toggle-password" data-target="security_answer" aria-label="Toggle password visibility">
 										<span class="dashicons dashicons-visibility"></span>
 										<span class="toggle-text">Show</span>
@@ -277,7 +300,7 @@ if ($is_edit && $account && !empty($account->account_password)) {
 
 							<div class="vd-form-row">
 								<label for="backup_codes"><?php esc_html_e( 'Backup Codes', 'vd-license-manager' ); ?></label>
-								<textarea name="backup_codes" id="backup_codes" rows="3" class="large-text" placeholder="Enter backup codes, one per line"></textarea>
+								<textarea name="backup_codes" id="backup_codes" rows="3" class="large-text" placeholder="Enter backup codes, one per line"><?php echo esc_textarea(vd_get_field_value('backup_codes', $form_data ?? array(), $account ?? array())); ?></textarea>
 								<p class="description"><?php esc_html_e( 'Account backup codes for recovery (one per line)', 'vd-license-manager' ); ?></p>
 							</div>
 						</div>
@@ -301,14 +324,14 @@ if ($is_edit && $account && !empty($account->account_password)) {
 						<div class="vd-form-section">
 							<div class="vd-form-row">
 								<label for="api_key"><?php esc_html_e( 'API Key', 'vd-license-manager' ); ?></label>
-								<input type="text" name="api_key" id="api_key" value="" class="regular-text" placeholder="Provider API key (if applicable)">
+								<input type="text" name="api_key" id="api_key" value="<?php echo esc_attr(vd_get_field_value('api_key', $form_data ?? array(), $account ?? array())); ?>" class="regular-text" placeholder="Provider API key (if applicable)">
 								<p class="description"><?php esc_html_e( 'Provider API key (will be encrypted)', 'vd-license-manager' ); ?></p>
 							</div>
 
 							<div class="vd-form-row">
 								<label for="secret_key"><?php esc_html_e( 'Secret Key', 'vd-license-manager' ); ?></label>
 								<div class="vd-password-wrapper">
-									<input type="password" name="secret_key" id="secret_key" value="" class="regular-text <?php echo isset($form_errors['secret_key']) ? 'vd-error-field' : ''; ?>" placeholder="Enter secret key">
+									<input type="password" name="secret_key" id="secret_key" value="<?php echo esc_attr(vd_get_field_value('secret_key', $form_data ?? array(), $account ?? array())); ?>" class="regular-text <?php echo isset($form_errors['secret_key']) ? 'vd-error-field' : ''; ?>" placeholder="Enter secret key">
 									<button type="button" class="button button-secondary vd-toggle-password" data-target="secret_key" aria-label="Toggle password visibility">
 										<span class="dashicons dashicons-visibility"></span>
 										<span class="toggle-text">Show</span>
@@ -320,7 +343,7 @@ if ($is_edit && $account && !empty($account->account_password)) {
 
 							<div class="vd-form-row">
 								<label for="api_token"><?php esc_html_e( 'API Token', 'vd-license-manager' ); ?></label>
-								<textarea name="api_token" id="api_token" rows="3" class="large-text" placeholder="Bearer token or OAuth token (if applicable)"></textarea>
+								<textarea name="api_token" id="api_token" rows="3" class="large-text" placeholder="Bearer token or OAuth token (if applicable)"><?php echo esc_textarea(vd_get_field_value('api_token', $form_data ?? array(), $account ?? array())); ?></textarea>
 								<p class="description"><?php esc_html_e( 'API authentication token (will be encrypted)', 'vd-license-manager' ); ?></p>
 							</div>
 						</div>
