@@ -601,10 +601,17 @@ class VD_LM_Accounts_Page {
 	 * @param string $hook Current admin page hook
 	 */
 	public function enqueue_assets( $hook ) {
+		// Debug logging to see what's happening
+		error_log( '[VD DEBUG] enqueue_assets called with hook: ' . $hook );
+
 		// Only enqueue on VD License Manager accounts pages
+		// Hook format: vd-license-manager_page_vd-accounts
 		if ( strpos( $hook, 'vd-accounts' ) === false ) {
+			error_log( '[VD DEBUG] Hook does not contain vd-accounts, returning early' );
 			return;
 		}
+
+		error_log( '[VD DEBUG] Hook contains vd-accounts, proceeding with asset enqueue' );
 
 		// Enqueue accounts form CSS
 		wp_enqueue_style(
@@ -623,6 +630,7 @@ class VD_LM_Accounts_Page {
 		);
 
 		// Enqueue accounts form JavaScript
+		error_log( '[VD DEBUG] Enqueueing JavaScript: ' . VD_PLUGIN_URL . 'admin/js/accounts-form.js' );
 		wp_enqueue_script(
 			'vd-accounts-form',
 			VD_PLUGIN_URL . 'admin/js/accounts-form.js',
@@ -630,6 +638,7 @@ class VD_LM_Accounts_Page {
 			VD_PLUGIN_VERSION,
 			true
 		);
+		error_log( '[VD DEBUG] JavaScript enqueued successfully' );
 
 		// Localize script with translations and config
 		$is_edit = isset( $_GET['action'] ) && $_GET['action'] === 'edit' ? '1' : '0';
