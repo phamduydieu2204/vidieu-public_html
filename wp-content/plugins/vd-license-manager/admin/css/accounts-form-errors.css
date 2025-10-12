@@ -1,0 +1,451 @@
+/* ==========================================
+   ENHANCED ERROR STYLES FOR VD ACCOUNTS FORM
+   ========================================== */
+
+/* Error States */
+.vd-error-field {
+    border-color: #d63638 !important;
+    box-shadow: 0 0 0 1px #d63638 !important;
+    background-color: #fcf0f1;
+    transition: all 0.2s ease;
+}
+
+.vd-field-error {
+    color: #d63638;
+    font-size: 13px;
+    margin: 5px 0 0 0;
+    padding: 8px 12px;
+    background: linear-gradient(135deg, #fcf0f1 0%, #fee2e2 100%);
+    border-left: 4px solid #d63638;
+    border-radius: 0 4px 4px 0;
+    font-weight: 500;
+    line-height: 1.4;
+    position: relative;
+    animation: slideInFromLeft 0.3s ease-out;
+}
+
+.vd-field-error::before {
+    content: "⚠️ ";
+    margin-right: 4px;
+    font-size: 14px;
+}
+
+@keyframes slideInFromLeft {
+    from {
+        opacity: 0;
+        transform: translateX(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* Loading/Spinning Animation */
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.dashicons.spin {
+    animation: spin 1s linear infinite;
+}
+
+/* Enhanced Password Toggle States */
+.vd-toggle-password {
+    transition: all 0.2s ease;
+    border-radius: 4px;
+    min-width: 80px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    position: relative;
+    overflow: hidden;
+}
+
+.vd-toggle-password::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+    transition: left 0.5s ease;
+}
+
+.vd-toggle-password:hover::before {
+    left: 100%;
+}
+
+.vd-toggle-password:hover {
+    background: #f0f6fc;
+    border-color: #0073aa;
+    color: #0073aa;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 115, 170, 0.2);
+}
+
+.vd-toggle-password.active {
+    background: linear-gradient(135deg, #2271b1 0%, #135e96 100%);
+    border-color: #2271b1;
+    color: #fff;
+    box-shadow: 0 2px 6px rgba(34, 113, 177, 0.3);
+}
+
+.vd-toggle-password.active:hover {
+    background: linear-gradient(135deg, #135e96 0%, #0e4f82 100%);
+    border-color: #135e96;
+    color: #fff;
+    transform: translateY(-1px);
+    box-shadow: 0 3px 8px rgba(34, 113, 177, 0.4);
+}
+
+.vd-toggle-password .dashicons {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+    transition: all 0.2s ease;
+}
+
+.vd-toggle-password.active .dashicons {
+    color: #fff;
+}
+
+.toggle-text {
+    font-size: 12px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Form Enhancement */
+.vd-form-row.has-error {
+    background: linear-gradient(135deg, #fcf0f1 0%, #fee2e2 100%);
+    border-left: 4px solid #d63638;
+    padding: 16px;
+    margin: 16px -16px;
+    border-radius: 0 6px 6px 0;
+    box-shadow: 0 2px 4px rgba(214, 54, 56, 0.1);
+    animation: errorPulse 0.5s ease-out;
+}
+
+@keyframes errorPulse {
+    0% {
+        transform: scale(1);
+        box-shadow: 0 2px 4px rgba(214, 54, 56, 0.1);
+    }
+    50% {
+        transform: scale(1.02);
+        box-shadow: 0 4px 8px rgba(214, 54, 56, 0.2);
+    }
+    100% {
+        transform: scale(1);
+        box-shadow: 0 2px 4px rgba(214, 54, 56, 0.1);
+    }
+}
+
+/* Success States */
+.vd-success-field {
+    border-color: #00a32a !important;
+    box-shadow: 0 0 0 1px #00a32a !important;
+    background-color: #f0f6fc;
+    transition: all 0.2s ease;
+}
+
+.vd-field-success {
+    color: #00a32a;
+    font-size: 13px;
+    margin: 5px 0 0 0;
+    padding: 8px 12px;
+    background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+    border-left: 4px solid #00a32a;
+    border-radius: 0 4px 4px 0;
+    font-weight: 500;
+    animation: slideInFromLeft 0.3s ease-out;
+}
+
+.vd-field-success::before {
+    content: "✅ ";
+    margin-right: 4px;
+}
+
+/* Loading States */
+.vd-form-loading {
+    position: relative;
+    opacity: 0.7;
+    pointer-events: none;
+}
+
+.vd-form-loading::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 32px;
+    height: 32px;
+    margin: -16px 0 0 -16px;
+    border: 3px solid #f3f4f6;
+    border-top: 3px solid #2271b1;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+/* Enhanced Focus States */
+input:focus,
+textarea:focus,
+select:focus {
+    border-color: #2271b1;
+    box-shadow: 0 0 0 1px #2271b1;
+    outline: none;
+    transition: all 0.2s ease;
+}
+
+.vd-error-field:focus {
+    border-color: #d63638 !important;
+    box-shadow: 0 0 0 2px rgba(214, 54, 56, 0.3) !important;
+}
+
+.vd-success-field:focus {
+    border-color: #00a32a !important;
+    box-shadow: 0 0 0 2px rgba(0, 163, 42, 0.3) !important;
+}
+
+/* Custom Field Enhanced Error States */
+.vd-custom-field-row.has-error {
+    background: linear-gradient(135deg, #fcf0f1 0%, #fee2e2 100%);
+    border: 2px solid #d63638;
+    box-shadow: 0 4px 12px rgba(214, 54, 56, 0.15);
+    animation: errorShake 0.5s ease-in-out;
+}
+
+@keyframes errorShake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
+}
+
+.vd-custom-field-row.has-error::before {
+    background: linear-gradient(135deg, #d63638, #b91c1c);
+}
+
+.vd-remove-custom-field {
+    transition: all 0.2s ease;
+    border-radius: 6px;
+    position: relative;
+    overflow: hidden;
+}
+
+.vd-remove-custom-field::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(220, 38, 38, 0.2), transparent);
+    transition: left 0.3s ease;
+}
+
+.vd-remove-custom-field:hover::before {
+    left: 100%;
+}
+
+.vd-remove-custom-field:hover {
+    background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+    border-color: #dc2626;
+    color: #fff;
+    transform: scale(1.05);
+    box-shadow: 0 3px 8px rgba(220, 38, 38, 0.3);
+}
+
+/* Form Submission States */
+.vd-form-submitting {
+    opacity: 0.8;
+    pointer-events: none;
+}
+
+.vd-form-submitting .button-primary {
+    background: #6b7280;
+    border-color: #6b7280;
+    cursor: not-allowed;
+    position: relative;
+}
+
+.vd-form-submitting .button-primary::after {
+    content: "";
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    margin: auto;
+    border: 2px solid transparent;
+    border-top: 2px solid #ffffff;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    top: 0;
+    bottom: 0;
+    left: 10px;
+}
+
+/* Global Error Notice */
+.notice.notice-error.vd-form-error {
+    background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+    border-left-color: #dc2626;
+    border-left-width: 4px;
+    box-shadow: 0 2px 8px rgba(220, 38, 38, 0.1);
+    animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Password Wrapper Enhanced */
+.vd-password-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+}
+
+.vd-password-wrapper:focus-within {
+    box-shadow: 0 0 0 2px rgba(34, 113, 177, 0.1);
+    border-radius: 4px;
+}
+
+.vd-password-wrapper input {
+    flex: 1;
+    min-width: 0;
+}
+
+/* Validation Icons */
+.vd-field-validation-icon {
+    position: absolute;
+    right: 35px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    pointer-events: none;
+}
+
+.vd-field-validation-icon.success {
+    color: #00a32a;
+}
+
+.vd-field-validation-icon.error {
+    color: #d63638;
+}
+
+/* Form Progress Indicator */
+.vd-form-progress {
+    height: 4px;
+    background: #f3f4f6;
+    border-radius: 2px;
+    overflow: hidden;
+    margin: 10px 0;
+}
+
+.vd-form-progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #3b82f6, #1d4ed8);
+    border-radius: 2px;
+    transition: width 0.3s ease;
+    position: relative;
+}
+
+.vd-form-progress-bar::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+    animation: shimmer 2s infinite;
+}
+
+/* Responsive Error Handling */
+@media screen and (max-width: 600px) {
+    .vd-field-error {
+        font-size: 12px;
+        padding: 6px 10px;
+        margin-left: -10px;
+        margin-right: -10px;
+        border-radius: 0;
+    }
+
+    .vd-password-wrapper {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 6px;
+    }
+
+    .vd-toggle-password {
+        min-width: auto;
+        width: 100%;
+    }
+
+    .vd-custom-field-row.has-error {
+        margin-left: -16px;
+        margin-right: -16px;
+        border-radius: 0;
+    }
+}
+
+/* Dark Mode Support (if WordPress admin has dark mode) */
+@media (prefers-color-scheme: dark) {
+    .vd-field-error {
+        background: linear-gradient(135deg, #3f1314 0%, #450a0a 100%);
+        color: #fca5a5;
+        border-left-color: #dc2626;
+    }
+
+    .vd-field-success {
+        background: linear-gradient(135deg, #052e16 0%, #14532d 100%);
+        color: #86efac;
+        border-left-color: #00a32a;
+    }
+
+    .vd-error-field {
+        background-color: #3f1314;
+        border-color: #dc2626 !important;
+    }
+
+    .vd-success-field {
+        background-color: #052e16;
+        border-color: #00a32a !important;
+    }
+}
+
+/* Print Styles Override */
+@media print {
+    .vd-field-error,
+    .vd-field-success,
+    .vd-toggle-password,
+    .vd-field-validation-icon {
+        display: none !important;
+    }
+
+    .vd-error-field,
+    .vd-success-field {
+        border: 1px solid #000 !important;
+        background: #fff !important;
+        box-shadow: none !important;
+    }
+}

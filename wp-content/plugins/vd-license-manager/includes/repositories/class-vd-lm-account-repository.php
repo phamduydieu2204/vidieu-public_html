@@ -213,32 +213,130 @@ class VD_LM_Account_Repository extends VD_LM_Base_Repository {
 	}
 
 	/**
-	 * Insert new account with encryption
+	 * Insert new account with encryption and detailed error logging
 	 *
 	 * @since 1.0.0
 	 * @param array $data Account data
-	 * @return int|false Insert ID on success, false on failure
+	 * @return int|WP_Error Insert ID on success, WP_Error on failure
 	 */
 	public function insert( $data ) {
-		// Encrypt sensitive fields before insertion
-		$data = $this->encrypt_sensitive_fields( $data );
+		try {
+			// Log input data
+			error_log( 'VD: Creating account with data: ' . wp_json_encode( array_keys( $data ) ) );
 
-		return parent::insert( $data );
+			// Validate required fields
+			$required = array( 'provider', 'account_login', 'account_password' );
+			foreach ( $required as $field ) {
+				if ( empty( $data[ $field ] ) ) {
+					$error_msg = sprintf( 'Field \'%s\' is required', $field );
+					error_log( 'VD: Validation error: ' . $error_msg );
+					return new WP_Error( 'missing_field', $error_msg );
+				}
+			}
+
+			// Check for duplicate account
+			$existing = $this->find_by_provider_and_login( $data['provider'], $data['account_login'] );
+			if ( $existing ) {
+				$error_msg = sprintf(
+					'Account with login \%s\ already exists for provider \%s\',
+					$data['account_login'],
+					$data['provider']
+				);
+				error_log( 'VD: Duplicate account error: ' . $error_msg );
+				return new WP_Error( 'duplicate_account', $error_msg );
+			}
+
+			// Encrypt sensitive fields before insertion
+			$original_data = $data; // Keep original for logging
+			$data = $this->encrypt_sensitive_fields( $data );
+
+			// Log prepared data (without sensitive values)
+			$log_data = array_diff_key( $original_data, array_flip( $this->encrypted_fields ) );
+			error_log( 'VD: Prepared insert data: ' . wp_json_encode( $log_data ) );
+
+			// Attempt insert
+			$result = parent::insert( $data );
+
+			if ( is_wp_error( $result ) ) {
+				error_log( 'VD: Database insert failed: ' . $result->get_error_message() );
+				return $result;
+			}
+
+			if ( false === $result ) {
+				$error = $this->wpdb->last_error;
+				error_log( 'VD: Database insert failed: ' . $error );
+				error_log( 'VD: Last query: ' . $this->wpdb->last_query );
+				return new WP_Error( 'insert_failed', 'Database error: ' . $error );
+			}
+
+			$account_id = absint( $result );
+			error_log( 'VD: Account created successfully with ID: ' . $account_id );
+
+			return $account_id;
+
+		} catch ( Exception $e ) {
+			error_log( 'VD: Create account exception: ' . $e->getMessage() );
+			error_log( 'VD: Exception trace: ' . $e->getTraceAsString() );
+			return new WP_Error( 'create_failed', $e->getMessage() );
+		}
 	}
 
 	/**
-	 * Update account with encryption
+	 * Update account with encryption and detailed error logging
 	 *
 	 * @since 1.0.0
 	 * @param int   $id   Account ID
 	 * @param array $data Update data
-	 * @return bool True on success, false on failure
+	 * @return bool|WP_Error True on success, WP_Error on failure
 	 */
 	public function update( $id, $data ) {
-		// Encrypt sensitive fields before update
-		$data = $this->encrypt_sensitive_fields( $data );
+		try {
+			// Log update attempt
+			error_log( 'VD: Updating account ID ' . $id . ' with data: ' . wp_json_encode( array_keys( $data ) ) );
 
-		return parent::update( $id, $data );
+			// Validate ID
+			$id = absint( $id );
+			if ( ! $id ) {
+				return new WP_Error( 'invalid_id', 'Invalid account ID' );
+			}
+
+			// Check if account exists
+			$existing = $this->find_by_id( $id );
+			if ( ! $existing ) {
+				return new WP_Error( 'account_not_found', 'Account not found' );
+			}
+
+			// Remove empty password field (don't update if blank)
+			if ( isset( $data['account_password'] ) && empty( $data['account_password'] ) ) {
+				unset( $data['account_password'] );
+				error_log( 'VD: Removed empty password field from update' );
+			}
+
+			// Encrypt sensitive fields before update
+			$data = $this->encrypt_sensitive_fields( $data );
+
+			// Attempt update
+			$result = parent::update( $id, $data );
+
+			if ( is_wp_error( $result ) ) {
+				error_log( 'VD: Database update failed: ' . $result->get_error_message() );
+				return $result;
+			}
+
+			if ( false === $result ) {
+				$error = $this->wpdb->last_error;
+				error_log( 'VD: Database update failed: ' . $error );
+				error_log( 'VD: Last query: ' . $this->wpdb->last_query );
+				return new WP_Error( 'update_failed', 'Database error: ' . $error );
+			}
+
+			error_log( 'VD: Account ID ' . $id . ' updated successfully' );
+			return true;
+
+		} catch ( Exception $e ) {
+			error_log( 'VD: Update account exception: ' . $e->getMessage() );
+			return new WP_Error( 'update_failed', $e->getMessage() );
+		}
 	}
 
 	/**

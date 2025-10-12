@@ -1,5 +1,5 @@
 /**
- * Account Form JavaScript
+ * Account Form JavaScript - Enhanced Version
  *
  * Handles form interactions, validation, and dynamic functionality
  * for the provider account add/edit form.
@@ -9,173 +9,215 @@
  * @since      1.0.0
  */
 
-jQuery(document).ready(function($) {
+(function($) {
     'use strict';
 
-    console.log('VD Account Form JS Loaded'); // Debug log
+    console.log('🚀 VD Account Form JS Loading...');
 
-    // ==========================================
-    // PASSWORD SHOW/HIDE TOGGLE
-    // ==========================================
+    $(document).ready(function() {
+        console.log('✅ VD Account Form Ready');
 
-    // Method 1: Direct event (preferred)
-    $('.vd-toggle-password').on('click', function(e) {
-        e.preventDefault();
+        // ==============================================
+        // PASSWORD SHOW/HIDE TOGGLE
+        // ==============================================
 
-        const $button = $(this);
-        const targetId = $button.data('target');
-        const $input = $('#' + targetId);
+        function initPasswordToggles() {
+            console.log('🔐 Initializing password toggles...');
 
-        console.log('Toggle clicked for:', targetId); // Debug
+            // Method 1: Class-based delegation (most reliable)
+            $(document).off('click.vdPassword').on('click.vdPassword', '.vd-toggle-password', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
 
-        if (!$input.length) {
-            console.error('Input not found:', targetId);
-            return;
-        }
+                const $button = $(this);
+                const targetId = $button.attr('data-target');
 
-        if ($input.attr('type') === 'password') {
-            $input.attr('type', 'text');
-            $button.html('<span class="dashicons dashicons-hidden"></span> Hide');
-            $button.addClass('active');
-        } else {
-            $input.attr('type', 'password');
-            $button.html('<span class="dashicons dashicons-visibility"></span> Show');
-            $button.removeClass('active');
-        }
-    });
+                console.log('🔘 Toggle clicked for:', targetId);
 
-    // Method 2: Fallback with class-based toggle
-    $(document).on('click', 'button[data-target]', function(e) {
-        e.preventDefault();
-        const $btn = $(this);
-        const targetId = $btn.data('target');
-        const $field = $('#' + targetId);
+                if (!targetId) {
+                    console.error('❌ No data-target attribute');
+                    return;
+                }
 
-        console.log('Fallback toggle for:', targetId); // Debug
+                const $input = $('#' + targetId);
 
-        if ($field.length) {
-            const isPassword = $field.attr('type') === 'password';
-            $field.attr('type', isPassword ? 'text' : 'password');
-            $btn.find('.dashicons').toggleClass('dashicons-visibility dashicons-hidden');
+                if (!$input.length) {
+                    console.error('❌ Input not found:', targetId);
+                    return;
+                }
 
-            // Update text while preserving emoji
-            const textNode = $btn.contents().filter(function() {
-                return this.nodeType === 3; // Text node
+                const currentType = $input.attr('type');
+                console.log('Current type:', currentType);
+
+                if (currentType === 'password') {
+                    // Show password
+                    $input.attr('type', 'text');
+                    $button.find('.dashicons')
+                        .removeClass('dashicons-visibility')
+                        .addClass('dashicons-hidden');
+                    $button.find('.toggle-text').text('Hide');
+                    $button.addClass('active');
+                    console.log('✅ Password shown');
+                } else {
+                    // Hide password
+                    $input.attr('type', 'password');
+                    $button.find('.dashicons')
+                        .removeClass('dashicons-hidden')
+                        .addClass('dashicons-visibility');
+                    $button.find('.toggle-text').text('Show');
+                    $button.removeClass('active');
+                    console.log('✅ Password hidden');
+                }
             });
-            if (textNode.length) {
-                textNode[0].nodeValue = isPassword ? ' Hide' : ' Show';
-            }
-        }
-    });
 
-    // ==========================================
-    // CUSTOM FIELDS MANAGEMENT
-    // ==========================================
-
-    let customFieldIndex = $('#custom-fields-container .vd-custom-field-row').length || 0;
-
-    // Add Custom Field - Multiple selectors for compatibility
-    $('#add-custom-field, #vd-add-custom-field').on('click', function(e) {
-        e.preventDefault();
-
-        console.log('Add custom field clicked'); // Debug
-
-        const fieldHtml = `
-            <div class="vd-custom-field-row" data-index="${customFieldIndex}">
-                <div class="vd-custom-field-inputs vd-grid-4">
-                    <input type="text"
-                           name="custom_field_key[]"
-                           placeholder="field_key"
-                           class="regular-text"
-                           required>
-
-                    <input type="text"
-                           name="custom_field_label[]"
-                           placeholder="Field Label"
-                           class="regular-text"
-                           required>
-
-                    <select name="custom_field_type[]" class="regular-text">
-                        <option value="text">Text</option>
-                        <option value="email">Email</option>
-                        <option value="url">URL</option>
-                        <option value="tel">Phone</option>
-                        <option value="number">Number</option>
-                        <option value="password">Password (encrypted)</option>
-                        <option value="textarea">Long Text</option>
-                    </select>
-
-                    <button type="button"
-                            class="button vd-remove-custom-field vd-remove-field"
-                            title="Remove field">
-                        <span class="dashicons dashicons-trash"></span>
-                    </button>
-                </div>
-
-                <div class="vd-custom-field-value">
-                    <input type="text"
-                           name="custom_field_value[]"
-                           placeholder="Field value"
-                           class="large-text"
-                           style="margin-top: 5px;">
-                </div>
-            </div>
-        `;
-
-        $('#custom-fields-container').append(fieldHtml);
-        customFieldIndex++;
-
-        console.log('Custom field added, total:', customFieldIndex);
-    });
-
-    // Remove Custom Field - Multiple selectors
-    $(document).on('click', '.vd-remove-custom-field, .vd-remove-field', function(e) {
-        e.preventDefault();
-        console.log('Remove custom field clicked'); // Debug
-
-        $(this).closest('.vd-custom-field-row').fadeOut(300, function() {
-            $(this).remove();
-        });
-    });
-
-    // Change field type
-    $(document).on('change', 'select[name="custom_field_type[]"]', function() {
-        const type = $(this).val();
-        const $row = $(this).closest('.vd-custom-field-row');
-        const $valueContainer = $row.find('.vd-custom-field-value');
-        const currentValue = $valueContainer.find('input, textarea').val() || '';
-
-        let newInput;
-        if (type === 'textarea') {
-            newInput = `<textarea name="custom_field_value[]" rows="3" class="large-text" placeholder="Field value" style="margin-top: 5px;">${currentValue}</textarea>`;
-        } else {
-            newInput = `<input type="${type}" name="custom_field_value[]" class="large-text" placeholder="Field value" value="${currentValue}" style="margin-top: 5px;">`;
+            console.log('✅ Password toggles initialized');
         }
 
-        $valueContainer.html(newInput);
-    });
+        // Initialize immediately
+        initPasswordToggles();
 
-    // ==========================================
-    // FORM VALIDATION
-    // ==========================================
 
-    $('.vd-account-form').on('submit', function(e) {
-        const provider = $('input[name="provider"]').val().trim();
-        const login = $('input[name="account_login"]').val().trim();
-        const password = $('input[name="account_password"]').val().trim();
-        const isEditMode = $(this).data('edit-mode') || $('input[name="action"]').val() === 'update';
+        // ==============================================
+        // CUSTOM FIELDS MANAGEMENT
+        // ==============================================
 
-        console.log('Form validation:', { provider, login, password, isEditMode }); // Debug
+        let customFieldIndex = $('#vd-custom-fields-container .vd-custom-field-row').length || 0;
 
-        if (!provider || !login || (!password && !isEditMode)) {
+        // Add Custom Field
+        $('#vd-add-custom-field').off('click').on('click', function(e) {
             e.preventDefault();
-            alert('Provider, Account Login, and Password are required.');
-            return false;
-        }
 
-        // Show loading
-        $(this).find('button[type="submit"]').prop('disabled', true).text('Saving...');
-    });
+            console.log('➕ Adding custom field...');
+
+            const fieldHtml = `
+                <div class="vd-custom-field-row" data-index="${customFieldIndex}">
+                    <div class="vd-custom-field-inputs">
+                        <input type="text"
+                               name="custom_field_key[]"
+                               placeholder="field_key (e.g., profile_id)"
+                               class="regular-text"
+                               required>
+
+                        <input type="text"
+                               name="custom_field_label[]"
+                               placeholder="Field Label"
+                               class="regular-text"
+                               required>
+
+                        <select name="custom_field_type[]" class="regular-text">
+                            <option value="text">Text</option>
+                            <option value="email">Email</option>
+                            <option value="url">URL</option>
+                            <option value="tel">Phone</option>
+                            <option value="number">Number</option>
+                            <option value="password">Password (encrypted)</option>
+                            <option value="textarea">Long Text</option>
+                        </select>
+
+                        <button type="button"
+                                class="button button-small vd-remove-custom-field"
+                                title="Remove this field">
+                            <span class="dashicons dashicons-trash"></span>
+                        </button>
+                    </div>
+
+                    <div class="vd-custom-field-value">
+                        <input type="text"
+                               name="custom_field_value[]"
+                               placeholder="Field value"
+                               class="large-text">
+                    </div>
+                </div>
+            `;
+
+            $('#vd-custom-fields-container').append(fieldHtml);
+            customFieldIndex++;
+
+            console.log('✅ Custom field added. Total:', customFieldIndex);
+        });
+
+        // Remove Custom Field
+        $(document).off('click.removeField').on('click.removeField', '.vd-remove-custom-field', function(e) {
+            e.preventDefault();
+            const $row = $(this).closest('.vd-custom-field-row');
+            $row.fadeOut(300, function() {
+                $(this).remove();
+                console.log('✅ Custom field removed');
+            });
+        });
+
+        // Change field type
+        $(document).off('change.fieldType').on('change.fieldType', 'select[name="custom_field_type[]"]', function() {
+            const type = $(this).val();
+            const $row = $(this).closest('.vd-custom-field-row');
+            const $valueContainer = $row.find('.vd-custom-field-value');
+            const currentValue = $valueContainer.find('input, textarea').val() || '';
+
+            let newInput;
+            if (type === 'textarea') {
+                newInput = `<textarea name="custom_field_value[]" rows="3" class="large-text" placeholder="Field value">${currentValue}</textarea>`;
+            } else {
+                newInput = `<input type="${type}" name="custom_field_value[]" class="large-text" placeholder="Field value" value="${currentValue}">`;
+            }
+
+            $valueContainer.html(newInput);
+            console.log('✅ Field type changed to:', type);
+        });
+
+
+        // ==============================================
+        // FORM SUBMISSION WITH VALIDATION
+        // ==============================================
+
+        $('.vd-account-form').on('submit', function(e) {
+            console.log('📝 Form submitting...');
+
+            // Clear previous errors
+            $('.vd-field-error').remove();
+            $('.vd-error-field').removeClass('vd-error-field');
+
+            // Basic validation
+            const provider = $('input[name="provider"]').val().trim();
+            const login = $('input[name="account_login"]').val().trim();
+            const password = $('input[name="account_password"]').val().trim();
+            const isEdit = $(this).data('edit-mode');
+
+            let hasError = false;
+
+            if (!provider) {
+                showFieldError('provider', 'Provider is required');
+                hasError = true;
+            }
+
+            if (!login) {
+                showFieldError('account_login', 'Account Login is required');
+                hasError = true;
+            }
+
+            if (!password && !isEdit) {
+                showFieldError('account_password', 'Password is required');
+                hasError = true;
+            }
+
+            if (hasError) {
+                e.preventDefault();
+                $('html, body').animate({
+                    scrollTop: $('.vd-error-field').first().offset().top - 100
+                }, 500);
+                return false;
+            }
+
+            // Show loading
+            const $submitBtn = $(this).find('button[type="submit"]');
+            $submitBtn.prop('disabled', true).html('<span class="dashicons dashicons-update spin"></span> Creating Account...');
+        });
+
+        function showFieldError(fieldName, message) {
+            const $field = $(`[name="${fieldName}"]`);
+            $field.addClass('vd-error-field');
+            $field.after(`<p class="vd-field-error">${message}</p>`);
+            console.log('❌ Validation error:', fieldName, message);
+        }
 
     // ==========================================
     // POSTBOX COLLAPSING
@@ -274,5 +316,8 @@ jQuery(document).ready(function($) {
         });
     });
 
-    console.log('VD Account Form initialization complete');
-});
+
+        console.log('✅ VD Account Form Initialized Successfully');
+    });
+
+})(jQuery);

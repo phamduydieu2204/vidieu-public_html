@@ -153,50 +153,151 @@ class VD_LM_Accounts_Page {
 	}
 
 	/**
-	 * Handle account creation
+	 * Handle account creation with form data persistence
 	 *
 	 * @since 1.0.0
 	 */
 	private function handle_create() {
-		$data = $this->sanitize_account_data( $_POST );
-		$result = $this->service->create_account( $data );
+		// Start session if not started
+		if ( ! session_id() ) {
+			session_start();
+		}
 
-		if ( is_wp_error( $result ) ) {
-			$this->add_notice( $result->get_error_message(), 'error' );
-		} else {
+		try {
+			// Sanitize input
+			$data = $this->sanitize_account_data( $_POST );
+
+			// Validate data
+			$errors = $this->validate_account_data( $data );
+
+			if ( ! empty( $errors ) ) {
+				// Save form data to session
+				$_SESSION['vd_form_data'] = $_POST;
+				$_SESSION['vd_form_errors'] = $errors;
+
+				// Redirect back to form
+				wp_safe_redirect( add_query_arg( array(
+					'page' => 'vd-accounts',
+					'action' => 'add',
+					'error' => 'validation_failed'
+				), admin_url( 'admin.php' ) ) );
+				exit;
+			}
+
+			// Create account
+			$result = $this->service->create_account( $data );
+
+			if ( is_wp_error( $result ) ) {
+				throw new Exception( $result->get_error_message() );
+			}
+
+			// Success - clear session and redirect
+			unset( $_SESSION['vd_form_data'] );
+			unset( $_SESSION['vd_form_errors'] );
+
 			$this->add_notice( __( 'Account created successfully!', 'vd-license-manager' ), 'success' );
 			wp_safe_redirect( admin_url( 'admin.php?page=vd-accounts' ) );
+			exit;
+
+		} catch ( Exception $e ) {
+			// Save form data to session
+			$_SESSION['vd_form_data'] = $_POST;
+			$_SESSION['vd_form_errors'] = array(
+				'_global' => $e->getMessage()
+			);
+
+			// Redirect back to form
+			wp_safe_redirect( add_query_arg( array(
+				'page' => 'vd-accounts',
+				'action' => 'add',
+				'error' => 'create_failed'
+			), admin_url( 'admin.php' ) ) );
 			exit;
 		}
 	}
 
 	/**
-	 * Handle account update
+	 * Handle account update with form data persistence
 	 *
 	 * @since 1.0.0
 	 */
 	private function handle_update() {
+		// Start session if not started
+		if ( ! session_id() ) {
+			session_start();
+		}
+
 		$id = isset( $_POST['account_id'] ) ? absint( $_POST['account_id'] ) : 0;
 
 		if ( ! $id ) {
-			$this->add_notice( __( 'Invalid account ID.', 'vd-license-manager' ), 'error' );
-			return;
+			$_SESSION['vd_form_errors'] = array(
+				'_global' => __( 'Invalid account ID.', 'vd-license-manager' )
+			);
+			wp_safe_redirect( add_query_arg( array(
+				'page' => 'vd-accounts',
+				'action' => 'edit',
+				'id' => $id,
+				'error' => 'invalid_id'
+			), admin_url( 'admin.php' ) ) );
+			exit;
 		}
 
-		$data = $this->sanitize_account_data( $_POST );
+		try {
+			// Sanitize input
+			$data = $this->sanitize_account_data( $_POST );
 
-		// Only update password if provided
-		if ( empty( $data['account_password'] ) ) {
-			unset( $data['account_password'] );
-		}
+			// Remove empty password field (don't update if blank)
+			if ( empty( $data['account_password'] ) ) {
+				unset( $data['account_password'] );
+			}
 
-		$result = $this->service->update_account( $id, $data );
+			// Validate data
+			$errors = $this->validate_account_data( $data, true ); // true = edit mode
 
-		if ( is_wp_error( $result ) ) {
-			$this->add_notice( $result->get_error_message(), 'error' );
-		} else {
+			if ( ! empty( $errors ) ) {
+				// Save form data to session
+				$_SESSION['vd_form_data'] = $_POST;
+				$_SESSION['vd_form_errors'] = $errors;
+
+				// Redirect back to form
+				wp_safe_redirect( add_query_arg( array(
+					'page' => 'vd-accounts',
+					'action' => 'edit',
+					'id' => $id,
+					'error' => 'validation_failed'
+				), admin_url( 'admin.php' ) ) );
+				exit;
+			}
+
+			// Update account
+			$result = $this->service->update_account( $id, $data );
+
+			if ( is_wp_error( $result ) ) {
+				throw new Exception( $result->get_error_message() );
+			}
+
+			// Success - clear session and redirect
+			unset( $_SESSION['vd_form_data'] );
+			unset( $_SESSION['vd_form_errors'] );
+
 			$this->add_notice( __( 'Account updated successfully!', 'vd-license-manager' ), 'success' );
 			wp_safe_redirect( admin_url( 'admin.php?page=vd-accounts' ) );
+			exit;
+
+		} catch ( Exception $e ) {
+			// Save form data to session
+			$_SESSION['vd_form_data'] = $_POST;
+			$_SESSION['vd_form_errors'] = array(
+				'_global' => $e->getMessage()
+			);
+
+			// Redirect back to form
+			wp_safe_redirect( add_query_arg( array(
+				'page' => 'vd-accounts',
+				'action' => 'edit',
+				'id' => $id,
+				'error' => 'update_failed'
+			), admin_url( 'admin.php' ) ) );
 			exit;
 		}
 	}
@@ -513,6 +614,14 @@ class VD_LM_Accounts_Page {
 			VD_PLUGIN_VERSION
 		);
 
+		// Enqueue enhanced error styling
+		wp_enqueue_style(
+			'vd-accounts-form-errors',
+			VD_PLUGIN_URL . 'admin/css/accounts-form-errors.css',
+			array( 'vd-accounts-form' ),
+			VD_PLUGIN_VERSION
+		);
+
 		// Enqueue accounts form JavaScript
 		wp_enqueue_script(
 			'vd-accounts-form',
@@ -553,6 +662,73 @@ class VD_LM_Accounts_Page {
 				),
 			)
 		);
+	}
+
+	/**
+	 * Validate account form data
+	 *
+	 * @since 1.0.0
+	 * @param array $data Sanitized form data
+	 * @param bool  $is_edit Whether this is an edit operation
+	 * @return array Array of validation errors
+	 */
+	private function validate_account_data( $data, $is_edit = false ) {
+		$errors = array();
+
+		// Required fields
+		if ( empty( $data['provider'] ) ) {
+			$errors['provider'] = __( 'Provider is required', 'vd-license-manager' );
+		}
+
+		if ( empty( $data['account_login'] ) ) {
+			$errors['account_login'] = __( 'Account Login is required', 'vd-license-manager' );
+		}
+
+		if ( empty( $data['account_password'] ) && ! $is_edit ) {
+			$errors['account_password'] = __( 'Password is required', 'vd-license-manager' );
+		}
+
+		// Email validation
+		if ( ! empty( $data['account_login'] ) && strpos( $data['account_login'], '@' ) !== false && ! is_email( $data['account_login'] ) ) {
+			$errors['account_login'] = __( 'Invalid email address', 'vd-license-manager' );
+		}
+
+		if ( ! empty( $data['email_recovery'] ) && ! is_email( $data['email_recovery'] ) ) {
+			$errors['email_recovery'] = __( 'Invalid recovery email address', 'vd-license-manager' );
+		}
+
+		// Capacity validation
+		if ( isset( $data['capacity'] ) ) {
+			$capacity = intval( $data['capacity'] );
+			if ( $capacity < 1 || $capacity > 100 ) {
+				$errors['capacity'] = __( 'Capacity must be between 1 and 100', 'vd-license-manager' );
+			}
+		}
+
+		// Phone validation
+		if ( ! empty( $data['phone_recovery'] ) && ! preg_match( '/^[\+]?[0-9\s\-\(\)\+]+$/', $data['phone_recovery'] ) ) {
+			$errors['phone_recovery'] = __( 'Invalid phone number format', 'vd-license-manager' );
+		}
+
+		// URL validation for custom fields
+		if ( ! empty( $data['custom_field_type'] ) && is_array( $data['custom_field_type'] ) ) {
+			foreach ( $data['custom_field_type'] as $index => $type ) {
+				if ( $type === 'url' && ! empty( $data['custom_field_value'][$index] ) ) {
+					if ( ! filter_var( $data['custom_field_value'][$index], FILTER_VALIDATE_URL ) ) {
+						$errors['custom_fields'] = __( 'Invalid URL in custom fields', 'vd-license-manager' );
+						break;
+					}
+				}
+				if ( $type === 'email' && ! empty( $data['custom_field_value'][$index] ) ) {
+					if ( ! is_email( $data['custom_field_value'][$index] ) ) {
+						$errors['custom_fields'] = __( 'Invalid email in custom fields', 'vd-license-manager' );
+						break;
+					}
+				}
+			}
+		}
+
+		return $errors;
 	}
 
 	/**

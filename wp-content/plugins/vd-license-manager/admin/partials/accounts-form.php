@@ -20,20 +20,63 @@ if ( ! defined( 'ABSPATH' ) ) {
 // $providers - array of provider options
 // $form_action - 'create' or 'update'
 
+// Start session if not started
+if (!session_id()) {
+    session_start();
+}
+
+// Get saved form data if any
+$form_data = array();
+if (isset($_SESSION['vd_form_data'])) {
+    $form_data = $_SESSION['vd_form_data'];
+    unset($_SESSION['vd_form_data']); // Clear after retrieving
+}
+
+// Get error messages if any
+$form_errors = array();
+if (isset($_SESSION['vd_form_errors'])) {
+    $form_errors = $_SESSION['vd_form_errors'];
+    unset($_SESSION['vd_form_errors']); // Clear after retrieving
+}
+
+// Helper function to get field value
+function get_field_value($field_name, $form_data = array(), $account = null) {
+    if (isset($form_data[$field_name])) {
+        return $form_data[$field_name];
+    }
+    if ($account && isset($account->$field_name)) {
+        return $account->$field_name;
+    }
+    return '';
+}
+
+// Helper function to show field error
+function show_field_error($field_name, $errors = array()) {
+    if (isset($errors[$field_name])) {
+        echo '<p class="vd-field-error">' . esc_html($errors[$field_name]) . '</p>';
+    }
+}
+
 $is_edit = ( $form_action === 'update' && $account );
 $page_title = $is_edit ? __( 'Edit Account', 'vd-license-manager' ) : __( 'Add New Account', 'vd-license-manager' );
 $submit_text = $is_edit ? __( 'Update Account', 'vd-license-manager' ) : __( 'Create Account', 'vd-license-manager' );
 
 // Get current values
-$current_provider = $is_edit ? $account->provider : '';
-$current_account_login = $is_edit ? $account->account_login : '';
-$current_display_name = $is_edit ? $account->display_name : '';
-$current_capacity = $is_edit ? $account->capacity : 1;
-$current_status = $is_edit ? $account->status : 'active';
-$current_expires_at = $is_edit && ! empty( $account->expires_at ) && $account->expires_at !== '0000-00-00 00:00:00' ? gmdate( 'Y-m-d', strtotime( $account->expires_at ) ) : '';
-$current_security_question = $is_edit ? $account->security_question : '';
-$current_notes = $is_edit ? $account->notes : '';
-$current_custom_fields = $is_edit ? $account->custom_fields : array();
+$current_provider = get_field_value('provider', $form_data, $account);
+$current_account_login = get_field_value('account_login', $form_data, $account);
+$current_display_name = get_field_value('display_name', $form_data, $account);
+$current_capacity = get_field_value('capacity', $form_data, $account) ?: 1;
+$current_status = get_field_value('status', $form_data, $account) ?: 'active';
+$current_expires_at = get_field_value('expires_at', $form_data, $account);
+if (!$current_expires_at && $is_edit && !empty($account->expires_at) && $account->expires_at !== '0000-00-00 00:00:00') {
+    $current_expires_at = gmdate('Y-m-d', strtotime($account->expires_at));
+}
+$current_security_question = get_field_value('security_question', $form_data, $account);
+$current_notes = get_field_value('notes', $form_data, $account);
+$current_custom_fields = get_field_value('custom_fields', $form_data, $account) ?: array();
+if (is_string($current_custom_fields)) {
+    $current_custom_fields = json_decode($current_custom_fields, true) ?: array();
+}
 ?>
 
 <div class="vd-account-form-wrapper">
@@ -47,7 +90,14 @@ $current_custom_fields = $is_edit ? $account->custom_fields : array();
 
 	<h2><?php echo esc_html( $page_title ); ?></h2>
 
-	<form method="post" action="" class="vd-account-form" autocomplete="off">
+	<!-- Display global error if any -->
+	<?php if (!empty($form_errors['_global'])): ?>
+	<div class="notice notice-error is-dismissible">
+		<p><strong>Error:</strong> <?php echo esc_html($form_errors['_global']); ?></p>
+	</div>
+	<?php endif; ?>
+
+	<form method="post" action="" class="vd-account-form" id="vd-account-form" autocomplete="off" data-edit-mode="<?php echo $is_edit ? '1' : '0'; ?>">
 		<?php wp_nonce_field( 'vd_lm_account_action', 'vd_lm_nonce' ); ?>
 		<input type="hidden" name="action" value="<?php echo esc_attr( $form_action ); ?>">
 		<?php if ( $is_edit ) : ?>
@@ -65,14 +115,16 @@ $current_custom_fields = $is_edit ? $account->custom_fields : array();
 						<div class="vd-form-section">
 							<div class="vd-form-row">
 								<label for="provider"><?php esc_html_e( 'Provider', 'vd-license-manager' ); ?> <span class="required">*</span></label>
-								<input type="text" name="provider" id="provider" value="<?php echo esc_attr( $current_provider ); ?>" class="regular-text" required placeholder="e.g., Netflix, Spotify, Disney+, YouTube Premium">
+								<input type="text" name="provider" id="provider" value="<?php echo esc_attr( $current_provider ); ?>" class="regular-text <?php echo isset($form_errors['provider']) ? 'vd-error-field' : ''; ?>" required placeholder="e.g., Netflix, Spotify, Disney+, YouTube Premium">
 								<p class="description"><?php esc_html_e( 'Service provider name (free text input)', 'vd-license-manager' ); ?></p>
+								<?php show_field_error('provider', $form_errors); ?>
 							</div>
 
 							<div class="vd-form-row">
 								<label for="account_login"><?php esc_html_e( 'Account Login', 'vd-license-manager' ); ?> <span class="required">*</span></label>
-								<input type="text" name="account_login" id="account_login" value="<?php echo esc_attr( $current_account_login ); ?>" class="regular-text" required placeholder="Email or username">
+								<input type="text" name="account_login" id="account_login" value="<?php echo esc_attr( $current_account_login ); ?>" class="regular-text <?php echo isset($form_errors['account_login']) ? 'vd-error-field' : ''; ?>" required placeholder="Email or username">
 								<p class="description"><?php esc_html_e( 'Email address or username for the account', 'vd-license-manager' ); ?></p>
+								<?php show_field_error('account_login', $form_errors); ?>
 							</div>
 
 							<div class="vd-form-row">
@@ -83,17 +135,19 @@ $current_custom_fields = $is_edit ? $account->custom_fields : array();
 
 							<div class="vd-form-row">
 								<label for="account_password"><?php esc_html_e( 'Password', 'vd-license-manager' ); ?> <?php if ( ! $is_edit ) : ?><span class="required">*</span><?php endif; ?></label>
-								<div class="vd-password-field">
-									<input type="password" name="account_password" id="account_password" value="" class="regular-text" placeholder="<?php echo $is_edit ? 'Leave blank to keep current password' : 'Enter account password'; ?>" <?php echo $is_edit ? '' : 'required'; ?> autocomplete="new-password">
-									<button type="button" class="button vd-toggle-password" data-target="account_password">
-										👁️ <?php esc_html_e( 'Show', 'vd-license-manager' ); ?>
+								<div class="vd-password-wrapper">
+									<input type="password" name="account_password" id="account_password" value="" class="regular-text <?php echo isset($form_errors['account_password']) ? 'vd-error-field' : ''; ?>" placeholder="<?php echo $is_edit ? 'Leave blank to keep current password' : 'Enter account password'; ?>" <?php echo $is_edit ? '' : 'required'; ?> autocomplete="new-password">
+									<button type="button" class="button button-secondary vd-toggle-password" data-target="account_password" aria-label="Toggle password visibility">
+										<span class="dashicons dashicons-visibility"></span>
+										<span class="toggle-text">Show</span>
 									</button>
 								</div>
 								<?php if ( $is_edit ) : ?>
-									<p class="description"><?php esc_html_e( 'Leave blank to keep current password', 'vd-license-manager' ); ?></p>
+									<p class="description"><span class="dashicons dashicons-lock"></span> Leave blank to keep current password</p>
 								<?php else : ?>
-									<p class="description"><?php esc_html_e( 'Account password (will be encrypted)', 'vd-license-manager' ); ?></p>
+									<p class="description"><span class="dashicons dashicons-lock"></span> Account password (will be encrypted)</p>
 								<?php endif; ?>
+								<?php show_field_error('account_password', $form_errors); ?>
 							</div>
 						</div>
 					</div>
@@ -156,13 +210,15 @@ $current_custom_fields = $is_edit ? $account->custom_fields : array();
 
 							<div class="vd-form-row">
 								<label for="two_factor_secret"><?php esc_html_e( '2FA Secret', 'vd-license-manager' ); ?></label>
-								<div class="vd-password-field">
-									<input type="password" name="two_factor_secret" id="two_factor_secret" value="" class="regular-text" placeholder="JBSWY3DPEHPK3PXP">
-									<button type="button" class="button vd-toggle-password" data-target="two_factor_secret">
-										👁️ <?php esc_html_e( 'Show', 'vd-license-manager' ); ?>
+								<div class="vd-password-wrapper">
+									<input type="password" name="two_factor_secret" id="two_factor_secret" value="<?php echo esc_attr(get_field_value('two_factor_secret', $form_data, $account)); ?>" class="regular-text <?php echo isset($form_errors['two_factor_secret']) ? 'vd-error-field' : ''; ?>" placeholder="JBSWY3DPEHPK3PXP">
+									<button type="button" class="button button-secondary vd-toggle-password" data-target="two_factor_secret" aria-label="Toggle password visibility">
+										<span class="dashicons dashicons-visibility"></span>
+										<span class="toggle-text">Show</span>
 									</button>
 								</div>
 								<p class="description"><?php esc_html_e( 'Two-factor authentication secret (if applicable)', 'vd-license-manager' ); ?></p>
+								<?php show_field_error('two_factor_secret', $form_errors); ?>
 							</div>
 						</div>
 					</div>
@@ -202,13 +258,15 @@ $current_custom_fields = $is_edit ? $account->custom_fields : array();
 
 							<div class="vd-form-row">
 								<label for="security_answer"><?php esc_html_e( 'Security Answer', 'vd-license-manager' ); ?></label>
-								<div class="vd-password-field">
-									<input type="password" name="security_answer" id="security_answer" value="" class="regular-text">
-									<button type="button" class="button vd-toggle-password" data-target="security_answer">
-										👁️ <?php esc_html_e( 'Show', 'vd-license-manager' ); ?>
+								<div class="vd-password-wrapper">
+									<input type="password" name="security_answer" id="security_answer" value="" class="regular-text <?php echo isset($form_errors['security_answer']) ? 'vd-error-field' : ''; ?>" placeholder="Enter security answer">
+									<button type="button" class="button button-secondary vd-toggle-password" data-target="security_answer" aria-label="Toggle password visibility">
+										<span class="dashicons dashicons-visibility"></span>
+										<span class="toggle-text">Show</span>
 									</button>
 								</div>
 								<p class="description"><?php esc_html_e( 'Answer to security question (will be encrypted)', 'vd-license-manager' ); ?></p>
+								<?php show_field_error('security_answer', $form_errors); ?>
 							</div>
 
 							<div class="vd-form-row">
@@ -243,13 +301,15 @@ $current_custom_fields = $is_edit ? $account->custom_fields : array();
 
 							<div class="vd-form-row">
 								<label for="secret_key"><?php esc_html_e( 'Secret Key', 'vd-license-manager' ); ?></label>
-								<div class="vd-password-field">
-									<input type="password" name="secret_key" id="secret_key" value="" class="regular-text">
-									<button type="button" class="button vd-toggle-password" data-target="secret_key">
-										👁️ <?php esc_html_e( 'Show', 'vd-license-manager' ); ?>
+								<div class="vd-password-wrapper">
+									<input type="password" name="secret_key" id="secret_key" value="" class="regular-text <?php echo isset($form_errors['secret_key']) ? 'vd-error-field' : ''; ?>" placeholder="Enter secret key">
+									<button type="button" class="button button-secondary vd-toggle-password" data-target="secret_key" aria-label="Toggle password visibility">
+										<span class="dashicons dashicons-visibility"></span>
+										<span class="toggle-text">Show</span>
 									</button>
 								</div>
 								<p class="description"><?php esc_html_e( 'Provider secret key (will be encrypted)', 'vd-license-manager' ); ?></p>
+								<?php show_field_error('secret_key', $form_errors); ?>
 							</div>
 
 							<div class="vd-form-row">
@@ -275,7 +335,7 @@ $current_custom_fields = $is_edit ? $account->custom_fields : array();
 					<div class="inside">
 						<p class="description" style="margin-bottom: 15px;"><?php esc_html_e( 'Add provider-specific fields such as subscription details or special configurations.', 'vd-license-manager' ); ?></p>
 
-						<div id="custom-fields-container">
+						<div id="vd-custom-fields-container">
 							<?php if ( ! empty( $current_custom_fields ) && is_array( $current_custom_fields ) ) : ?>
 								<?php foreach ( $current_custom_fields as $key => $value ) : ?>
 									<div class="vd-custom-field-row">
@@ -298,7 +358,7 @@ $current_custom_fields = $is_edit ? $account->custom_fields : array();
 							<?php endif; ?>
 						</div>
 
-						<button type="button" id="add-custom-field" class="button"><?php esc_html_e( '+ Add Custom Field', 'vd-license-manager' ); ?></button>
+						<button type="button" id="vd-add-custom-field" class="button"><?php esc_html_e( '+ Add Custom Field', 'vd-license-manager' ); ?></button>
 					</div>
 				</div>
 
