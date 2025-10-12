@@ -101,12 +101,15 @@ class VD_LM_Admin {
         );
 
         // Localize script with data
+        $nonce = wp_create_nonce( 'vd_admin_nonce' );
+        error_log( 'VD Nonce Created: ' . $nonce . ' with action: vd_admin_nonce' );
+
         wp_localize_script(
             $this->plugin_name,
             'vd_admin_ajax',
             array(
                 'ajax_url' => admin_url( 'admin-ajax.php' ),
-                'nonce'    => wp_create_nonce( 'vd_admin_nonce' ),
+                'nonce'    => $nonce,
                 'strings'  => array(
                     'confirm_delete' => __( 'Are you sure you want to delete this item?', 'vd-license-manager' ),
                     'loading'        => __( 'Loading...', 'vd-license-manager' ),

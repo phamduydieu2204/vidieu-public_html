@@ -34,12 +34,28 @@ class VD_LM_Share_Configs_Ajax {
         error_log('VD AJAX: POST data: ' . print_r($_POST, true));
 
         // Verify nonce
-        if (!isset($_POST['nonce']) || !wp_verify_nonce($_POST['nonce'], 'vd_lm_nonce')) {
-            error_log('VD AJAX: Nonce verification failed');
+        if (!isset($_POST['nonce'])) {
+            error_log('VD AJAX: Nonce missing in POST');
+            wp_send_json_error(array('message' => 'Nonce missing.'));
+        }
+
+        $nonce = sanitize_text_field($_POST['nonce']);
+        $action_name = 'vd_admin_nonce';
+
+        error_log('VD AJAX: Verifying nonce: ' . $nonce . ' against action: ' . $action_name);
+
+        $verify_result = wp_verify_nonce($nonce, $action_name);
+
+        error_log('VD AJAX: Nonce verify result: ' . var_export($verify_result, true));
+
+        if (!$verify_result) {
+            error_log('VD AJAX: Nonce verification FAILED');
+            error_log('VD AJAX: Received nonce: ' . $nonce);
+            error_log('VD AJAX: Expected action: ' . $action_name);
             wp_send_json_error(array('message' => 'Security check failed.'));
         }
 
-        error_log('VD AJAX: Nonce verified');
+        error_log('VD AJAX: Nonce verified successfully');
 
         // Check permissions
         if (!current_user_can('manage_options')) {
