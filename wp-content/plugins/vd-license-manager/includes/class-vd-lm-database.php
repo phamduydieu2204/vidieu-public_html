@@ -503,7 +503,7 @@ class VD_LM_Database {
 
         $sql = "CREATE TABLE {$table_name} (
             id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-            pool_id bigint(20) unsigned NOT NULL COMMENT 'FK to vd_product_pools.id',
+            pool_id bigint(20) unsigned NOT NULL COMMENT 'FK to vd_pools.id',
             account_id bigint(20) unsigned NOT NULL COMMENT 'FK to vd_provider_accounts.id',
             weight int(11) NOT NULL DEFAULT 1 COMMENT 'Weight for weighted assignment strategy',
             is_primary tinyint(1) NOT NULL DEFAULT 0 COMMENT 'Primary account for sticky strategy',

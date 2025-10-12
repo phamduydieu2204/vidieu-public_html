@@ -288,23 +288,60 @@ class VD_LM_Order_Handler {
     private function get_pool_for_product($product_id) {
         global $wpdb;
 
+        error_log('VD License Assignment: === SEARCHING FOR POOL ===');
+        error_log('VD License Assignment: Product ID: ' . $product_id);
+
         // Get pool directly from product_pools table
         $table = $wpdb->prefix . 'vd_product_pools';
+        error_log('VD License Assignment: Product pools table: ' . $table);
+
+        // First check if any pools exist for this product
+        $all_pools = $wpdb->get_results($wpdb->prepare(
+            "SELECT pp.*, p.name as pool_name, p.status as pool_status
+            FROM {$table} pp
+            LEFT JOIN {$wpdb->prefix}vd_pools p ON pp.pool_id = p.id
+            WHERE pp.product_id = %d
+            ORDER BY pp.priority ASC",
+            $product_id
+        ), ARRAY_A);
+
+        error_log('VD License Assignment: Found ' . count($all_pools) . ' pool assignments for product');
+        foreach ($all_pools as $pool_assignment) {
+            error_log('  - Pool ID: ' . $pool_assignment['pool_id'] .
+                     ', Name: ' . ($pool_assignment['pool_name'] ?: 'NULL') .
+                     ', Priority: ' . $pool_assignment['priority'] .
+                     ', Assignment Status: ' . $pool_assignment['status'] .
+                     ', Pool Status: ' . ($pool_assignment['pool_status'] ?: 'NULL'));
+        }
 
         $pool = $wpdb->get_row($wpdb->prepare(
-            "SELECT * FROM {$table} WHERE product_id = %d AND status = 'active' ORDER BY priority ASC LIMIT 1",
+            "SELECT pp.*, p.name as pool_name
+            FROM {$table} pp
+            JOIN {$wpdb->prefix}vd_pools p ON pp.pool_id = p.id
+            WHERE pp.product_id = %d
+            AND pp.status = 'active'
+            AND p.status = 'active'
+            ORDER BY pp.priority ASC
+            LIMIT 1",
             $product_id
         ), ARRAY_A);
 
         if ($wpdb->last_error) {
-            error_log('VD License Assignment: Error fetching pool: ' . $wpdb->last_error);
+            error_log('VD License Assignment: Database error fetching pool: ' . $wpdb->last_error);
+            error_log('VD License Assignment: Last query: ' . $wpdb->last_query);
             return null;
         }
 
         if (!$pool) {
-            error_log('VD License Assignment: No active pool found for product ' . $product_id);
+            error_log('VD License Assignment: ✗ No active pool found for product ' . $product_id);
+            error_log('VD License Assignment: Check if product has any pool assignments and if pools are active');
             return null;
         }
+
+        error_log('VD License Assignment: ✓ Found active pool');
+        error_log('VD License Assignment: Pool ID: ' . $pool['pool_id']);
+        error_log('VD License Assignment: Pool Name: ' . $pool['pool_name']);
+        error_log('VD License Assignment: Priority: ' . $pool['priority']);
 
         return $pool;
     }
@@ -318,12 +355,48 @@ class VD_LM_Order_Handler {
     private function get_available_account($pool_id) {
         global $wpdb;
 
+        error_log('VD License Assignment: === SEARCHING FOR AVAILABLE ACCOUNT ===');
+        error_log('VD License Assignment: Pool ID: ' . $pool_id);
+        error_log('VD License Assignment: Provider accounts table: ' . $wpdb->prefix . 'vd_provider_accounts');
+        error_log('VD License Assignment: Pool accounts table: ' . $wpdb->prefix . 'vd_pool_accounts');
+
+        // First, check if pool has any accounts assigned
+        $pool_account_count = $wpdb->get_var($wpdb->prepare(
+            "SELECT COUNT(*) FROM {$wpdb->prefix}vd_pool_accounts WHERE pool_id = %d",
+            $pool_id
+        ));
+        error_log('VD License Assignment: Pool has ' . $pool_account_count . ' account assignments');
+
+        if ($pool_account_count == 0) {
+            error_log('VD License Assignment: No accounts assigned to pool ' . $pool_id);
+            return null;
+        }
+
+        // Check all accounts in this pool (for debugging)
+        $all_pool_accounts = $wpdb->get_results($wpdb->prepare(
+            "SELECT pa.*, a.account_login, a.current_usage, a.capacity, a.status as account_status
+            FROM {$wpdb->prefix}vd_pool_accounts pa
+            LEFT JOIN {$wpdb->prefix}vd_provider_accounts a ON pa.account_id = a.id
+            WHERE pa.pool_id = %d",
+            $pool_id
+        ), ARRAY_A);
+
+        error_log('VD License Assignment: All accounts in pool:');
+        foreach ($all_pool_accounts as $account) {
+            error_log('  - Account ID: ' . $account['account_id'] .
+                     ', Login: ' . ($account['account_login'] ?: 'NULL') .
+                     ', Usage: ' . ($account['current_usage'] ?: '0') . '/' . ($account['capacity'] ?: '0') .
+                     ', Account Status: ' . ($account['account_status'] ?: 'NULL') .
+                     ', Pool Status: ' . $account['status'] .
+                     ', Weight: ' . $account['weight']);
+        }
+
         // Find account that is:
         // 1. In this pool (via pool_accounts mapping)
         // 2. Status = 'active'
         // 3. Has available capacity (current_usage < capacity)
         $account = $wpdb->get_row($wpdb->prepare(
-            "SELECT a.*
+            "SELECT a.*, pa.weight, pa.status as pool_assignment_status
             FROM {$wpdb->prefix}vd_provider_accounts a
             INNER JOIN {$wpdb->prefix}vd_pool_accounts pa ON a.id = pa.account_id
             WHERE pa.pool_id = %d
@@ -336,8 +409,21 @@ class VD_LM_Order_Handler {
         ), ARRAY_A);
 
         if ($wpdb->last_error) {
-            error_log('VD License Assignment: Error fetching available account: ' . $wpdb->last_error);
+            error_log('VD License Assignment: Database error: ' . $wpdb->last_error);
+            error_log('VD License Assignment: Last query: ' . $wpdb->last_query);
             return null;
+        }
+
+        if ($account) {
+            error_log('VD License Assignment: ✓ Found available account');
+            error_log('VD License Assignment: Account ID: ' . $account['id']);
+            error_log('VD License Assignment: Account Login: ' . $account['account_login']);
+            error_log('VD License Assignment: Current Usage: ' . $account['current_usage'] . '/' . $account['capacity']);
+            error_log('VD License Assignment: Provider: ' . $account['provider']);
+            error_log('VD License Assignment: Weight: ' . $account['weight']);
+        } else {
+            error_log('VD License Assignment: ✗ No available account found in pool ' . $pool_id);
+            error_log('VD License Assignment: All accounts may be at capacity or inactive');
         }
 
         return $account;
@@ -423,17 +509,52 @@ class VD_LM_Order_Handler {
 
         $table = $wpdb->prefix . 'vd_provider_accounts';
 
+        error_log('VD License Assignment: === UPDATING ACCOUNT USAGE ===');
+        error_log('VD License Assignment: Account ID: ' . $account_id);
+
+        // Get current usage before update
+        $current_data = $wpdb->get_row($wpdb->prepare(
+            "SELECT account_login, current_usage, capacity FROM {$table} WHERE id = %d",
+            $account_id
+        ), ARRAY_A);
+
+        if ($current_data) {
+            error_log('VD License Assignment: Before update - Login: ' . $current_data['account_login'] .
+                     ', Usage: ' . $current_data['current_usage'] . '/' . $current_data['capacity']);
+        } else {
+            error_log('VD License Assignment: ERROR - Account not found: ' . $account_id);
+            return;
+        }
+
         // Increment current usage
-        $wpdb->query($wpdb->prepare(
+        $result = $wpdb->query($wpdb->prepare(
             "UPDATE {$table} SET current_usage = current_usage + 1, updated_at = %s WHERE id = %d",
             current_time('mysql'),
             $account_id
         ));
 
         if ($wpdb->last_error) {
-            error_log('VD License Assignment: Error updating account usage: ' . $wpdb->last_error);
+            error_log('VD License Assignment: Database error updating usage: ' . $wpdb->last_error);
+            error_log('VD License Assignment: Query: ' . $wpdb->last_query);
         } else {
-            error_log('VD License Assignment: Account ' . $account_id . ' usage incremented');
+            error_log('VD License Assignment: ✓ Update query executed, rows affected: ' . $result);
+
+            // Verify update worked
+            $updated_data = $wpdb->get_row($wpdb->prepare(
+                "SELECT current_usage FROM {$table} WHERE id = %d",
+                $account_id
+            ), ARRAY_A);
+
+            if ($updated_data) {
+                error_log('VD License Assignment: After update - Usage: ' . $updated_data['current_usage'] .
+                         '/' . $current_data['capacity']);
+
+                if ($updated_data['current_usage'] > $current_data['current_usage']) {
+                    error_log('VD License Assignment: ✓ Usage successfully incremented');
+                } else {
+                    error_log('VD License Assignment: ⚠ Usage did not increment as expected');
+                }
+            }
         }
     }
 }
