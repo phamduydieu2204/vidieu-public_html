@@ -87,16 +87,37 @@ abstract class VD_LM_Base_Repository {
     public function find( $id ) {
         $id = absint( $id );
 
+        // DEBUG: Log find request
+        error_log( 'VD DEBUG: Base repository find() called with ID: ' . $id );
+        error_log( 'VD DEBUG: Base repository table: ' . $this->full_table_name );
+
         if ( $id <= 0 ) {
+            error_log( 'VD DEBUG: Base repository find() - Invalid ID, returning null' );
             return null;
         }
 
-        $result = $this->wpdb->get_row(
-            $this->wpdb->prepare(
-                "SELECT * FROM {$this->full_table_name} WHERE {$this->primary_key} = %d",
-                $id
-            )
+        $query = $this->wpdb->prepare(
+            "SELECT * FROM {$this->full_table_name} WHERE {$this->primary_key} = %d",
+            $id
         );
+
+        // DEBUG: Log the actual query
+        error_log( 'VD DEBUG: Base repository query: ' . $query );
+
+        $result = $this->wpdb->get_row( $query );
+
+        // DEBUG: Log raw database result
+        if ( $result ) {
+            error_log( 'VD DEBUG: Base repository find() - Raw DB result found' );
+            error_log( 'VD DEBUG: Base repository find() - Result type: ' . gettype( $result ) );
+            if ( is_object( $result ) ) {
+                $props = get_object_vars( $result );
+                error_log( 'VD DEBUG: Base repository find() - Result properties: ' . implode( ', ', array_keys( $props ) ) );
+            }
+        } else {
+            error_log( 'VD DEBUG: Base repository find() - No result from database' );
+            error_log( 'VD DEBUG: Base repository find() - Last error: ' . $this->wpdb->last_error );
+        }
 
         return $result ? $this->format_result( $result ) : null;
     }

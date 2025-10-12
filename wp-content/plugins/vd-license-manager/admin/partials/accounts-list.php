@@ -16,21 +16,34 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * Check if account has legacy encrypted data
+ * Check if account has legacy encrypted data (date-based detection)
+ *
+ * Accounts created before the encryption fix (2025-10-12 04:00:00) that have
+ * encrypted data are considered legacy and may need credential re-entry.
  */
 function vd_has_legacy_encryption($account) {
-	$encrypted_fields = array(
-		'account_password', 'cookies', 'phone_recovery',
-		'email_recovery', 'security_answer', 'backup_codes',
-		'two_factor_secret', 'api_key', 'secret_key', 'api_token'
-	);
+	// Encryption fix date - accounts created before this may have legacy encryption
+	$encryption_fix_date = '2025-10-12 04:00:00';
 
-	foreach ($encrypted_fields as $field) {
-		if (!empty($account->$field)) {
-			// Check if it's short (legacy format)
-			$decoded = base64_decode($account->$field, true);
-			if ($decoded && strlen($decoded) < 20) { // Legacy data is typically < 20 bytes
-				return true;
+	// Check if account was created before encryption fix
+	if (isset($account->created_at)) {
+		$created = strtotime($account->created_at);
+		$fix_time = strtotime($encryption_fix_date);
+
+		// Only accounts created before the fix can have legacy encryption
+		if ($created < $fix_time) {
+			// Check if account has any encrypted data
+			$encrypted_fields = array(
+				'account_password', 'cookies', 'phone_recovery',
+				'email_recovery', 'security_answer', 'backup_codes',
+				'two_factor_secret', 'api_key', 'secret_key', 'api_token'
+			);
+
+			foreach ($encrypted_fields as $field) {
+				if (!empty($account->$field)) {
+					// Has encrypted data and was created before fix = legacy
+					return true;
+				}
 			}
 		}
 	}

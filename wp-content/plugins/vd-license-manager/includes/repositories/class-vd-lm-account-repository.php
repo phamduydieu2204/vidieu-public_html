@@ -413,22 +413,48 @@ class VD_LM_Account_Repository extends VD_LM_Base_Repository {
 	 */
 	protected function format_result( $result ) {
 		if ( ! is_object( $result ) ) {
+			error_log( 'VD DEBUG: format_result called with non-object: ' . gettype( $result ) );
 			return $result;
 		}
+
+		// DEBUG: Log raw result from database
+		error_log( 'VD DEBUG: format_result - Raw DB result for account ID: ' . ( isset( $result->id ) ? $result->id : 'UNKNOWN' ) );
+		error_log( 'VD DEBUG: format_result - Raw provider: ' . ( isset( $result->provider ) ? $result->provider : 'NOT SET' ) );
+		error_log( 'VD DEBUG: format_result - Raw account_login: ' . ( isset( $result->account_login ) ? $result->account_login : 'NOT SET' ) );
+		error_log( 'VD DEBUG: format_result - Raw display_name: ' . ( isset( $result->display_name ) ? $result->display_name : 'NOT SET' ) );
+		error_log( 'VD DEBUG: format_result - Raw custom_fields: ' . ( isset( $result->custom_fields ) ? substr( $result->custom_fields, 0, 100 ) . '...' : 'NOT SET' ) );
 
 		// Apply parent formatting first
 		$result = parent::format_result( $result );
 
+		// DEBUG: Log after parent formatting
+		error_log( 'VD DEBUG: format_result - After parent formatting, provider: ' . ( isset( $result->provider ) ? $result->provider : 'NOT SET' ) );
+
 		// Decrypt sensitive fields
 		$result = $this->decrypt_sensitive_fields( $result );
 
+		// DEBUG: Log after decryption
+		error_log( 'VD DEBUG: format_result - After decryption, provider: ' . ( isset( $result->provider ) ? $result->provider : 'NOT SET' ) );
+
 		// Parse custom fields if they exist
 		if ( isset( $result->custom_fields ) && ! empty( $result->custom_fields ) ) {
+			error_log( 'VD DEBUG: format_result - Parsing custom_fields JSON: ' . substr( $result->custom_fields, 0, 200 ) );
 			$custom_fields = json_decode( $result->custom_fields, true );
-			$result->custom_fields = is_array( $custom_fields ) ? $custom_fields : array();
+			if ( json_last_error() !== JSON_ERROR_NONE ) {
+				error_log( 'VD DEBUG: format_result - JSON decode error: ' . json_last_error_msg() );
+				$result->custom_fields = array();
+			} else {
+				$result->custom_fields = is_array( $custom_fields ) ? $custom_fields : array();
+				error_log( 'VD DEBUG: format_result - Parsed custom_fields: ' . count( $result->custom_fields ) . ' fields' );
+			}
 		} else {
+			error_log( 'VD DEBUG: format_result - No custom_fields to parse' );
 			$result->custom_fields = array();
 		}
+
+		// DEBUG: Final result
+		error_log( 'VD DEBUG: format_result - Final result provider: ' . ( isset( $result->provider ) ? $result->provider : 'NOT SET' ) );
+		error_log( 'VD DEBUG: format_result - Final result type: ' . gettype( $result ) );
 
 		return $result;
 	}
@@ -442,17 +468,28 @@ class VD_LM_Account_Repository extends VD_LM_Base_Repository {
 	 * @return array Data array with encrypted fields
 	 */
 	private function encrypt_sensitive_fields( $data ) {
+		error_log( 'VD DEBUG: encrypt_sensitive_fields called with fields: ' . implode( ', ', array_keys( $data ) ) );
+
 		foreach ( $this->encrypted_fields as $field ) {
 			if ( isset( $data[ $field ] ) && ! empty( $data[ $field ] ) ) {
+				error_log( 'VD DEBUG: encrypt_sensitive_fields - Processing field: ' . $field );
+				error_log( 'VD DEBUG: encrypt_sensitive_fields - ' . $field . ' type: ' . gettype( $data[ $field ] ) );
+
 				// Special handling for custom_fields (JSON encode before encryption)
 				if ( $field === 'custom_fields' && is_array( $data[ $field ] ) ) {
+					error_log( 'VD DEBUG: encrypt_sensitive_fields - custom_fields is array, JSON encoding: ' . wp_json_encode( $data[ $field ] ) );
 					$data[ $field ] = wp_json_encode( $data[ $field ] );
+				} elseif ( $field === 'custom_fields' ) {
+					error_log( 'VD DEBUG: encrypt_sensitive_fields - custom_fields is not array, value: ' . substr( $data[ $field ], 0, 100 ) );
 				}
 
 				// Encrypt the field
 				try {
+					$original_value = $data[ $field ];
 					$data[ $field ] = $this->encryption_service->encrypt( $data[ $field ] );
+					error_log( 'VD DEBUG: encrypt_sensitive_fields - Successfully encrypted ' . $field . ' (' . strlen( $original_value ) . ' → ' . strlen( $data[ $field ] ) . ' chars)' );
 				} catch ( Exception $e ) {
+					error_log( 'VD DEBUG: encrypt_sensitive_fields - Encryption error for field ' . $field . ': ' . $e->getMessage() );
 					VD_LM_Logger_Service::error( 'Failed to encrypt field', array(
 						'field' => $field,
 						'error' => $e->getMessage(),
@@ -461,6 +498,8 @@ class VD_LM_Account_Repository extends VD_LM_Base_Repository {
 					// Don't save if encryption fails
 					unset( $data[ $field ] );
 				}
+			} else {
+				error_log( 'VD DEBUG: encrypt_sensitive_fields - Skipping field ' . $field . ' (not set or empty)' );
 			}
 		}
 

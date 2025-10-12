@@ -426,22 +426,51 @@ class VD_LM_Accounts_Page {
 	private function render_edit_form() {
 		$id = isset( $_GET['id'] ) ? absint( $_GET['id'] ) : 0;
 
+		// DEBUG: Log edit form request
+		error_log( 'VD DEBUG: render_edit_form called with ID: ' . $id );
+
 		if ( ! $id ) {
+			error_log( 'VD DEBUG: Invalid account ID in edit form' );
 			$this->add_notice( __( 'Invalid account ID.', 'vd-license-manager' ), 'error' );
 			$this->render_list();
 			return;
 		}
 
+		// DEBUG: Fetch account with detailed logging
+		error_log( 'VD DEBUG: Fetching account with ID: ' . $id );
 		$account = $this->service->get_account( $id );
 
 		if ( is_wp_error( $account ) ) {
+			error_log( 'VD DEBUG: Error fetching account: ' . $account->get_error_message() );
 			$this->add_notice( $account->get_error_message(), 'error' );
 			$this->render_list();
 			return;
 		}
 
+		// DEBUG: Log fetched account data structure
+		if ( $account ) {
+			error_log( 'VD DEBUG: Account fetched successfully' );
+			error_log( 'VD DEBUG: Account provider: ' . ( isset( $account->provider ) ? $account->provider : 'NOT SET' ) );
+			error_log( 'VD DEBUG: Account login: ' . ( isset( $account->account_login ) ? $account->account_login : 'NOT SET' ) );
+			error_log( 'VD DEBUG: Account display_name: ' . ( isset( $account->display_name ) ? $account->display_name : 'NOT SET' ) );
+			error_log( 'VD DEBUG: Account capacity: ' . ( isset( $account->capacity ) ? $account->capacity : 'NOT SET' ) );
+			error_log( 'VD DEBUG: Account custom_fields: ' . ( isset( $account->custom_fields ) ? $account->custom_fields : 'NOT SET' ) );
+			error_log( 'VD DEBUG: Full account object type: ' . gettype( $account ) );
+
+			// Log all available properties
+			if ( is_object( $account ) ) {
+				$props = get_object_vars( $account );
+				error_log( 'VD DEBUG: Account properties: ' . implode( ', ', array_keys( $props ) ) );
+			}
+		} else {
+			error_log( 'VD DEBUG: Account is null/empty' );
+		}
+
 		$providers = $this->get_provider_options();
 		$form_action = 'update';
+
+		// DEBUG: Log before including form
+		error_log( 'VD DEBUG: Including accounts-form.php with form_action: ' . $form_action );
 
 		require_once VD_PLUGIN_DIR . 'admin/partials/accounts-form.php';
 	}
