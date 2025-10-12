@@ -764,6 +764,7 @@ class VD_LM_Order_Handler {
             ];
 
             error_log('VD Email: Sending license key email (NO PASSWORDS) for license ' . $license_key);
+            error_log('VD Email: License key passed to email handler: ' . substr($license_key, 0, 20) . '...');
 
             // Send email
             $result = $this->email_handler->send_credentials_email($email_data);
