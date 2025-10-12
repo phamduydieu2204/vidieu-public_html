@@ -15,33 +15,40 @@ class VD_LM_Order_Handler {
     /**
      * Column mapping for bz_vd_provider_accounts table
      *
-     * EXACT DATABASE SCHEMA (from class-vd-lm-database.php:397-429):
-     * - id (bigint) - Primary key
-     * - provider (varchar 100) - Provider name: Netflix, Spotify, Helium10, etc.
-     * - account_login (varchar 255) - Login username or email
-     * - display_name (varchar 255) - Admin display name
-     * - account_password (text) - Login password (encrypted)
-     * - capacity (int) - Maximum licenses this account can serve
-     * - status (enum) - active, inactive, suspended
-     * - current_usage (int) - Current number of active licenses
-     * - expires_at (datetime) - Provider account expiration date
-     * - cookies, phone_recovery, email_recovery, security_question,
-     *   security_answer, backup_codes, two_factor_secret, api_key,
-     *   secret_key, api_token, custom_fields (all encrypted fields)
-     * - created_at, updated_at (datetime)
+     * EXACT DATABASE SCHEMA (CONFIRMED from user specification):
+     * - id (bigint) - Primary key ✅
+     * - provider (varchar 100) - Provider name: Netflix, Spotify, Helium10 ✅
+     * - account_login (varchar 255) - Login username or email ✅
+     * - display_name (varchar 255) - Admin display name ✅
+     * - login_password (text) - Login password (encrypted) - NOT 'account_password'
+     * - capacity (int) - Maximum licenses this account can serve ✅
+     * - status (enum) - active, inactive, suspended ✅
+     * - current_usage (int) - Current number of active licenses ✅
+     * - expires_at (datetime) - Provider account expiration date ✅
+     * - cookie (longtext) - Session cookies
+     * - security_question (varchar 255) - Security question text
+     * - security_answer (longtext) - Security answer
+     * - account_password (longtext) - Alternative password field
+     * - notes (text) - Internal admin notes
+     * - created_at, updated_at (datetime) ✅
      *
      * Maps logical names to actual database column names for safety
      */
     const ACCOUNT_COLUMNS = array(
         'id' => 'id',
         'login' => 'account_login',
-        'password' => 'account_password',
+        'password' => 'login_password',        // CORRECTED: was 'account_password'
+        'alt_password' => 'account_password',  // Alternative password field
         'provider' => 'provider',
         'display_name' => 'display_name',
         'status' => 'status',
         'capacity' => 'capacity',
         'current_usage' => 'current_usage',
         'expires_at' => 'expires_at',
+        'cookie' => 'cookie',
+        'security_question' => 'security_question',
+        'security_answer' => 'security_answer',
+        'notes' => 'notes',
         'created_at' => 'created_at',
         'updated_at' => 'updated_at'
     );
@@ -55,6 +62,7 @@ class VD_LM_Order_Handler {
 
         error_log('VD Order Handler: Registered WooCommerce hooks');
         error_log('VD Order Handler: Expected account table schema: ' . implode(', ', self::ACCOUNT_COLUMNS));
+        error_log('VD Order Handler: CRITICAL MAPPINGS - login→account_login, password→login_password, service→provider');
     }
 
     /**
@@ -465,6 +473,15 @@ class VD_LM_Order_Handler {
             error_log('VD License Assignment: Status: ' . $this->get_account_field($account, 'status'));
             error_log('VD License Assignment: Weight: ' . (isset($account['weight']) ? $account['weight'] : 'N/A'));
 
+            // Enhanced debug: Show exact column access results
+            error_log('VD ACCOUNT VERIFICATION: Direct field access test:');
+            error_log('  - $account[\'account_login\']: ' . (isset($account['account_login']) ? $account['account_login'] : 'MISSING'));
+            error_log('  - $account[\'provider\']: ' . (isset($account['provider']) ? $account['provider'] : 'MISSING'));
+            error_log('  - $account[\'login_password\']: ' . (isset($account['login_password']) ? 'SET' : 'MISSING'));
+            error_log('  - $account[\'account_password\']: ' . (isset($account['account_password']) ? 'SET' : 'MISSING'));
+            error_log('  - $account[\'current_usage\']: ' . (isset($account['current_usage']) ? $account['current_usage'] : 'MISSING'));
+            error_log('  - $account[\'capacity\']: ' . (isset($account['capacity']) ? $account['capacity'] : 'MISSING'));
+
             // Verify expected vs actual schema
             $this->verify_account_schema($account);
         } else {
@@ -528,15 +545,31 @@ class VD_LM_Order_Handler {
             error_log('VD SCHEMA VERIFICATION: ℹ️ Extra columns found: ' . implode(', ', $extra_columns));
         }
 
-        // Verify critical columns exist
-        $critical_columns = ['id', 'account_login', 'provider', 'status', 'capacity', 'current_usage'];
-        foreach ($critical_columns as $column) {
+        // Verify critical columns exist with their correct database names
+        $critical_columns = [
+            'id' => 'Primary key',
+            'account_login' => 'Login username/email (NOT login)',
+            'provider' => 'Provider name (NOT service_name)',
+            'status' => 'Account status',
+            'capacity' => 'Maximum license capacity',
+            'current_usage' => 'Current usage count'
+        ];
+
+        foreach ($critical_columns as $column => $description) {
             if (!isset($account[$column])) {
-                error_log('VD SCHEMA VERIFICATION: ❌ CRITICAL MISSING: ' . $column);
+                error_log('VD SCHEMA VERIFICATION: ❌ CRITICAL MISSING: ' . $column . ' (' . $description . ')');
             } else {
-                error_log('VD SCHEMA VERIFICATION: ✅ Found critical column: ' . $column . ' = ' . $account[$column]);
+                $value = is_string($account[$column]) ? $account[$column] : (string)$account[$column];
+                error_log('VD SCHEMA VERIFICATION: ✅ Found: ' . $column . ' = \'' . $value . '\' (' . $description . ')');
             }
         }
+
+        // Check for password fields (should have one or both)
+        $has_login_password = isset($account['login_password']);
+        $has_account_password = isset($account['account_password']);
+        error_log('VD SCHEMA VERIFICATION: Password fields - login_password: ' .
+                 ($has_login_password ? '✅ SET' : '❌ MISSING') .
+                 ', account_password: ' . ($has_account_password ? '✅ SET' : '❌ MISSING'));
 
         error_log('VD SCHEMA VERIFICATION: === Schema Check Complete ===');
     }
