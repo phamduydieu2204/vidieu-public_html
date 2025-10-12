@@ -121,6 +121,15 @@ class VD_LM_License_Manager {
             }
         }
 
+        // Load Order Handler for WooCommerce integration
+        $order_handler_file = VD_PLUGIN_DIR . 'includes/class-vd-lm-order-handler.php';
+        if ( file_exists( $order_handler_file ) ) {
+            require_once $order_handler_file;
+            error_log( 'VD Loader: Loaded Order Handler from: ' . $order_handler_file );
+        } else {
+            error_log( 'VD Loader: Order Handler file NOT FOUND: ' . $order_handler_file );
+        }
+
         $this->loader = new VD_LM_Loader();
     }
 
