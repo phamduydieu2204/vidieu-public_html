@@ -69,9 +69,6 @@ class VD_LM_Accounts_Page {
 		$this->service = new VD_LM_Account_Service();
 		$this->current_page = isset( $_GET['paged'] ) ? max( 1, absint( $_GET['paged'] ) ) : 1;
 
-		// Enqueue assets for accounts page
-		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_assets' ) );
-
 		// Check and fix database schema on accounts page access
 		add_action( 'admin_init', array( $this, 'check_database_schema' ) );
 	}
@@ -594,84 +591,6 @@ class VD_LM_Accounts_Page {
 		return $this->service->get_account_repository();
 	}
 
-	/**
-	 * Enqueue CSS and JavaScript assets for accounts page
-	 *
-	 * @since 1.0.0
-	 * @param string $hook Current admin page hook
-	 */
-	public function enqueue_assets( $hook ) {
-		// Debug logging to see what's happening
-		error_log( '[VD DEBUG] enqueue_assets called with hook: ' . $hook );
-
-		// Only enqueue on VD License Manager accounts pages
-		// Hook format: vd-license-manager_page_vd-accounts
-		if ( strpos( $hook, 'vd-accounts' ) === false ) {
-			error_log( '[VD DEBUG] Hook does not contain vd-accounts, returning early' );
-			return;
-		}
-
-		error_log( '[VD DEBUG] Hook contains vd-accounts, proceeding with asset enqueue' );
-
-		// Enqueue accounts form CSS
-		wp_enqueue_style(
-			'vd-accounts-form',
-			VD_PLUGIN_URL . 'admin/css/accounts-form.css',
-			array(),
-			VD_PLUGIN_VERSION
-		);
-
-		// Enqueue enhanced error styling
-		wp_enqueue_style(
-			'vd-accounts-form-errors',
-			VD_PLUGIN_URL . 'admin/css/accounts-form-errors.css',
-			array( 'vd-accounts-form' ),
-			VD_PLUGIN_VERSION
-		);
-
-		// Enqueue accounts form JavaScript
-		error_log( '[VD DEBUG] Enqueueing JavaScript: ' . VD_PLUGIN_URL . 'admin/js/accounts-form.js' );
-		wp_enqueue_script(
-			'vd-accounts-form',
-			VD_PLUGIN_URL . 'admin/js/accounts-form.js',
-			array( 'jquery' ),
-			VD_PLUGIN_VERSION,
-			true
-		);
-		error_log( '[VD DEBUG] JavaScript enqueued successfully' );
-
-		// Localize script with translations and config
-		$is_edit = isset( $_GET['action'] ) && $_GET['action'] === 'edit' ? '1' : '0';
-
-		wp_localize_script(
-			'vd-accounts-form',
-			'vdAccountFormL10n',
-			array(
-				'isEdit' => $is_edit,
-				'show' => __( 'Show', 'vd-license-manager' ),
-				'hide' => __( 'Hide', 'vd-license-manager' ),
-				'remove' => __( 'Remove', 'vd-license-manager' ),
-				'fieldKey' => __( 'Field Key', 'vd-license-manager' ),
-				'fieldLabel' => __( 'Field Label', 'vd-license-manager' ),
-				'fieldValue' => __( 'Field Value', 'vd-license-manager' ),
-				'fieldTypes' => array(
-					'text' => __( 'Text', 'vd-license-manager' ),
-					'email' => __( 'Email', 'vd-license-manager' ),
-					'url' => __( 'URL', 'vd-license-manager' ),
-					'tel' => __( 'Phone', 'vd-license-manager' ),
-					'password' => __( 'Password (encrypted)', 'vd-license-manager' ),
-					'textarea' => __( 'Long Text', 'vd-license-manager' ),
-				),
-				'errors' => array(
-					'formErrors' => __( 'Please fix the following errors:', 'vd-license-manager' ),
-					'providerRequired' => __( 'Provider name is required.', 'vd-license-manager' ),
-					'loginRequired' => __( 'Account login is required.', 'vd-license-manager' ),
-					'passwordRequired' => __( 'Password is required for new accounts.', 'vd-license-manager' ),
-					'capacityInvalid' => __( 'Capacity must be between 1 and 100.', 'vd-license-manager' ),
-				),
-			)
-		);
-	}
 
 	/**
 	 * Validate account form data
