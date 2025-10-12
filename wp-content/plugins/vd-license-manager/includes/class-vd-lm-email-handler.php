@@ -350,19 +350,19 @@ class VD_LM_Email_Handler {
                 return false;
             }
 
-            // Check if already expired
+            // Check expiry status
             $expires_at = strtotime($license['expires_at']);
             $now = current_time('timestamp');
 
-            if ($expires_at <= $now) {
-                error_log('VD Email: License already expired, not sending renewal reminder');
+            // Allow sending reminders for expired licenses (not days remaining)
+            $is_expired = $expires_at <= $now;
+
+            if ($is_expired) {
+                error_log('VD Email: License expired, sending expiry notification');
+            } else {
+                error_log('VD Email: License not yet expired, skipping reminder');
                 return false;
             }
-
-            // Calculate days remaining
-            $days_remaining = ceil(($expires_at - $now) / DAY_IN_SECONDS);
-
-            error_log('VD Email: Days remaining: ' . $days_remaining);
 
             // Get product
             $product = wc_get_product($license['product_id']);
@@ -383,10 +383,28 @@ class VD_LM_Email_Handler {
                 }
             }
 
-            // Decrypt license key
+            // Decrypt license key from LMfWC
             $decrypted_license_key = $license['license_key'];
+
+            // LMfWC stores keys encrypted - try to decrypt
             if (function_exists('lmfwc_decrypt')) {
                 $decrypted_license_key = lmfwc_decrypt($license['license_key']);
+                error_log('VD Email (Renewal): Decrypted license key using lmfwc_decrypt()');
+            } elseif (class_exists('LicenseManagerForWooCommerce\Crypto')) {
+                try {
+                    $crypto = new \LicenseManagerForWooCommerce\Crypto();
+                    $decrypted_license_key = $crypto->decrypt($license['license_key']);
+                    error_log('VD Email (Renewal): Decrypted license key using Crypto class');
+                } catch (Exception $e) {
+                    error_log('VD Email (Renewal): Failed to decrypt license key: ' . $e->getMessage());
+                }
+            }
+
+            // If still encrypted (starts with 'def'), log warning
+            if (substr($decrypted_license_key, 0, 3) === 'def') {
+                error_log('VD Email (Renewal): WARNING - License key still appears encrypted: ' . substr($decrypted_license_key, 0, 20) . '...');
+            } else {
+                error_log('VD Email (Renewal): License key decrypted successfully: ' . $decrypted_license_key);
             }
 
             // Prepare template variables
@@ -395,7 +413,6 @@ class VD_LM_Email_Handler {
                 'product_name' => $product->get_name(),
                 'license_key' => $decrypted_license_key,
                 'expiry_date' => date_i18n('d/m/Y', $expires_at),
-                'days_remaining' => $days_remaining,
                 'renewal_url' => $product->get_permalink(),
                 'portal_url' => home_url('/license-portal/'),
                 'site_name' => get_bloginfo('name'),
@@ -415,10 +432,9 @@ class VD_LM_Email_Handler {
 
             // Subject
             $subject = sprintf(
-                '[%s] ⏰ License %s sắp hết hạn - Còn %d ngày',
+                '[%s] ⏰ License %s đã hết hạn - Cần gia hạn',
                 get_bloginfo('name'),
-                $product->get_name(),
-                $days_remaining
+                $product->get_name()
             );
 
             error_log('VD Email: Sending renewal reminder to: ' . $customer_email);

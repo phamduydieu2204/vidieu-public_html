@@ -73,9 +73,9 @@ class VD_LM_Cron {
 
         global $wpdb;
 
-        // Get licenses expiring in 7 days that haven't received reminder yet
-        $seven_days_from_now = date('Y-m-d H:i:s', strtotime('+7 days'));
-        $eight_days_from_now = date('Y-m-d H:i:s', strtotime('+8 days'));
+        // Get licenses that expired TODAY (between start of today and now)
+        $today_start = date('Y-m-d 00:00:00');
+        $now = date('Y-m-d H:i:s');
 
         $licenses = $wpdb->get_results($wpdb->prepare(
             "SELECT id, license_key, customer_email, product_id, expires_at
@@ -84,11 +84,11 @@ class VD_LM_Cron {
             AND expires_at BETWEEN %s AND %s
             AND (renewal_reminder_sent_at IS NULL OR renewal_reminder_sent_at < DATE_SUB(NOW(), INTERVAL 30 DAY))
             ORDER BY expires_at ASC",
-            $seven_days_from_now,
-            $eight_days_from_now
+            $today_start,
+            $now
         ), ARRAY_A);
 
-        error_log('VD Cron: Found ' . count($licenses) . ' licenses expiring in 7 days');
+        error_log('VD Cron: Found ' . count($licenses) . ' licenses that expired TODAY');
 
         if (empty($licenses)) {
             error_log('VD Cron: No expiring licenses to process');

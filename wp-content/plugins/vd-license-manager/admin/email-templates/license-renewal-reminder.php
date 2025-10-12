@@ -116,24 +116,6 @@ defined('ABSPATH') || exit;
             margin: 25px 0;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
-        .benefits {
-            background-color: #e8f5e9;
-            border-left: 4px solid #4caf50;
-            padding: 20px;
-            margin: 20px 0;
-            border-radius: 4px;
-        }
-        .benefits h3 {
-            margin-top: 0;
-            color: #2e7d32;
-        }
-        .benefits ul {
-            margin: 10px 0;
-            padding-left: 25px;
-        }
-        .benefits li {
-            margin-bottom: 10px;
-        }
         .email-footer {
             background-color: #f8f9fa;
             padding: 20px;
@@ -161,7 +143,7 @@ defined('ABSPATH') || exit;
     <div class="email-container">
         <!-- Header -->
         <div class="email-header">
-            <h1>⏰ License Sắp Hết Hạn!</h1>
+            <h1>⏰ License Đã Hết Hạn!</h1>
         </div>
 
         <!-- Body -->
@@ -172,17 +154,14 @@ defined('ABSPATH') || exit;
 
             <p>
                 License <strong><?php echo esc_html($product_name); ?></strong> của bạn
-                sắp hết hạn trong vài ngày tới.
+                đã hết hạn. Vui lòng gia hạn để tiếp tục sử dụng dịch vụ.
             </p>
 
             <!-- Warning Box -->
             <div class="warning-box">
-                <h2>⚠️ Thông Báo Quan Trọng</h2>
-                <div class="days-remaining">
-                    Còn <?php echo esc_html($days_remaining); ?> ngày
-                </div>
-                <p style="text-align: center; margin: 0;">
-                    License sẽ hết hạn vào <strong><?php echo esc_html($expiry_date); ?></strong>
+                <h2>⚠️ License Đã Hết Hạn</h2>
+                <p style="text-align: center; margin: 15px 0 0 0; font-size: 16px;">
+                    License đã hết hạn vào <strong><?php echo esc_html($expiry_date); ?></strong>
                 </p>
             </div>
 
@@ -202,20 +181,8 @@ defined('ABSPATH') || exit;
                 </a>
             </div>
 
-            <!-- Benefits -->
-            <div class="benefits">
-                <h3>✨ Lợi Ích Khi Gia Hạn</h3>
-                <ul>
-                    <li>Tiếp tục sử dụng tài khoản hiện tại</li>
-                    <li>Không bị gián đoạn dịch vụ</li>
-                    <li>Giữ nguyên thiết lập và cấu hình</li>
-                    <li>Hỗ trợ ưu tiên từ team support</li>
-                </ul>
-            </div>
-
-            <p style="margin-top: 25px;">
-                Nếu bạn không gia hạn, license sẽ tự động hết hạn và bạn sẽ
-                không thể truy cập tài khoản nữa.
+            <p style="margin-top: 25px; background-color: #fff3e6; padding: 15px; border-left: 4px solid #ff9800; border-radius: 4px;">
+                ⚠️ <strong>Lưu ý:</strong> License đã hết hạn. Vui lòng gia hạn để tiếp tục sử dụng dịch vụ.
             </p>
 
             <p>
