@@ -96,16 +96,7 @@ $order = isset( $_GET['order'] ) ? sanitize_text_field( $_GET['order'] ) : 'DESC
 		</div>
 
 		<div class="alignleft actions">
-			<form method="post" action="">
-				<?php wp_nonce_field( 'vd_lm_account_action', 'vd_lm_nonce' ); ?>
-
-				<select name="bulk_action" id="bulk-action-selector-top">
-					<option value="-1"><?php esc_html_e( 'Bulk Actions', 'vd-license-manager' ); ?></option>
-					<option value="delete"><?php esc_html_e( 'Delete', 'vd-license-manager' ); ?></option>
-				</select>
-
-				<?php submit_button( __( 'Apply', 'vd-license-manager' ), 'secondary action', 'bulk_action_submit', false, array( 'id' => 'doaction' ) ); ?>
-			</form>
+			<!-- Bulk actions moved inside main form below -->
 		</div>
 
 		<?php if ( $total_pages > 1 ) : ?>
@@ -134,7 +125,18 @@ $order = isset( $_GET['order'] ) ? sanitize_text_field( $_GET['order'] ) : 'DESC
 	<!-- Accounts Table -->
 	<form method="post" id="accounts-filter">
 		<?php wp_nonce_field( 'vd_lm_account_action', 'vd_lm_nonce' ); ?>
-		<input type="hidden" name="action" value="bulk_delete">
+
+		<!-- Bulk Actions moved here to be inside same form as checkboxes -->
+		<div class="tablenav top">
+			<div class="alignleft actions bulkactions">
+				<select name="bulk_action" id="bulk-action-selector-top">
+					<option value="-1"><?php esc_html_e( 'Bulk Actions', 'vd-license-manager' ); ?></option>
+					<option value="delete"><?php esc_html_e( 'Delete', 'vd-license-manager' ); ?></option>
+				</select>
+
+				<?php submit_button( __( 'Apply', 'vd-license-manager' ), 'secondary action', 'bulk_action_submit', false, array( 'id' => 'doaction' ) ); ?>
+			</div>
+		</div>
 
 		<table class="wp-list-table widefat fixed striped accounts">
 			<thead>

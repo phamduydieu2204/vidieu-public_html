@@ -379,89 +379,53 @@ class VD_LM_Accounts_Page {
 	 * @since 1.0.0
 	 */
 	private function handle_bulk_delete() {
-		// Debug nonce
-		error_log('VD Bulk Delete: Starting...');
-		error_log('VD Bulk Delete: POST vd_lm_nonce = ' . ($_POST['vd_lm_nonce'] ?? 'NOT SET'));
-		error_log('VD Bulk Delete: Verifying against action: vd_lm_action');
-
-		// Try verification
-		$nonce_check = wp_verify_nonce($_POST['vd_lm_nonce'] ?? '', 'vd_lm_action');
-		error_log('VD Bulk Delete: Nonce verification result: ' . var_export($nonce_check, true));
-
-		// If failed, try alternative
-		if (!$nonce_check) {
-			error_log('VD Bulk Delete: First verification failed, trying alternative nonce names...');
-
-			// Try different action names that might have been used
-			$alt_checks = array(
-				'vd-accounts-nonce' => wp_verify_nonce($_POST['vd_lm_nonce'] ?? '', 'vd-accounts-nonce'),
-				'bulk-accounts' => wp_verify_nonce($_POST['vd_lm_nonce'] ?? '', 'bulk-accounts'),
-				'vd_accounts_action' => wp_verify_nonce($_POST['vd_lm_nonce'] ?? '', 'vd_accounts_action'),
-				'vd_lm_account_action' => wp_verify_nonce($_POST['vd_lm_nonce'] ?? '', 'vd_lm_account_action'),
-			);
-
-			error_log('VD Bulk Delete: Alternative nonce checks: ' . print_r($alt_checks, true));
-
-			// Find which one works
-			foreach ($alt_checks as $action_name => $result) {
-				if ($result) {
-					error_log("VD Bulk Delete: SUCCESS with action name: $action_name");
-					$nonce_check = true;
-					break;
-				}
-			}
-		}
-
-		// Final check
-		if (!$nonce_check) {
-			error_log('VD Bulk Delete: All nonce verifications FAILED');
+		// Verify nonce - use correct action name
+		if (!isset($_POST['vd_lm_nonce']) || !wp_verify_nonce($_POST['vd_lm_nonce'], 'vd_lm_account_action')) {
 			wp_die('Security check failed. Invalid nonce for bulk action.');
 		}
 
 		error_log('VD Bulk Delete: Nonce verified successfully');
 
-		// Get IDs from POST data
-		$account_ids = isset( $_POST['account_ids'] ) ? array_map( 'absint', $_POST['account_ids'] ) : array();
+		// Get IDs
+		$account_ids = isset($_POST['account_ids']) ? array_map('absint', $_POST['account_ids']) : array();
 
-		error_log( 'VD Bulk Delete: Received account_ids: ' . print_r( $account_ids, true ) );
-		error_log( 'VD Bulk Delete: Count: ' . count( $account_ids ) );
+		error_log('VD Bulk Delete: POST data: ' . print_r($_POST, true));
+		error_log('VD Bulk Delete: Received account_ids: ' . print_r($account_ids, true));
+		error_log('VD Bulk Delete: Count: ' . count($account_ids));
 
-		if ( empty( $account_ids ) ) {
-			$this->add_notice( __( 'No accounts selected.', 'vd-license-manager' ), 'error' );
+		if (empty($account_ids)) {
+			$this->add_admin_notice('No accounts selected.', 'error');
 			return;
 		}
 
+		$service = new VD_LM_Account_Service();
 		$deleted = 0;
 		$errors = array();
 
-		foreach ( $account_ids as $id ) {
-			error_log( "VD Bulk Delete: Attempting to delete ID $id" );
-			$result = $this->service->delete_account( $id );
+		foreach ($account_ids as $id) {
+			error_log("VD Bulk Delete: Attempting to delete ID $id");
+			$result = $service->delete_account($id);
 
-			if ( is_wp_error( $result ) ) {
-				$errors[] = sprintf( __( 'Account ID %d: %s', 'vd-license-manager' ), $id, $result->get_error_message() );
-				error_log( "VD Bulk Delete: Failed ID $id - " . $result->get_error_message() );
+			if (is_wp_error($result)) {
+				$errors[] = "Account ID $id: " . $result->get_error_message();
+				error_log("VD Bulk Delete: Failed ID $id - " . $result->get_error_message());
 			} else {
 				$deleted++;
-				error_log( "VD Bulk Delete: Deleted ID $id" );
+				error_log("VD Bulk Delete: Deleted ID $id");
 			}
 		}
 
 		// Show results
-		if ( $deleted > 0 ) {
-			$this->add_notice(
-				sprintf(
-					/* translators: %d: number of accounts deleted */
-					__( '%d account(s) deleted successfully.', 'vd-license-manager' ),
-					$deleted
-				),
+		if ($deleted > 0) {
+			$this->add_admin_notice(
+				sprintf('%d account(s) deleted successfully.', $deleted),
 				'success'
 			);
 		}
 
-		if ( ! empty( $errors ) ) {
-			$this->add_notice(
-				__( 'Some accounts could not be deleted: ', 'vd-license-manager' ) . implode( '; ', $errors ),
+		if (!empty($errors)) {
+			$this->add_admin_notice(
+				'Some accounts could not be deleted: ' . implode('; ', $errors),
 				'error'
 			);
 		}
