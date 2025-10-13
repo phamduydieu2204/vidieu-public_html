@@ -191,12 +191,35 @@ class VD_LM_Activator {
         // Load database migration class
         require_once VD_PLUGIN_DIR . 'includes/class-vd-lm-database.php';
 
-        // Create all tables
-        VD_LM_Database::create_tables();
-
-        VD_LM_Logger_Service::info( 'Database tables created during plugin activation', array(
+        VD_LM_Logger_Service::info( 'Starting database table creation', array(
             'plugin_version' => VD_PLUGIN_VERSION,
             'db_version' => VD_LM_Database::DB_VERSION,
         ) );
+
+        // Create all tables
+        VD_LM_Database::create_tables();
+
+        // Verify critical table creation
+        global $wpdb;
+        $access_log_table = $wpdb->prefix . 'vd_license_access_log';
+        $table_exists = $wpdb->get_var( $wpdb->prepare(
+            "SHOW TABLES LIKE %s",
+            $access_log_table
+        ) ) === $access_log_table;
+
+        if ( $table_exists ) {
+            VD_LM_Logger_Service::info( 'Critical table verification successful', array(
+                'table' => $access_log_table,
+                'status' => 'exists'
+            ) );
+        } else {
+            VD_LM_Logger_Service::error( 'Critical table verification failed', array(
+                'table' => $access_log_table,
+                'status' => 'missing',
+                'last_error' => $wpdb->last_error
+            ) );
+        }
+
+        VD_LM_Logger_Service::info( 'Database tables creation completed' );
     }
 }

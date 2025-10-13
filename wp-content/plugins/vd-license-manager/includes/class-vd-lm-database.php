@@ -793,40 +793,54 @@ class VD_LM_Database {
         $table_name = $wpdb->prefix . 'vd_license_access_log';
 
         $sql = "CREATE TABLE {$table_name} (
-            id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-            license_id bigint(20) unsigned NULL COMMENT 'FK to vd_license_keys.id (null for invalid license)',
-            license_key varchar(255) NOT NULL COMMENT 'License key used in request',
-            endpoint varchar(100) NOT NULL COMMENT 'API endpoint accessed',
-            method varchar(10) NOT NULL DEFAULT 'GET' COMMENT 'HTTP method',
-            ip_address varchar(45) NOT NULL COMMENT 'Client IP address',
-            user_agent text NULL COMMENT 'Client user agent',
-            device_id varchar(64) NULL COMMENT 'Device ID if provided',
-            request_data longtext NULL COMMENT 'Request parameters (JSON)',
-            response_status int(11) NOT NULL COMMENT 'HTTP response status code',
-            response_data longtext NULL COMMENT 'Response data (JSON, may be truncated)',
-            authentication_result enum('success','invalid_license','expired_license','suspended_license','device_limit','rate_limit','vps_blocked','other') NOT NULL COMMENT 'Authentication result',
-            security_flags longtext NULL COMMENT 'Security flags and warnings (JSON)',
-            execution_time_ms int(11) NULL COMMENT 'Request execution time in milliseconds',
-            memory_usage_mb decimal(8,2) NULL COMMENT 'Memory usage in MB',
-            rate_limit_remaining int(11) NULL COMMENT 'Rate limit remaining after request',
-            rate_limit_reset_at datetime NULL COMMENT 'When rate limit resets',
-            country_code varchar(2) NULL COMMENT 'Country code from IP',
-            city varchar(100) NULL COMMENT 'City from IP geolocation',
-            accessed_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+            license_id BIGINT UNSIGNED NULL COMMENT 'FK to vd_license_keys.id (null for invalid license)',
+            license_key VARCHAR(255) NOT NULL COMMENT 'License key used in request',
+            endpoint VARCHAR(100) NOT NULL COMMENT 'API endpoint accessed',
+            method VARCHAR(10) NOT NULL DEFAULT 'GET' COMMENT 'HTTP method',
+            ip_address VARCHAR(45) NOT NULL COMMENT 'Client IP address',
+            user_agent TEXT NULL COMMENT 'Client user agent',
+            device_id VARCHAR(64) NULL COMMENT 'Device ID if provided',
+            request_data LONGTEXT NULL COMMENT 'Request parameters (JSON)',
+            response_status INT NOT NULL COMMENT 'HTTP response status code',
+            response_data LONGTEXT NULL COMMENT 'Response data (JSON, may be truncated)',
+            authentication_result ENUM('success','invalid_license','expired_license','suspended_license','device_limit','rate_limit','vps_blocked','other') NOT NULL COMMENT 'Authentication result',
+            security_flags LONGTEXT NULL COMMENT 'Security flags and warnings (JSON)',
+            execution_time_ms INT NULL COMMENT 'Request execution time in milliseconds',
+            memory_usage_mb DECIMAL(8,2) NULL COMMENT 'Memory usage in MB',
+            rate_limit_remaining INT NULL COMMENT 'Rate limit remaining after request',
+            rate_limit_reset_at DATETIME NULL COMMENT 'When rate limit resets',
+            country_code VARCHAR(2) NULL COMMENT 'Country code from IP',
+            city VARCHAR(100) NULL COMMENT 'City from IP geolocation',
+            accessed_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
             PRIMARY KEY (id),
-            KEY idx_license_id (license_id),
-            KEY idx_license_key (license_key),
-            KEY idx_endpoint (endpoint),
-            KEY idx_ip_address (ip_address),
-            KEY idx_device_id (device_id),
-            KEY idx_response_status (response_status),
-            KEY idx_authentication_result (authentication_result),
-            KEY idx_accessed_at (accessed_at),
-            KEY idx_country_code (country_code)
-        ) $charset_collate;";
+            INDEX idx_license_id (license_id),
+            INDEX idx_license_key (license_key),
+            INDEX idx_endpoint (endpoint),
+            INDEX idx_ip_address (ip_address),
+            INDEX idx_device_id (device_id),
+            INDEX idx_response_status (response_status),
+            INDEX idx_authentication_result (authentication_result),
+            INDEX idx_accessed_at (accessed_at),
+            INDEX idx_country_code (country_code)
+        ) {$charset_collate};"
 
         dbDelta( $sql );
-        VD_LM_Logger_Service::info( "Table created: {$table_name}" );
+
+        // Verify table creation
+        $table_exists = $wpdb->get_var( $wpdb->prepare(
+            "SHOW TABLES LIKE %s",
+            $table_name
+        ) ) === $table_name;
+
+        if ( $table_exists ) {
+            VD_LM_Logger_Service::info( "Table created successfully: {$table_name}" );
+        } else {
+            VD_LM_Logger_Service::error( "Failed to create table: {$table_name}", array(
+                'sql_error' => $wpdb->last_error,
+                'sql_length' => strlen( $sql )
+            ) );
+        }
     }
 
     /**
@@ -873,5 +887,58 @@ class VD_LM_Database {
 
         dbDelta( $sql );
         VD_LM_Logger_Service::info( "Table created: {$table_name}" );
+    }
+
+    /**
+     * Test access log table creation (debugging method)
+     *
+     * @since 1.0.0
+     * @access public
+     * @return array Test results
+     */
+    public static function test_access_log_table_creation() {
+        global $wpdb;
+        $table_name = $wpdb->prefix . 'vd_license_access_log';
+        $charset_collate = $wpdb->get_charset_collate();
+
+        // Check if table exists
+        $table_exists = $wpdb->get_var( $wpdb->prepare(
+            "SHOW TABLES LIKE %s",
+            $table_name
+        ) ) === $table_name;
+
+        $result = array(
+            'table_name' => $table_name,
+            'exists_before' => $table_exists,
+            'charset_collate' => $charset_collate,
+            'timestamp' => current_time( 'mysql' )
+        );
+
+        if ( $table_exists ) {
+            // Get table info
+            $columns = $wpdb->get_results( "DESCRIBE {$table_name}" );
+            $result['columns_count'] = count( $columns );
+            $result['columns'] = array_column( $columns, 'Field' );
+        } else {
+            // Try to create table
+            self::create_license_access_log_table( $charset_collate );
+
+            // Check if created
+            $table_created = $wpdb->get_var( $wpdb->prepare(
+                "SHOW TABLES LIKE %s",
+                $table_name
+            ) ) === $table_name;
+
+            $result['created'] = $table_created;
+            $result['sql_error'] = $wpdb->last_error;
+
+            if ( $table_created ) {
+                $columns = $wpdb->get_results( "DESCRIBE {$table_name}" );
+                $result['columns_count'] = count( $columns );
+                $result['columns'] = array_column( $columns, 'Field' );
+            }
+        }
+
+        return $result;
     }
 }
