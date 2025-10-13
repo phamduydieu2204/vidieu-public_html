@@ -131,6 +131,12 @@ if ( file_exists( VD_PLUGIN_DIR . 'includes/class-vd-portal-setup.php' ) ) {
     require_once VD_PLUGIN_DIR . 'includes/class-vd-portal-setup.php';
 }
 
+// Load REST API handler
+if ( file_exists( VD_PLUGIN_DIR . 'includes/class-vd-rest-api.php' ) ) {
+    require_once VD_PLUGIN_DIR . 'includes/class-vd-rest-api.php';
+    error_log('VD Loader: Loaded REST API Handler');
+}
+
 // Load Cron Handler
 $cron_file = VD_PLUGIN_DIR . 'includes/class-vd-lm-cron.php';
 if (file_exists($cron_file)) {
