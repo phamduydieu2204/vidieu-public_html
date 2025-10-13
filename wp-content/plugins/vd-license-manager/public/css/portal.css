@@ -1,0 +1,312 @@
+/*
+ * VD Portal - Optimized Two-Column Layout
+ * Clean, modern design with responsive behavior
+ */
+
+/* Portal Wrapper */
+.vd-portal-wrapper {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* Portal Header */
+.vd-portal-header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.vd-portal-header h1 {
+    color: #2c3e50;
+    margin: 0 0 10px 0;
+    font-size: 2.5em;
+    font-weight: 600;
+}
+
+.vd-portal-header p {
+    color: #7f8c8d;
+    font-size: 1.1em;
+    margin: 0;
+}
+
+/* Two-Column Container - CRITICAL LAYOUT */
+.vd-portal-container {
+    display: flex;
+    gap: 30px;
+    align-items: flex-start;
+}
+
+/* LEFT PANEL - 60% Main Content */
+.vd-portal-main {
+    flex: 1 1 60%;
+    max-width: 60%;
+}
+
+/* RIGHT SIDEBAR - 40% */
+.vd-portal-sidebar {
+    flex: 0 0 40%;
+    max-width: 40%;
+    position: sticky;
+    top: 20px;
+}
+
+/* Card Component */
+.vd-card {
+    background: #ffffff;
+    border: 1px solid #e1e8ed;
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    transition: box-shadow 0.2s ease;
+}
+
+.vd-card:hover {
+    box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+}
+
+.vd-card h2,
+.vd-card h3 {
+    margin: 0 0 20px 0;
+    color: #2c3e50;
+    font-size: 1.4em;
+    font-weight: 600;
+}
+
+/* Form Styling */
+.vd-form-group {
+    margin-bottom: 20px;
+}
+
+.vd-form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500;
+    color: #34495e;
+}
+
+.vd-form-group input {
+    width: 100%;
+    padding: 12px 16px;
+    border: 2px solid #e1e8ed;
+    border-radius: 8px;
+    font-size: 16px;
+    transition: border-color 0.2s ease;
+    box-sizing: border-box;
+}
+
+.vd-form-group input:focus {
+    outline: none;
+    border-color: #3498db;
+    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+}
+
+/* Button Styling */
+.vd-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 12px 24px;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    gap: 8px;
+}
+
+.vd-btn-primary {
+    background: #3498db;
+    color: white;
+}
+
+.vd-btn-primary:hover {
+    background: #2980b9;
+    transform: translateY(-1px);
+}
+
+/* Info Grid */
+.vd-info-grid {
+    display: grid;
+    gap: 16px;
+}
+
+.vd-info-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    background: #f8f9fa;
+    border-radius: 8px;
+}
+
+.vd-info-item .label {
+    font-weight: 500;
+    color: #6c757d;
+}
+
+.vd-info-item .value {
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+/* Tabs Styling */
+.vd-tabs {
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+
+.vd-tab-buttons {
+    display: flex;
+    background: #f8f9fa;
+    border-bottom: 1px solid #e1e8ed;
+}
+
+.vd-tab-btn {
+    flex: 1;
+    padding: 16px 20px;
+    background: transparent;
+    border: none;
+    font-size: 14px;
+    font-weight: 500;
+    color: #6c757d;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.vd-tab-btn:hover {
+    background: #e9ecef;
+    color: #495057;
+}
+
+.vd-tab-btn.active {
+    background: white;
+    color: #3498db;
+    border-bottom: 2px solid #3498db;
+}
+
+.vd-tab-content {
+    display: none;
+    padding: 20px;
+}
+
+.vd-tab-content.active {
+    display: block;
+}
+
+.vd-tab-content .vd-card {
+    margin: 0;
+    border: none;
+    box-shadow: none;
+    padding: 0;
+}
+
+/* Empty State */
+.vd-empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: #6c757d;
+}
+
+.vd-empty-state p {
+    margin: 0;
+    font-size: 1.1em;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .vd-portal-container {
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .vd-portal-main,
+    .vd-portal-sidebar {
+        flex: 1 1 100%;
+        max-width: 100%;
+    }
+
+    .vd-portal-sidebar {
+        position: static;
+    }
+
+    .vd-portal-wrapper {
+        padding: 15px;
+    }
+
+    .vd-portal-header h1 {
+        font-size: 2em;
+    }
+
+    .vd-tab-buttons {
+        flex-direction: column;
+    }
+
+    .vd-tab-btn {
+        text-align: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .vd-portal-header h1 {
+        font-size: 1.8em;
+    }
+
+    .vd-card {
+        padding: 16px;
+    }
+
+    .vd-form-group input {
+        font-size: 14px;
+    }
+
+    .vd-btn {
+        padding: 10px 20px;
+        font-size: 14px;
+    }
+}
+
+/* Loading States */
+.vd-loading {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+.vd-spinner {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border: 2px solid #f3f3f3;
+    border-top: 2px solid #3498db;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Success/Error States */
+.vd-success {
+    color: #27ae60;
+    background: #d5f4e6;
+    border: 1px solid #27ae60;
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin: 16px 0;
+}
+
+.vd-error {
+    color: #e74c3c;
+    background: #fdf2f2;
+    border: 1px solid #e74c3c;
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin: 16px 0;
+}

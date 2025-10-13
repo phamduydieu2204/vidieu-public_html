@@ -126,6 +126,11 @@ require_once VD_PLUGIN_DIR . 'includes/class-vd-lm-license-manager.php';
 require_once VD_PLUGIN_DIR . 'includes/class-vd-lm-activator.php';
 require_once VD_PLUGIN_DIR . 'includes/class-vd-lm-deactivator.php';
 
+// Load portal setup (optimized two-column layout)
+if ( file_exists( VD_PLUGIN_DIR . 'includes/class-vd-portal-setup.php' ) ) {
+    require_once VD_PLUGIN_DIR . 'includes/class-vd-portal-setup.php';
+}
+
 // Load Cron Handler
 $cron_file = VD_PLUGIN_DIR . 'includes/class-vd-lm-cron.php';
 if (file_exists($cron_file)) {
