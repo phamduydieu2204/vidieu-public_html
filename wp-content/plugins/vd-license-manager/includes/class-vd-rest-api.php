@@ -333,13 +333,13 @@ class VD_REST_API {
     private function count_today_requests($license_id) {
         global $wpdb;
 
-        $table_name = $wpdb->prefix . 'bz_vd_device_access_log';
+        $table_name = $wpdb->prefix . 'vd_license_access_log';
         $today_start = date('Y-m-d 00:00:00');
 
         return (int) $wpdb->get_var($wpdb->prepare(
             "SELECT COUNT(*) FROM $table_name
              WHERE license_id = %d
-             AND access_status = 'success'
+             AND authentication_result = 'success'
              AND accessed_at >= %s",
             $license_id,
             $today_start
@@ -731,7 +731,7 @@ class VD_REST_API {
     private function log_access_attempt($license_key, $device_combined_id, $client_ip, $status) {
         global $wpdb;
 
-        $table_name = $wpdb->prefix . 'bz_vd_device_access_log';
+        $table_name = $wpdb->prefix . 'vd_license_access_log';
 
         // Get license ID
         $license_id = $wpdb->get_var($wpdb->prepare(
@@ -743,13 +743,17 @@ class VD_REST_API {
             $table_name,
             array(
                 'license_id' => $license_id ?: 0,
-                'device_combined_id' => $device_combined_id,
+                'license_key' => $license_key,
+                'device_id' => $device_combined_id,
                 'ip_address' => $client_ip,
                 'user_agent' => $_SERVER['HTTP_USER_AGENT'] ?? '',
-                'access_status' => $status,
+                'endpoint' => '/license/access',
+                'method' => $_SERVER['REQUEST_METHOD'] ?? 'GET',
+                'response_status' => 200,
+                'authentication_result' => $status,
                 'accessed_at' => current_time('mysql')
             ),
-            array('%d', '%s', '%s', '%s', '%s', '%s')
+            array('%d', '%s', '%s', '%s', '%s', '%s', '%s', '%d', '%s', '%s')
         );
 
         return $wpdb->insert_id;
@@ -765,12 +769,12 @@ class VD_REST_API {
     private function update_access_log($log_id, $status, $error_code = null) {
         global $wpdb;
 
-        $table_name = $wpdb->prefix . 'bz_vd_device_access_log';
+        $table_name = $wpdb->prefix . 'vd_license_access_log';
 
         $wpdb->update(
             $table_name,
             array(
-                'access_status' => $status,
+                'authentication_result' => $status,
                 'error_code' => $error_code
             ),
             array('id' => $log_id),
