@@ -365,6 +365,7 @@ class VD_LM_Database {
             'vd_license_keys',
             'vd_pool_accounts',
             'vd_product_pools',
+            'vd_pools',
             'vd_provider_accounts',
         );
 
@@ -395,7 +396,7 @@ class VD_LM_Database {
         $table_name = $wpdb->prefix . 'vd_provider_accounts';
 
         $sql = "CREATE TABLE {$table_name} (
-            id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+            id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
             provider varchar(100) NOT NULL COMMENT 'Provider name: Netflix, Spotify, Helium10, etc.',
             account_login varchar(255) NOT NULL COMMENT 'Login username or email',
             display_name varchar(255) NULL COMMENT 'Admin display name for easy identification',
@@ -421,12 +422,12 @@ class VD_LM_Database {
             created_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
             updated_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
             PRIMARY KEY (id),
-            UNIQUE KEY uk_provider_login (provider, account_login),
-            KEY idx_provider (provider),
-            KEY idx_status (status),
-            KEY idx_expires_at (expires_at),
-            KEY idx_current_usage (current_usage),
-            KEY idx_created_at (created_at)
+            UNIQUE INDEX uk_provider_login (provider, account_login),
+            INDEX idx_provider (provider),
+            INDEX idx_status (status),
+            INDEX idx_expires_at (expires_at),
+            INDEX idx_current_usage (current_usage),
+            INDEX idx_created_at (created_at)
         ) $charset_collate;";
 
         dbDelta( $sql );
@@ -446,16 +447,16 @@ class VD_LM_Database {
         $table_name = $wpdb->prefix . 'vd_pools';
 
         $sql = "CREATE TABLE {$table_name} (
-            id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+            id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
             name varchar(255) NOT NULL COMMENT 'Pool name (e.g., Helium10 Pool, ChatGPT Pool)',
             description text NULL COMMENT 'Pool description',
             status enum('active','inactive') NOT NULL DEFAULT 'active' COMMENT 'Pool status',
             created_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
             updated_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
             PRIMARY KEY (id),
-            KEY idx_status (status),
-            KEY idx_name (name),
-            KEY idx_created_at (created_at)
+            INDEX idx_status (status),
+            INDEX idx_name (name),
+            INDEX idx_created_at (created_at)
         ) $charset_collate;";
 
         dbDelta( $sql );
@@ -475,14 +476,14 @@ class VD_LM_Database {
         $table_name = $wpdb->prefix . 'vd_product_pools';
 
         $sql = "CREATE TABLE {$table_name} (
-            id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-            product_id bigint(20) unsigned NOT NULL COMMENT 'WooCommerce product ID',
-            pool_id bigint(20) unsigned NOT NULL COMMENT 'Foreign key to vd_pools.id',
+            id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+            product_id BIGINT UNSIGNED NOT NULL COMMENT 'WooCommerce product ID',
+            pool_id BIGINT UNSIGNED NOT NULL COMMENT 'Foreign key to vd_pools.id',
             assigned_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
             PRIMARY KEY (id),
-            UNIQUE KEY uk_product_pool (product_id, pool_id),
-            KEY idx_product_id (product_id),
-            KEY idx_pool_id (pool_id)
+            UNIQUE INDEX uk_product_pool (product_id, pool_id),
+            INDEX idx_product_id (product_id),
+            INDEX idx_pool_id (pool_id)
         ) $charset_collate;";
 
         dbDelta( $sql );
@@ -502,20 +503,20 @@ class VD_LM_Database {
         $table_name = $wpdb->prefix . 'vd_pool_accounts';
 
         $sql = "CREATE TABLE {$table_name} (
-            id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-            pool_id bigint(20) unsigned NOT NULL COMMENT 'FK to vd_pools.id',
-            account_id bigint(20) unsigned NOT NULL COMMENT 'FK to vd_provider_accounts.id',
+            id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+            pool_id BIGINT UNSIGNED NOT NULL COMMENT 'FK to vd_pools.id',
+            account_id BIGINT UNSIGNED NOT NULL COMMENT 'FK to vd_provider_accounts.id',
             weight int(11) NOT NULL DEFAULT 1 COMMENT 'Weight for weighted assignment strategy',
             is_primary tinyint(1) NOT NULL DEFAULT 0 COMMENT 'Primary account for sticky strategy',
             status enum('active','inactive') NOT NULL DEFAULT 'active' COMMENT 'Assignment status',
             assigned_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
             created_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
             PRIMARY KEY (id),
-            UNIQUE KEY uk_pool_account (pool_id, account_id),
-            KEY idx_pool_id (pool_id),
-            KEY idx_account_id (account_id),
-            KEY idx_status (status),
-            KEY idx_weight (weight)
+            UNIQUE INDEX uk_pool_account (pool_id, account_id),
+            INDEX idx_pool_id (pool_id),
+            INDEX idx_account_id (account_id),
+            INDEX idx_status (status),
+            INDEX idx_weight (weight)
         ) $charset_collate;";
 
         dbDelta( $sql );
@@ -535,15 +536,15 @@ class VD_LM_Database {
         $table_name = $wpdb->prefix . 'vd_license_keys';
 
         $sql = "CREATE TABLE {$table_name} (
-            id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+            id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
             license_key varchar(255) NOT NULL COMMENT 'License key from LMfWC',
-            lmfwc_license_id bigint(20) unsigned NOT NULL COMMENT 'FK to LMfWC licenses table',
-            product_id bigint(20) unsigned NOT NULL COMMENT 'WooCommerce product ID',
-            order_id bigint(20) unsigned NOT NULL COMMENT 'WooCommerce order ID',
-            customer_id bigint(20) unsigned NOT NULL COMMENT 'WordPress user ID',
+            lmfwc_license_id BIGINT UNSIGNED NOT NULL COMMENT 'FK to LMfWC licenses table',
+            product_id BIGINT UNSIGNED NOT NULL COMMENT 'WooCommerce product ID',
+            order_id BIGINT UNSIGNED NOT NULL COMMENT 'WooCommerce order ID',
+            customer_id BIGINT UNSIGNED NOT NULL COMMENT 'WordPress user ID',
             customer_email varchar(255) NOT NULL COMMENT 'Customer email address',
-            pool_id bigint(20) unsigned NULL COMMENT 'FK to vd_product_pools.id',
-            account_id bigint(20) unsigned NULL COMMENT 'FK to vd_provider_accounts.id',
+            pool_id BIGINT UNSIGNED NULL COMMENT 'FK to vd_product_pools.id',
+            account_id BIGINT UNSIGNED NULL COMMENT 'FK to vd_provider_accounts.id',
             status enum('active','inactive','expired','suspended') NOT NULL DEFAULT 'active',
             expires_at datetime NULL COMMENT 'License expiration date (synced from LMfWC)',
             max_devices int(11) NOT NULL DEFAULT 2 COMMENT 'Maximum devices allowed for this license',
@@ -559,18 +560,18 @@ class VD_LM_Database {
             created_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
             updated_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
             PRIMARY KEY (id),
-            UNIQUE KEY uk_license_key (license_key),
-            UNIQUE KEY uk_lmfwc_license_id (lmfwc_license_id),
-            KEY idx_product_id (product_id),
-            KEY idx_customer_id (customer_id),
-            KEY idx_customer_email (customer_email),
-            KEY idx_pool_id (pool_id),
-            KEY idx_account_id (account_id),
-            KEY idx_status (status),
-            KEY idx_expires_at (expires_at),
-            KEY idx_assigned_at (assigned_at),
-            KEY idx_email_sent_at (email_sent_at),
-            KEY idx_renewal_reminder_sent_at (renewal_reminder_sent_at)
+            UNIQUE INDEX uk_license_key (license_key),
+            UNIQUE INDEX uk_lmfwc_license_id (lmfwc_license_id),
+            INDEX idx_product_id (product_id),
+            INDEX idx_customer_id (customer_id),
+            INDEX idx_customer_email (customer_email),
+            INDEX idx_pool_id (pool_id),
+            INDEX idx_account_id (account_id),
+            INDEX idx_status (status),
+            INDEX idx_expires_at (expires_at),
+            INDEX idx_assigned_at (assigned_at),
+            INDEX idx_email_sent_at (email_sent_at),
+            INDEX idx_renewal_reminder_sent_at (renewal_reminder_sent_at)
         ) $charset_collate;";
 
         dbDelta( $sql );
@@ -590,8 +591,8 @@ class VD_LM_Database {
         $table_name = $wpdb->prefix . 'vd_product_share_configs';
 
         $sql = "CREATE TABLE {$table_name} (
-            id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-            product_id bigint(20) unsigned NOT NULL COMMENT 'WooCommerce product ID',
+            id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+            product_id BIGINT UNSIGNED NOT NULL COMMENT 'WooCommerce product ID',
             max_devices int(11) NOT NULL DEFAULT 2 COMMENT 'Maximum devices per license (1-10)',
             validity_days int(11) NOT NULL DEFAULT 30 COMMENT 'License validity in days (1-3650)',
             max_requests_per_day int(11) NOT NULL DEFAULT 100 COMMENT 'API rate limit per day (10-10000)',
@@ -599,10 +600,10 @@ class VD_LM_Database {
             created_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
             updated_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
             PRIMARY KEY (id),
-            UNIQUE KEY uk_product_id (product_id),
-            KEY idx_max_devices (max_devices),
-            KEY idx_validity_days (validity_days),
-            KEY idx_created_at (created_at)
+            UNIQUE INDEX uk_product_id (product_id),
+            INDEX idx_max_devices (max_devices),
+            INDEX idx_validity_days (validity_days),
+            INDEX idx_created_at (created_at)
         ) $charset_collate;";
 
         dbDelta( $sql );
@@ -622,7 +623,7 @@ class VD_LM_Database {
         $table_name = $wpdb->prefix . 'vd_device_fingerprints';
 
         $sql = "CREATE TABLE {$table_name} (
-            id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+            id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
             device_id varchar(64) NOT NULL COMMENT 'Unique device identifier (hash)',
             fingerprint_hash varchar(64) NOT NULL COMMENT 'Fingerprint hash for fast lookup',
             user_agent text NOT NULL COMMENT 'Browser user agent string',
@@ -648,13 +649,13 @@ class VD_LM_Database {
             created_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
             updated_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
             PRIMARY KEY (id),
-            UNIQUE KEY uk_device_id (device_id),
-            KEY idx_fingerprint_hash (fingerprint_hash),
-            KEY idx_ip_address (ip_address),
-            KEY idx_is_vps (is_vps),
-            KEY idx_status (status),
-            KEY idx_last_seen_at (last_seen_at),
-            KEY idx_country_code (country_code)
+            UNIQUE INDEX uk_device_id (device_id),
+            INDEX idx_fingerprint_hash (fingerprint_hash),
+            INDEX idx_ip_address (ip_address),
+            INDEX idx_is_vps (is_vps),
+            INDEX idx_status (status),
+            INDEX idx_last_seen_at (last_seen_at),
+            INDEX idx_country_code (country_code)
         ) $charset_collate;";
 
         dbDelta( $sql );
@@ -674,8 +675,8 @@ class VD_LM_Database {
         $table_name = $wpdb->prefix . 'vd_license_devices';
 
         $sql = "CREATE TABLE {$table_name} (
-            id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-            license_id bigint(20) unsigned NOT NULL COMMENT 'FK to vd_license_keys.id',
+            id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+            license_id BIGINT UNSIGNED NOT NULL COMMENT 'FK to vd_license_keys.id',
             device_id varchar(64) NOT NULL COMMENT 'FK to vd_device_fingerprints.device_id',
             device_name varchar(255) NULL COMMENT 'User-provided device name',
             registration_ip varchar(45) NOT NULL COMMENT 'IP address when device was registered',
@@ -690,12 +691,12 @@ class VD_LM_Database {
             registered_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
             updated_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
             PRIMARY KEY (id),
-            UNIQUE KEY uk_license_device (license_id, device_id),
-            KEY idx_license_id (license_id),
-            KEY idx_device_id (device_id),
-            KEY idx_status (status),
-            KEY idx_last_access_at (last_access_at),
-            KEY idx_registration_ip (registration_ip)
+            UNIQUE INDEX uk_license_device (license_id, device_id),
+            INDEX idx_license_id (license_id),
+            INDEX idx_device_id (device_id),
+            INDEX idx_status (status),
+            INDEX idx_last_access_at (last_access_at),
+            INDEX idx_registration_ip (registration_ip)
         ) $charset_collate;";
 
         dbDelta( $sql );
@@ -715,8 +716,8 @@ class VD_LM_Database {
         $table_name = $wpdb->prefix . 'vd_license_device_limits';
 
         $sql = "CREATE TABLE {$table_name} (
-            id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-            license_id bigint(20) unsigned NOT NULL COMMENT 'FK to vd_license_keys.id',
+            id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+            license_id BIGINT UNSIGNED NOT NULL COMMENT 'FK to vd_license_keys.id',
             max_devices int(11) NOT NULL DEFAULT 2 COMMENT 'Maximum devices allowed',
             current_devices int(11) NOT NULL DEFAULT 0 COMMENT 'Currently registered devices',
             device_cooldown_hours int(11) NOT NULL DEFAULT 24 COMMENT 'Hours before device can be replaced',
@@ -728,11 +729,11 @@ class VD_LM_Database {
             created_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
             updated_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
             PRIMARY KEY (id),
-            UNIQUE KEY uk_license_id (license_id),
-            KEY idx_max_devices (max_devices),
-            KEY idx_current_devices (current_devices),
-            KEY idx_last_device_change_at (last_device_change_at),
-            KEY idx_violation_count (violation_count)
+            UNIQUE INDEX uk_license_id (license_id),
+            INDEX idx_max_devices (max_devices),
+            INDEX idx_current_devices (current_devices),
+            INDEX idx_last_device_change_at (last_device_change_at),
+            INDEX idx_violation_count (violation_count)
         ) $charset_collate;";
 
         dbDelta( $sql );
@@ -752,10 +753,10 @@ class VD_LM_Database {
         $table_name = $wpdb->prefix . 'vd_account_fetch_log';
 
         $sql = "CREATE TABLE {$table_name} (
-            id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-            license_id bigint(20) unsigned NOT NULL COMMENT 'FK to vd_license_keys.id',
-            account_id bigint(20) unsigned NOT NULL COMMENT 'FK to vd_provider_accounts.id',
-            pool_id bigint(20) unsigned NOT NULL COMMENT 'FK to vd_product_pools.id',
+            id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+            license_id BIGINT UNSIGNED NOT NULL COMMENT 'FK to vd_license_keys.id',
+            account_id BIGINT UNSIGNED NOT NULL COMMENT 'FK to vd_provider_accounts.id',
+            pool_id BIGINT UNSIGNED NOT NULL COMMENT 'FK to vd_product_pools.id',
             fetch_reason enum('new_assignment','rotation','replacement','retry') NOT NULL COMMENT 'Why account was fetched',
             assignment_strategy varchar(50) NOT NULL COMMENT 'Strategy used for assignment',
             request_ip varchar(45) NOT NULL COMMENT 'IP address of request',
@@ -767,13 +768,13 @@ class VD_LM_Database {
             pool_capacity_at_fetch int(11) NULL COMMENT 'Pool capacity when fetched',
             fetched_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
             PRIMARY KEY (id),
-            KEY idx_license_id (license_id),
-            KEY idx_account_id (account_id),
-            KEY idx_pool_id (pool_id),
-            KEY idx_fetch_reason (fetch_reason),
-            KEY idx_success (success),
-            KEY idx_fetched_at (fetched_at),
-            KEY idx_request_ip (request_ip)
+            INDEX idx_license_id (license_id),
+            INDEX idx_account_id (account_id),
+            INDEX idx_pool_id (pool_id),
+            INDEX idx_fetch_reason (fetch_reason),
+            INDEX idx_success (success),
+            INDEX idx_fetched_at (fetched_at),
+            INDEX idx_request_ip (request_ip)
         ) $charset_collate;";
 
         dbDelta( $sql );
@@ -857,8 +858,8 @@ class VD_LM_Database {
         $table_name = $wpdb->prefix . 'vd_license_rate_limits';
 
         $sql = "CREATE TABLE {$table_name} (
-            id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-            license_id bigint(20) unsigned NOT NULL COMMENT 'FK to vd_license_keys.id',
+            id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+            license_id BIGINT UNSIGNED NOT NULL COMMENT 'FK to vd_license_keys.id',
             device_id varchar(64) NULL COMMENT 'Device ID (null for license-wide limits)',
             limit_type enum('hourly','daily','monthly') NOT NULL COMMENT 'Type of rate limit',
             max_requests int(11) NOT NULL COMMENT 'Maximum requests allowed',
@@ -877,13 +878,13 @@ class VD_LM_Database {
             created_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
             updated_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
             PRIMARY KEY (id),
-            UNIQUE KEY uk_license_device_type (license_id, device_id, limit_type),
-            KEY idx_license_id (license_id),
-            KEY idx_device_id (device_id),
-            KEY idx_limit_type (limit_type),
-            KEY idx_window_end (window_end),
-            KEY idx_is_blocked (is_blocked),
-            KEY idx_last_violation_at (last_violation_at)
+            UNIQUE INDEX uk_license_device_type (license_id, device_id, limit_type),
+            INDEX idx_license_id (license_id),
+            INDEX idx_device_id (device_id),
+            INDEX idx_limit_type (limit_type),
+            INDEX idx_window_end (window_end),
+            INDEX idx_is_blocked (is_blocked),
+            INDEX idx_last_violation_at (last_violation_at)
         ) $charset_collate;";
 
         dbDelta( $sql );

@@ -1,15 +1,19 @@
 <?php
 /**
- * VD License Manager - REST API Handler
+ * VD License Manager REST API Handler
  *
- * Handles license access API endpoint with device tracking,
- * rate limiting, and dynamic credential responses
+ * Provides REST API endpoints for customer license access.
+ * Implements comprehensive license validation, device tracking,
+ * pool assignment, and credential management.
  *
- * @package VD_License_Manager
- * @since 1.0.0
+ * @package    VD_License_Manager
+ * @subpackage VD_License_Manager/includes
+ * @since      1.0.0
+ * @author     Vidieu Team <admin@vidieu.vn>
  */
 
-if (!defined('ABSPATH')) {
+// Prevent direct access
+if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
@@ -226,7 +230,7 @@ class VD_REST_API {
     private function validate_license($license_key) {
         global $wpdb;
 
-        $table_name = $wpdb->prefix . 'bz_vd_license_keys';
+        $table_name = $wpdb->prefix . 'vd_license_keys';
 
         $license = $wpdb->get_row($wpdb->prepare(
             "SELECT * FROM $table_name WHERE license_key = %s",
@@ -274,7 +278,7 @@ class VD_REST_API {
     private function get_product_config($product_id) {
         global $wpdb;
 
-        $table_name = $wpdb->prefix . 'bz_vd_product_share_configs';
+        $table_name = $wpdb->prefix . 'vd_product_share_configs';
 
         $config = $wpdb->get_row($wpdb->prepare(
             "SELECT * FROM $table_name WHERE product_id = %d",
@@ -365,7 +369,7 @@ class VD_REST_API {
     private function check_vps($ip) {
         global $wpdb;
 
-        $table_name = $wpdb->prefix . 'bz_vd_datacenter_ip_ranges';
+        $table_name = $wpdb->prefix . 'vd_datacenter_ip_ranges';
 
         // Check if table exists
         $table_exists = $wpdb->get_var($wpdb->prepare(
@@ -425,7 +429,7 @@ class VD_REST_API {
                                            $client_ip, $max_devices) {
         global $wpdb;
 
-        $table_name = $wpdb->prefix . 'bz_vd_license_devices';
+        $table_name = $wpdb->prefix . 'vd_license_devices';
 
         // Check if device exists
         $existing_device = $wpdb->get_row($wpdb->prepare(
@@ -502,8 +506,8 @@ class VD_REST_API {
     private function assign_pool_to_license($license_id, $product_id) {
         global $wpdb;
 
-        $pools_table = $wpdb->prefix . 'bz_vd_product_pools';
-        $accounts_table = $wpdb->prefix . 'bz_vd_provider_accounts';
+        $pools_table = $wpdb->prefix . 'vd_product_pools';
+        $accounts_table = $wpdb->prefix . 'vd_provider_accounts';
 
         // Get available pool (least-filled, active)
         $pool = $wpdb->get_row($wpdb->prepare(
@@ -528,7 +532,7 @@ class VD_REST_API {
         }
 
         // Update license with pool assignment
-        $licenses_table = $wpdb->prefix . 'bz_vd_license_keys';
+        $licenses_table = $wpdb->prefix . 'vd_license_keys';
 
         $updated = $wpdb->update(
             $licenses_table,
@@ -570,7 +574,7 @@ class VD_REST_API {
     private function get_license_by_id($license_id) {
         global $wpdb;
 
-        $table_name = $wpdb->prefix . 'bz_vd_license_keys';
+        $table_name = $wpdb->prefix . 'vd_license_keys';
 
         return $wpdb->get_row($wpdb->prepare(
             "SELECT * FROM $table_name WHERE id = %d",
@@ -587,7 +591,7 @@ class VD_REST_API {
     private function get_provider_account($account_id) {
         global $wpdb;
 
-        $table_name = $wpdb->prefix . 'bz_vd_provider_accounts';
+        $table_name = $wpdb->prefix . 'vd_provider_accounts';
 
         $account = $wpdb->get_row($wpdb->prepare(
             "SELECT * FROM $table_name WHERE id = %d",
@@ -649,7 +653,7 @@ class VD_REST_API {
     private function get_license_devices($license_id) {
         global $wpdb;
 
-        $table_name = $wpdb->prefix . 'bz_vd_license_devices';
+        $table_name = $wpdb->prefix . 'vd_license_devices';
 
         $devices = $wpdb->get_results($wpdb->prepare(
             "SELECT
@@ -735,7 +739,7 @@ class VD_REST_API {
 
         // Get license ID
         $license_id = $wpdb->get_var($wpdb->prepare(
-            "SELECT id FROM {$wpdb->prefix}bz_vd_license_keys WHERE license_key = %s",
+            "SELECT id FROM {$wpdb->prefix}vd_license_keys WHERE license_key = %s",
             $license_key
         ));
 
