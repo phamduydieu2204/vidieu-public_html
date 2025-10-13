@@ -823,7 +823,7 @@ class VD_LM_Database {
             INDEX idx_authentication_result (authentication_result),
             INDEX idx_accessed_at (accessed_at),
             INDEX idx_country_code (country_code)
-        ) {$charset_collate};"
+        ) {$charset_collate}";
 
         dbDelta( $sql );
 
