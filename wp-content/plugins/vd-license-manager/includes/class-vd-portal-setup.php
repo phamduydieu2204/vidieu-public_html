@@ -87,8 +87,8 @@ class VD_Portal_Setup {
      */
     public function render_portal($atts) {
         $atts = shortcode_atts(array(
-            'title'    => __('License Portal', 'vd-license-manager'),
-            'subtitle' => __('Enter your license key to access your account', 'vd-license-manager')
+            'title'    => 'Cổng Thông Tin License',
+            'subtitle' => 'Nhập mã license để truy cập thông tin tài khoản của bạn'
         ), $atts);
 
         ob_start();
@@ -110,47 +110,77 @@ class VD_Portal_Setup {
 
                     <!-- License Input -->
                     <div class="vd-card">
-                        <h2>🔑 Enter License Key</h2>
+                        <h2>🔑 Nhập Mã License</h2>
                         <form id="vd-license-form">
                             <?php wp_nonce_field('vd_portal_action', 'vd_nonce'); ?>
                             <div class="vd-form-group">
-                                <label for="license-key">License Key:</label>
+                                <label for="license-key">Mã License:</label>
                                 <input type="text"
                                        id="license-key"
                                        name="license_key"
-                                       placeholder="XXXX-XXXX-XXXX-XXXX"
+                                       placeholder="Nhập mã license của bạn"
                                        pattern="[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}"
                                        required>
+                                <small class="vd-help-text">Mã license đã được gửi đến email của bạn sau khi đặt hàng</small>
                             </div>
-                            <button type="submit" class="vd-btn vd-btn-primary">
-                                🔓 Access License
+                            <button type="submit" class="vd-btn vd-btn-primary" id="vd-submit-btn">
+                                <span class="vd-btn-text">🔓 Truy Cập</span>
+                                <span class="vd-btn-loading" style="display: none;">⏳ Đang xử lý...</span>
                             </button>
                         </form>
+
+                        <!-- Error Message -->
+                        <div id="vd-error-message" class="vd-error" style="display: none;">
+                            <strong>Lỗi:</strong> <span id="vd-error-text"></span>
+                        </div>
                     </div>
 
                     <!-- License Info (Hidden initially) -->
                     <div id="license-info" class="vd-card" style="display:none;">
-                        <h2>📋 License Information</h2>
+                        <h2>📋 Thông Tin License</h2>
                         <div class="vd-info-grid">
                             <div class="vd-info-item">
-                                <span class="label">License:</span>
+                                <span class="label">Mã License:</span>
                                 <span class="value" id="display-license">-</span>
                             </div>
                             <div class="vd-info-item">
-                                <span class="label">Status:</span>
+                                <span class="label">Trạng thái:</span>
                                 <span class="value" id="display-status">-</span>
                             </div>
                             <div class="vd-info-item">
-                                <span class="label">Expires:</span>
+                                <span class="label">Hết hạn:</span>
                                 <span class="value" id="display-expires">-</span>
+                            </div>
+                            <div class="vd-info-item">
+                                <span class="label">Sản phẩm:</span>
+                                <span class="value" id="display-product">-</span>
                             </div>
                         </div>
                     </div>
 
                     <!-- Account Credentials (Hidden initially) -->
                     <div id="credentials" class="vd-card" style="display:none;">
-                        <h2>🔑 Account Access</h2>
+                        <h2>🔑 Thông Tin Tài Khoản</h2>
                         <div id="credentials-list"></div>
+                        <div id="credentials-empty" class="vd-empty-state" style="display:none;">
+                            <p>Không có thông tin tài khoản để hiển thị.</p>
+                        </div>
+                    </div>
+
+                    <!-- Usage Info (Hidden initially) -->
+                    <div id="usage-info" class="vd-card" style="display:none;">
+                        <h4>ℹ️ Thông Tin Sử Dụng</h4>
+                        <ul class="vd-usage-list">
+                            <li><strong>Thiết bị:</strong> <span id="usage-device-count">0/0</span></li>
+                            <li><strong>Yêu cầu hôm nay:</strong> <span id="usage-request-count">0/0</span></li>
+                            <li><strong>Đặt lại sau:</strong> <span id="usage-reset-time">-</span></li>
+                        </ul>
+                    </div>
+
+                    <!-- Action buttons (Hidden initially) -->
+                    <div id="actions" class="vd-actions" style="display:none;">
+                        <button class="vd-btn vd-btn-secondary" id="new-license-btn">← Nhập mã khác</button>
+                        <button class="vd-btn vd-btn-outline" id="refresh-btn">🔄 Làm mới</button>
                     </div>
 
                 </div>
@@ -162,16 +192,16 @@ class VD_Portal_Setup {
                     <!-- Tabs -->
                     <div class="vd-tabs">
                         <div class="vd-tab-buttons">
-                            <button class="vd-tab-btn active" data-tab="devices">📱 Devices</button>
-                            <button class="vd-tab-btn" data-tab="history">📊 History</button>
+                            <button class="vd-tab-btn active" data-tab="devices">📱 Thiết Bị</button>
+                            <button class="vd-tab-btn" data-tab="history">📊 Lịch Sử</button>
                         </div>
 
                         <!-- Devices Tab -->
                         <div id="tab-devices" class="vd-tab-content active">
                             <div class="vd-card">
-                                <h3>Connected Devices</h3>
+                                <h3>Thiết Bị Đã Kết Nối</h3>
                                 <div id="device-list" class="vd-empty-state">
-                                    <p>📱 No devices connected</p>
+                                    <p>📱 Nhập mã license để xem thiết bị</p>
                                 </div>
                             </div>
                         </div>
@@ -179,9 +209,9 @@ class VD_Portal_Setup {
                         <!-- History Tab -->
                         <div id="tab-history" class="vd-tab-content">
                             <div class="vd-card">
-                                <h3>Access History</h3>
+                                <h3>Lịch Sử Truy Cập</h3>
                                 <div id="history-list" class="vd-empty-state">
-                                    <p>📊 No access history</p>
+                                    <p>📊 Chưa có lịch sử truy cập</p>
                                 </div>
                             </div>
                         </div>
