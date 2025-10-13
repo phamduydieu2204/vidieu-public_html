@@ -805,6 +805,7 @@ class VD_LM_Database {
             response_status INT NOT NULL COMMENT 'HTTP response status code',
             response_data LONGTEXT NULL COMMENT 'Response data (JSON, may be truncated)',
             authentication_result ENUM('success','invalid_license','expired_license','suspended_license','device_limit','rate_limit','vps_blocked','other') NOT NULL COMMENT 'Authentication result',
+            error_code VARCHAR(50) NULL COMMENT 'Error code if access failed',
             security_flags LONGTEXT NULL COMMENT 'Security flags and warnings (JSON)',
             execution_time_ms INT NULL COMMENT 'Request execution time in milliseconds',
             memory_usage_mb DECIMAL(8,2) NULL COMMENT 'Memory usage in MB',
