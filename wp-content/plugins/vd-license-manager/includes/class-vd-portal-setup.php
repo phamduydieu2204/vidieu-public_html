@@ -35,7 +35,7 @@ class VD_Portal_Setup {
         }
 
         $page_id = wp_insert_post(array(
-            'post_title'   => 'License Portal',
+            'post_title'   => 'Cổng Thông Tin License',
             'post_name'    => 'license-portal',
             'post_content' => '[vd_license_portal]',
             'post_status'  => 'publish',

@@ -233,6 +233,7 @@
 
     .vd-portal-sidebar {
         position: static;
+        margin-top: 0 !important;
     }
 
     .vd-portal-wrapper {
@@ -243,14 +244,71 @@
         font-size: 2em;
     }
 
+    /* ===========================
+       MOBILE TAB CONSISTENCY FIX
+       =========================== */
+
+    /* Make sidebar tabs section look like credential cards */
+    .vd-tabs {
+        background: #ffffff !important;
+        border: 1px solid #e1e8ed !important;
+        border-radius: 12px !important;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.06) !important;
+        overflow: hidden;
+        margin-bottom: 20px;
+    }
+
+    /* Tab header - match card styling */
     .vd-tab-buttons {
+        background: #f8f9fa !important;
+        border-bottom: 1px solid #e1e8ed !important;
+        margin: 0;
+        padding: 0;
         flex-direction: row;  /* Keep horizontal on mobile */
     }
 
     .vd-tab-btn {
         text-align: center;
-        padding: 20px 16px;  /* Larger touch targets */
+        padding: 16px;  /* Larger touch targets */
         min-height: 56px;    /* Minimum 44px touch target */
+        border: none;
+        background: transparent;
+        font-size: 14px;
+        font-weight: 500;
+        transition: all 0.2s ease;
+    }
+
+    .vd-tab-btn.active {
+        background: #ffffff !important;
+        color: #3498db !important;
+        border-bottom: 2px solid #3498db !important;
+    }
+
+    /* Tab content - match card interior */
+    .vd-tab-content {
+        display: none;
+        padding: 20px !important;
+    }
+
+    .vd-tab-content.active {
+        display: block;
+    }
+
+    /* Remove nested card styling on mobile */
+    .vd-tab-content .vd-card {
+        border: none !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        box-shadow: none !important;
+        background: transparent !important;
+    }
+
+    /* Tab content headings */
+    .vd-tab-content h3 {
+        font-size: 1.2em !important;
+        font-weight: 600 !important;
+        margin-bottom: 16px !important;
+        color: #2c3e50 !important;
     }
 
     /* Better spacing for credential fields on mobile */

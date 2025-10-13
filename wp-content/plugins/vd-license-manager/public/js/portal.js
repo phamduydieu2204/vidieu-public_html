@@ -273,10 +273,10 @@ jQuery(document).ready(function($) {
 
             if (loading) {
                 $form.addClass('vd-loading');
-                $btn.html('<span class="vd-spinner"></span> Processing...');
+                $btn.html('<span class="vd-spinner"></span> Đang xử lý...');
             } else {
                 $form.removeClass('vd-loading');
-                $btn.html('🔓 Access License');
+                $btn.html('🔓 Truy Cập');
             }
         },
 
