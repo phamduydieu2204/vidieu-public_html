@@ -218,7 +218,7 @@
     font-size: 1.1em;
 }
 
-/* Responsive Design */
+/* Responsive Design - Enhanced Mobile UX */
 @media (max-width: 768px) {
     .vd-portal-container {
         flex-direction: column;
@@ -244,30 +244,140 @@
     }
 
     .vd-tab-buttons {
-        flex-direction: column;
+        flex-direction: row;  /* Keep horizontal on mobile */
     }
 
     .vd-tab-btn {
         text-align: center;
+        padding: 20px 16px;  /* Larger touch targets */
+        min-height: 56px;    /* Minimum 44px touch target */
+    }
+
+    /* Better spacing for credential fields on mobile */
+    .vd-credential-value {
+        flex-direction: column;
+        gap: 8px;
+        align-items: stretch;
+    }
+
+    .vd-credential-value .value {
+        margin-bottom: 0;
+        font-size: 16px;  /* Prevent zoom on iOS */
+        min-height: 44px;
+        display: flex;
+        align-items: center;
+    }
+
+    .vd-btn-copy {
+        width: 100%;
+        min-height: 44px;
+        padding: 12px;
+        font-size: 18px;
+    }
+
+    /* Larger form inputs for mobile */
+    .vd-form-group input {
+        font-size: 16px;  /* Prevent zoom on iOS */
+        min-height: 44px;
+        padding: 16px;
+    }
+
+    .vd-btn {
+        min-height: 48px;
+        padding: 14px 24px;
+        font-size: 16px;
+    }
+
+    /* Better spacing for cards */
+    .vd-card {
+        padding: 20px;
+        margin-bottom: 16px;
+    }
+
+    .vd-info-item {
+        padding: 16px;
+        margin-bottom: 8px;
+    }
+
+    /* Action buttons stack on mobile */
+    .vd-actions {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .vd-actions .vd-btn {
+        width: 100%;
+        justify-content: center;
     }
 }
 
 @media (max-width: 480px) {
     .vd-portal-header h1 {
         font-size: 1.8em;
+        margin-bottom: 8px;
+    }
+
+    .vd-portal-header p {
+        font-size: 1em;
     }
 
     .vd-card {
         padding: 16px;
+        margin-bottom: 12px;
     }
 
+    .vd-card h2,
+    .vd-card h3 {
+        font-size: 1.2em;
+        margin-bottom: 16px;
+    }
+
+    /* Keep minimum sizes for accessibility */
     .vd-form-group input {
-        font-size: 14px;
+        font-size: 16px;  /* Don't go below 16px on mobile */
+        padding: 14px;
     }
 
     .vd-btn {
-        padding: 10px 20px;
+        padding: 12px 20px;
+        font-size: 16px;  /* Keep readable size */
+        min-height: 44px;
+    }
+
+    /* Credential fields on very small screens */
+    .vd-credential-value .value {
         font-size: 14px;
+        padding: 12px;
+        line-height: 1.4;
+        word-wrap: break-word;
+    }
+
+    .vd-btn-copy {
+        font-size: 16px;
+        padding: 10px;
+    }
+
+    /* Tighter spacing on small screens */
+    .vd-portal-wrapper {
+        padding: 12px;
+    }
+
+    .vd-info-item {
+        padding: 12px;
+    }
+
+    .vd-tab-content {
+        padding: 16px;
+    }
+
+    /* Stack tab buttons on very small screens */
+    .vd-tab-buttons {
+        flex-direction: column;
+    }
+
+    .vd-tab-btn {
+        padding: 16px;
+        width: 100%;
     }
 }
 
@@ -290,6 +400,89 @@
 @keyframes spin {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
+}
+
+/* Credential Fields with Copy Buttons */
+.vd-credential-field {
+    width: 100%;
+}
+
+.vd-credential-value {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 4px;
+}
+
+.vd-credential-value .value {
+    flex: 1;
+    font-family: 'Courier New', monospace;
+    font-size: 14px;
+    background: #f8f9fa;
+    padding: 8px 12px;
+    border-radius: 6px;
+    border: 1px solid #e1e8ed;
+    word-break: break-all;
+}
+
+.vd-btn-copy {
+    background: #3498db;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 8px 12px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+    min-width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.vd-btn-copy:hover {
+    background: #2980b9;
+    transform: translateY(-1px);
+}
+
+.vd-btn-copy.copied {
+    background: #27ae60;
+    transform: scale(1.1);
+}
+
+.vd-btn-copy.copy-error {
+    background: #e74c3c;
+    transform: scale(1.1);
+}
+
+/* Action Buttons */
+.vd-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 20px;
+    flex-wrap: wrap;
+}
+
+.vd-btn-secondary {
+    background: #95a5a6;
+    color: white;
+}
+
+.vd-btn-secondary:hover {
+    background: #7f8c8d;
+}
+
+.vd-btn-outline {
+    background: transparent;
+    color: #3498db;
+    border: 2px solid #3498db;
+}
+
+.vd-btn-outline:hover {
+    background: #3498db;
+    color: white;
 }
 
 /* Success/Error States */

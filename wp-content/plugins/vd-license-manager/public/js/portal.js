@@ -30,6 +30,13 @@ jQuery(document).ready(function($) {
 
             // License key formatting
             $('#license-key').on('input', this.formatLicenseInput.bind(this));
+
+            // Copy button handlers (use delegation for dynamic content)
+            $(document).on('click', '.vd-btn-copy', this.handleCopy.bind(this));
+
+            // Action button handlers
+            $(document).on('click', '#new-license-btn', this.resetForm.bind(this));
+            $(document).on('click', '#refresh-btn', this.refreshData.bind(this));
         },
 
         // Setup tabs functionality
@@ -98,16 +105,48 @@ jQuery(document).ready(function($) {
             const licenseKey = $('#license-key').val().trim();
 
             if (!licenseKey) {
-                this.showError('Please enter a license key');
+                this.showError('Vui lòng nhập mã license');
                 return;
             }
 
             if (!this.isValidLicenseFormat(licenseKey)) {
-                this.showError('Invalid license key format. Please use: XXXX-XXXX-XXXX-XXXX');
+                this.showError('Định dạng mã license không đúng. Vui lòng sử dụng: XXXX-XXXX-XXXX-XXXX');
                 return;
             }
 
             this.processLicense(licenseKey);
+        },
+
+        // Display mock data for demonstration - Vietnamese with copy buttons
+        displayMockData: function(licenseKey) {
+            console.log('VD Portal: Displaying mock data with Vietnamese UI');
+
+            const mockData = {
+                license: licenseKey,
+                status: 'Đang hoạt động',
+                expires: '31/12/2024',
+                product: 'Video Creator Pro',
+                credentials: {
+                    'Email đăng nhập': 'demo@vidieu.vn',
+                    'Mật khẩu': 'VD2024@Secure',
+                    'Cookie Session': 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoxMjM0NX0...',
+                    'API Key': 'vd_api_abc123def456ghi789',
+                    'User Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+                },
+                devices: [
+                    { name: 'iPhone 13 Pro', ip: '192.168.1.100', last_seen: '5 phút trước' },
+                    { name: 'MacBook Pro M2', ip: '192.168.1.101', last_seen: '1 giờ trước' },
+                    { name: 'Windows Desktop', ip: '192.168.1.102', last_seen: '2 giờ trước' }
+                ],
+                history: [
+                    { action: 'Đăng nhập thành công', ip: '192.168.1.100', time: '10:30 SA' },
+                    { action: 'Tải thông tin tài khoản', ip: '192.168.1.101', time: '9:45 SA' },
+                    { action: 'Xác minh thiết bị', ip: '192.168.1.102', time: '9:30 SA' },
+                    { action: 'Cập nhật cookie', ip: '192.168.1.100', time: '8:15 SA' }
+                ]
+            };
+
+            this.showLicenseData(mockData);
         },
 
         // Validate license key format
@@ -127,30 +166,11 @@ jQuery(document).ready(function($) {
             setTimeout(() => {
                 this.setLoading(false);
 
-                // Mock data for demonstration
+                // Mock data for demonstration - Vietnamese
                 if (licenseKey === 'DEMO-DEMO-DEMO-DEMO') {
-                    this.showLicenseData({
-                        license: licenseKey,
-                        status: 'Active',
-                        expires: '2024-12-31',
-                        product: 'Premium Account',
-                        credentials: {
-                            'Login Email': 'demo@example.com',
-                            'Password': '••••••••••',
-                            'API Key': 'ak_demo_123456789'
-                        },
-                        devices: [
-                            { name: 'Chrome Browser', ip: '192.168.1.100', last_seen: '2 minutes ago' },
-                            { name: 'Mobile App', ip: '10.0.0.5', last_seen: '1 hour ago' }
-                        ],
-                        history: [
-                            { action: 'Login', time: '2024-01-15 14:30', ip: '192.168.1.100' },
-                            { action: 'API Access', time: '2024-01-15 14:25', ip: '192.168.1.100' },
-                            { action: 'Mobile Login', time: '2024-01-15 13:15', ip: '10.0.0.5' }
-                        ]
-                    });
+                    this.displayMockData(licenseKey);
                 } else {
-                    this.showError('License key not found or invalid');
+                    this.showError('Không tìm thấy mã license hoặc mã không hợp lệ');
                 }
             }, 1500);
         },
@@ -161,6 +181,7 @@ jQuery(document).ready(function($) {
             $('#display-license').text(data.license);
             $('#display-status').text(data.status);
             $('#display-expires').text(data.expires);
+            $('#display-product').text(data.product);
 
             // Show license info section
             $('#license-info').slideDown();
@@ -174,19 +195,31 @@ jQuery(document).ready(function($) {
             // Show history
             this.displayHistory(data.history);
 
+            // Show action buttons
+            $('#actions').slideDown();
+
             console.log('VD Portal: License data displayed');
         },
 
-        // Display credentials
+        // Display credentials with copy buttons - Vietnamese labels
         displayCredentials: function(credentials) {
             const $list = $('#credentials-list');
             $list.empty();
 
             Object.entries(credentials).forEach(([key, value]) => {
+                const copyId = 'copy-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+
                 const $item = $(`
                     <div class="vd-info-item">
-                        <span class="label">${key}:</span>
-                        <span class="value">${value}</span>
+                        <div class="vd-credential-field">
+                            <span class="label">${key}:</span>
+                            <div class="vd-credential-value">
+                                <span class="value" id="${copyId}">${value}</span>
+                                <button class="vd-btn-copy" data-copy-target="${copyId}" title="Sao chép ${key}">
+                                    📋
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 `);
                 $list.append($item);
@@ -262,6 +295,97 @@ jQuery(document).ready(function($) {
             }, 5000);
 
             console.warn('VD Portal Error:', message);
+        },
+
+        // Handle copy to clipboard
+        handleCopy: function(e) {
+            e.preventDefault();
+
+            const $btn = $(e.target);
+            const targetId = $btn.data('copy-target');
+            const $target = $('#' + targetId);
+
+            if (!$target.length) {
+                console.warn('VD Portal: Copy target not found:', targetId);
+                return;
+            }
+
+            const textToCopy = $target.text().trim();
+
+            // Use Clipboard API if available
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(textToCopy).then(() => {
+                    this.showCopySuccess($btn);
+                }).catch((err) => {
+                    console.warn('VD Portal: Clipboard API failed:', err);
+                    this.fallbackCopy(textToCopy, $btn);
+                });
+            } else {
+                this.fallbackCopy(textToCopy, $btn);
+            }
+        },
+
+        // Fallback copy method for older browsers
+        fallbackCopy: function(text, $btn) {
+            const $temp = $('<textarea>');
+            $('body').append($temp);
+            $temp.val(text).select();
+
+            try {
+                const successful = document.execCommand('copy');
+                if (successful) {
+                    this.showCopySuccess($btn);
+                } else {
+                    this.showCopyError($btn);
+                }
+            } catch (err) {
+                console.warn('VD Portal: Fallback copy failed:', err);
+                this.showCopyError($btn);
+            }
+
+            $temp.remove();
+        },
+
+        // Show copy success feedback
+        showCopySuccess: function($btn) {
+            const originalIcon = $btn.html();
+            $btn.html('✅').addClass('copied');
+
+            setTimeout(() => {
+                $btn.html(originalIcon).removeClass('copied');
+            }, 2000);
+        },
+
+        // Show copy error feedback
+        showCopyError: function($btn) {
+            const originalIcon = $btn.html();
+            $btn.html('❌').addClass('copy-error');
+
+            setTimeout(() => {
+                $btn.html(originalIcon).removeClass('copy-error');
+            }, 2000);
+        },
+
+        // Reset form to initial state
+        resetForm: function() {
+            $('#license-key').val('');
+            $('#license-info, #credentials, #usage-info, #actions').slideUp();
+            $('#device-list, #history-list').addClass('vd-empty-state').html('<p>📱 Nhập mã license để xem thiết bị</p>');
+            $('.vd-error').fadeOut();
+            console.log('VD Portal: Form reset');
+        },
+
+        // Refresh data (placeholder for future API integration)
+        refreshData: function() {
+            const licenseKey = $('#display-license').text();
+            if (licenseKey && licenseKey !== '-') {
+                this.setLoading(true);
+                setTimeout(() => {
+                    this.setLoading(false);
+                    this.displayMockData(licenseKey);
+                    console.log('VD Portal: Data refreshed');
+                }, 1000);
+            }
         }
     };
 
