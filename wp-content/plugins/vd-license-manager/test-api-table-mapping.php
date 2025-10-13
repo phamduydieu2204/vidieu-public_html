@@ -19,7 +19,7 @@ echo "=== VD LICENSE MANAGER - API TABLE MAPPING TEST ===\n\n";
 global $wpdb;
 
 // 1. Check table existence
-$old_table = $wpdb->prefix . 'bz_vd_device_access_log';
+$old_table = $wpdb->prefix . 'vd_device_access_log';
 $new_table = $wpdb->prefix . 'vd_license_access_log';
 
 $old_exists = $wpdb->get_var($wpdb->prepare("SHOW TABLES LIKE %s", $old_table)) === $old_table;
