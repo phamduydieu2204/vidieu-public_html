@@ -22,16 +22,20 @@ class VD_License_Sync_Admin {
      * Constructor - Register hooks
      */
     public function __construct() {
-        add_action('admin_menu', [$this, 'add_admin_menu']);
+        add_action('admin_menu', [$this, 'add_admin_menu'], 20); // Run after main menu
         add_action('wp_ajax_vd_sync_licenses', [$this, 'ajax_sync_licenses']);
         add_action('admin_enqueue_scripts', [$this, 'enqueue_scripts']);
+
+        error_log('VD License Sync Admin: Initialized and hooks registered');
     }
 
     /**
      * Add admin menu page
      */
     public function add_admin_menu() {
-        add_submenu_page(
+        error_log('VD License Sync Admin: add_admin_menu() called');
+
+        $result = add_submenu_page(
             'vd-license-manager',
             'License Sync',
             'License Sync',
@@ -39,6 +43,12 @@ class VD_License_Sync_Admin {
             'vd-license-sync',
             [$this, 'render_page']
         );
+
+        if ($result) {
+            error_log('VD License Sync Admin: Submenu added successfully. Hook: ' . $result);
+        } else {
+            error_log('VD License Sync Admin: Failed to add submenu. Parent menu may not exist.');
+        }
     }
 
     /**

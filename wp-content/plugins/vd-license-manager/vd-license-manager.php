@@ -131,11 +131,6 @@ if ( file_exists( VD_PLUGIN_DIR . 'includes/class-vd-portal-setup.php' ) ) {
     require_once VD_PLUGIN_DIR . 'includes/class-vd-portal-setup.php';
 }
 
-// Load License Sync Admin
-if ( is_admin() && file_exists( VD_PLUGIN_DIR . 'admin/class-vd-license-sync-admin.php' ) ) {
-    require_once VD_PLUGIN_DIR . 'admin/class-vd-license-sync-admin.php';
-    error_log('VD Loader: Loaded License Sync Admin');
-}
 
 // Load REST API handler
 if ( file_exists( VD_PLUGIN_DIR . 'includes/class-vd-rest-api.php' ) ) {

@@ -119,6 +119,15 @@ class VD_LM_License_Manager {
             } else {
                 error_log( 'VD Loader: AJAX handler file NOT FOUND: ' . $ajax_file );
             }
+
+            // Load License Sync Admin
+            $sync_admin_file = VD_PLUGIN_DIR . 'admin/class-vd-license-sync-admin.php';
+            if ( file_exists( $sync_admin_file ) ) {
+                require_once $sync_admin_file;
+                error_log( 'VD Loader: Loaded License Sync Admin from: ' . $sync_admin_file );
+            } else {
+                error_log( 'VD Loader: License Sync Admin file NOT FOUND: ' . $sync_admin_file );
+            }
         }
 
         // Load Order Handler for WooCommerce integration
