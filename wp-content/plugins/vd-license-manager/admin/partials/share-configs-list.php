@@ -433,37 +433,64 @@ jQuery(document).ready(function($) {
         }
     }
 
-    // Form validation
+    // Form validation with improved logic
+    function validateRow($row) {
+        let allValid = true;
+
+        $row.find('input[type="number"]').each(function() {
+            const $input = $(this);
+            const value = $input.val().trim();
+            const min = parseInt($input.attr('min'));
+            const max = parseInt($input.attr('max'));
+
+            // Skip validation if input is empty (user might be typing)
+            if (value === '') {
+                $input.css('border-color', '');
+                return true; // Continue to next input
+            }
+
+            const numValue = parseInt(value);
+
+            // Check if it's a valid number and within range
+            if (isNaN(numValue) || numValue < min || numValue > max) {
+                $input.css('border-color', '#d63638');
+                allValid = false;
+            } else {
+                $input.css('border-color', '');
+            }
+        });
+
+        // Enable/disable save button based on validation
+        $row.find('.vd-save-config').prop('disabled', !allValid);
+
+        return allValid;
+    }
+
+    // Validate on input change
     $('input[type="number"]').on('input', function() {
-        const $input = $(this);
-        const value = parseInt($input.val());
-        const min = parseInt($input.attr('min'));
-        const max = parseInt($input.attr('max'));
-        const $row = $input.closest('tr');
-
-        // Validate range
-        if (value < min || value > max) {
-            $input.css('border-color', '#d63638');
-            $row.find('.vd-save-config').prop('disabled', true);
-        } else {
-            $input.css('border-color', '');
-
-            // Check if all inputs in row are valid
-            let allValid = true;
-            $row.find('input[type="number"]').each(function() {
-                const val = parseInt($(this).val());
-                const minVal = parseInt($(this).attr('min'));
-                const maxVal = parseInt($(this).attr('max'));
-                if (val < minVal || val > maxVal) {
-                    allValid = false;
-                    return false;
-                }
-            });
-
-            $row.find('.vd-save-config').prop('disabled', !allValid);
-        }
+        const $row = $(this).closest('tr');
+        validateRow($row);
     });
 
+    // Validate on blur (when user finishes editing)
+    $('input[type="number"]').on('blur', function() {
+        const $row = $(this).closest('tr');
+        const $input = $(this);
+        const value = $input.val().trim();
+
+        // If empty on blur, set to minimum value
+        if (value === '') {
+            const min = parseInt($input.attr('min'));
+            $input.val(min);
+        }
+
+        validateRow($row);
+    });
+
+    // Initial validation on page load
+    $('.vd-share-configs-table tbody tr').each(function() {
+        validateRow($(this));
+    });
 
     console.log('VD Share Configs: All event handlers registered');
 });

@@ -469,6 +469,27 @@
     display: block;
 }
 
+/* Input validation feedback */
+.vd-share-configs-table input[type="number"] {
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.vd-share-configs-table input[type="number"]:focus {
+    outline: none;
+    border-color: #0073aa !important;
+    box-shadow: 0 0 0 1px #0073aa !important;
+}
+
+.vd-share-configs-table input[type="number"][style*="border-color: rgb(214, 54, 56)"] {
+    animation: shake 0.3s ease-in-out;
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-2px); }
+    75% { transform: translateX(2px); }
+}
+
 /* Notice Styling for Share Configs */
 .vd-share-config-notice {
     margin: 5px 0 15px 0;
