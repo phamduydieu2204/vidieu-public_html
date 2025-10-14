@@ -158,6 +158,7 @@ $order = isset( $_GET['order'] ) ? sanitize_text_field( $_GET['order'] ) : 'DESC
 						</a>
 					</th>
 					<th scope="col" class="manage-column column-display-name"><?php esc_html_e( 'Display Name', 'vd-license-manager' ); ?></th>
+					<th scope="col" class="manage-column column-pools"><?php esc_html_e( 'Pools', 'vd-license-manager' ); ?></th>
 					<th scope="col" class="manage-column column-capacity"><?php esc_html_e( 'Capacity', 'vd-license-manager' ); ?></th>
 					<th scope="col" class="manage-column column-status <?php echo ( $orderby === 'status' ) ? 'sorted ' . strtolower( $order ) : 'sortable desc'; ?>">
 						<a href="<?php echo esc_url( add_query_arg( array( 'orderby' => 'status', 'order' => ( $orderby === 'status' && $order === 'ASC' ) ? 'DESC' : 'ASC' ) ) ); ?>">
@@ -178,7 +179,7 @@ $order = isset( $_GET['order'] ) ? sanitize_text_field( $_GET['order'] ) : 'DESC
 			<tbody id="the-list">
 				<?php if ( empty( $accounts ) ) : ?>
 					<tr class="no-items">
-						<td class="colspanchange" colspan="8">
+						<td class="colspanchange" colspan="9">
 							<?php esc_html_e( 'No accounts found.', 'vd-license-manager' ); ?>
 						</td>
 					</tr>
@@ -244,6 +245,41 @@ $order = isset( $_GET['order'] ) ? sanitize_text_field( $_GET['order'] ) : 'DESC
 
 							<td class="display-name column-display-name">
 								<?php echo esc_html( $account->display_name ); ?>
+							</td>
+
+							<td class="pools column-pools">
+								<?php
+								// Get pools for this account
+								global $wpdb;
+								$pools_table = $wpdb->prefix . 'vd_pool_accounts';
+								$pools_info_table = $wpdb->prefix . 'vd_pools';
+
+								$pools = $wpdb->get_results($wpdb->prepare(
+									"SELECT p.name, p.id, pa.weight, pa.is_primary
+									 FROM {$pools_table} pa
+									 LEFT JOIN {$pools_info_table} p ON pa.pool_id = p.id
+									 WHERE pa.account_id = %d
+									 ORDER BY pa.is_primary DESC, pa.weight DESC",
+									$account->id
+								));
+
+								if (!empty($pools)) {
+									$pool_display = array();
+									foreach ($pools as $pool) {
+										$pool_text = esc_html($pool->name);
+										if ($pool->is_primary) {
+											$pool_text = '<strong>' . $pool_text . '</strong> <span class="primary-badge">Primary</span>';
+										}
+										if ($pool->weight > 1) {
+											$pool_text .= ' <span class="weight-badge">W:' . $pool->weight . '</span>';
+										}
+										$pool_display[] = $pool_text;
+									}
+									echo implode('<br>', $pool_display);
+								} else {
+									echo '<span class="no-pools" style="color: #d63638; font-style: italic;">' . esc_html__('Not assigned', 'vd-license-manager') . '</span>';
+								}
+								?>
 							</td>
 
 							<td class="capacity column-capacity">

@@ -518,6 +518,51 @@
     color: #856404;
 }
 
+/* =============================================================================
+   Accounts List - Pool Information
+   ============================================================================= */
+
+/* Pool badges in accounts list */
+.column-pools .primary-badge {
+    display: inline-block;
+    background-color: #00a32a;
+    color: #fff;
+    font-size: 10px;
+    font-weight: 600;
+    padding: 2px 6px;
+    border-radius: 3px;
+    text-transform: uppercase;
+    margin-left: 5px;
+    vertical-align: middle;
+}
+
+.column-pools .weight-badge {
+    display: inline-block;
+    background-color: #0073aa;
+    color: #fff;
+    font-size: 10px;
+    font-weight: 500;
+    padding: 2px 5px;
+    border-radius: 3px;
+    margin-left: 3px;
+    vertical-align: middle;
+}
+
+.column-pools .no-pools {
+    color: #d63638;
+    font-style: italic;
+    font-size: 12px;
+}
+
+.column-pools {
+    max-width: 200px;
+    line-height: 1.4;
+}
+
+.column-pools strong {
+    color: #0073aa;
+}
+
 /* Mobile Responsiveness for Share Configs */
 @media (max-width: 768px) {
     .vd-actions-container {
@@ -527,6 +572,17 @@
     .vd-share-configs-table input[type="number"] {
         width: 100%;
         max-width: 80px;
+    }
+
+    .column-pools {
+        max-width: 150px;
+        font-size: 12px;
+    }
+
+    .column-pools .primary-badge,
+    .column-pools .weight-badge {
+        font-size: 9px;
+        padding: 1px 4px;
     }
 }
 
