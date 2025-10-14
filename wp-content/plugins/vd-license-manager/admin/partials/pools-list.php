@@ -95,6 +95,70 @@ defined('ABSPATH') || exit;
                                 <p class="description"><?php _e('Active pools can be assigned to products and used for license assignment.', 'vd-license-manager'); ?></p>
                             </td>
                         </tr>
+
+                        <tr>
+                            <th scope="row">
+                                <label><?php _e('Assign Products', 'vd-license-manager'); ?></label>
+                            </th>
+                            <td>
+                                <div id="vd-product-assignments">
+                                    <?php if ($is_editing && !empty($assigned_products)): ?>
+                                        <?php foreach ($assigned_products as $index => $assignment): ?>
+                                            <div class="vd-product-assignment-row" data-index="<?php echo esc_attr($index); ?>">
+                                                <select name="assigned_products[]" class="regular-text">
+                                                    <option value=""><?php _e('Select a product', 'vd-license-manager'); ?></option>
+                                                    <?php foreach ($woocommerce_products as $product): ?>
+                                                        <option value="<?php echo esc_attr($product['id']); ?>"
+                                                                <?php selected($assignment['product_id'], $product['id']); ?>>
+                                                            <?php echo esc_html($product['title']); ?>
+                                                        </option>
+                                                    <?php endforeach; ?>
+                                                </select>
+                                                <input type="number"
+                                                       name="product_priorities[]"
+                                                       value="<?php echo esc_attr($assignment['priority']); ?>"
+                                                       min="1"
+                                                       max="100"
+                                                       class="small-text"
+                                                       placeholder="<?php esc_attr_e('Priority', 'vd-license-manager'); ?>">
+                                                <button type="button" class="button button-secondary vd-remove-product-assignment">
+                                                    <?php _e('Remove', 'vd-license-manager'); ?>
+                                                </button>
+                                            </div>
+                                        <?php endforeach; ?>
+                                    <?php else: ?>
+                                        <div class="vd-product-assignment-row" data-index="0">
+                                            <select name="assigned_products[]" class="regular-text">
+                                                <option value=""><?php _e('Select a product', 'vd-license-manager'); ?></option>
+                                                <?php foreach ($woocommerce_products as $product): ?>
+                                                    <option value="<?php echo esc_attr($product['id']); ?>">
+                                                        <?php echo esc_html($product['title']); ?>
+                                                    </option>
+                                                <?php endforeach; ?>
+                                            </select>
+                                            <input type="number"
+                                                   name="product_priorities[]"
+                                                   value="1"
+                                                   min="1"
+                                                   max="100"
+                                                   class="small-text"
+                                                   placeholder="<?php esc_attr_e('Priority', 'vd-license-manager'); ?>">
+                                            <button type="button" class="button button-secondary vd-remove-product-assignment">
+                                                <?php _e('Remove', 'vd-license-manager'); ?>
+                                            </button>
+                                        </div>
+                                    <?php endif; ?>
+                                </div>
+
+                                <button type="button" id="vd-add-product-assignment" class="button button-secondary">
+                                    <?php _e('Add Another Product', 'vd-license-manager'); ?>
+                                </button>
+
+                                <p class="description">
+                                    <?php _e('Assign this pool to WooCommerce products. Priority determines the order of pool selection (1 = highest priority).', 'vd-license-manager'); ?>
+                                </p>
+                            </td>
+                        </tr>
                     </table>
 
                     <p class="submit">
@@ -295,6 +359,29 @@ defined('ABSPATH') || exit;
     cursor: not-allowed;
 }
 
+/* Product Assignment Styles */
+.vd-product-assignment-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+    padding: 10px;
+    background: #f9f9f9;
+    border-radius: 4px;
+}
+
+.vd-product-assignment-row select {
+    min-width: 200px;
+}
+
+.vd-product-assignment-row input[type="number"] {
+    width: 80px;
+}
+
+#vd-add-product-assignment {
+    margin-top: 10px;
+}
+
 @media (max-width: 782px) {
     .vd-pools-container {
         grid-template-columns: 1fr;
@@ -303,5 +390,109 @@ defined('ABSPATH') || exit;
     .table-wrap {
         overflow-x: auto;
     }
+
+    .vd-product-assignment-row {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .vd-product-assignment-row select,
+    .vd-product-assignment-row input {
+        width: 100%;
+        max-width: none;
+    }
 }
 </style>
+
+<script>
+jQuery(document).ready(function($) {
+    let assignmentIndex = $('#vd-product-assignments .vd-product-assignment-row').length;
+
+    // Product options for cloning
+    const productOptions = <?php echo json_encode($woocommerce_products); ?>;
+
+    // Add new product assignment row
+    $('#vd-add-product-assignment').on('click', function() {
+        const newRow = createProductAssignmentRow(assignmentIndex);
+        $('#vd-product-assignments').append(newRow);
+        assignmentIndex++;
+        updateRemoveButtons();
+    });
+
+    // Remove product assignment row
+    $(document).on('click', '.vd-remove-product-assignment', function() {
+        $(this).closest('.vd-product-assignment-row').remove();
+        updateRemoveButtons();
+    });
+
+    // Create new product assignment row
+    function createProductAssignmentRow(index) {
+        let optionsHtml = '<option value=""><?php _e("Select a product", "vd-license-manager"); ?></option>';
+        productOptions.forEach(function(product) {
+            optionsHtml += `<option value="${product.id}">${product.title}</option>`;
+        });
+
+        return `
+            <div class="vd-product-assignment-row" data-index="${index}">
+                <select name="assigned_products[]" class="regular-text">
+                    ${optionsHtml}
+                </select>
+                <input type="number"
+                       name="product_priorities[]"
+                       value="${index + 1}"
+                       min="1"
+                       max="100"
+                       class="small-text"
+                       placeholder="<?php esc_attr_e('Priority', 'vd-license-manager'); ?>">
+                <button type="button" class="button button-secondary vd-remove-product-assignment">
+                    <?php _e('Remove', 'vd-license-manager'); ?>
+                </button>
+            </div>
+        `;
+    }
+
+    // Update remove button visibility
+    function updateRemoveButtons() {
+        const rows = $('#vd-product-assignments .vd-product-assignment-row');
+        if (rows.length <= 1) {
+            rows.find('.vd-remove-product-assignment').hide();
+        } else {
+            rows.find('.vd-remove-product-assignment').show();
+        }
+    }
+
+    // Initial update
+    updateRemoveButtons();
+
+    // Form validation
+    $('form').on('submit', function(e) {
+        const poolName = $('#pool_name').val().trim();
+        if (!poolName) {
+            alert('<?php _e("Pool name is required.", "vd-license-manager"); ?>');
+            e.preventDefault();
+            return false;
+        }
+
+        // Check for duplicate product assignments
+        const selectedProducts = [];
+        let hasDuplicates = false;
+
+        $('#vd-product-assignments select[name="assigned_products[]"]').each(function() {
+            const value = $(this).val();
+            if (value && selectedProducts.includes(value)) {
+                hasDuplicates = true;
+                return false;
+            }
+            if (value) {
+                selectedProducts.push(value);
+            }
+        });
+
+        if (hasDuplicates) {
+            alert('<?php _e("Cannot assign the same product multiple times to one pool.", "vd-license-manager"); ?>');
+            e.preventDefault();
+            return false;
+        }
+    });
+});
+</script>

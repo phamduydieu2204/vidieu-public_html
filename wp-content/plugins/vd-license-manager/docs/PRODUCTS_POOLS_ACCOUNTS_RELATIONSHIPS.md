@@ -513,4 +513,202 @@ GROUP BY p.id;
 
 ---
 
+## 🎨 ADMIN UI WORKFLOW - ENTITY-BASED APPROACH
+
+### **🏗️ DESIGN PHILOSOPHY: Entity Creation + Immediate Relationship Assignment**
+
+Instead of separating entity creation from relationship management, we integrate both in a single intuitive workflow where relationships are defined at the moment of entity creation.
+
+### **1️⃣ POOLS MANAGEMENT (Enhanced)**
+
+#### **Create Pool Flow:**
+```
+Admin → Pools Page → Create New Pool
+    ├── Pool Details (name, description, status)
+    ├── Product Assignment (select products + set priorities)
+    └── Submit → Creates pool + product relationships in one transaction
+```
+
+**Pool Creation Form:**
+```html
+<form class="vd-create-pool-form">
+    <!-- Pool Details -->
+    <div class="pool-details">
+        <input type="text" name="pool_name" placeholder="Pool Name" required>
+        <textarea name="pool_description" placeholder="Description"></textarea>
+        <select name="pool_status">
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
+        </select>
+    </div>
+
+    <!-- Product Assignment - Immediate Relationship -->
+    <div class="product-assignment">
+        <h4>Assign to Products</h4>
+        <div class="product-selector">
+            <select name="products[]" multiple class="chosen-select">
+                <option value="8210">Helium10 Premium (₫99,000)</option>
+                <option value="1357">Netflix Subscription (₫79,000)</option>
+                <option value="6456">Spotify Premium (₫59,000)</option>
+            </select>
+        </div>
+
+        <!-- Dynamic Priority Settings -->
+        <div class="priority-settings" style="display:none">
+            <h5>Set Priority for Each Product:</h5>
+            <div class="priority-list">
+                <!-- Generated dynamically when products selected -->
+                <div class="priority-item">
+                    <span class="product-name">Helium10 Premium</span>
+                    <label>Priority:
+                        <input type="number" name="priority[8210]" value="1" min="1" max="10">
+                        <small>(1 = highest priority)</small>
+                    </label>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <button type="submit" class="button-primary">Create Pool & Assign Products</button>
+</form>
+```
+
+**Pool List Display:**
+```
+| Pool Name | Products | Accounts | Status | Actions |
+|-----------|----------|----------|---------|---------|
+| Helium10 Premium Pool | 2 products | 5 accounts | Active | Edit | Delete |
+| Netflix Family Pool | 1 product | 3 accounts | Active | Edit | Delete |
+```
+
+### **2️⃣ ACCOUNTS MANAGEMENT (Enhanced)**
+
+#### **Create Account Flow:**
+```
+Admin → Accounts Page → Create New Account
+    ├── Account Details (provider, login, password, capacity)
+    ├── Pool Assignment (select pool + set weight/primary)
+    └── Submit → Creates account + pool assignment in one transaction
+```
+
+**Account Creation Form:**
+```html
+<form class="vd-create-account-form">
+    <!-- Account Details -->
+    <div class="account-details">
+        <select name="provider" required>
+            <option value="">Select Provider...</option>
+            <option value="helium10">Helium10</option>
+            <option value="netflix">Netflix</option>
+            <option value="spotify">Spotify</option>
+            <option value="chatgpt">ChatGPT</option>
+        </select>
+
+        <input type="email" name="account_login" placeholder="Account Email/Login" required>
+        <input type="password" name="login_password" placeholder="Password" required>
+        <input type="number" name="capacity" value="1" min="1" max="50" placeholder="Capacity">
+        <input type="date" name="expires_at" placeholder="Expiry Date (optional)">
+    </div>
+
+    <!-- Pool Assignment - Immediate Relationship -->
+    <div class="pool-assignment">
+        <h4>Assign to Pool</h4>
+        <select name="pool_id" required>
+            <option value="">Select Pool...</option>
+            <option value="1">Helium10 Premium Pool (3/5 accounts)</option>
+            <option value="2">Netflix Family Pool (2/3 accounts)</option>
+        </select>
+
+        <!-- Pool Assignment Settings -->
+        <div class="pool-settings">
+            <label>Weight:
+                <input type="number" name="weight" value="1" min="1" max="10">
+                <small>(Higher weight = more likely to be assigned)</small>
+            </label>
+
+            <label>
+                <input type="checkbox" name="is_primary" value="1">
+                Primary Account (preferred for sticky assignment)
+            </label>
+        </div>
+
+        <!-- Pool Info Display -->
+        <div class="pool-info" style="display:none">
+            <p class="pool-status">
+                <strong>Pool Status:</strong> <span class="status"></span><br>
+                <strong>Current Accounts:</strong> <span class="account-count"></span><br>
+                <strong>Products Using This Pool:</strong> <span class="product-list"></span>
+            </p>
+        </div>
+    </div>
+
+    <button type="submit" class="button-primary">Create Account & Assign to Pool</button>
+</form>
+```
+
+**Account List Display:**
+```
+| Provider | Login | Pool | Weight | Primary | Capacity | Usage | Status | Actions |
+|----------|-------|------|--------|---------|----------|-------|---------|---------|
+| Helium10 | user@example.com | H10 Premium Pool | 5 | ⭐ Yes | 10 | 7/10 | Active | Edit | Delete |
+| Netflix | john@test.com | Netflix Family | 3 | No | 5 | 2/5 | Active | Edit | Delete |
+```
+
+### **3️⃣ SHARE CONFIGS (Simplified - Technical Settings Only)**
+
+Share Configs page is now focused **purely on technical settings** per product, without relationship management.
+
+**Share Config Form:**
+```html
+<table class="wp-list-table widefat fixed striped">
+    <thead>
+        <tr>
+            <th>Product</th>
+            <th>Max Devices</th>
+            <th>Validity (Days)</th>
+            <th>Max Requests/Day</th>
+            <th>Allow VPS</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><strong>Helium10 Premium</strong><br><small>Pool: H10 Premium Pool (via Pools page)</small></td>
+            <td><input type="number" name="max_devices[8210]" value="2" min="1" max="10"></td>
+            <td><input type="number" name="validity_days[8210]" value="365" min="1"></td>
+            <td><input type="number" name="max_requests[8210]" value="100" min="1"></td>
+            <td><input type="checkbox" name="allow_vps[8210]" value="1"></td>
+            <td><button class="button">Save</button></td>
+        </tr>
+    </tbody>
+</table>
+```
+
+### **4️⃣ WORKFLOW COMPARISON**
+
+#### **OLD Workflow (Multi-step):**
+```
+1. Create Pool (basic info only)
+2. Go to Pool Assignment tab → Assign products
+3. Create Account (basic info only)
+4. Go to Account Assignment tab → Assign to pool
+5. Go to Share Configs → Set technical limits
+```
+
+#### **NEW Workflow (Entity-based):**
+```
+1. Create Pool → Immediately assign products with priorities ✅
+2. Create Account → Immediately assign to pool with weight ✅
+3. Go to Share Configs → Only set technical limits ✅
+```
+
+**Benefits:**
+- ✅ **50% fewer clicks** (3 steps vs 5 steps)
+- ✅ **Immediate context** - relationships defined at creation time
+- ✅ **Atomic operations** - data consistency guaranteed
+- ✅ **Intuitive workflow** - matches mental model
+- ✅ **Clear separation** - Share Configs purely technical
+
+---
+
 **📊 SUMMARY: Flexible multi-tier relationship system enabling complex business logic with simple administration!** 🚀

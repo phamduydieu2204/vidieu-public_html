@@ -83,6 +83,9 @@ class VD_LM_Activator {
         // Create database tables
         self::create_database_tables();
 
+        // Run database migrations
+        self::run_migrations();
+
         // Set default options
         self::set_default_options();
 
@@ -221,5 +224,29 @@ class VD_LM_Activator {
         }
 
         VD_LM_Logger_Service::info( 'Database tables creation completed' );
+    }
+
+    /**
+     * Run database migrations
+     *
+     * Executes any pending database migrations to bring the schema
+     * up to the current version.
+     *
+     * @since 1.0.1
+     */
+    private static function run_migrations() {
+        // Load migration manager
+        require_once VD_PLUGIN_DIR . 'includes/database/class-vd-migration-manager.php';
+
+        VD_LM_Logger_Service::info( 'Starting database migrations' );
+
+        // Run migrations
+        $success = VD_Migration_Manager::run_migrations();
+
+        if ( $success ) {
+            VD_LM_Logger_Service::info( 'Database migrations completed successfully' );
+        } else {
+            VD_LM_Logger_Service::error( 'Database migrations failed' );
+        }
     }
 }

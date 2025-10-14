@@ -32,6 +32,9 @@ class VD_LM_Pools_Page {
             case 'delete_pool':
                 $this->handle_delete_pool();
                 break;
+            case 'assign_products':
+                $this->handle_assign_products();
+                break;
         }
     }
 
@@ -65,8 +68,12 @@ class VD_LM_Pools_Page {
 
         if ($result) {
             $pool_id = $wpdb->insert_id;
+
+            // Handle product assignments
+            $this->handle_product_assignments($pool_id);
+
             error_log('VD Pools: Created pool ID ' . $pool_id . ': ' . $name);
-            $this->add_notice('success', 'Pool created successfully.');
+            $this->add_notice('success', 'Pool created successfully with product assignments.');
         } else {
             error_log('VD Pools: Failed to create pool: ' . $wpdb->last_error);
             $this->add_notice('error', 'Failed to create pool: ' . $wpdb->last_error);
@@ -105,8 +112,11 @@ class VD_LM_Pools_Page {
         );
 
         if ($result !== false) {
+            // Handle product assignments update
+            $this->handle_product_assignments($pool_id);
+
             error_log('VD Pools: Updated pool ID ' . $pool_id);
-            $this->add_notice('success', 'Pool updated successfully.');
+            $this->add_notice('success', 'Pool updated successfully with product assignments.');
         } else {
             error_log('VD Pools: Failed to update pool: ' . $wpdb->last_error);
             $this->add_notice('error', 'Failed to update pool.');
@@ -165,6 +175,121 @@ class VD_LM_Pools_Page {
         add_settings_error('vd_pools', 'vd_pools_message', $message, $type);
     }
 
+    /**
+     * Handle product assignments for a pool
+     *
+     * @since 1.0.1
+     * @param int $pool_id Pool ID
+     */
+    private function handle_product_assignments($pool_id) {
+        global $wpdb;
+
+        if (!isset($_POST['assigned_products']) || !is_array($_POST['assigned_products'])) {
+            return;
+        }
+
+        $product_pools_table = $wpdb->prefix . 'vd_product_pools';
+
+        // Start transaction
+        $wpdb->query('START TRANSACTION');
+
+        try {
+            // Remove existing product assignments for this pool
+            $wpdb->delete(
+                $product_pools_table,
+                array('pool_id' => $pool_id),
+                array('%d')
+            );
+
+            // Add new product assignments
+            $assigned_products = $_POST['assigned_products'];
+            $success = true;
+
+            foreach ($assigned_products as $index => $product_id) {
+                $product_id = absint($product_id);
+                if ($product_id > 0) {
+                    $priority = isset($_POST['product_priorities'][$index]) ?
+                               absint($_POST['product_priorities'][$index]) : ($index + 1);
+
+                    $result = $wpdb->insert(
+                        $product_pools_table,
+                        array(
+                            'product_id' => $product_id,
+                            'pool_id' => $pool_id,
+                            'priority' => $priority
+                        ),
+                        array('%d', '%d', '%d')
+                    );
+
+                    if ($result === false) {
+                        $success = false;
+                        break;
+                    }
+                }
+            }
+
+            if ($success) {
+                $wpdb->query('COMMIT');
+                error_log("VD Pools: Product assignments updated for pool ID {$pool_id}");
+            } else {
+                $wpdb->query('ROLLBACK');
+                error_log("VD Pools: Failed to update product assignments for pool ID {$pool_id}");
+            }
+
+        } catch (Exception $e) {
+            $wpdb->query('ROLLBACK');
+            error_log("VD Pools: Exception in product assignments: " . $e->getMessage());
+        }
+    }
+
+    /**
+     * Get WooCommerce products for dropdown
+     *
+     * @since 1.0.1
+     * @return array Array of products
+     */
+    private function get_woocommerce_products() {
+        $products = get_posts(array(
+            'post_type' => 'product',
+            'post_status' => 'publish',
+            'numberposts' => -1,
+            'orderby' => 'title',
+            'order' => 'ASC'
+        ));
+
+        $product_options = array();
+        foreach ($products as $product) {
+            $product_options[] = array(
+                'id' => $product->ID,
+                'title' => $product->post_title
+            );
+        }
+
+        return $product_options;
+    }
+
+    /**
+     * Get assigned products for a pool
+     *
+     * @since 1.0.1
+     * @param int $pool_id Pool ID
+     * @return array Array of assigned products with priorities
+     */
+    private function get_assigned_products($pool_id) {
+        global $wpdb;
+
+        $results = $wpdb->get_results($wpdb->prepare(
+            "SELECT pp.product_id, pp.priority, p.post_title
+             FROM {$wpdb->prefix}vd_product_pools pp
+             LEFT JOIN {$wpdb->posts} p ON pp.product_id = p.ID
+             WHERE pp.pool_id = %d
+             ORDER BY pp.priority ASC",
+            $pool_id
+        ), ARRAY_A);
+
+        return $results;
+    }
+
     public function render() {
         global $wpdb;
 
@@ -174,12 +299,20 @@ class VD_LM_Pools_Page {
 
         // Get editing pool if any
         $editing_pool = null;
+        $assigned_products = array();
         if (isset($_GET['edit']) && absint($_GET['edit'])) {
             $editing_pool = $wpdb->get_row($wpdb->prepare(
                 "SELECT * FROM {$table} WHERE id = %d",
                 absint($_GET['edit'])
             ), ARRAY_A);
+
+            if ($editing_pool) {
+                $assigned_products = $this->get_assigned_products($editing_pool['id']);
+            }
         }
+
+        // Get all WooCommerce products for the dropdown
+        $woocommerce_products = $this->get_woocommerce_products();
 
         require_once VD_PLUGIN_DIR . 'admin/partials/pools-list.php';
     }
