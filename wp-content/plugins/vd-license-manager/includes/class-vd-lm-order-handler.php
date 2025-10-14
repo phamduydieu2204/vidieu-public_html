@@ -752,12 +752,21 @@ class VD_LM_Order_Handler {
                 ? date('d/m/Y', strtotime('+' . $validity_days . ' days'))
                 : 'Trọn đời';
 
+            // Get plain text license key (already decrypted when stored)
+            $license_record = $wpdb->get_row($wpdb->prepare(
+                "SELECT license_key_plain FROM {$wpdb->prefix}vd_license_keys
+                WHERE lmfwc_license_id = %d",
+                $lmfwc_license_id
+            ), ARRAY_A);
+
+            $license_key_for_email = $license_record['license_key_plain'] ?: $this->decrypt_license_key($license_key);
+
             // Prepare email data (NO PASSWORD FIELDS!)
             $email_data = [
                 'customer_name' => $customer_name,
                 'customer_email' => $customer_email,
                 'product_name' => $product_name,
-                'license_key' => $license_key,
+                'license_key' => $license_key_for_email, // Use plain text key
                 'max_devices' => $max_devices,
                 'validity_days' => $validity_days,
                 'expiry_date' => $expiry_date,

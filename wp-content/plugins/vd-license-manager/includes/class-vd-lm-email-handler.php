@@ -58,32 +58,20 @@ class VD_LM_Email_Handler {
             }
         }
 
-        // Decrypt license key from LMfWC before using in email
-        $decrypted_license_key = $email_data['license_key'];
+        // License key should already be plain text from Order Handler
+        $license_key = $email_data['license_key'];
 
-        // LMfWC stores keys encrypted - try to decrypt
-        if (function_exists('lmfwc_decrypt')) {
-            $decrypted_license_key = lmfwc_decrypt($email_data['license_key']);
-            error_log('VD Email: Decrypted license key using lmfwc_decrypt()');
-        } elseif (class_exists('LicenseManagerForWooCommerce\Crypto')) {
-            try {
-                $crypto = new \LicenseManagerForWooCommerce\Crypto();
-                $decrypted_license_key = $crypto->decrypt($email_data['license_key']);
-                error_log('VD Email: Decrypted license key using Crypto class');
-            } catch (Exception $e) {
-                error_log('VD Email: Failed to decrypt license key: ' . $e->getMessage());
+        // Validate license key format (should be plain text like H10D-8MR7-ABZ7-VRBO)
+        if (substr($license_key, 0, 3) === 'def') {
+            error_log('VD Email: WARNING - License key appears to be encrypted. Order Handler should pass plain text.');
+            // Try to decrypt as fallback
+            if (function_exists('lmfwc_decrypt')) {
+                $license_key = lmfwc_decrypt($license_key);
+                $email_data['license_key'] = $license_key;
             }
         }
 
-        // If still encrypted (starts with 'def'), log warning
-        if (substr($decrypted_license_key, 0, 3) === 'def') {
-            error_log('VD Email: WARNING - License key still appears encrypted: ' . substr($decrypted_license_key, 0, 20) . '...');
-        } else {
-            error_log('VD Email: License key decrypted successfully: ' . $decrypted_license_key);
-        }
-
-        // Update email data with decrypted license key
-        $email_data['license_key'] = $decrypted_license_key;
+        error_log('VD Email: Using license key for email: ' . $license_key);
 
         // Set default values for optional fields
         $email_data = wp_parse_args($email_data, [

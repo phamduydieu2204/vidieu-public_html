@@ -36,7 +36,8 @@
 **Current Rows:** 6
 **Key Columns:**
 - `id` BIGINT UNSIGNED PRIMARY KEY
-- `license_key` VARCHAR(255) UNIQUE NOT NULL (e.g., H10D-DIJD-14RC-SOLE-6KUV30)
+- `license_key` VARCHAR(255) NOT NULL (Encrypted license key from LMfWC, e.g., def502...)
+- `license_key_plain` VARCHAR(255) NULL (Plain text license key for fast API lookups, e.g., H10D-DIJD-14RC-SOLE-6KUV30)
 - `lmfwc_license_id` BIGINT UNSIGNED (Foreign key to LMfWC plugin)
 - `product_id` BIGINT UNSIGNED NOT NULL (WooCommerce product ID)
 - `assigned_pool_id` BIGINT UNSIGNED NULL (Pool assignment)
@@ -49,6 +50,7 @@
 **Indexes:**
 - PRIMARY KEY (`id`)
 - UNIQUE KEY `uk_license_key` (`license_key`)
+- INDEX `idx_license_key_plain` (`license_key_plain`) ← **NEW: For fast API lookups**
 - INDEX `idx_product_id` (`product_id`)
 - INDEX `idx_status` (`status`)
 - INDEX `idx_assigned_pool` (`assigned_pool_id`)
