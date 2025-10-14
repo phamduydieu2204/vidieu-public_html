@@ -80,6 +80,17 @@ class VD_Page_Sidebar_Mappings {
             if (!$column_exists) {
                 $wpdb->query("ALTER TABLE {$this->table_name} ADD COLUMN shortcode_config longtext DEFAULT NULL AFTER sidebar_config");
             }
+
+            // Check if per_page column exists
+            $per_page_column_exists = $wpdb->get_var($wpdb->prepare(
+                "SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = %s AND TABLE_NAME = %s AND COLUMN_NAME = 'per_page'",
+                DB_NAME,
+                $this->table_name
+            ));
+
+            if (!$per_page_column_exists) {
+                $wpdb->query("ALTER TABLE {$this->table_name} ADD COLUMN per_page int(11) DEFAULT 16 AFTER shortcode_config");
+            }
         }
     }
     
@@ -98,6 +109,7 @@ class VD_Page_Sidebar_Mappings {
             sidebar_type varchar(50) NOT NULL,
             sidebar_config longtext DEFAULT NULL,
             shortcode_config longtext DEFAULT NULL,
+            per_page int(11) DEFAULT 16,
             created_at datetime DEFAULT CURRENT_TIMESTAMP,
             updated_at datetime DEFAULT CURRENT_TIMESTAMP,
             PRIMARY KEY (id),
@@ -223,13 +235,23 @@ class VD_Page_Sidebar_Mappings {
                         </tr>
                         <tr>
                             <th scope="row">
-                                <label for="vd-shortcode-config"><?php _e('Shortcode Configuration', VD_HOME_TEXT_DOMAIN); ?></label>
+                                <label for="vd-per-page"><?php _e('Products Per Page', VD_HOME_TEXT_DOMAIN); ?></label>
                             </th>
                             <td>
-                                <input type="text" id="vd-shortcode-config" class="large-text" 
-                                       placeholder='per_page="16" columns="4" title="SẢN PHẨM THEO NHU CẦU"'
-                                       value='per_page="16" columns="4" title="SẢN PHẨM THEO NHU CẦU"' />
-                                <p class="description"><?php _e('Shortcode attributes (same as homepage)', VD_HOME_TEXT_DOMAIN); ?></p>
+                                <input type="number" id="vd-per-page" class="small-text"
+                                       min="1" max="50" value="16" />
+                                <p class="description"><?php _e('Number of products to display per page (1-50)', VD_HOME_TEXT_DOMAIN); ?></p>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row">
+                                <label for="vd-shortcode-config"><?php _e('Additional Configuration', VD_HOME_TEXT_DOMAIN); ?></label>
+                            </th>
+                            <td>
+                                <input type="text" id="vd-shortcode-config" class="large-text"
+                                       placeholder='columns="4" title="SẢN PHẨM THEO NHU CẦU"'
+                                       value='columns="4" title="SẢN PHẨM THEO NHU CẦU"' />
+                                <p class="description"><?php _e('Additional shortcode attributes (per_page will be set from field above)', VD_HOME_TEXT_DOMAIN); ?></p>
                             </td>
                         </tr>
                     </table>
@@ -279,6 +301,7 @@ class VD_Page_Sidebar_Mappings {
         $sidebar_type = sanitize_text_field($_POST['sidebar_type']);
         $sidebar_config = isset($_POST['sidebar_config']) ? sanitize_text_field($_POST['sidebar_config']) : '';
         $shortcode_config = isset($_POST['shortcode_config']) ? sanitize_text_field($_POST['shortcode_config']) : '';
+        $per_page = isset($_POST['per_page']) ? max(1, min(50, intval($_POST['per_page']))) : 16;
         
         if (!$page_id || !$sidebar_type) {
             wp_send_json_error(array('message' => __('Invalid data provided.', VD_HOME_TEXT_DOMAIN)));
@@ -297,7 +320,8 @@ class VD_Page_Sidebar_Mappings {
                 array(
                     'sidebar_type' => $sidebar_type,
                     'sidebar_config' => $sidebar_config,
-                    'shortcode_config' => $shortcode_config
+                    'shortcode_config' => $shortcode_config,
+                    'per_page' => $per_page
                 ),
                 array('page_id' => $page_id),
                 array('%s', '%s', '%s'),
@@ -310,7 +334,8 @@ class VD_Page_Sidebar_Mappings {
                     'page_id' => $page_id,
                     'sidebar_type' => $sidebar_type,
                     'sidebar_config' => $sidebar_config,
-                    'shortcode_config' => $shortcode_config
+                    'shortcode_config' => $shortcode_config,
+                    'per_page' => $per_page
                 ),
                 array('%d', '%s', '%s', '%s')
             );
@@ -533,8 +558,12 @@ class VD_Page_Sidebar_Mappings {
         // Get mapping
         $mapping = $GLOBALS['vd_current_page_mapping'];
         
-        // Get shortcode attributes from config
-        $shortcode_attrs = !empty($mapping->shortcode_config) ? $mapping->shortcode_config : 'per_page="16" columns="4" title="SẢN PHẨM THEO NHU CẦU"';
+        // Get per_page from mapping or use default
+        $per_page = !empty($mapping->per_page) ? $mapping->per_page : 16;
+
+        // Get shortcode attributes from config and add per_page
+        $shortcode_attrs = !empty($mapping->shortcode_config) ? $mapping->shortcode_config : 'columns="4" title="SẢN PHẨM THEO NHU CẦU"';
+        $shortcode_attrs = 'per_page="' . $per_page . '" ' . $shortcode_attrs;
         
         // Add sidebar type to attributes so shortcode knows to skip its own sidebar
         $shortcode_attrs .= ' custom_sidebar="' . $mapping->sidebar_type . '"';

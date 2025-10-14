@@ -59,8 +59,8 @@ class VD_Templates {
         
         $args = wp_parse_args($args, $defaults);
         
-        // Apply admin settings if not explicitly set
-        if ($args['per_page'] == 12) {
+        // Apply admin settings only for default shortcode usage (not for page mappings)
+        if ($args['per_page'] == 12 && !isset($GLOBALS['vd_current_page_mapping'])) {
             $args['per_page'] = VD_Admin::get_option('products_items_per_page', 12);
         }
         

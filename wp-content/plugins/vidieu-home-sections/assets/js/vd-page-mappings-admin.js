@@ -33,6 +33,7 @@
             var sidebarType = $('#vd-sidebar-type').val();
             var sidebarConfig = '';
             var shortcodeConfig = $('#vd-shortcode-config').val();
+            var perPage = $('#vd-per-page').val() || 16;
             
             if (!pageId || !sidebarType) {
                 alert('Please select both a page and sidebar type.');
@@ -59,7 +60,8 @@
                     page_id: pageId,
                     sidebar_type: sidebarType,
                     sidebar_config: sidebarConfig,
-                    shortcode_config: shortcodeConfig
+                    shortcode_config: shortcodeConfig,
+                    per_page: perPage
                 },
                 success: function(response) {
                     if (response.success) {
@@ -159,6 +161,8 @@
             $('#vd-page-select').val('');
             $('#vd-sidebar-type').val('');
             $('#vd-taxonomy-select').val('');
+            $('#vd-per-page').val('16');
+            $('#vd-shortcode-config').val('columns="4" title="SẢN PHẨM THEO NHU CẦU"');
             $('#vd-taxonomy-row').hide();
         }
     };
