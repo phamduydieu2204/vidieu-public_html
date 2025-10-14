@@ -165,22 +165,6 @@ defined('ABSPATH') || exit;
                                     <?php esc_html_e('Save', 'vd-license-manager'); ?>
                                 </button>
 
-                                <div class="vd-presets" style="margin-top: 5px;">
-                                    <span class="description"><?php esc_html_e('Presets:', 'vd-license-manager'); ?></span><br>
-                                    <button type="button" class="button button-small vd-preset-individual"
-                                            title="<?php esc_attr_e('Individual: 2 devices, 30 days, 100 req/day, no VPS', 'vd-license-manager'); ?>">
-                                        <?php esc_html_e('Individual', 'vd-license-manager'); ?>
-                                    </button>
-                                    <button type="button" class="button button-small vd-preset-team"
-                                            title="<?php esc_attr_e('Team: 5 devices, 365 days, 500 req/day, VPS allowed', 'vd-license-manager'); ?>">
-                                        <?php esc_html_e('Team', 'vd-license-manager'); ?>
-                                    </button>
-                                    <button type="button" class="button button-small vd-preset-enterprise"
-                                            title="<?php esc_attr_e('Enterprise: 10 devices, 365 days, 1000 req/day, VPS allowed', 'vd-license-manager'); ?>">
-                                        <?php esc_html_e('Enterprise', 'vd-license-manager'); ?>
-                                    </button>
-                                </div>
-
                                 <?php if ($has_config && $config_id): ?>
                                     <div style="margin-top: 5px;">
                                         <a href="<?php echo esc_url(wp_nonce_url(
@@ -480,30 +464,6 @@ jQuery(document).ready(function($) {
         }
     });
 
-    // Quick presets for common configurations
-    $('body').on('click', '.vd-preset-individual', function() {
-        const $row = $(this).closest('tr');
-        $row.find('input[name*="[max_devices]"]').val(2);
-        $row.find('input[name*="[validity_days]"]').val(30);
-        $row.find('input[name*="[max_requests_per_day]"]').val(100);
-        $row.find('input[name*="[allow_vps]"]').prop('checked', false);
-    });
-
-    $('body').on('click', '.vd-preset-team', function() {
-        const $row = $(this).closest('tr');
-        $row.find('input[name*="[max_devices]"]').val(5);
-        $row.find('input[name*="[validity_days]"]').val(365);
-        $row.find('input[name*="[max_requests_per_day]"]').val(500);
-        $row.find('input[name*="[allow_vps]"]').prop('checked', true);
-    });
-
-    $('body').on('click', '.vd-preset-enterprise', function() {
-        const $row = $(this).closest('tr');
-        $row.find('input[name*="[max_devices]"]').val(10);
-        $row.find('input[name*="[validity_days]"]').val(365);
-        $row.find('input[name*="[max_requests_per_day]"]').val(1000);
-        $row.find('input[name*="[allow_vps]"]').prop('checked', true);
-    });
 
     console.log('VD Share Configs: All event handlers registered');
 });
