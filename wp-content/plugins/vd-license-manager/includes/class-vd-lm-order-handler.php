@@ -617,8 +617,12 @@ class VD_LM_Order_Handler {
             $customer_id = 0; // Guest customer
         }
 
+        // Decrypt license key for plain text storage
+        $license_key_plain = $this->decrypt_license_key($license_key);
+
         $data = array(
-            'license_key' => $license_key,
+            'license_key' => $license_key, // Keep encrypted for compatibility
+            'license_key_plain' => $license_key_plain, // Store plain text for fast API lookups
             'lmfwc_license_id' => $lmfwc_license_id,
             'product_id' => $product_id,
             'order_id' => $order_id,
@@ -778,6 +782,63 @@ class VD_LM_Order_Handler {
         } catch (Exception $e) {
             error_log('VD Email: Exception sending license key email for license ' . $license_key . ': ' . $e->getMessage());
         }
+    }
+
+    /**
+     * Decrypt license key using available LMFWC methods
+     *
+     * @param string $encrypted_key Encrypted license key from LMFWC
+     * @return string Decrypted license key or original if decryption fails
+     */
+    private function decrypt_license_key($encrypted_key) {
+        if (empty($encrypted_key)) {
+            return '';
+        }
+
+        error_log('VD Order Handler: Attempting to decrypt license key: ' . substr($encrypted_key, 0, 20) . '...');
+
+        // Method 1: Try LMFWC lmfwc_decrypt function
+        if (function_exists('lmfwc_decrypt')) {
+            try {
+                $decrypted = lmfwc_decrypt($encrypted_key);
+                if (!empty($decrypted) && $decrypted !== $encrypted_key) {
+                    error_log('VD Order Handler: Successfully decrypted using lmfwc_decrypt(): ' . $decrypted);
+                    return $decrypted;
+                }
+            } catch (Exception $e) {
+                error_log('VD Order Handler: lmfwc_decrypt failed: ' . $e->getMessage());
+            }
+        }
+
+        // Method 2: Try LMFWC Crypto class
+        if (class_exists('LicenseManagerForWooCommerce\Crypto')) {
+            try {
+                $crypto = new \LicenseManagerForWooCommerce\Crypto();
+                $decrypted = $crypto->decrypt($encrypted_key);
+                if (!empty($decrypted) && $decrypted !== $encrypted_key) {
+                    error_log('VD Order Handler: Successfully decrypted using Crypto class: ' . $decrypted);
+                    return $decrypted;
+                }
+            } catch (Exception $e) {
+                error_log('VD Order Handler: Crypto class failed: ' . $e->getMessage());
+            }
+        }
+
+        // Method 3: Try VD_Encryption class (fallback)
+        if (class_exists('VD_Encryption') && method_exists('VD_Encryption', 'decrypt')) {
+            try {
+                $decrypted = VD_Encryption::decrypt($encrypted_key);
+                if (!empty($decrypted) && $decrypted !== $encrypted_key) {
+                    error_log('VD Order Handler: Successfully decrypted using VD_Encryption: ' . $decrypted);
+                    return $decrypted;
+                }
+            } catch (Exception $e) {
+                error_log('VD Order Handler: VD_Encryption failed: ' . $e->getMessage());
+            }
+        }
+
+        error_log('VD Order Handler: All decryption methods failed, storing encrypted key as fallback');
+        return $encrypted_key; // Return as-is if decryption fails
     }
 }
 

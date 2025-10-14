@@ -151,6 +151,7 @@ if (file_exists($migration_file)) {
     error_log('VD Loader: Loaded Migration Script: fix-double-prefix.php');
 }
 
+
 /**
  * Plugin activation hook
  *

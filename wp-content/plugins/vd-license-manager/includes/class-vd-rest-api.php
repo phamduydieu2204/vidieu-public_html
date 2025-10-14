@@ -232,9 +232,16 @@ class VD_REST_API {
 
         $table_name = $wpdb->prefix . 'vd_license_keys';
 
+        // Normalize license key (remove hyphens, uppercase)
+        $normalized_key = str_replace('-', '', strtoupper(trim($license_key)));
+
+        error_log('VD REST API: Looking up license key: ' . $license_key);
+        error_log('VD REST API: Normalized key: ' . $normalized_key);
+
+        // Try to find by plain text license key (fast lookup)
         $license = $wpdb->get_row($wpdb->prepare(
-            "SELECT * FROM $table_name WHERE license_key = %s",
-            $license_key
+            "SELECT * FROM $table_name WHERE REPLACE(UPPER(license_key_plain), '-', '') = %s",
+            $normalized_key
         ), ARRAY_A);
 
         if (!$license) {
@@ -786,6 +793,7 @@ class VD_REST_API {
             array('%d')
         );
     }
+
 }
 
 // Initialize

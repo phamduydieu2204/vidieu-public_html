@@ -36,7 +36,7 @@ class VD_LM_Database {
      *
      * @since 1.0.0
      */
-    const DB_VERSION = '1.4.0';
+    const DB_VERSION = '1.5.0';
 
     /**
      * Option name for storing database version
@@ -537,7 +537,8 @@ class VD_LM_Database {
 
         $sql = "CREATE TABLE {$table_name} (
             id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
-            license_key varchar(255) NOT NULL COMMENT 'License key from LMfWC',
+            license_key varchar(255) NOT NULL COMMENT 'License key from LMfWC (encrypted)',
+            license_key_plain varchar(255) NULL COMMENT 'Plain text license key for fast API lookups',
             lmfwc_license_id BIGINT UNSIGNED NOT NULL COMMENT 'FK to LMfWC licenses table',
             product_id BIGINT UNSIGNED NOT NULL COMMENT 'WooCommerce product ID',
             order_id BIGINT UNSIGNED NOT NULL COMMENT 'WooCommerce order ID',
@@ -561,6 +562,7 @@ class VD_LM_Database {
             updated_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
             PRIMARY KEY (id),
             UNIQUE INDEX uk_license_key (license_key),
+            INDEX idx_license_key_plain (license_key_plain),
             UNIQUE INDEX uk_lmfwc_license_id (lmfwc_license_id),
             INDEX idx_product_id (product_id),
             INDEX idx_customer_id (customer_id),
