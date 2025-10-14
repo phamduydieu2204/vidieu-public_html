@@ -69,7 +69,7 @@ defined('ABSPATH') || exit;
                             <span class="dashicons dashicons-info-outline"
                                   title="Allow access from VPS/Cloud servers"></span>
                         </th>
-                        <th scope="col" style="width: 150px;">
+                        <th scope="col" style="width: 180px;">
                             <?php esc_html_e('Actions', 'vd-license-manager'); ?>
                         </th>
                     </tr>
@@ -158,22 +158,42 @@ defined('ABSPATH') || exit;
                         </td>
 
                         <td>
-                            <button type="button"
-                                    class="button button-small vd-save-config"
-                                    data-product-id="<?php echo esc_attr($product_id); ?>">
-                                <?php esc_html_e('Save', 'vd-license-manager'); ?>
-                            </button>
+                            <div class="vd-config-actions">
+                                <button type="button"
+                                        class="button button-small button-primary vd-save-config"
+                                        data-product-id="<?php echo esc_attr($product_id); ?>">
+                                    <?php esc_html_e('Save', 'vd-license-manager'); ?>
+                                </button>
 
-                            <?php if ($has_config && $config_id): ?>
-                                <a href="<?php echo esc_url(wp_nonce_url(
-                                    admin_url('admin.php?page=vd-share-configs&action=delete_config&id=' . $config_id),
-                                    'delete_config_' . $config_id
-                                )); ?>"
-                                   class="button button-small button-link-delete"
-                                   onclick="return confirm('<?php esc_attr_e('Are you sure you want to delete this config?', 'vd-license-manager'); ?>');">
-                                    <?php esc_html_e('Delete', 'vd-license-manager'); ?>
-                                </a>
-                            <?php endif; ?>
+                                <div class="vd-presets" style="margin-top: 5px;">
+                                    <span class="description"><?php esc_html_e('Presets:', 'vd-license-manager'); ?></span><br>
+                                    <button type="button" class="button button-small vd-preset-individual"
+                                            title="<?php esc_attr_e('Individual: 2 devices, 30 days, 100 req/day, no VPS', 'vd-license-manager'); ?>">
+                                        <?php esc_html_e('Individual', 'vd-license-manager'); ?>
+                                    </button>
+                                    <button type="button" class="button button-small vd-preset-team"
+                                            title="<?php esc_attr_e('Team: 5 devices, 365 days, 500 req/day, VPS allowed', 'vd-license-manager'); ?>">
+                                        <?php esc_html_e('Team', 'vd-license-manager'); ?>
+                                    </button>
+                                    <button type="button" class="button button-small vd-preset-enterprise"
+                                            title="<?php esc_attr_e('Enterprise: 10 devices, 365 days, 1000 req/day, VPS allowed', 'vd-license-manager'); ?>">
+                                        <?php esc_html_e('Enterprise', 'vd-license-manager'); ?>
+                                    </button>
+                                </div>
+
+                                <?php if ($has_config && $config_id): ?>
+                                    <div style="margin-top: 5px;">
+                                        <a href="<?php echo esc_url(wp_nonce_url(
+                                            admin_url('admin.php?page=vd-share-configs&action=delete_config&id=' . $config_id),
+                                            'delete_config_' . $config_id
+                                        )); ?>"
+                                           class="button button-small button-link-delete"
+                                           onclick="return confirm('<?php esc_attr_e('Are you sure you want to delete this config?', 'vd-license-manager'); ?>');">
+                                            <?php esc_html_e('Delete', 'vd-license-manager'); ?>
+                                        </a>
+                                    </div>
+                                <?php endif; ?>
+                            </div>
                         </td>
                     </tr>
                     <?php endforeach; ?>
@@ -325,8 +345,166 @@ tr.not-configured {
 </style>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Will be enhanced with AJAX functionality
-    console.log('VD Share Configs: Page loaded');
+jQuery(document).ready(function($) {
+    console.log('VD Share Configs: Enhanced JavaScript loaded');
+
+    // AJAX save functionality for individual product configs
+    $('.vd-save-config').on('click', function(e) {
+        e.preventDefault();
+
+        const $button = $(this);
+        const productId = $button.data('product-id');
+        const $row = $button.closest('tr');
+
+        // Get current values from the row
+        const configData = {
+            action: 'vd_save_share_config',
+            nonce: '<?php echo wp_create_nonce("vd_admin_nonce"); ?>',
+            product_id: productId,
+            max_devices: $row.find('input[name*="[max_devices]"]').val(),
+            validity_days: $row.find('input[name*="[validity_days]"]').val(),
+            max_requests_per_day: $row.find('input[name*="[max_requests_per_day]"]').val(),
+            allow_vps: $row.find('input[name*="[allow_vps]"]').is(':checked') ? 1 : 0
+        };
+
+        console.log('VD Share Configs: Saving config for product', productId, configData);
+
+        // UI feedback - button state
+        $button.prop('disabled', true).addClass('saving').text('<?php esc_html_e("Saving...", "vd-license-manager"); ?>');
+
+        // Send AJAX request
+        $.ajax({
+            url: ajaxurl,
+            type: 'POST',
+            data: configData,
+            dataType: 'json',
+            success: function(response) {
+                console.log('VD Share Configs: AJAX success', response);
+
+                if (response.success) {
+                    // Success feedback
+                    $button.removeClass('saving').addClass('saved').text('<?php esc_html_e("Saved!", "vd-license-manager"); ?>');
+                    $row.removeClass('not-configured').addClass('configured');
+
+                    // Update status indicator
+                    const $statusIndicator = $row.find('.description').last();
+                    $statusIndicator.css('color', '#00a32a').text('<?php esc_html_e("Configured", "vd-license-manager"); ?>');
+
+                    // Show success message
+                    showNotice('success', response.data.message || '<?php esc_html_e("Configuration saved successfully!", "vd-license-manager"); ?>');
+
+                    // Reset button after 2 seconds
+                    setTimeout(function() {
+                        $button.removeClass('saved').text('<?php esc_html_e("Save", "vd-license-manager"); ?>').prop('disabled', false);
+                    }, 2000);
+                } else {
+                    // Error feedback
+                    $button.removeClass('saving').text('<?php esc_html_e("Save", "vd-license-manager"); ?>').prop('disabled', false);
+                    showNotice('error', response.data.message || '<?php esc_html_e("Failed to save configuration.", "vd-license-manager"); ?>');
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('VD Share Configs: AJAX error', status, error, xhr.responseText);
+
+                // Error feedback
+                $button.removeClass('saving').text('<?php esc_html_e("Save", "vd-license-manager"); ?>').prop('disabled', false);
+                showNotice('error', '<?php esc_html_e("Network error. Please try again.", "vd-license-manager"); ?>');
+            }
+        });
+    });
+
+    // Show admin notice
+    function showNotice(type, message) {
+        // Remove existing notices
+        $('.vd-dynamic-notice').remove();
+
+        // Create new notice
+        const noticeClass = type === 'success' ? 'notice-success' : 'notice-error';
+        const notice = $(`
+            <div class="notice ${noticeClass} is-dismissible vd-dynamic-notice" style="margin: 15px 0;">
+                <p>${message}</p>
+                <button type="button" class="notice-dismiss">
+                    <span class="screen-reader-text"><?php esc_html_e("Dismiss this notice.", "vd-license-manager"); ?></span>
+                </button>
+            </div>
+        `);
+
+        // Insert after page title
+        $('.wp-heading-inline').after(notice);
+
+        // Handle dismiss button
+        notice.find('.notice-dismiss').on('click', function() {
+            notice.fadeOut(300, function() {
+                $(this).remove();
+            });
+        });
+
+        // Auto-dismiss success notices after 5 seconds
+        if (type === 'success') {
+            setTimeout(function() {
+                notice.fadeOut(300, function() {
+                    $(this).remove();
+                });
+            }, 5000);
+        }
+    }
+
+    // Form validation
+    $('input[type="number"]').on('input', function() {
+        const $input = $(this);
+        const value = parseInt($input.val());
+        const min = parseInt($input.attr('min'));
+        const max = parseInt($input.attr('max'));
+        const $row = $input.closest('tr');
+
+        // Validate range
+        if (value < min || value > max) {
+            $input.css('border-color', '#d63638');
+            $row.find('.vd-save-config').prop('disabled', true);
+        } else {
+            $input.css('border-color', '');
+
+            // Check if all inputs in row are valid
+            let allValid = true;
+            $row.find('input[type="number"]').each(function() {
+                const val = parseInt($(this).val());
+                const minVal = parseInt($(this).attr('min'));
+                const maxVal = parseInt($(this).attr('max'));
+                if (val < minVal || val > maxVal) {
+                    allValid = false;
+                    return false;
+                }
+            });
+
+            $row.find('.vd-save-config').prop('disabled', !allValid);
+        }
+    });
+
+    // Quick presets for common configurations
+    $('body').on('click', '.vd-preset-individual', function() {
+        const $row = $(this).closest('tr');
+        $row.find('input[name*="[max_devices]"]').val(2);
+        $row.find('input[name*="[validity_days]"]').val(30);
+        $row.find('input[name*="[max_requests_per_day]"]').val(100);
+        $row.find('input[name*="[allow_vps]"]').prop('checked', false);
+    });
+
+    $('body').on('click', '.vd-preset-team', function() {
+        const $row = $(this).closest('tr');
+        $row.find('input[name*="[max_devices]"]').val(5);
+        $row.find('input[name*="[validity_days]"]').val(365);
+        $row.find('input[name*="[max_requests_per_day]"]').val(500);
+        $row.find('input[name*="[allow_vps]"]').prop('checked', true);
+    });
+
+    $('body').on('click', '.vd-preset-enterprise', function() {
+        const $row = $(this).closest('tr');
+        $row.find('input[name*="[max_devices]"]').val(10);
+        $row.find('input[name*="[validity_days]"]').val(365);
+        $row.find('input[name*="[max_requests_per_day]"]').val(1000);
+        $row.find('input[name*="[allow_vps]"]').prop('checked', true);
+    });
+
+    console.log('VD Share Configs: All event handlers registered');
 });
 </script>

@@ -363,13 +363,291 @@
 }
 
 /* =============================================================================
+   Share Configs Interface
+   ============================================================================= */
+
+/* Share Config Table Enhancements */
+.vd-share-configs-table .configured {
+    background-color: #f0f8f0;
+}
+
+.vd-share-configs-table .not-configured {
+    background-color: #fdf2f2;
+}
+
+.vd-share-configs-table .configured .description {
+    color: #00a32a !important;
+    font-weight: 600;
+}
+
+.vd-share-configs-table .not-configured .description {
+    color: #d63638 !important;
+    font-weight: 600;
+}
+
+/* Input styling in share configs */
+.vd-share-configs-table input[type="number"] {
+    width: 80px;
+    text-align: center;
+    transition: border-color 0.2s ease;
+}
+
+.vd-share-configs-table input[type="number"]:focus {
+    border-color: #0073aa;
+    box-shadow: 0 0 0 1px #0073aa;
+}
+
+.vd-share-configs-table input[type="checkbox"] {
+    margin: 0;
+    transform: scale(1.2);
+}
+
+/* Preset Buttons Container */
+.vd-preset-buttons {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    align-items: center;
+    margin-top: 8px;
+}
+
+.vd-preset-buttons .vd-preset-label {
+    font-size: 11px;
+    color: #666;
+    margin-right: 4px;
+    white-space: nowrap;
+}
+
+/* Individual Preset Buttons */
+.vd-preset-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px 8px;
+    font-size: 11px;
+    font-weight: 500;
+    text-decoration: none;
+    border: 1px solid;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    line-height: 1.2;
+    min-width: 50px;
+    text-align: center;
+    position: relative;
+}
+
+.vd-preset-btn:hover {
+    text-decoration: none;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.vd-preset-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+/* Individual Preset Button Styles */
+.vd-preset-individual {
+    background-color: #e7f3ff;
+    border-color: #2271b1;
+    color: #2271b1;
+}
+
+.vd-preset-individual:hover {
+    background-color: #2271b1;
+    color: #fff;
+}
+
+.vd-preset-team {
+    background-color: #fff2e7;
+    border-color: #d17500;
+    color: #d17500;
+}
+
+.vd-preset-team:hover {
+    background-color: #d17500;
+    color: #fff;
+}
+
+.vd-preset-enterprise {
+    background-color: #f0e7ff;
+    border-color: #7b2cbf;
+    color: #7b2cbf;
+}
+
+.vd-preset-enterprise:hover {
+    background-color: #7b2cbf;
+    color: #fff;
+}
+
+/* Tooltip Styling */
+.vd-preset-btn[title] {
+    position: relative;
+}
+
+.vd-preset-btn[title]:hover::after {
+    content: attr(title);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #333;
+    color: #fff;
+    padding: 6px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    white-space: nowrap;
+    z-index: 1000;
+    margin-bottom: 5px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.vd-preset-btn[title]:hover::before {
+    content: '';
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 4px solid transparent;
+    border-top-color: #333;
+    z-index: 1000;
+    margin-bottom: 1px;
+}
+
+/* Save Button Enhancements */
+.vd-save-config {
+    background-color: #0073aa;
+    border-color: #0073aa;
+    color: #fff;
+    padding: 4px 12px;
+    font-size: 12px;
+    border-radius: 3px;
+    transition: all 0.2s ease;
+}
+
+.vd-save-config:hover {
+    background-color: #005177;
+    border-color: #005177;
+    color: #fff;
+}
+
+.vd-save-config.saving {
+    background-color: #ddd;
+    border-color: #ddd;
+    color: #666;
+    cursor: not-allowed;
+}
+
+.vd-save-config.saved {
+    background-color: #00a32a;
+    border-color: #00a32a;
+    color: #fff;
+}
+
+.vd-save-config:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Actions Column Styling */
+.vd-share-configs-table .actions-cell {
+    padding: 12px 8px !important;
+    vertical-align: top;
+    min-width: 200px;
+}
+
+.vd-actions-container {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    align-items: flex-start;
+}
+
+/* Form Validation Styling */
+.vd-share-configs-table input.validation-error {
+    border-color: #d63638 !important;
+    box-shadow: 0 0 0 1px #d63638 !important;
+}
+
+.vd-validation-message {
+    font-size: 11px;
+    color: #d63638;
+    margin-top: 2px;
+    display: none;
+}
+
+.vd-validation-message.show {
+    display: block;
+}
+
+/* Notice Styling for Share Configs */
+.vd-share-config-notice {
+    margin: 5px 0 15px 0;
+    padding: 8px 12px;
+    border-left: 4px solid;
+    background: #fff;
+    border-radius: 0 3px 3px 0;
+    font-size: 13px;
+}
+
+.vd-share-config-notice.notice-success {
+    border-left-color: #00a32a;
+    background-color: #f0f8f0;
+    color: #155724;
+}
+
+.vd-share-config-notice.notice-error {
+    border-left-color: #d63638;
+    background-color: #fdf2f2;
+    color: #721c24;
+}
+
+.vd-share-config-notice.notice-warning {
+    border-left-color: #dba617;
+    background-color: #fefaf0;
+    color: #856404;
+}
+
+/* Mobile Responsiveness for Share Configs */
+@media (max-width: 768px) {
+    .vd-preset-buttons {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 4px;
+    }
+
+    .vd-preset-buttons .vd-preset-label {
+        margin-bottom: 4px;
+    }
+
+    .vd-actions-container {
+        width: 100%;
+    }
+
+    .vd-share-configs-table input[type="number"] {
+        width: 100%;
+        max-width: 80px;
+    }
+
+    .vd-preset-btn {
+        min-width: 60px;
+        font-size: 10px;
+        padding: 3px 6px;
+    }
+}
+
+/* =============================================================================
    Print Styles
    ============================================================================= */
 
 @media print {
     .vd-breadcrumb,
     .vd-mock-buttons,
-    .vd-quick-actions-grid {
+    .vd-quick-actions-grid,
+    .vd-preset-buttons,
+    .vd-save-config {
         display: none;
     }
 
@@ -380,5 +658,9 @@
     .vd-placeholder {
         border: none;
         box-shadow: none;
+    }
+
+    .vd-share-configs-table .actions-cell {
+        display: none;
     }
 }
