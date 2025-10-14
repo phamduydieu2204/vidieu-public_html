@@ -324,7 +324,7 @@ class VD_Page_Sidebar_Mappings {
                     'per_page' => $per_page
                 ),
                 array('page_id' => $page_id),
-                array('%s', '%s', '%s'),
+                array('%s', '%s', '%s', '%d'),
                 array('%d')
             );
         } else {
@@ -337,7 +337,7 @@ class VD_Page_Sidebar_Mappings {
                     'shortcode_config' => $shortcode_config,
                     'per_page' => $per_page
                 ),
-                array('%d', '%s', '%s', '%s')
+                array('%d', '%s', '%s', '%s', '%d')
             );
         }
         
@@ -399,7 +399,7 @@ class VD_Page_Sidebar_Mappings {
                     'id' => $mapping->id,
                     'page_title' => $page->post_title,
                     'sidebar_type_label' => $sidebar_type_label,
-                    'config_label' => $config_label
+                    'config_label' => $config_label . ' (per_page: ' . ($mapping->per_page ?? '16') . ')'
                 );
             }
         }
@@ -561,9 +561,20 @@ class VD_Page_Sidebar_Mappings {
         // Get per_page from mapping or use default
         $per_page = !empty($mapping->per_page) ? $mapping->per_page : 16;
 
+        // Debug: Add to WordPress debug log
+        if (defined('WP_DEBUG') && WP_DEBUG) {
+            error_log("VD Debug - Mapping per_page: " . ($mapping->per_page ?? 'null'));
+            error_log("VD Debug - Final per_page: " . $per_page);
+        }
+
         // Get shortcode attributes from config and add per_page
         $shortcode_attrs = !empty($mapping->shortcode_config) ? $mapping->shortcode_config : 'columns="4" title="SẢN PHẨM THEO NHU CẦU"';
         $shortcode_attrs = 'per_page="' . $per_page . '" ' . $shortcode_attrs;
+
+        // Debug: Log final shortcode
+        if (defined('WP_DEBUG') && WP_DEBUG) {
+            error_log("VD Debug - Final shortcode: " . $shortcode_attrs);
+        }
         
         // Add sidebar type to attributes so shortcode knows to skip its own sidebar
         $shortcode_attrs .= ' custom_sidebar="' . $mapping->sidebar_type . '"';
@@ -573,6 +584,16 @@ class VD_Page_Sidebar_Mappings {
         
         // Start output buffering
         ob_start();
+
+        // Show debug info for admins
+        if (current_user_can('manage_options')) {
+            echo '<!-- VD Debug Info -->';
+            echo '<!-- Mapping ID: ' . ($mapping->id ?? 'null') . ' -->';
+            echo '<!-- Per Page from DB: ' . ($mapping->per_page ?? 'null') . ' -->';
+            echo '<!-- Final Per Page: ' . $per_page . ' -->';
+            echo '<!-- Shortcode: [' . $shortcode_attrs . '] -->';
+            echo '<!-- End VD Debug Info -->';
+        }
         
         // Check if we should display products or posts
         if ($mapping->sidebar_type === 'product_categories' || 
