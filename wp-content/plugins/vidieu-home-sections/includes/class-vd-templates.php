@@ -104,8 +104,20 @@ class VD_Templates {
             }
         }
         
+        // Debug: Log query args for admins
+        if (defined('WP_DEBUG') && WP_DEBUG && current_user_can('manage_options')) {
+            error_log("VD Debug - Query Args: " . print_r($query_args, true));
+        }
+
         // Use WP_Query for proper WordPress loop compatibility
         $products = new WP_Query($query_args);
+
+        // Debug: Log query results for admins
+        if (defined('WP_DEBUG') && WP_DEBUG && current_user_can('manage_options')) {
+            error_log("VD Debug - Found Posts: " . $products->found_posts);
+            error_log("VD Debug - Post Count: " . $products->post_count);
+            error_log("VD Debug - SQL: " . $products->request);
+        }
         
         if (!$products->have_posts()) {
             wp_reset_postdata();
@@ -114,6 +126,22 @@ class VD_Templates {
         
         // Start output buffering
         ob_start();
+
+        // Debug: Show query info for admins
+        if (current_user_can('manage_options')) {
+            echo '<!-- VD Query Debug -->';
+            echo '<!-- Posts Per Page: ' . $query_args['posts_per_page'] . ' -->';
+            echo '<!-- Found Posts: ' . $products->found_posts . ' -->';
+            echo '<!-- Post Count: ' . $products->post_count . ' -->';
+            echo '<!-- Max Pages: ' . $products->max_num_pages . ' -->';
+            if (isset($query_args['tax_query'])) {
+                echo '<!-- Has Tax Query: Yes -->';
+                echo '<!-- Category: ' . ($args['category'] ?? 'none') . ' -->';
+            } else {
+                echo '<!-- Has Tax Query: No -->';
+            }
+            echo '<!-- End Query Debug -->';
+        }
         
         // Set up WooCommerce loop globals
         global $woocommerce_loop;
