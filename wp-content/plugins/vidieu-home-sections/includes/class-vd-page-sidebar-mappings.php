@@ -227,8 +227,8 @@ class VD_Page_Sidebar_Mappings {
                             </th>
                             <td>
                                 <input type="text" id="vd-shortcode-config" class="large-text" 
-                                       placeholder='per_page="8" columns="4" title="SẢN PHẨM THEO NHU CẦU"'
-                                       value='per_page="8" columns="4" title="SẢN PHẨM THEO NHU CẦU"' />
+                                       placeholder='per_page="16" columns="4" title="SẢN PHẨM THEO NHU CẦU"'
+                                       value='per_page="16" columns="4" title="SẢN PHẨM THEO NHU CẦU"' />
                                 <p class="description"><?php _e('Shortcode attributes (same as homepage)', VD_HOME_TEXT_DOMAIN); ?></p>
                             </td>
                         </tr>
@@ -534,7 +534,7 @@ class VD_Page_Sidebar_Mappings {
         $mapping = $GLOBALS['vd_current_page_mapping'];
         
         // Get shortcode attributes from config
-        $shortcode_attrs = !empty($mapping->shortcode_config) ? $mapping->shortcode_config : 'per_page="8" columns="4" title="SẢN PHẨM THEO NHU CẦU"';
+        $shortcode_attrs = !empty($mapping->shortcode_config) ? $mapping->shortcode_config : 'per_page="16" columns="4" title="SẢN PHẨM THEO NHU CẦU"';
         
         // Add sidebar type to attributes so shortcode knows to skip its own sidebar
         $shortcode_attrs .= ' custom_sidebar="' . $mapping->sidebar_type . '"';
