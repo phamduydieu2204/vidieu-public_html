@@ -127,11 +127,23 @@ function track_memory() {
             global $wpdb;
 
             $required_tables = [
-                'vd_licenses',
-                'vd_devices',
-                'vd_license_access_log',
-                'vd_product_pools',
-                'vd_provider_accounts'
+                // Core tables (must exist)
+                'vd_license_keys',           // Main license table (NOT vd_licenses)
+                'vd_license_devices',        // Device tracking (NOT vd_devices)
+                'vd_license_access_log',     // Access logging
+                'vd_pools',                  // Pool definitions
+                'vd_provider_accounts',      // Account credentials
+
+                // Configuration tables
+                'vd_product_share_configs',  // Per-product rules
+                'vd_product_pools',          // Product-pool links
+                'vd_pool_accounts',          // Pool-account links
+
+                // Tracking tables
+                'vd_license_rate_limits',    // Rate limiting
+                'vd_license_device_limits',  // Device limits
+                'vd_device_fingerprints',    // Fingerprint history
+                'vd_account_fetch_log'       // Fetch tracking
             ];
 
             $missing_tables = [];

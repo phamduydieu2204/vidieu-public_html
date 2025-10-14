@@ -144,6 +144,13 @@ if (file_exists($cron_file)) {
     error_log('VD Loader: Loaded Cron Handler from: ' . $cron_file);
 }
 
+// Load Migration Scripts
+$migration_file = VD_PLUGIN_DIR . 'includes/migrations/fix-double-prefix.php';
+if (file_exists($migration_file)) {
+    require_once $migration_file;
+    error_log('VD Loader: Loaded Migration Script: fix-double-prefix.php');
+}
+
 /**
  * Plugin activation hook
  *

@@ -1,0 +1,92 @@
+VD LICENSE MANAGER - TABLE NAMES QUICK REFERENCE
+================================================
+
+⚠️  ALWAYS use these EXACT names (after bz_ prefix)
+
+LICENSE MANAGEMENT:
+✅ bz_vd_license_keys        (NOT: vd_licenses)
+✅ bz_vd_license_devices     (NOT: vd_devices)
+✅ bz_vd_license_access_log
+✅ bz_vd_license_rate_limits
+✅ bz_vd_license_device_limits
+
+POOL & ACCOUNTS:
+✅ bz_vd_pools
+✅ bz_vd_provider_accounts
+✅ bz_vd_pool_accounts
+✅ bz_vd_product_pools
+
+CONFIGURATION:
+✅ bz_vd_product_share_configs
+
+TRACKING:
+✅ bz_vd_device_fingerprints
+✅ bz_vd_account_fetch_log
+
+ADMIN:
+✅ bz_vd_page_sidebar_mappings
+
+================================================
+
+IN PHP CODE:
+$wpdb->prefix . 'vd_license_keys'
+// Result: bz_vd_license_keys ✅
+
+IN SQL QUERIES:
+SELECT * FROM bz_vd_license_keys WHERE id = 1; ✅
+
+IN TEST SCRIPTS:
+$tables = [
+    'vd_license_keys',     // Script adds bz_ prefix
+    'vd_license_devices',  // Script adds bz_ prefix
+];
+
+================================================
+
+COMMON MISTAKES:
+❌ vd_licenses           → ✅ vd_license_keys
+❌ vd_devices            → ✅ vd_license_devices
+❌ bz_bz_vd_*            → ✅ bz_vd_* (no double prefix)
+❌ bz_license_keys       → ✅ bz_vd_license_keys (need vd_)
+❌ vd_license_log        → ✅ vd_license_access_log
+
+================================================
+
+CURRENT DATABASE STATUS (2025-10-14):
+- Total VD Tables: 14
+- WordPress Prefix: bz_
+- Plugin Prefix: vd_
+- Full Prefix: bz_vd_
+
+Tables with data:
+✅ bz_vd_license_keys (6 rows)
+✅ bz_vd_license_devices (4 rows)
+✅ bz_vd_license_access_log (38 rows)
+✅ bz_vd_pools (2 rows)
+✅ bz_vd_provider_accounts (2 rows)
+✅ bz_vd_page_sidebar_mappings (1 row)
+
+Empty but ready:
+✅ bz_vd_product_share_configs
+✅ bz_vd_product_pools
+✅ bz_vd_pool_accounts
+✅ bz_vd_license_rate_limits
+✅ bz_vd_license_device_limits
+✅ bz_vd_device_fingerprints
+✅ bz_vd_account_fetch_log
+
+================================================
+
+REMEMBER:
+- WordPress prefix: bz_
+- Plugin prefix: vd_
+- Full prefix: bz_vd_
+- DON'T double the prefix!
+- Use $wpdb->prefix in code
+- Never hardcode table names
+
+FOR DEVELOPERS:
+Always check docs/DATABASE_SCHEMA.md for full details
+
+FOR TESTERS:
+Use names from this list in test scripts
