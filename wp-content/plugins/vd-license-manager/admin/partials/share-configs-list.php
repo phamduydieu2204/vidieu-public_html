@@ -122,7 +122,6 @@ defined('ABSPATH') || exit;
                                    name="configs[<?php echo esc_attr($product_id); ?>][max_devices]"
                                    value="<?php echo esc_attr($max_devices); ?>"
                                    min="1"
-                                   max="10"
                                    class="small-text"
                                    style="width: 60px;">
                         </td>
@@ -132,7 +131,6 @@ defined('ABSPATH') || exit;
                                    name="configs[<?php echo esc_attr($product_id); ?>][validity_days]"
                                    value="<?php echo esc_attr($validity_days); ?>"
                                    min="1"
-                                   max="3650"
                                    class="small-text"
                                    style="width: 80px;">
                         </td>
@@ -142,7 +140,6 @@ defined('ABSPATH') || exit;
                                    name="configs[<?php echo esc_attr($product_id); ?>][max_requests_per_day]"
                                    value="<?php echo esc_attr($max_requests); ?>"
                                    min="10"
-                                   max="10000"
                                    class="small-text"
                                    style="width: 80px;">
                         </td>
@@ -433,15 +430,14 @@ jQuery(document).ready(function($) {
         }
     }
 
-    // Form validation with improved logic
+    // Form validation with improved logic (no maximum limits)
     function validateRow($row) {
         let allValid = true;
 
         $row.find('input[type="number"]').each(function() {
             const $input = $(this);
             const value = $input.val().trim();
-            const min = parseInt($input.attr('min'));
-            const max = parseInt($input.attr('max'));
+            const min = parseInt($input.attr('min')) || 0;
 
             // Skip validation if input is empty (user might be typing)
             if (value === '') {
@@ -451,8 +447,8 @@ jQuery(document).ready(function($) {
 
             const numValue = parseInt(value);
 
-            // Check if it's a valid number and within range
-            if (isNaN(numValue) || numValue < min || numValue > max) {
+            // Check if it's a valid number and meets minimum requirement only
+            if (isNaN(numValue) || numValue < min) {
                 $input.css('border-color', '#d63638');
                 allValid = false;
             } else {

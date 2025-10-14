@@ -100,17 +100,17 @@ class VD_LM_Share_Configs_Ajax {
 
         error_log('VD AJAX: Config data: ' . print_r($config_data, true));
 
-        // Validate
-        if ($config_data['max_devices'] < 1 || $config_data['max_devices'] > 10) {
-            wp_send_json_error(array('message' => 'Max devices must be between 1 and 10.'));
+        // Validate (only minimum values, no maximum limits)
+        if ($config_data['max_devices'] < 1) {
+            wp_send_json_error(array('message' => 'Max devices must be at least 1.'));
         }
 
-        if ($config_data['validity_days'] < 1 || $config_data['validity_days'] > 3650) {
-            wp_send_json_error(array('message' => 'Validity days must be between 1 and 3650.'));
+        if ($config_data['validity_days'] < 1) {
+            wp_send_json_error(array('message' => 'Validity days must be at least 1.'));
         }
 
-        if ($config_data['max_requests_per_day'] < 10 || $config_data['max_requests_per_day'] > 10000) {
-            wp_send_json_error(array('message' => 'Max requests per day must be between 10 and 10000.'));
+        if ($config_data['max_requests_per_day'] < 10) {
+            wp_send_json_error(array('message' => 'Max requests per day must be at least 10.'));
         }
 
         error_log('VD AJAX: Validation passed');

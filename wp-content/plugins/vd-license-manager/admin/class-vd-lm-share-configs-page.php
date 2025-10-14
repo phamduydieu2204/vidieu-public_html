@@ -99,18 +99,18 @@ class VD_LM_Share_Configs_Page {
         );
 
         // Validate
-        if ($config_data['max_devices'] < 1 || $config_data['max_devices'] > 10) {
-            $this->add_notice('error', 'Max devices must be between 1 and 10.');
+        if ($config_data['max_devices'] < 1) {
+            $this->add_notice('error', 'Max devices must be at least 1.');
             return;
         }
 
-        if ($config_data['validity_days'] < 1 || $config_data['validity_days'] > 3650) {
-            $this->add_notice('error', 'Validity days must be between 1 and 3650.');
+        if ($config_data['validity_days'] < 1) {
+            $this->add_notice('error', 'Validity days must be at least 1.');
             return;
         }
 
-        if ($config_data['max_requests_per_day'] < 10 || $config_data['max_requests_per_day'] > 10000) {
-            $this->add_notice('error', 'Max requests per day must be between 10 and 10000.');
+        if ($config_data['max_requests_per_day'] < 10) {
+            $this->add_notice('error', 'Max requests per day must be at least 10.');
             return;
         }
 
