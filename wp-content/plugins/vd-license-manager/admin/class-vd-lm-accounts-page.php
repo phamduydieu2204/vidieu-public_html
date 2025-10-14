@@ -227,11 +227,15 @@ class VD_LM_Accounts_Page {
 				throw new Exception( $result->get_error_message() );
 			}
 
+			// Handle pool assignments for Entity-based UI
+			$account_id = $result; // Account ID from create_account
+			$this->handle_pool_assignments( $account_id );
+
 			// Success - clear session and redirect
 			unset( $_SESSION['vd_form_data'] );
 			unset( $_SESSION['vd_form_errors'] );
 
-			$this->add_notice( __( 'Account created successfully!', 'vd-license-manager' ), 'success' );
+			$this->add_notice( __( 'Account created successfully with pool assignments!', 'vd-license-manager' ), 'success' );
 			wp_safe_redirect( admin_url( 'admin.php?page=vd-accounts' ) );
 			exit;
 
@@ -312,11 +316,14 @@ class VD_LM_Accounts_Page {
 				throw new Exception( $result->get_error_message() );
 			}
 
+			// Handle pool assignments for Entity-based UI
+			$this->handle_pool_assignments( $id );
+
 			// Success - clear session and redirect
 			unset( $_SESSION['vd_form_data'] );
 			unset( $_SESSION['vd_form_errors'] );
 
-			$this->add_notice( __( 'Account updated successfully!', 'vd-license-manager' ), 'success' );
+			$this->add_notice( __( 'Account updated successfully with pool assignments!', 'vd-license-manager' ), 'success' );
 			wp_safe_redirect( admin_url( 'admin.php?page=vd-accounts' ) );
 			exit;
 
@@ -487,6 +494,10 @@ class VD_LM_Accounts_Page {
 		$providers = $this->get_provider_options();
 		$form_action = 'create';
 
+		// Get pools data for Entity-based UI
+		$available_pools = $this->get_available_pools();
+		$assigned_pools = array(); // Empty for new account
+
 		require_once VD_PLUGIN_DIR . 'admin/partials/accounts-form.php';
 	}
 
@@ -540,6 +551,10 @@ class VD_LM_Accounts_Page {
 
 		$providers = $this->get_provider_options();
 		$form_action = 'update';
+
+		// Get pools data for Entity-based UI
+		$available_pools = $this->get_available_pools();
+		$assigned_pools = $this->get_assigned_pools( $account->id );
 
 		// DEBUG: Log before including form
 		error_log( 'VD DEBUG: Including accounts-form.php with form_action: ' . $form_action );
@@ -813,5 +828,119 @@ class VD_LM_Accounts_Page {
 
 		// Check and fix encrypted columns
 		VD_LM_Database::check_and_fix_encrypted_columns();
+	}
+
+	/**
+	 * Get available pools for assignment
+	 *
+	 * @since 1.0.1
+	 * @return array Array of pools
+	 */
+	private function get_available_pools() {
+		global $wpdb;
+
+		$pools = $wpdb->get_results(
+			"SELECT id, name, description FROM {$wpdb->prefix}vd_pools
+			 WHERE status = 'active'
+			 ORDER BY name ASC",
+			ARRAY_A
+		);
+
+		return $pools ? $pools : array();
+	}
+
+	/**
+	 * Get assigned pools for an account
+	 *
+	 * @since 1.0.1
+	 * @param int $account_id Account ID
+	 * @return array Array of pool assignments
+	 */
+	private function get_assigned_pools( $account_id ) {
+		global $wpdb;
+
+		$results = $wpdb->get_results( $wpdb->prepare(
+			"SELECT pa.pool_id, pa.weight, pa.is_primary, p.name, p.description
+			 FROM {$wpdb->prefix}vd_pool_accounts pa
+			 LEFT JOIN {$wpdb->prefix}vd_pools p ON pa.pool_id = p.id
+			 WHERE pa.account_id = %d AND pa.status = 'active'
+			 ORDER BY pa.weight DESC",
+			$account_id
+		), ARRAY_A );
+
+		return $results ? $results : array();
+	}
+
+	/**
+	 * Handle pool assignments for an account
+	 *
+	 * @since 1.0.1
+	 * @param int $account_id Account ID
+	 */
+	private function handle_pool_assignments( $account_id ) {
+		global $wpdb;
+
+		if ( ! isset( $_POST['assigned_pools'] ) || ! is_array( $_POST['assigned_pools'] ) ) {
+			return;
+		}
+
+		$pool_accounts_table = $wpdb->prefix . 'vd_pool_accounts';
+
+		// Start transaction
+		$wpdb->query( 'START TRANSACTION' );
+
+		try {
+			// Remove existing assignments for this account
+			$wpdb->delete(
+				$pool_accounts_table,
+				array( 'account_id' => $account_id ),
+				array( '%d' )
+			);
+
+			// Add new assignments
+			$assigned_pools = $_POST['assigned_pools'];
+			$success = true;
+
+			foreach ( $assigned_pools as $index => $pool_id ) {
+				$pool_id = absint( $pool_id );
+				if ( $pool_id > 0 ) {
+					$weight = isset( $_POST['pool_weights'][$index] ) ?
+							 absint( $_POST['pool_weights'][$index] ) : 1;
+
+					$is_primary = isset( $_POST['pool_primary'][$index] ) ? 1 : 0;
+
+					$result = $wpdb->insert(
+						$pool_accounts_table,
+						array(
+							'pool_id' => $pool_id,
+							'account_id' => $account_id,
+							'weight' => $weight,
+							'is_primary' => $is_primary,
+							'status' => 'active'
+						),
+						array( '%d', '%d', '%d', '%d', '%s' )
+					);
+
+					if ( $result === false ) {
+						$success = false;
+						break;
+					}
+				}
+			}
+
+			if ( $success ) {
+				$wpdb->query( 'COMMIT' );
+				error_log( "VD Accounts: Pool assignments updated for account ID {$account_id}" );
+			} else {
+				$wpdb->query( 'ROLLBACK' );
+				error_log( "VD Accounts: Failed to update pool assignments for account ID {$account_id}" );
+				throw new Exception( 'Failed to update pool assignments' );
+			}
+
+		} catch ( Exception $e ) {
+			$wpdb->query( 'ROLLBACK' );
+			error_log( "VD Accounts: Exception in pool assignments: " . $e->getMessage() );
+			throw new Exception( 'Failed to update pool assignments: ' . $e->getMessage() );
+		}
 	}
 }

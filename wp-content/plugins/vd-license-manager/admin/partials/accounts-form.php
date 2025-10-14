@@ -459,6 +459,83 @@ if ($is_edit && $account && !empty($account->account_password)) {
 				</div>
 				<?php endif; ?>
 
+				<!-- Pool Assignments -->
+				<div class="postbox">
+					<div class="postbox-header">
+						<h2 class="hndle"><?php esc_html_e( 'Pool Assignments', 'vd-license-manager' ); ?></h2>
+					</div>
+					<div class="inside">
+						<div id="vd-pool-assignments">
+							<?php if ( $is_edit && ! empty( $assigned_pools ) ): ?>
+								<?php foreach ( $assigned_pools as $index => $assignment ): ?>
+									<div class="vd-pool-assignment-row" data-index="<?php echo esc_attr( $index ); ?>">
+										<select name="assigned_pools[]" class="regular-text">
+											<option value=""><?php esc_html_e( 'Select a pool', 'vd-license-manager' ); ?></option>
+											<?php foreach ( $available_pools as $pool ): ?>
+												<option value="<?php echo esc_attr( $pool['id'] ); ?>"
+														<?php selected( $assignment['pool_id'], $pool['id'] ); ?>>
+													<?php echo esc_html( $pool['name'] ); ?>
+												</option>
+											<?php endforeach; ?>
+										</select>
+										<input type="number"
+											   name="pool_weights[]"
+											   value="<?php echo esc_attr( $assignment['weight'] ); ?>"
+											   min="1"
+											   max="100"
+											   class="small-text"
+											   placeholder="<?php esc_attr_e( 'Weight', 'vd-license-manager' ); ?>">
+										<label>
+											<input type="checkbox"
+												   name="pool_primary[<?php echo esc_attr( $index ); ?>]"
+												   <?php checked( $assignment['is_primary'], 1 ); ?>>
+											<?php esc_html_e( 'Primary', 'vd-license-manager' ); ?>
+										</label>
+										<button type="button" class="button button-secondary vd-remove-pool-assignment">
+											<?php esc_html_e( 'Remove', 'vd-license-manager' ); ?>
+										</button>
+									</div>
+								<?php endforeach; ?>
+							<?php else: ?>
+								<div class="vd-pool-assignment-row" data-index="0">
+									<select name="assigned_pools[]" class="regular-text">
+										<option value=""><?php esc_html_e( 'Select a pool', 'vd-license-manager' ); ?></option>
+										<?php if ( ! empty( $available_pools ) ): ?>
+											<?php foreach ( $available_pools as $pool ): ?>
+												<option value="<?php echo esc_attr( $pool['id'] ); ?>">
+													<?php echo esc_html( $pool['name'] ); ?>
+												</option>
+											<?php endforeach; ?>
+										<?php endif; ?>
+									</select>
+									<input type="number"
+										   name="pool_weights[]"
+										   value="1"
+										   min="1"
+										   max="100"
+										   class="small-text"
+										   placeholder="<?php esc_attr_e( 'Weight', 'vd-license-manager' ); ?>">
+									<label>
+										<input type="checkbox" name="pool_primary[0]">
+										<?php esc_html_e( 'Primary', 'vd-license-manager' ); ?>
+									</label>
+									<button type="button" class="button button-secondary vd-remove-pool-assignment">
+										<?php esc_html_e( 'Remove', 'vd-license-manager' ); ?>
+									</button>
+								</div>
+							<?php endif; ?>
+						</div>
+
+						<button type="button" id="vd-add-pool-assignment" class="button button-secondary">
+							<?php esc_html_e( 'Add Pool Assignment', 'vd-license-manager' ); ?>
+						</button>
+
+						<p class="description">
+							<?php esc_html_e( 'Assign this account to pools. Weight determines priority (higher = more likely to be selected). Mark one as primary for default selection.', 'vd-license-manager' ); ?>
+						</p>
+					</div>
+				</div>
+
 				<div class="postbox">
 					<div class="postbox-header">
 						<h2 class="hndle"><?php esc_html_e( 'Security Tips', 'vd-license-manager' ); ?></h2>
@@ -477,3 +554,169 @@ if ($is_edit && $account && !empty($account->account_password)) {
 		</div>
 	</form>
 </div>
+
+<style>
+/* Pool Assignment Styles */
+.vd-pool-assignment-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+    padding: 10px;
+    background: #f9f9f9;
+    border-radius: 4px;
+    flex-wrap: wrap;
+}
+
+.vd-pool-assignment-row select {
+    min-width: 150px;
+    flex: 1;
+}
+
+.vd-pool-assignment-row input[type="number"] {
+    width: 60px;
+}
+
+.vd-pool-assignment-row label {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 12px;
+    margin: 0;
+}
+
+#vd-add-pool-assignment {
+    margin-top: 10px;
+}
+
+#vd-pool-assignments .description {
+    margin-top: 10px;
+    font-style: italic;
+}
+
+@media (max-width: 782px) {
+    .vd-pool-assignment-row {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .vd-pool-assignment-row select,
+    .vd-pool-assignment-row input {
+        width: 100%;
+        max-width: none;
+    }
+}
+</style>
+
+<script>
+jQuery(document).ready(function($) {
+    let assignmentIndex = $('#vd-pool-assignments .vd-pool-assignment-row').length;
+
+    // Pool options for cloning
+    const poolOptions = <?php echo json_encode( $available_pools ?? array() ); ?>;
+
+    // Add new pool assignment row
+    $('#vd-add-pool-assignment').on('click', function() {
+        const newRow = createPoolAssignmentRow(assignmentIndex);
+        $('#vd-pool-assignments').append(newRow);
+        assignmentIndex++;
+        updateRemoveButtons();
+    });
+
+    // Remove pool assignment row
+    $(document).on('click', '.vd-remove-pool-assignment', function() {
+        $(this).closest('.vd-pool-assignment-row').remove();
+        updateRemoveButtons();
+    });
+
+    // Create new pool assignment row
+    function createPoolAssignmentRow(index) {
+        let optionsHtml = '<option value=""><?php esc_html_e( "Select a pool", "vd-license-manager" ); ?></option>';
+        poolOptions.forEach(function(pool) {
+            optionsHtml += `<option value="${pool.id}">${pool.name}</option>`;
+        });
+
+        return `
+            <div class="vd-pool-assignment-row" data-index="${index}">
+                <select name="assigned_pools[]" class="regular-text">
+                    ${optionsHtml}
+                </select>
+                <input type="number"
+                       name="pool_weights[]"
+                       value="1"
+                       min="1"
+                       max="100"
+                       class="small-text"
+                       placeholder="<?php esc_attr_e( 'Weight', 'vd-license-manager' ); ?>">
+                <label>
+                    <input type="checkbox" name="pool_primary[${index}]">
+                    <?php esc_html_e( 'Primary', 'vd-license-manager' ); ?>
+                </label>
+                <button type="button" class="button button-secondary vd-remove-pool-assignment">
+                    <?php esc_html_e( 'Remove', 'vd-license-manager' ); ?>
+                </button>
+            </div>
+        `;
+    }
+
+    // Update remove button visibility
+    function updateRemoveButtons() {
+        const rows = $('#vd-pool-assignments .vd-pool-assignment-row');
+        if (rows.length <= 1) {
+            rows.find('.vd-remove-pool-assignment').hide();
+        } else {
+            rows.find('.vd-remove-pool-assignment').show();
+        }
+    }
+
+    // Ensure only one primary checkbox is checked
+    $(document).on('change', 'input[name^="pool_primary"]', function() {
+        if ($(this).is(':checked')) {
+            $('input[name^="pool_primary"]').not(this).prop('checked', false);
+        }
+    });
+
+    // Initial update
+    updateRemoveButtons();
+
+    // Form validation
+    $('form').on('submit', function(e) {
+        // Check for duplicate pool assignments
+        const selectedPools = [];
+        let hasDuplicates = false;
+
+        $('#vd-pool-assignments select[name="assigned_pools[]"]').each(function() {
+            const value = $(this).val();
+            if (value && selectedPools.includes(value)) {
+                hasDuplicates = true;
+                return false;
+            }
+            if (value) {
+                selectedPools.push(value);
+            }
+        });
+
+        if (hasDuplicates) {
+            alert('<?php esc_html_e( "Cannot assign the same pool multiple times to one account.", "vd-license-manager" ); ?>');
+            e.preventDefault();
+            return false;
+        }
+
+        // Validate weights
+        let invalidWeight = false;
+        $('#vd-pool-assignments input[name="pool_weights[]"]').each(function() {
+            const weight = parseInt($(this).val());
+            if (isNaN(weight) || weight < 1 || weight > 100) {
+                invalidWeight = true;
+                return false;
+            }
+        });
+
+        if (invalidWeight) {
+            alert('<?php esc_html_e( "Pool weights must be between 1 and 100.", "vd-license-manager" ); ?>');
+            e.preventDefault();
+            return false;
+        }
+    });
+});
+</script>
