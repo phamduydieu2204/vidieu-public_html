@@ -504,33 +504,42 @@ class VD_REST_API {
     }
 
     /**
-     * Assign pool to license (first-time access)
+     * Assign pool to license using new strategy pattern
      *
-     * @param int $license_id
-     * @param int $product_id
-     * @return bool|WP_Error
+     * @param int $license_id License ID
+     * @param int $product_id Product ID
+     * @return bool|WP_Error True on success, WP_Error on failure
      */
     private function assign_pool_to_license($license_id, $product_id) {
         global $wpdb;
 
-        $pools_table = $wpdb->prefix . 'vd_product_pools';
-        $accounts_table = $wpdb->prefix . 'vd_provider_accounts';
+        VD_LM_Logger_Service::info('REST API: Starting pool assignment', array(
+            'license_id' => $license_id,
+            'product_id' => $product_id
+        ));
 
-        // Get available pool (least-filled, active)
-        $pool = $wpdb->get_row($wpdb->prepare(
-            "SELECT pp.*, pa.id as account_id
-             FROM $pools_table pp
-             INNER JOIN $accounts_table pa ON pp.account_id = pa.id
-             WHERE pp.product_id = %d
-             AND pp.status = 'active'
-             AND pa.status = 'active'
-             AND pp.assigned_count < pp.pool_capacity
-             ORDER BY pp.priority ASC, pp.assigned_count ASC
-             LIMIT 1",
-            $product_id
-        ), ARRAY_A);
+        // Load strategy factory
+        require_once(plugin_dir_path(__FILE__) . 'services/pool-assignment/interface-pool-assignment-strategy.php');
+        require_once(plugin_dir_path(__FILE__) . 'services/pool-assignment/class-pool-assignment-factory.php');
 
-        if (!$pool) {
+        // Get strategy for product
+        $strategy = VD_Pool_Assignment_Factory::create_strategy_for_product($product_id);
+
+        if (is_wp_error($strategy)) {
+            VD_LM_Logger_Service::error('REST API: Failed to create assignment strategy', array(
+                'product_id' => $product_id,
+                'error' => $strategy->get_error_message()
+            ));
+            return $strategy;
+        }
+
+        // Get available pools with corrected JOIN logic
+        $available_pools = $this->get_available_pools_for_product($product_id);
+
+        if (empty($available_pools)) {
+            VD_LM_Logger_Service::warning('REST API: No available pools found', array(
+                'product_id' => $product_id
+            ));
             return new WP_Error(
                 'no_pool_available',
                 'Không có pool nào khả dụng. Vui lòng liên hệ admin.',
@@ -538,15 +547,42 @@ class VD_REST_API {
             );
         }
 
-        // Update license with pool assignment
+        // Select pool using strategy
+        $selected_pool = $strategy->select_pool($product_id, $available_pools);
+
+        if (empty($selected_pool)) {
+            VD_LM_Logger_Service::warning('REST API: Strategy could not select pool', array(
+                'product_id' => $product_id,
+                'strategy' => $strategy->get_strategy_name(),
+                'available_pools_count' => count($available_pools)
+            ));
+            return new WP_Error(
+                'no_pool_selected',
+                'Không thể chọn pool phù hợp. Vui lòng liên hệ admin.',
+                array('status' => 503)
+            );
+        }
+
+        // Select account from pool
+        $selected_account = $this->select_account_from_pool($selected_pool['pool_id']);
+
+        if (is_wp_error($selected_account)) {
+            VD_LM_Logger_Service::error('REST API: Account selection failed', array(
+                'pool_id' => $selected_pool['pool_id'],
+                'error' => $selected_account->get_error_message()
+            ));
+            return $selected_account;
+        }
+
+        // Update license with pool and account assignment
         $licenses_table = $wpdb->prefix . 'vd_license_keys';
 
         $updated = $wpdb->update(
             $licenses_table,
             array(
-                'assigned_pool_id' => $pool['id'],
-                'assigned_account_id' => $pool['account_id'],
-                'pool_assigned_at' => current_time('mysql')
+                'pool_id' => $selected_pool['pool_id'],
+                'account_id' => $selected_account['id'],
+                'assigned_at' => current_time('mysql')
             ),
             array('id' => $license_id),
             array('%d', '%d', '%s'),
@@ -554,6 +590,12 @@ class VD_REST_API {
         );
 
         if ($updated === false) {
+            VD_LM_Logger_Service::error('REST API: License update failed', array(
+                'license_id' => $license_id,
+                'pool_id' => $selected_pool['pool_id'],
+                'account_id' => $selected_account['id'],
+                'sql_error' => $wpdb->last_error
+            ));
             return new WP_Error(
                 'assignment_failed',
                 'Không thể gán pool. Vui lòng thử lại.',
@@ -561,12 +603,140 @@ class VD_REST_API {
             );
         }
 
-        // Increment pool assigned_count
-        $wpdb->query($wpdb->prepare(
-            "UPDATE $pools_table
-             SET assigned_count = assigned_count + 1
-             WHERE id = %d",
-            $pool['id']
+        // Update account usage count
+        $this->update_account_usage($selected_account['id']);
+
+        VD_LM_Logger_Service::info('REST API: Pool assignment completed successfully', array(
+            'license_id' => $license_id,
+            'pool_id' => $selected_pool['pool_id'],
+            'account_id' => $selected_account['id'],
+            'strategy' => $strategy->get_strategy_name()
+        ));
+
+        return true;
+    }
+
+    /**
+     * Get available pools for product with corrected JOIN logic
+     *
+     * @param int $product_id Product ID
+     * @return array Available pools with capacity data
+     */
+    private function get_available_pools_for_product($product_id) {
+        global $wpdb;
+
+        $pools_table = $wpdb->prefix . 'vd_pools';
+        $product_pools_table = $wpdb->prefix . 'vd_product_pools';
+        $licenses_table = $wpdb->prefix . 'vd_license_keys';
+
+        // Get pools with correct capacity calculation
+        $pools = $wpdb->get_results($wpdb->prepare("
+            SELECT
+                p.id as pool_id,
+                p.name as pool_name,
+                p.status,
+                pp.priority,
+                COALESCE(
+                    (SELECT SUM(a.capacity)
+                     FROM {$wpdb->prefix}vd_pool_accounts pa
+                     JOIN {$wpdb->prefix}vd_provider_accounts a ON pa.account_id = a.id
+                     WHERE pa.pool_id = p.id
+                     AND pa.status = 'active'
+                     AND a.status = 'active'
+                     AND (a.expires_at IS NULL OR a.expires_at > NOW())),
+                    0
+                ) as capacity,
+                COALESCE(
+                    (SELECT COUNT(*)
+                     FROM {$licenses_table} l
+                     WHERE l.pool_id = p.id
+                     AND l.status = 'active'),
+                    0
+                ) as assigned_count
+            FROM {$pools_table} p
+            INNER JOIN {$product_pools_table} pp ON p.id = pp.pool_id
+            WHERE pp.product_id = %d
+            AND pp.status = 'active'
+            AND p.status = 'active'
+            ORDER BY pp.priority ASC
+        ", $product_id), ARRAY_A);
+
+        VD_LM_Logger_Service::debug('REST API: Retrieved pools for product', array(
+            'product_id' => $product_id,
+            'pools_found' => count($pools),
+            'pools' => $pools
+        ));
+
+        return $pools;
+    }
+
+    /**
+     * Select account from pool
+     *
+     * @param int $pool_id Pool ID
+     * @return array|WP_Error Account data or error
+     */
+    private function select_account_from_pool($pool_id) {
+        global $wpdb;
+
+        // Get available account from pool (least used, active, not expired)
+        $account = $wpdb->get_row($wpdb->prepare("
+            SELECT a.*
+            FROM {$wpdb->prefix}vd_provider_accounts a
+            INNER JOIN {$wpdb->prefix}vd_pool_accounts pa ON a.id = pa.account_id
+            WHERE pa.pool_id = %d
+            AND pa.status = 'active'
+            AND a.status = 'active'
+            AND a.current_usage < a.capacity
+            AND (a.expires_at IS NULL OR a.expires_at > NOW())
+            ORDER BY a.current_usage ASC, pa.weight DESC, pa.is_primary DESC
+            LIMIT 1
+        ", $pool_id), ARRAY_A);
+
+        if (!$account) {
+            return new WP_Error(
+                'no_account_available',
+                'Không có account nào khả dụng trong pool.',
+                array('status' => 503)
+            );
+        }
+
+        VD_LM_Logger_Service::debug('REST API: Selected account from pool', array(
+            'pool_id' => $pool_id,
+            'account_id' => $account['id'],
+            'current_usage' => $account['current_usage'],
+            'capacity' => $account['capacity']
+        ));
+
+        return $account;
+    }
+
+    /**
+     * Update account usage count atomically
+     *
+     * @param int $account_id Account ID
+     * @return bool True on success, false on failure
+     */
+    private function update_account_usage($account_id) {
+        global $wpdb;
+
+        $result = $wpdb->query($wpdb->prepare("
+            UPDATE {$wpdb->prefix}vd_provider_accounts
+            SET current_usage = current_usage + 1,
+                updated_at = NOW()
+            WHERE id = %d
+            AND current_usage < capacity
+        ", $account_id));
+
+        if ($result === 0) {
+            VD_LM_Logger_Service::warning('REST API: Account usage update failed (race condition)', array(
+                'account_id' => $account_id
+            ));
+            return false;
+        }
+
+        VD_LM_Logger_Service::debug('REST API: Account usage updated', array(
+            'account_id' => $account_id
         ));
 
         return true;
