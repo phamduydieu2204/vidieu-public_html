@@ -22,21 +22,20 @@ class VD_LM_Order_Handler {
     /**
      * Column mapping for bz_vd_provider_accounts table
      *
-     * EXACT DATABASE SCHEMA (CONFIRMED from user specification):
+     * CORRECTED DATABASE SCHEMA (from VD_LM_Database class):
      * - id (bigint) - Primary key ✅
      * - provider (varchar 100) - Provider name: Netflix, Spotify, Helium10 ✅
      * - account_login (varchar 255) - Login username or email ✅
      * - display_name (varchar 255) - Admin display name ✅
-     * - login_password (text) - Login password (encrypted) - NOT 'account_password'
+     * - account_password (longtext) - Login password (encrypted) ✅ MAIN FIELD
      * - capacity (int) - Maximum licenses this account can serve ✅
      * - status (enum) - active, inactive, suspended ✅
      * - current_usage (int) - Current number of active licenses ✅
      * - expires_at (datetime) - Provider account expiration date ✅
-     * - cookie (longtext) - Session cookies
-     * - security_question (varchar 255) - Security question text
-     * - security_answer (longtext) - Security answer
-     * - account_password (longtext) - Alternative password field
-     * - notes (text) - Internal admin notes
+     * - cookies (longtext) - Session cookies ✅
+     * - api_key (text) - API key (encrypted) ✅
+     * - secret_key (text) - API secret key (encrypted) ✅
+     * - notes (text) - Internal admin notes ✅
      * - created_at, updated_at (datetime) ✅
      *
      * Maps logical names to actual database column names for safety
@@ -44,17 +43,16 @@ class VD_LM_Order_Handler {
     const ACCOUNT_COLUMNS = array(
         'id' => 'id',
         'login' => 'account_login',
-        'password' => 'login_password',        // CORRECTED: was 'account_password'
-        'alt_password' => 'account_password',  // Alternative password field
+        'password' => 'account_password',      // ✅ FIXED: Use main password field
         'provider' => 'provider',
         'display_name' => 'display_name',
         'status' => 'status',
         'capacity' => 'capacity',
         'current_usage' => 'current_usage',
         'expires_at' => 'expires_at',
-        'cookie' => 'cookie',
-        'security_question' => 'security_question',
-        'security_answer' => 'security_answer',
+        'cookies' => 'cookies',               // ✅ FIXED: Correct column name
+        'api_key' => 'api_key',
+        'secret_key' => 'secret_key',
         'notes' => 'notes',
         'created_at' => 'created_at',
         'updated_at' => 'updated_at'
@@ -72,7 +70,7 @@ class VD_LM_Order_Handler {
 
         error_log('VD Order Handler: Registered WooCommerce hooks');
         error_log('VD Order Handler: Expected account table schema: ' . implode(', ', self::ACCOUNT_COLUMNS));
-        error_log('VD Order Handler: CRITICAL MAPPINGS - login→account_login, password→login_password, service→provider');
+        error_log('VD Order Handler: FIXED MAPPINGS - login→account_login, password→account_password, provider→provider');
     }
 
     /**
