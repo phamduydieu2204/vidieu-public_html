@@ -162,12 +162,6 @@ class VD_LM_Database {
             'two_factor_secret' => "MODIFY COLUMN two_factor_secret TEXT NULL COMMENT '2FA TOTP secret (encrypted)'",
         );
 
-        // Rename columns if needed
-        $columns_to_rename = array(
-            'login_password' => "CHANGE COLUMN login_password account_password TEXT NULL COMMENT 'Login password (encrypted)'",
-            'cookie' => "CHANGE COLUMN cookie cookies LONGTEXT NULL COMMENT 'Session cookies (encrypted)'",
-            'account_fields' => "CHANGE COLUMN account_fields custom_fields LONGTEXT NULL COMMENT 'Additional custom fields as JSON (encrypted)'",
-        );
 
         $migration_errors = array();
         $migration_success = array();
@@ -195,28 +189,6 @@ class VD_LM_Database {
             }
         }
 
-        // Rename columns
-        foreach ( $columns_to_rename as $old_column => $sql ) {
-            $column_exists = $wpdb->get_results( $wpdb->prepare(
-                "SELECT * FROM INFORMATION_SCHEMA.COLUMNS
-                WHERE TABLE_SCHEMA = %s
-                AND TABLE_NAME = %s
-                AND COLUMN_NAME = %s",
-                DB_NAME,
-                $table_name,
-                $old_column
-            ) );
-
-            if ( ! empty( $column_exists ) ) {
-                $result = $wpdb->query( "ALTER TABLE {$table_name} {$sql}" );
-                if ( $result === false ) {
-                    $migration_errors[] = "Failed to rename column '{$old_column}': " . $wpdb->last_error;
-                } else {
-                    $migration_success[] = "Renamed column '{$old_column}'";
-                    VD_LM_Logger_Service::info( "Migration: Renamed column '{$old_column}' in {$table_name}" );
-                }
-            }
-        }
 
         // Modify existing columns
         foreach ( $columns_to_modify as $column => $sql ) {
