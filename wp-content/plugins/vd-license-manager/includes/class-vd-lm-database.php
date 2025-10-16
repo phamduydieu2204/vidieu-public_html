@@ -449,13 +449,26 @@ class VD_LM_Database {
 
         $sql = "CREATE TABLE {$table_name} (
             id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+            pool_name varchar(255) NOT NULL COMMENT 'Pool name for easy reference',
             product_id BIGINT UNSIGNED NOT NULL COMMENT 'WooCommerce product ID',
+            priority int(11) NOT NULL DEFAULT 0 COMMENT 'Priority for pool selection (1 = highest)',
+            capacity int(11) NOT NULL DEFAULT 10 COMMENT 'Maximum licenses this pool can handle',
+            status enum('active','inactive') NOT NULL DEFAULT 'active' COMMENT 'Pool assignment status',
+            assignment_strategy enum('random','sticky','weighted','priority') NOT NULL DEFAULT 'random' COMMENT 'Account assignment strategy',
+            rotation_enabled tinyint(1) NOT NULL DEFAULT 0 COMMENT 'Enable account rotation',
+            rotation_interval int(11) NULL COMMENT 'Account rotation interval in minutes',
+            description text NULL COMMENT 'Pool description',
+            created_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            updated_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
             pool_id BIGINT UNSIGNED NOT NULL COMMENT 'Foreign key to vd_pools.id',
             assigned_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
             PRIMARY KEY (id),
             UNIQUE INDEX uk_product_pool (product_id, pool_id),
             INDEX idx_product_id (product_id),
-            INDEX idx_pool_id (pool_id)
+            INDEX idx_pool_id (pool_id),
+            INDEX idx_priority (priority),
+            INDEX idx_status (status),
+            INDEX idx_created_at (created_at)
         ) $charset_collate;";
 
         dbDelta( $sql );
