@@ -246,14 +246,27 @@ class VD_LM_Pools_Page {
 
                     error_log("Inserting: product_id={$product_id}, pool_id={$pool_id}, priority={$priority}");
 
+                    // Get pool name for reference
+                    $pool_name = $wpdb->get_var($wpdb->prepare(
+                        "SELECT name FROM {$wpdb->prefix}vd_pools WHERE id = %d",
+                        $pool_id
+                    ));
+
                     $result = $wpdb->insert(
                         $product_pools_table,
                         array(
+                            'pool_name' => $pool_name ?: 'Unknown Pool',
                             'product_id' => $product_id,
                             'pool_id' => $pool_id,
-                            'priority' => $priority
+                            'priority' => $priority,
+                            'capacity' => 10, // Default capacity
+                            'status' => 'active',
+                            'assignment_strategy' => 'random',
+                            'rotation_enabled' => 0,
+                            'rotation_interval' => null,
+                            'description' => null
                         ),
-                        array('%d', '%d', '%d')
+                        array('%s', '%d', '%d', '%d', '%d', '%s', '%s', '%d', '%d', '%s')
                     );
 
                     if ($result === false) {
