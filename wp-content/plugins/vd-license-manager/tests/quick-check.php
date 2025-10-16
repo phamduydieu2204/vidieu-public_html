@@ -276,7 +276,7 @@ function track_memory() {
             global $wpdb;
 
             $test_license_key = 'TEST-QUICK-CHECK-' . time();
-            $table_name = $wpdb->prefix . 'vd_licenses';
+            $table_name = $wpdb->prefix . 'vd_license_keys';
 
             // Check if table exists first
             $table_exists = $wpdb->get_var($wpdb->prepare(
