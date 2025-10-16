@@ -4,26 +4,63 @@
 
 ---
 
+## 🌐 NGÔN NGỮ GIAO TIẾP (LANGUAGE COMMUNICATION RULES)
+
+### **Quy tắc Ngôn ngữ Quan trọng:**
+
+**📋 Nguyên tắc cơ bản:**
+- Lời nhắc từ user có thể là **tiếng Anh** hoặc **tiếng Việt**
+- Tất cả nội dung phản hồi/phân tích/nghiên cứu hiển thị trên terminal **LUÔN LUÔN là tiếng Việt**
+
+**📝 Ngoại lệ (sử dụng tiếng Anh):**
+- ✅ Nội dung tệp mã nguồn (source code files)
+- ✅ Nội dung tệp Markdown documentation
+- ✅ Comments trong code
+- ✅ Git commit messages
+- ✅ Database schemas và SQL queries
+- ✅ API documentation
+- ✅ Technical specifications
+
+**💬 Sử dụng tiếng Việt cho:**
+- ✅ Tất cả phản hồi và giải thích
+- ✅ Phân tích kỹ thuật và troubleshooting
+- ✅ Báo cáo và tóm tắt
+- ✅ Hướng dẫn và instructions
+- ✅ Error explanations và debugging
+- ✅ Progress updates và status reports
+
+**Ví dụ:**
+```
+User: "Fix the database connection issue"
+Claude: "Tôi sẽ kiểm tra vấn đề kết nối database. Hãy để tôi phân tích tệp wp-config.php..."
+
+User: "Kiểm tra lỗi này"
+Claude: "Tôi sẽ phân tích lỗi này. Đầu tiên hãy để tôi đọc log files..."
+```
+
+---
+
 ## 📋 TABLE OF CONTENTS
 
-1. [Project Overview](#project-overview)
-2. [Your Role & Responsibilities](#your-role--responsibilities)
-3. [Environment Configuration](#environment-configuration)
-4. [Project Structure](#project-structure)
-5. [Code Organization Rules](#code-organization-rules)
-6. [File Size Limits](#file-size-limits)
-7. [Naming Conventions](#naming-conventions)
-8. [Coding Standards](#coding-standards)
-9. [Security Requirements](#security-requirements)
-10. [Database Guidelines](#database-guidelines)
-11. [WordPress Best Practices](#wordpress-best-practices)
-12. [API Development](#api-development)
-13. [Error Handling](#error-handling)
-14. [Documentation Requirements](#documentation-requirements)
-15. [Testing Requirements](#testing-requirements)
-16. [Performance Guidelines](#performance-guidelines)
-17. [Git Workflow](#git-workflow)
-18. [Before Starting Each Task](#before-starting-each-task)
+1. [Ngôn ngữ Giao tiếp (Language Communication Rules)](#ngôn-ngữ-giao-tiếp-language-communication-rules)
+2. [Project Overview](#project-overview)
+3. [Your Role & Responsibilities](#your-role--responsibilities)
+4. [Environment Configuration](#environment-configuration)
+5. [Project Structure](#project-structure)
+6. [Code Organization Rules](#code-organization-rules)
+7. [File Size Limits](#file-size-limits)
+8. [Naming Conventions](#naming-conventions)
+9. [Coding Standards](#coding-standards)
+10. [Security Requirements](#security-requirements)
+11. [Database Guidelines](#database-guidelines)
+12. [WordPress Best Practices](#wordpress-best-practices)
+13. [API Development](#api-development)
+14. [Error Handling](#error-handling)
+15. [Documentation Requirements](#documentation-requirements)
+16. [Testing Requirements](#testing-requirements)
+17. [Performance Guidelines](#performance-guidelines)
+18. [Git Workflow](#git-workflow)
+19. [Before Starting Each Task](#before-starting-each-task)
 
 ---
 
