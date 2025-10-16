@@ -184,32 +184,67 @@ class VD_LM_Pools_Page {
     private function handle_product_assignments($pool_id) {
         global $wpdb;
 
+        // DEBUG: Add comprehensive logging
+        error_log("=== VD POOLS: PRODUCT ASSIGNMENT DEBUG START ===");
+        error_log("Pool ID: {$pool_id}");
+        error_log("POST data: " . print_r($_POST, true));
+
         if (!isset($_POST['assigned_products']) || !is_array($_POST['assigned_products'])) {
+            error_log("WARNING: No assigned_products in POST data");
+            error_log("=== VD POOLS: PRODUCT ASSIGNMENT DEBUG END (NO DATA) ===");
             return;
         }
 
         $product_pools_table = $wpdb->prefix . 'vd_product_pools';
+        error_log("Table name: {$product_pools_table}");
+
+        // DEBUG: Check if table exists
+        $table_exists = $wpdb->get_var($wpdb->prepare(
+            "SHOW TABLES LIKE %s",
+            $product_pools_table
+        ));
+
+        if (!$table_exists) {
+            error_log("CRITICAL ERROR: Table {$product_pools_table} does not exist!");
+            error_log("=== VD POOLS: PRODUCT ASSIGNMENT DEBUG END (TABLE MISSING) ===");
+            return;
+        } else {
+            error_log("SUCCESS: Table {$product_pools_table} exists");
+        }
 
         // Start transaction
         $wpdb->query('START TRANSACTION');
+        error_log("Transaction started");
 
         try {
             // Remove existing product assignments for this pool
-            $wpdb->delete(
+            error_log("Deleting existing assignments for pool {$pool_id}");
+            $delete_result = $wpdb->delete(
                 $product_pools_table,
                 array('pool_id' => $pool_id),
                 array('%d')
             );
 
+            if ($delete_result === false) {
+                error_log("DELETE ERROR: " . $wpdb->last_error);
+            } else {
+                error_log("DELETE SUCCESS: {$delete_result} rows affected");
+            }
+
             // Add new product assignments
             $assigned_products = $_POST['assigned_products'];
             $success = true;
+            error_log("Processing " . count($assigned_products) . " product assignments");
 
             foreach ($assigned_products as $index => $product_id) {
                 $product_id = absint($product_id);
+                error_log("Processing product: {$product_id}");
+
                 if ($product_id > 0) {
                     $priority = isset($_POST['product_priorities'][$index]) ?
                                absint($_POST['product_priorities'][$index]) : ($index + 1);
+
+                    error_log("Inserting: product_id={$product_id}, pool_id={$pool_id}, priority={$priority}");
 
                     $result = $wpdb->insert(
                         $product_pools_table,
@@ -222,24 +257,34 @@ class VD_LM_Pools_Page {
                     );
 
                     if ($result === false) {
+                        error_log("INSERT ERROR for product {$product_id}: " . $wpdb->last_error);
                         $success = false;
                         break;
+                    } else {
+                        error_log("INSERT SUCCESS for product {$product_id}, insert_id: " . $wpdb->insert_id);
                     }
+                } else {
+                    error_log("Skipping invalid product ID: {$product_id}");
                 }
             }
 
             if ($success) {
                 $wpdb->query('COMMIT');
+                error_log("TRANSACTION SUCCESS: Committed changes for pool {$pool_id}");
                 error_log("VD Pools: Product assignments updated for pool ID {$pool_id}");
             } else {
                 $wpdb->query('ROLLBACK');
+                error_log("TRANSACTION FAILED: Rolled back changes for pool {$pool_id}");
                 error_log("VD Pools: Failed to update product assignments for pool ID {$pool_id}");
             }
 
         } catch (Exception $e) {
             $wpdb->query('ROLLBACK');
+            error_log("EXCEPTION CAUGHT: " . $e->getMessage());
             error_log("VD Pools: Exception in product assignments: " . $e->getMessage());
         }
+
+        error_log("=== VD POOLS: PRODUCT ASSIGNMENT DEBUG END ===");
     }
 
     /**
