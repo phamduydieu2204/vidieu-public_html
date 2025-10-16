@@ -800,7 +800,7 @@ class VD_REST_API {
             // Fallback: return basic fields if no config
             return array(
                 'account_login' => $account['account_login'] ?? '',
-                'login_password' => $account['login_password'] ?? ''
+                'account_password' => $account['account_password'] ?? ''
             );
         }
 

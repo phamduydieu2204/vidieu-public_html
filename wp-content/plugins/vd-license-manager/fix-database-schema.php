@@ -129,7 +129,7 @@ if ($existing_config) {
     $response_fields = json_encode([
         'fields' => [
             [
-                'key' => 'cookie',
+                'key' => 'cookies',
                 'label' => 'Session Cookie',
                 'type' => 'textarea',
                 'order' => 1,

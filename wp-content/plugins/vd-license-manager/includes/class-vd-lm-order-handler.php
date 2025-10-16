@@ -488,7 +488,7 @@ class VD_LM_Order_Handler {
             error_log('VD ACCOUNT VERIFICATION: Direct field access test:');
             error_log('  - $account[\'account_login\']: ' . (isset($account['account_login']) ? $account['account_login'] : 'MISSING'));
             error_log('  - $account[\'provider\']: ' . (isset($account['provider']) ? $account['provider'] : 'MISSING'));
-            error_log('  - $account[\'login_password\']: ' . (isset($account['login_password']) ? 'SET' : 'MISSING'));
+            error_log('  - $account[\'account_password\']: ' . (isset($account['account_password']) ? 'SET' : 'MISSING'));
             error_log('  - $account[\'account_password\']: ' . (isset($account['account_password']) ? 'SET' : 'MISSING'));
             error_log('  - $account[\'current_usage\']: ' . (isset($account['current_usage']) ? $account['current_usage'] : 'MISSING'));
             error_log('  - $account[\'capacity\']: ' . (isset($account['capacity']) ? $account['capacity'] : 'MISSING'));
@@ -575,12 +575,10 @@ class VD_LM_Order_Handler {
             }
         }
 
-        // Check for password fields (should have one or both)
-        $has_login_password = isset($account['login_password']);
+        // Check for password field (schema defines account_password)
         $has_account_password = isset($account['account_password']);
-        error_log('VD SCHEMA VERIFICATION: Password fields - login_password: ' .
-                 ($has_login_password ? '✅ SET' : '❌ MISSING') .
-                 ', account_password: ' . ($has_account_password ? '✅ SET' : '❌ MISSING'));
+        error_log('VD SCHEMA VERIFICATION: Password field - account_password: ' .
+                 ($has_account_password ? '✅ SET' : '❌ MISSING'));
 
         error_log('VD SCHEMA VERIFICATION: === Schema Check Complete ===');
     }

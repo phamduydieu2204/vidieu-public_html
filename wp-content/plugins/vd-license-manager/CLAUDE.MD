@@ -1052,11 +1052,58 @@ Examples:
 - bz_vd_device_fingerprints
 ```
 
-### **Rule 3: Always Use Prepared Statements**
+### **Rule 3: CRITICAL - Database Schema Reference**
+
+**🎯 GOLDEN RULE: ALWAYS use database_schema.md as SINGLE SOURCE OF TRUTH**
+
+```php
+// BEFORE any database operation, check schema file:
+// Path: wp-content/plugins/vd-license-manager/docs/database_schema.md
+```
+
+**✅ REQUIRED ACTIONS:**
+
+1. **Before creating/modifying tables or columns:**
+   - Read `docs/database_schema.md` first
+   - Use EXACT table and column names from schema
+   - Follow EXACT data types and constraints
+
+2. **When adding new tables/columns:**
+   - Update `docs/database_schema.md` FIRST
+   - Then implement in code
+   - Never create database objects not in schema
+
+3. **When modifying existing structure:**
+   - Update `docs/database_schema.md` FIRST
+   - Create migration script
+   - Test against schema compliance
+
+**❌ NEVER DO:**
+```php
+// Wrong - hardcoded table/column names without schema reference
+$wpdb->query("SELECT login_password FROM accounts");  // Column doesn't exist in schema!
+$wpdb->query("SELECT cookie FROM accounts");          // Should be 'cookies'!
+```
+
+**✅ ALWAYS DO:**
+```php
+// Correct - verify against docs/database_schema.md first
+$wpdb->query("SELECT account_password FROM {$wpdb->prefix}vd_provider_accounts");  // ✅ Matches schema
+$wpdb->query("SELECT cookies FROM {$wpdb->prefix}vd_provider_accounts");           // ✅ Matches schema
+```
+
+**Schema Compliance Checklist:**
+- [ ] Read `docs/database_schema.md` before ANY database work
+- [ ] Verify table names match schema exactly
+- [ ] Verify column names match schema exactly
+- [ ] Update schema file BEFORE implementing changes
+- [ ] Test all queries against actual schema structure
+
+### **Rule 4: Always Use Prepared Statements**
 
 See Security Requirements above.
 
-### **Rule 4: Use Transactions for Multi-Step Operations**
+### **Rule 5: Use Transactions for Multi-Step Operations**
 
 ```php
 global $wpdb;
@@ -1095,7 +1142,7 @@ try {
 }
 ```
 
-### **Rule 5: Index Important Columns**
+### **Rule 6: Index Important Columns**
 
 ```php
 // In migration files
@@ -1105,7 +1152,7 @@ $wpdb->query( "CREATE INDEX idx_product_id ON {$table_name} (product_id)" );
 $wpdb->query( "CREATE INDEX idx_created_at ON {$table_name} (created_at)" );
 ```
 
-### **Rule 6: Use Appropriate Data Types**
+### **Rule 7: Use Appropriate Data Types**
 
 ```php
 // Migration example

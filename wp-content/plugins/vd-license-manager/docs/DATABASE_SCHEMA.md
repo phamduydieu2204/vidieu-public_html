@@ -1,503 +1,203 @@
-# VD License Manager - Database Schema Documentation
-
-> **Last Updated:** 2025-10-14
-> **Database Prefix:** `bz_`
-> **Total VD Tables:** 14
-> **WordPress Version:** 6.8.2+
-> **Plugin Version:** 1.0.0
-
----
-
-## 📋 TABLE NAMING CONVENTION
-
-**CRITICAL:** All VD plugin tables use prefix: `bz_vd_`
-
-### Format: `{wordpress_prefix}vd_{table_name}`
-
-**Example:**
-- WordPress prefix: `bz_`
-- Table name: `license_keys`
-- **Full table name:** `bz_vd_license_keys`
-
-### ⚠️ COMMON MISTAKES:
-- ❌ `vd_licenses` (WRONG - missing full name)
-- ❌ `bz_licenses` (WRONG - missing vd_ middle)
-- ❌ `bz_bz_vd_license_keys` (WRONG - double prefix)
-- ✅ `bz_vd_license_keys` (CORRECT)
-
----
-
-## 📊 CORE TABLES (14 tables)
-
-### 1. LICENSE MANAGEMENT
-
-#### `bz_vd_license_keys` ⭐ CORE
-**Purpose:** Main license records synced from LMfWC
-**Current Rows:** 6
-**Key Columns:**
-- `id` BIGINT UNSIGNED PRIMARY KEY
-- `license_key` VARCHAR(255) NOT NULL (Encrypted license key from LMfWC, e.g., def502...)
-- `license_key_plain` VARCHAR(255) NULL (Plain text license key for fast API lookups, e.g., H10D-DIJD-14RC-SOLE-6KUV30)
-- `lmfwc_license_id` BIGINT UNSIGNED (Foreign key to LMfWC plugin)
-- `product_id` BIGINT UNSIGNED NOT NULL (WooCommerce product ID)
-- `assigned_pool_id` BIGINT UNSIGNED NULL (Pool assignment)
-- `assigned_account_id` BIGINT UNSIGNED NULL (Account assignment)
-- `status` ENUM('active', 'expired', 'suspended', 'inactive') DEFAULT 'active'
-- `max_devices` INT UNSIGNED DEFAULT 1
-- `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP
-- `updated_at` DATETIME ON UPDATE CURRENT_TIMESTAMP
-
-**Indexes:**
-- PRIMARY KEY (`id`)
-- UNIQUE KEY `uk_license_key` (`license_key`)
-- INDEX `idx_license_key_plain` (`license_key_plain`) ← **NEW: For fast API lookups**
-- INDEX `idx_product_id` (`product_id`)
-- INDEX `idx_status` (`status`)
-- INDEX `idx_assigned_pool` (`assigned_pool_id`)
-
-**Related Flow:** FLOW 2 (Customer Purchase), FLOW 3 (Customer Access)
-
----
-
-#### `bz_vd_license_devices` ⭐ CORE
-**Purpose:** Track devices registered to each license
-**Current Rows:** 4
-**Key Columns:**
-- `id` BIGINT UNSIGNED PRIMARY KEY
-- `license_id` BIGINT UNSIGNED NOT NULL (FK to bz_vd_license_keys)
-- `device_combined_id` VARCHAR(255) NOT NULL (SHA256 hash: fingerprint + token)
-- `device_fingerprint` TEXT (Browser fingerprint data)
-- `device_name` VARCHAR(255) (User-friendly name, e.g., "Laptop - Chrome")
-- `slot` TINYINT UNSIGNED (Device slot number: 1, 2, 3...)
-- `status` ENUM('active', 'removed', 'blocked') DEFAULT 'active'
-- `is_vps` BOOLEAN DEFAULT FALSE (VPS detection flag)
-- `ip_address` VARCHAR(45) (Last known IP)
-- `user_agent` TEXT (Last known user agent)
-- `registered_at` DATETIME DEFAULT CURRENT_TIMESTAMP
-- `last_access_at` DATETIME NULL
-
-**Indexes:**
-- PRIMARY KEY (`id`)
-- UNIQUE KEY `uk_license_device` (`license_id`, `device_combined_id`)
-- INDEX `idx_device_combined_id` (`device_combined_id`)
-- INDEX `idx_status` (`status`)
-
-**Device Limits:** Controlled by product_share_configs.max_devices_per_license
-**Related Flow:** FLOW 3 (Customer Access - Device Tracking)
-
----
-
-#### `bz_vd_license_access_log` ⭐ CORE
-**Purpose:** Log every API access attempt
-**Current Rows:** 38
-**Key Columns:**
-- `id` BIGINT UNSIGNED PRIMARY KEY
-- `license_id` BIGINT UNSIGNED NULL (FK to bz_vd_license_keys)
-- `device_id` BIGINT UNSIGNED NULL (FK to bz_vd_license_devices)
-- `license_key` VARCHAR(255) NOT NULL (For logging even invalid keys)
-- `endpoint` VARCHAR(255) NOT NULL (API endpoint called)
-- `http_method` VARCHAR(10) DEFAULT 'GET'
-- `ip_address` VARCHAR(45) (Client IP - masked for privacy)
-- `user_agent` TEXT
-- `authentication_result` ENUM('success', 'expired', 'blocked', 'invalid', 'device_limit', 'rate_limit') NOT NULL
-- `error_code` VARCHAR(50) NULL (Specific error codes for debugging)
-- `response_status` SMALLINT UNSIGNED (HTTP status code)
-- `execution_time` DECIMAL(8,3) NULL (Response time in milliseconds)
-- `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP
-
-**Indexes:**
-- PRIMARY KEY (`id`)
-- INDEX `idx_license_key` (`license_key`)
-- INDEX `idx_created_at` (`created_at`)
-- INDEX `idx_authentication_result` (`authentication_result`)
-- INDEX `idx_endpoint` (`endpoint`)
-
-**Retention:** 90 days (configurable via wp-config.php)
-**Related Flow:** FLOW 3 (Access Logging), FLOW 4 (Admin Analytics)
-
----
-
-### 2. POOL & ACCOUNT MANAGEMENT
-
-#### `bz_vd_pools` ⭐ CORE
-**Purpose:** Pool definitions (grouping of accounts)
-**Current Rows:** 2
-**Key Columns:**
-- `id` BIGINT UNSIGNED PRIMARY KEY
-- `name` VARCHAR(255) NOT NULL (Display name, e.g., "Netflix Premium Pool 1")
-- `description` TEXT NULL
-- `capacity` INT UNSIGNED NOT NULL DEFAULT 1 (Max licenses this pool can serve)
-- `assigned_count` INT UNSIGNED DEFAULT 0 (Current licenses assigned)
-- `priority` TINYINT UNSIGNED DEFAULT 1 (Assignment priority: 1=highest)
-- `status` ENUM('active', 'inactive', 'full') DEFAULT 'active'
-- `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP
-- `updated_at` DATETIME ON UPDATE CURRENT_TIMESTAMP
-
-**Indexes:**
-- PRIMARY KEY (`id`)
-- INDEX `idx_status` (`status`)
-- INDEX `idx_priority` (`priority`)
-
-**Business Logic:** Pool marked 'full' when assigned_count >= capacity
-**Related Flow:** FLOW 1 (Admin Setup), FLOW 2 (Pool Assignment)
-
----
-
-#### `bz_vd_provider_accounts` ⭐ CORE
-**Purpose:** Provider account credentials (Netflix, Spotify, Helium10, etc.)
-**Current Rows:** 2
-**Key Columns:**
-- `id` BIGINT UNSIGNED PRIMARY KEY
-- `provider` VARCHAR(100) NOT NULL (Netflix, Spotify, Helium10, etc.)
-- `account_login` VARCHAR(255) NOT NULL (Login email/username)
-- `display_name` VARCHAR(255) NULL (Admin display name)
-- `login_password` TEXT NULL (Encrypted password)
-- `cookie` LONGTEXT NULL (Session cookie if applicable)
-- `custom_fields` JSON NULL (Additional provider-specific fields)
-- `capacity` INT UNSIGNED DEFAULT 1 (How many licenses this account can serve)
-- `current_usage` INT UNSIGNED DEFAULT 0 (Current active assignments)
-- `status` ENUM('active', 'inactive', 'expired', 'blocked') DEFAULT 'active'
-- `expires_at` DATETIME NULL (Account expiration)
-- `last_verified_at` DATETIME NULL (Last successful login verification)
-- `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP
-- `updated_at` DATETIME ON UPDATE CURRENT_TIMESTAMP
-
-**Indexes:**
-- PRIMARY KEY (`id`)
-- UNIQUE KEY `uk_provider_login` (`provider`, `account_login`)
-- INDEX `idx_provider` (`provider`)
-- INDEX `idx_status` (`status`)
-
-**Encryption:** All sensitive fields encrypted with VD_ENCRYPTION_KEY
-**Related Flow:** FLOW 1 (Admin Setup), FLOW 3 (Credential Response)
-
----
-
-#### `bz_vd_pool_accounts`
-**Purpose:** Many-to-many relationship (pools ↔ accounts)
-**Key Columns:**
-- `id` BIGINT UNSIGNED PRIMARY KEY
-- `pool_id` BIGINT UNSIGNED NOT NULL (FK to bz_vd_pools)
-- `account_id` BIGINT UNSIGNED NOT NULL (FK to bz_vd_provider_accounts)
-- `assigned_at` DATETIME DEFAULT CURRENT_TIMESTAMP
-
-**Indexes:**
-- PRIMARY KEY (`id`)
-- UNIQUE KEY `uk_pool_account` (`pool_id`, `account_id`)
-
----
-
-#### `bz_vd_product_pools`
-**Purpose:** Link WooCommerce products to pools with priority
-**Key Columns:**
-- `id` BIGINT UNSIGNED PRIMARY KEY
-- `product_id` BIGINT UNSIGNED NOT NULL (WooCommerce product ID)
-- `pool_id` BIGINT UNSIGNED NOT NULL (FK to bz_vd_pools)
-- `priority` TINYINT UNSIGNED DEFAULT 1 (Assignment order)
-- `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP
-
-**Indexes:**
-- PRIMARY KEY (`id`)
-- INDEX `idx_product_id` (`product_id`)
-- INDEX `idx_priority` (`priority`)
-
----
-
-### 3. CONFIGURATION
-
-#### `bz_vd_product_share_configs`
-**Purpose:** Per-product sharing rules and response configuration
-**Key Columns:**
-- `id` BIGINT UNSIGNED PRIMARY KEY
-- `product_id` BIGINT UNSIGNED NOT NULL UNIQUE (WooCommerce product ID)
-- `max_devices_per_license` TINYINT UNSIGNED DEFAULT 2 (Device limit)
-- `device_reset_days` SMALLINT UNSIGNED DEFAULT 7 (Auto-reset period)
-- `max_requests_per_day` SMALLINT UNSIGNED DEFAULT 10 (Rate limit)
-- `response_fields` JSON NOT NULL (Which credential fields to show customer)
-- `pool_assignment_rule` ENUM('priority', 'round_robin', 'least_used') DEFAULT 'priority'
-- `is_active` BOOLEAN DEFAULT TRUE
-- `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP
-- `updated_at` DATETIME ON UPDATE CURRENT_TIMESTAMP
-
-**Example response_fields JSON:**
-```json
-{
-  "fields": [
-    {
-      "key": "account_login",
-      "label": "Email Address",
-      "type": "email",
-      "order": 1,
-      "required": true
-    },
-    {
-      "key": "login_password",
-      "label": "Password",
-      "type": "password",
-      "order": 2,
-      "required": true
-    },
-    {
-      "key": "cookie",
-      "label": "Session Cookie",
-      "type": "textarea",
-      "order": 3,
-      "required": false
-    }
-  ]
+[
+{"type":"header","version":"5.1.1","comment":"Export to JSON plugin for PHPMyAdmin"},
+{"type":"database","name":"INFORMATION_SCHEMA"},
+{"type":"table","name":"COLUMNS","database":"INFORMATION_SCHEMA","data":
+[
+{"schema_line":"bz_vd_account_fetch_log.id | bigint(20) unsigned | NOT NULL | PRIMARY KEY | NULL | auto_increment"},
+{"schema_line":"bz_vd_account_fetch_log.license_id | bigint(20) unsigned | NOT NULL | INDEX | NULL | "},
+{"schema_line":"bz_vd_account_fetch_log.account_id | bigint(20) unsigned | NOT NULL | INDEX | NULL | "},
+{"schema_line":"bz_vd_account_fetch_log.pool_id | bigint(20) unsigned | NOT NULL | INDEX | NULL | "},
+{"schema_line":"bz_vd_account_fetch_log.fetch_reason | enum('new_assignment','rotation','replacement','retry') | NOT NULL | INDEX | NULL | "},
+{"schema_line":"bz_vd_account_fetch_log.assignment_strategy | varchar(50) | NOT NULL | - | NULL | "},
+{"schema_line":"bz_vd_account_fetch_log.request_ip | varchar(45) | NOT NULL | INDEX | NULL | "},
+{"schema_line":"bz_vd_account_fetch_log.user_agent | text | NULL | - | NULL | "},
+{"schema_line":"bz_vd_account_fetch_log.device_id | varchar(64) | NULL | - | NULL | "},
+{"schema_line":"bz_vd_account_fetch_log.success | tinyint(1) | NOT NULL | INDEX | 1 | "},
+{"schema_line":"bz_vd_account_fetch_log.error_message | text | NULL | - | NULL | "},
+{"schema_line":"bz_vd_account_fetch_log.execution_time_ms | int(11) | NULL | - | NULL | "},
+{"schema_line":"bz_vd_account_fetch_log.pool_capacity_at_fetch | int(11) | NULL | - | NULL | "},
+{"schema_line":"bz_vd_account_fetch_log.fetched_at | datetime | NOT NULL | INDEX | current_timestamp() | "},
+{"schema_line":"bz_vd_device_fingerprints.id | bigint(20) unsigned | NOT NULL | PRIMARY KEY | NULL | auto_increment"},
+{"schema_line":"bz_vd_device_fingerprints.device_id | varchar(64) | NOT NULL | UNIQUE | NULL | "},
+{"schema_line":"bz_vd_device_fingerprints.fingerprint_hash | varchar(64) | NOT NULL | INDEX | NULL | "},
+{"schema_line":"bz_vd_device_fingerprints.user_agent | text | NOT NULL | - | NULL | "},
+{"schema_line":"bz_vd_device_fingerprints.ip_address | varchar(45) | NOT NULL | INDEX | NULL | "},
+{"schema_line":"bz_vd_device_fingerprints.screen_resolution | varchar(20) | NULL | - | NULL | "},
+{"schema_line":"bz_vd_device_fingerprints.timezone | varchar(50) | NULL | - | NULL | "},
+{"schema_line":"bz_vd_device_fingerprints.language | varchar(10) | NULL | - | NULL | "},
+{"schema_line":"bz_vd_device_fingerprints.platform | varchar(50) | NULL | - | NULL | "},
+{"schema_line":"bz_vd_device_fingerprints.canvas_fingerprint | varchar(64) | NULL | - | NULL | "},
+{"schema_line":"bz_vd_device_fingerprints.webgl_fingerprint | varchar(64) | NULL | - | NULL | "},
+{"schema_line":"bz_vd_device_fingerprints.audio_fingerprint | varchar(64) | NULL | - | NULL | "},
+{"schema_line":"bz_vd_device_fingerprints.connection_type | varchar(20) | NULL | - | NULL | "},
+{"schema_line":"bz_vd_device_fingerprints.isp | varchar(255) | NULL | - | NULL | "},
+{"schema_line":"bz_vd_device_fingerprints.country_code | varchar(2) | NULL | INDEX | NULL | "},
+{"schema_line":"bz_vd_device_fingerprints.city | varchar(100) | NULL | - | NULL | "},
+{"schema_line":"bz_vd_device_fingerprints.is_vps | tinyint(1) | NOT NULL | INDEX | 0 | "},
+{"schema_line":"bz_vd_device_fingerprints.vps_confidence_score | decimal(3,2) | NULL | - | NULL | "},
+{"schema_line":"bz_vd_device_fingerprints.vps_indicators | longtext | NULL | - | NULL | "},
+{"schema_line":"bz_vd_device_fingerprints.status | enum('active','inactive','blocked') | NOT NULL | INDEX | 'active' | "},
+{"schema_line":"bz_vd_device_fingerprints.first_seen_at | datetime | NOT NULL | - | current_timestamp() | "},
+{"schema_line":"bz_vd_device_fingerprints.last_seen_at | datetime | NOT NULL | INDEX | current_timestamp() | "},
+{"schema_line":"bz_vd_device_fingerprints.access_count | int(11) | NOT NULL | - | 1 | "},
+{"schema_line":"bz_vd_device_fingerprints.created_at | datetime | NOT NULL | - | current_timestamp() | "},
+{"schema_line":"bz_vd_device_fingerprints.updated_at | datetime | NOT NULL | - | current_timestamp() | on update current_timestamp()"},
+{"schema_line":"bz_vd_license_access_log.id | bigint(20) unsigned | NOT NULL | PRIMARY KEY | NULL | auto_increment"},
+{"schema_line":"bz_vd_license_access_log.license_id | bigint(20) unsigned | NULL | INDEX | NULL | "},
+{"schema_line":"bz_vd_license_access_log.license_key | varchar(255) | NOT NULL | INDEX | NULL | "},
+{"schema_line":"bz_vd_license_access_log.endpoint | varchar(100) | NOT NULL | INDEX | NULL | "},
+{"schema_line":"bz_vd_license_access_log.method | varchar(10) | NOT NULL | - | 'GET' | "},
+{"schema_line":"bz_vd_license_access_log.ip_address | varchar(45) | NOT NULL | INDEX | NULL | "},
+{"schema_line":"bz_vd_license_access_log.user_agent | text | NULL | - | NULL | "},
+{"schema_line":"bz_vd_license_access_log.device_id | varchar(64) | NULL | INDEX | NULL | "},
+{"schema_line":"bz_vd_license_access_log.request_data | longtext | NULL | - | NULL | "},
+{"schema_line":"bz_vd_license_access_log.response_status | int(11) | NOT NULL | INDEX | NULL | "},
+{"schema_line":"bz_vd_license_access_log.response_data | longtext | NULL | - | NULL | "},
+{"schema_line":"bz_vd_license_access_log.authentication_result | enum('success','invalid_license','expired_license','suspended_license','device_limit','rate_limit','vps_blocked','other') | NOT NULL | INDEX | NULL | "},
+{"schema_line":"bz_vd_license_access_log.error_code | varchar(50) | NULL | - | NULL | "},
+{"schema_line":"bz_vd_license_access_log.security_flags | longtext | NULL | - | NULL | "},
+{"schema_line":"bz_vd_license_access_log.execution_time_ms | int(11) | NULL | - | NULL | "},
+{"schema_line":"bz_vd_license_access_log.memory_usage_mb | decimal(8,2) | NULL | - | NULL | "},
+{"schema_line":"bz_vd_license_access_log.rate_limit_remaining | int(11) | NULL | - | NULL | "},
+{"schema_line":"bz_vd_license_access_log.rate_limit_reset_at | datetime | NULL | - | NULL | "},
+{"schema_line":"bz_vd_license_access_log.country_code | varchar(2) | NULL | INDEX | NULL | "},
+{"schema_line":"bz_vd_license_access_log.city | varchar(100) | NULL | - | NULL | "},
+{"schema_line":"bz_vd_license_access_log.accessed_at | datetime | NOT NULL | INDEX | current_timestamp() | "},
+{"schema_line":"bz_vd_license_devices.id | bigint(20) unsigned | NOT NULL | PRIMARY KEY | NULL | auto_increment"},
+{"schema_line":"bz_vd_license_devices.license_id | bigint(20) unsigned | NOT NULL | INDEX | NULL | "},
+{"schema_line":"bz_vd_license_devices.device_combined_id | varchar(255) | NOT NULL | INDEX | NULL | "},
+{"schema_line":"bz_vd_license_devices.device_fingerprint | text | NULL | - | NULL | "},
+{"schema_line":"bz_vd_license_devices.device_name | varchar(255) | NULL | - | NULL | "},
+{"schema_line":"bz_vd_license_devices.slot | tinyint(3) unsigned | NULL | - | NULL | "},
+{"schema_line":"bz_vd_license_devices.status | enum('active','removed','blocked') | NOT NULL | INDEX | 'active' | "},
+{"schema_line":"bz_vd_license_devices.is_vps | tinyint(1) | NOT NULL | - | 0 | "},
+{"schema_line":"bz_vd_license_devices.ip_address | varchar(45) | NULL | - | NULL | "},
+{"schema_line":"bz_vd_license_devices.user_agent | text | NULL | - | NULL | "},
+{"schema_line":"bz_vd_license_devices.registered_at | datetime | NOT NULL | - | current_timestamp() | "},
+{"schema_line":"bz_vd_license_devices.last_access_at | datetime | NULL | INDEX | NULL | "},
+{"schema_line":"bz_vd_license_devices.access_count | int(10) unsigned | NOT NULL | - | 0 | "},
+{"schema_line":"bz_vd_license_devices.updated_at | datetime | NULL | - | NULL | on update current_timestamp()"},
+{"schema_line":"bz_vd_license_device_limits.id | bigint(20) unsigned | NOT NULL | PRIMARY KEY | NULL | auto_increment"},
+{"schema_line":"bz_vd_license_device_limits.license_id | bigint(20) unsigned | NOT NULL | UNIQUE | NULL | "},
+{"schema_line":"bz_vd_license_device_limits.max_devices | int(11) | NOT NULL | INDEX | 2 | "},
+{"schema_line":"bz_vd_license_device_limits.current_devices | int(11) | NOT NULL | INDEX | 0 | "},
+{"schema_line":"bz_vd_license_device_limits.device_cooldown_hours | int(11) | NOT NULL | - | 24 | "},
+{"schema_line":"bz_vd_license_device_limits.last_device_change_at | datetime | NULL | INDEX | NULL | "},
+{"schema_line":"bz_vd_license_device_limits.strict_mode | tinyint(1) | NOT NULL | - | 1 | "},
+{"schema_line":"bz_vd_license_device_limits.allow_device_replacement | tinyint(1) | NOT NULL | - | 1 | "},
+{"schema_line":"bz_vd_license_device_limits.violation_count | int(11) | NOT NULL | INDEX | 0 | "},
+{"schema_line":"bz_vd_license_device_limits.last_violation_at | datetime | NULL | - | NULL | "},
+{"schema_line":"bz_vd_license_device_limits.created_at | datetime | NOT NULL | - | current_timestamp() | "},
+{"schema_line":"bz_vd_license_device_limits.updated_at | datetime | NOT NULL | - | current_timestamp() | on update current_timestamp()"},
+{"schema_line":"bz_vd_license_keys.id | bigint(20) unsigned | NOT NULL | PRIMARY KEY | NULL | auto_increment"},
+{"schema_line":"bz_vd_license_keys.license_key | varchar(255) | NOT NULL | UNIQUE | NULL | "},
+{"schema_line":"bz_vd_license_keys.license_key_plain | varchar(255) | NULL | INDEX | NULL | "},
+{"schema_line":"bz_vd_license_keys.lmfwc_license_id | bigint(20) unsigned | NOT NULL | UNIQUE | NULL | "},
+{"schema_line":"bz_vd_license_keys.product_id | bigint(20) unsigned | NOT NULL | INDEX | NULL | "},
+{"schema_line":"bz_vd_license_keys.order_id | bigint(20) unsigned | NOT NULL | - | NULL | "},
+{"schema_line":"bz_vd_license_keys.customer_id | bigint(20) unsigned | NOT NULL | INDEX | NULL | "},
+{"schema_line":"bz_vd_license_keys.customer_email | varchar(255) | NOT NULL | INDEX | NULL | "},
+{"schema_line":"bz_vd_license_keys.pool_id | bigint(20) unsigned | NULL | INDEX | NULL | "},
+{"schema_line":"bz_vd_license_keys.account_id | bigint(20) unsigned | NULL | INDEX | NULL | "},
+{"schema_line":"bz_vd_license_keys.status | enum('active','inactive','expired','suspended') | NOT NULL | INDEX | 'active' | "},
+{"schema_line":"bz_vd_license_keys.expires_at | datetime | NULL | INDEX | NULL | "},
+{"schema_line":"bz_vd_license_keys.max_devices | int(11) | NOT NULL | - | 2 | "},
+{"schema_line":"bz_vd_license_keys.current_devices | int(11) | NOT NULL | - | 0 | "},
+{"schema_line":"bz_vd_license_keys.max_requests_per_day | int(11) | NOT NULL | - | 10 | "},
+{"schema_line":"bz_vd_license_keys.max_requests_per_hour | int(11) | NOT NULL | - | 5 | "},
+{"schema_line":"bz_vd_license_keys.assigned_at | datetime | NULL | INDEX | NULL | "},
+{"schema_line":"bz_vd_license_keys.email_sent_at | datetime | NULL | INDEX | NULL | "},
+{"schema_line":"bz_vd_license_keys.renewal_reminder_sent_at | datetime | NULL | INDEX | NULL | "},
+{"schema_line":"bz_vd_license_keys.last_rotation_at | datetime | NULL | - | NULL | "},
+{"schema_line":"bz_vd_license_keys.synced_at | datetime | NULL | - | NULL | "},
+{"schema_line":"bz_vd_license_keys.sync_hash | varchar(64) | NULL | - | NULL | "},
+{"schema_line":"bz_vd_license_keys.created_at | datetime | NOT NULL | - | current_timestamp() | "},
+{"schema_line":"bz_vd_license_keys.updated_at | datetime | NOT NULL | - | current_timestamp() | on update current_timestamp()"},
+{"schema_line":"bz_vd_license_rate_limits.id | bigint(20) unsigned | NOT NULL | PRIMARY KEY | NULL | auto_increment"},
+{"schema_line":"bz_vd_license_rate_limits.license_id | bigint(20) unsigned | NOT NULL | INDEX | NULL | "},
+{"schema_line":"bz_vd_license_rate_limits.device_id | varchar(64) | NULL | INDEX | NULL | "},
+{"schema_line":"bz_vd_license_rate_limits.limit_type | enum('hourly','daily','monthly') | NOT NULL | INDEX | NULL | "},
+{"schema_line":"bz_vd_license_rate_limits.max_requests | int(11) | NOT NULL | - | NULL | "},
+{"schema_line":"bz_vd_license_rate_limits.window_start | datetime | NOT NULL | - | NULL | "},
+{"schema_line":"bz_vd_license_rate_limits.window_end | datetime | NOT NULL | INDEX | NULL | "},
+{"schema_line":"bz_vd_license_rate_limits.current_requests | int(11) | NOT NULL | - | 0 | "},
+{"schema_line":"bz_vd_license_rate_limits.remaining_requests | int(11) | NOT NULL | - | NULL | "},
+{"schema_line":"bz_vd_license_rate_limits.total_violations | int(11) | NOT NULL | - | 0 | "},
+{"schema_line":"bz_vd_license_rate_limits.last_violation_at | datetime | NULL | INDEX | NULL | "},
+{"schema_line":"bz_vd_license_rate_limits.consecutive_violations | int(11) | NOT NULL | - | 0 | "},
+{"schema_line":"bz_vd_license_rate_limits.is_blocked | tinyint(1) | NOT NULL | INDEX | 0 | "},
+{"schema_line":"bz_vd_license_rate_limits.block_expires_at | datetime | NULL | - | NULL | "},
+{"schema_line":"bz_vd_license_rate_limits.block_reason | varchar(255) | NULL | - | NULL | "},
+{"schema_line":"bz_vd_license_rate_limits.avg_request_time_ms | decimal(8,2) | NULL | - | NULL | "},
+{"schema_line":"bz_vd_license_rate_limits.peak_requests_per_minute | int(11) | NULL | - | NULL | "},
+{"schema_line":"bz_vd_license_rate_limits.created_at | datetime | NOT NULL | - | current_timestamp() | "},
+{"schema_line":"bz_vd_license_rate_limits.updated_at | datetime | NOT NULL | - | current_timestamp() | on update current_timestamp()"},
+{"schema_line":"bz_vd_pools.id | bigint(20) unsigned | NOT NULL | PRIMARY KEY | NULL | auto_increment"},
+{"schema_line":"bz_vd_pools.name | varchar(255) | NOT NULL | INDEX | NULL | "},
+{"schema_line":"bz_vd_pools.description | text | NULL | - | NULL | "},
+{"schema_line":"bz_vd_pools.status | enum('active','inactive') | NOT NULL | INDEX | 'active' | "},
+{"schema_line":"bz_vd_pools.created_at | datetime | NOT NULL | INDEX | current_timestamp() | "},
+{"schema_line":"bz_vd_pools.updated_at | datetime | NOT NULL | - | current_timestamp() | on update current_timestamp()"},
+{"schema_line":"bz_vd_pool_accounts.id | bigint(20) unsigned | NOT NULL | PRIMARY KEY | NULL | auto_increment"},
+{"schema_line":"bz_vd_pool_accounts.pool_id | bigint(20) unsigned | NOT NULL | INDEX | NULL | "},
+{"schema_line":"bz_vd_pool_accounts.account_id | bigint(20) unsigned | NOT NULL | INDEX | NULL | "},
+{"schema_line":"bz_vd_pool_accounts.weight | int(11) | NOT NULL | INDEX | 1 | "},
+{"schema_line":"bz_vd_pool_accounts.is_primary | tinyint(1) | NOT NULL | - | 0 | "},
+{"schema_line":"bz_vd_pool_accounts.status | enum('active','inactive') | NOT NULL | INDEX | 'active' | "},
+{"schema_line":"bz_vd_pool_accounts.assigned_at | datetime | NOT NULL | - | current_timestamp() | "},
+{"schema_line":"bz_vd_pool_accounts.created_at | datetime | NOT NULL | - | current_timestamp() | "},
+{"schema_line":"bz_vd_product_pools.id | bigint(20) unsigned | NOT NULL | PRIMARY KEY | NULL | auto_increment"},
+{"schema_line":"bz_vd_product_pools.pool_name | varchar(255) | NOT NULL | - | NULL | "},
+{"schema_line":"bz_vd_product_pools.product_id | bigint(20) unsigned | NOT NULL | INDEX | NULL | "},
+{"schema_line":"bz_vd_product_pools.priority | int(11) | NOT NULL | INDEX | 0 | "},
+{"schema_line":"bz_vd_product_pools.capacity | int(11) | NOT NULL | - | 10 | "},
+{"schema_line":"bz_vd_product_pools.status | enum('active','inactive') | NOT NULL | INDEX | 'active' | "},
+{"schema_line":"bz_vd_product_pools.assignment_strategy | enum('random','sticky','weighted','priority') | NOT NULL | - | 'random' | "},
+{"schema_line":"bz_vd_product_pools.rotation_enabled | tinyint(1) | NOT NULL | - | 0 | "},
+{"schema_line":"bz_vd_product_pools.rotation_interval | int(11) | NULL | - | NULL | "},
+{"schema_line":"bz_vd_product_pools.description | text | NULL | - | NULL | "},
+{"schema_line":"bz_vd_product_pools.created_at | datetime | NOT NULL | INDEX | current_timestamp() | "},
+{"schema_line":"bz_vd_product_pools.updated_at | datetime | NOT NULL | - | current_timestamp() | on update current_timestamp()"},
+{"schema_line":"bz_vd_product_pools.pool_id | bigint(20) unsigned | NOT NULL | INDEX | NULL | "},
+{"schema_line":"bz_vd_product_pools.assigned_at | datetime | NOT NULL | - | current_timestamp() | "},
+{"schema_line":"bz_vd_product_share_configs.id | bigint(20) unsigned | NOT NULL | PRIMARY KEY | NULL | auto_increment"},
+{"schema_line":"bz_vd_product_share_configs.product_id | bigint(20) unsigned | NOT NULL | UNIQUE | NULL | "},
+{"schema_line":"bz_vd_product_share_configs.max_devices | int(11) | NOT NULL | INDEX | 2 | "},
+{"schema_line":"bz_vd_product_share_configs.validity_days | int(11) | NOT NULL | INDEX | 30 | "},
+{"schema_line":"bz_vd_product_share_configs.max_requests_per_day | int(11) | NOT NULL | - | 100 | "},
+{"schema_line":"bz_vd_product_share_configs.allow_vps | tinyint(1) | NOT NULL | - | 0 | "},
+{"schema_line":"bz_vd_product_share_configs.created_at | datetime | NULL | INDEX | current_timestamp() | "},
+{"schema_line":"bz_vd_product_share_configs.updated_at | datetime | NULL | - | current_timestamp() | on update current_timestamp()"},
+{"schema_line":"bz_vd_provider_accounts.id | bigint(20) unsigned | NOT NULL | PRIMARY KEY | NULL | auto_increment"},
+{"schema_line":"bz_vd_provider_accounts.provider | varchar(100) | NOT NULL | INDEX | NULL | "},
+{"schema_line":"bz_vd_provider_accounts.display_name | varchar(255) | NOT NULL | - | NULL | "},
+{"schema_line":"bz_vd_provider_accounts.capacity | int(11) | NOT NULL | - | 1 | "},
+{"schema_line":"bz_vd_provider_accounts.status | enum('active','inactive','suspended') | NOT NULL | INDEX | 'active' | "},
+{"schema_line":"bz_vd_provider_accounts.expires_at | datetime | NOT NULL | INDEX | NULL | "},
+{"schema_line":"bz_vd_provider_accounts.account_login | varchar(255) | NULL | - | NULL | "},
+{"schema_line":"bz_vd_provider_accounts.login_password | text | NULL | - | NULL | "},
+{"schema_line":"bz_vd_provider_accounts.cookie | longtext | NULL | - | NULL | "},
+{"schema_line":"bz_vd_provider_accounts.security_question | varchar(255) | NULL | - | NULL | "},
+{"schema_line":"bz_vd_provider_accounts.security_answer | longtext | NULL | - | NULL | "},
+{"schema_line":"bz_vd_provider_accounts.backup_codes | longtext | NULL | - | NULL | "},
+{"schema_line":"bz_vd_provider_accounts.two_factor_secret | text | NULL | - | NULL | "},
+{"schema_line":"bz_vd_provider_accounts.api_key | text | NULL | - | NULL | "},
+{"schema_line":"bz_vd_provider_accounts.api_secret | text | NULL | - | NULL | "},
+{"schema_line":"bz_vd_provider_accounts.api_token | longtext | NULL | - | NULL | "},
+{"schema_line":"bz_vd_provider_accounts.account_fields | longtext | NULL | - | NULL | "},
+{"schema_line":"bz_vd_provider_accounts.last_credential_update | datetime | NULL | - | NULL | "},
+{"schema_line":"bz_vd_provider_accounts.created_at | datetime | NOT NULL | INDEX | current_timestamp() | "},
+{"schema_line":"bz_vd_provider_accounts.updated_at | datetime | NOT NULL | - | current_timestamp() | on update current_timestamp()"},
+{"schema_line":"bz_vd_provider_accounts.account_password | longtext | NULL | - | NULL | "},
+{"schema_line":"bz_vd_provider_accounts.cookies | longtext | NULL | - | NULL | "},
+{"schema_line":"bz_vd_provider_accounts.phone_recovery | varchar(50) | NULL | - | NULL | "},
+{"schema_line":"bz_vd_provider_accounts.email_recovery | varchar(255) | NULL | - | NULL | "},
+{"schema_line":"bz_vd_provider_accounts.secret_key | text | NULL | - | NULL | "},
+{"schema_line":"bz_vd_provider_accounts.custom_fields | longtext | NULL | - | NULL | "},
+{"schema_line":"bz_vd_provider_accounts.current_usage | int(11) | NOT NULL | INDEX | 0 | "},
+{"schema_line":"bz_vd_provider_accounts.last_credentials_update | datetime | NULL | - | NULL | "},
+{"schema_line":"bz_vd_provider_accounts.next_update_due | datetime | NULL | - | NULL | "},
+{"schema_line":"bz_vd_provider_accounts.notes | text | NULL | - | NULL | "}
+]
 }
-```
-
-**Indexes:**
-- PRIMARY KEY (`id`)
-- UNIQUE KEY `uk_product_id` (`product_id`)
-
-**Related Flow:** FLOW 1 (Admin Setup), FLOW 3 (Dynamic Response)
-
----
-
-### 4. TRACKING & LIMITS
-
-#### `bz_vd_license_rate_limits`
-**Purpose:** Rate limiting tracking per license
-**Key Columns:**
-- `id` BIGINT UNSIGNED PRIMARY KEY
-- `license_id` BIGINT UNSIGNED NOT NULL (FK to bz_vd_license_keys)
-- `request_count` SMALLINT UNSIGNED DEFAULT 0 (Requests today)
-- `window_start` DATETIME NOT NULL (Rate limit window start)
-- `last_request_at` DATETIME NULL (Last API call timestamp)
-- `blocked_until` DATETIME NULL (If temporarily blocked)
-
-**Indexes:**
-- PRIMARY KEY (`id`)
-- UNIQUE KEY `uk_license_rate` (`license_id`)
-- INDEX `idx_window_start` (`window_start`)
-
----
-
-#### `bz_vd_license_device_limits`
-**Purpose:** Device slot management per license
-**Key Columns:**
-- `id` BIGINT UNSIGNED PRIMARY KEY
-- `license_id` BIGINT UNSIGNED NOT NULL (FK to bz_vd_license_keys)
-- `max_devices` TINYINT UNSIGNED NOT NULL (Limit from product config)
-- `current_active_devices` TINYINT UNSIGNED DEFAULT 0 (Active device count)
-- `last_reset_at` DATETIME NULL (Last device reset)
-- `next_reset_at` DATETIME NULL (Next scheduled reset)
-
-**Indexes:**
-- PRIMARY KEY (`id`)
-- UNIQUE KEY `uk_license_limits` (`license_id`)
-
----
-
-#### `bz_vd_device_fingerprints`
-**Purpose:** Device fingerprint history and VPS detection
-**Key Columns:**
-- `id` BIGINT UNSIGNED PRIMARY KEY
-- `device_combined_id` VARCHAR(255) NOT NULL (SHA256 hash)
-- `raw_fingerprint` JSON NOT NULL (Original fingerprint data)
-- `is_vps_detected` BOOLEAN DEFAULT FALSE
-- `detection_confidence` DECIMAL(5,2) DEFAULT 0.00 (VPS detection confidence)
-- `first_seen_at` DATETIME DEFAULT CURRENT_TIMESTAMP
-- `last_seen_at` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-
-**Indexes:**
-- PRIMARY KEY (`id`)
-- UNIQUE KEY `uk_device_combined_id` (`device_combined_id`)
-- INDEX `idx_is_vps_detected` (`is_vps_detected`)
-
----
-
-### 5. ANALYTICS & LOGGING
-
-#### `bz_vd_account_fetch_log`
-**Purpose:** Track when account credentials are fetched for licenses
-**Key Columns:**
-- `id` BIGINT UNSIGNED PRIMARY KEY
-- `license_id` BIGINT UNSIGNED NOT NULL (FK to bz_vd_license_keys)
-- `account_id` BIGINT UNSIGNED NOT NULL (FK to bz_vd_provider_accounts)
-- `pool_id` BIGINT UNSIGNED NOT NULL (FK to bz_vd_pools)
-- `fetch_reason` ENUM('assignment', 'rotation', 'manual') DEFAULT 'assignment'
-- `fetched_at` DATETIME DEFAULT CURRENT_TIMESTAMP
-
-**Indexes:**
-- PRIMARY KEY (`id`)
-- INDEX `idx_license_id` (`license_id`)
-- INDEX `idx_account_id` (`account_id`)
-- INDEX `idx_fetched_at` (`fetched_at`)
-
----
-
-#### `bz_vd_page_sidebar_mappings`
-**Purpose:** WordPress admin UI sidebar configuration
-**Current Rows:** 1
-**Key Columns:**
-- `id` BIGINT UNSIGNED PRIMARY KEY
-- `page_slug` VARCHAR(255) NOT NULL
-- `sidebar_config` JSON NULL
-
----
-
-## 🔍 QUICK REFERENCE
-
-### In PHP Code:
-```php
-global $wpdb;
-
-// ✅ CORRECT - Using $wpdb->prefix
-$table = $wpdb->prefix . 'vd_license_keys';
-// Result: bz_vd_license_keys
-
-// ❌ WRONG - Hardcoding prefix
-$table = 'bz_vd_license_keys';
-// Breaks if site uses different prefix
-
-// ✅ CORRECT - Query with prepared statement
-$licenses = $wpdb->get_results($wpdb->prepare(
-    "SELECT * FROM {$wpdb->prefix}vd_license_keys WHERE product_id = %d",
-    $product_id
-));
-```
-
-### In SQL Queries:
-```sql
--- ✅ CORRECT (full table name)
-SELECT * FROM bz_vd_license_keys WHERE status = 'active';
-
--- ❌ WRONG (missing bz_ prefix)
-SELECT * FROM vd_license_keys WHERE status = 'active';
-
--- ❌ WRONG (missing vd_ middle part)
-SELECT * FROM bz_license_keys WHERE status = 'active';
-
--- ❌ WRONG (wrong table name)
-SELECT * FROM bz_vd_licenses WHERE status = 'active';
-```
-
-### In Test Scripts:
-```php
-// ✅ CORRECT (script adds bz_ prefix automatically)
-$tables_to_check = [
-    'vd_license_keys',        // Will check: bz_vd_license_keys
-    'vd_license_devices',     // Will check: bz_vd_license_devices
-    'vd_license_access_log'   // Will check: bz_vd_license_access_log
-];
-
-// ❌ WRONG (these tables don't exist)
-$tables_to_check = [
-    'vd_licenses',    // Table doesn't exist
-    'vd_devices'      // Table doesn't exist
-];
-```
-
----
-
-## 🎯 TABLE NAME MAPPING
-
-| Common Reference | Actual Table Name | Current Rows | Status |
-|------------------|-------------------|--------------|--------|
-| **Licenses** | `bz_vd_license_keys` | 6 | ✅ Active |
-| **Devices** | `bz_vd_license_devices` | 4 | ✅ Active |
-| **Access Log** | `bz_vd_license_access_log` | 38 | ✅ Active |
-| **Pools** | `bz_vd_pools` | 2 | ✅ Active |
-| **Accounts** | `bz_vd_provider_accounts` | 2 | ✅ Active |
-| **Share Configs** | `bz_vd_product_share_configs` | 0 | ✅ Ready |
-| **Product Pools** | `bz_vd_product_pools` | 0 | ✅ Ready |
-| **Pool Accounts** | `bz_vd_pool_accounts` | 0 | ✅ Ready |
-| **Rate Limits** | `bz_vd_license_rate_limits` | 0 | ✅ Ready |
-| **Device Limits** | `bz_vd_license_device_limits` | 0 | ✅ Ready |
-| **Fingerprints** | `bz_vd_device_fingerprints` | 0 | ✅ Ready |
-| **Fetch Log** | `bz_vd_account_fetch_log` | 0 | ✅ Ready |
-| **Sidebar Config** | `bz_vd_page_sidebar_mappings` | 1 | ✅ Active |
-
----
-
-## 🔄 RELATIONSHIPS DIAGRAM
-
-```
-bz_vd_license_keys (6 rows)
-├── bz_vd_license_devices (4 rows) [1:N]
-├── bz_vd_license_access_log (38 rows) [1:N]
-├── bz_vd_license_rate_limits [1:1]
-└── bz_vd_license_device_limits [1:1]
-
-bz_vd_pools (2 rows)
-├── bz_vd_pool_accounts [N:M] ↔ bz_vd_provider_accounts (2 rows)
-└── bz_vd_product_pools [N:M] ↔ WooCommerce Products
-
-bz_vd_product_share_configs
-└── [1:1] ↔ WooCommerce Products
-
-bz_vd_account_fetch_log
-├── → bz_vd_license_keys [N:1]
-├── → bz_vd_provider_accounts [N:1]
-└── → bz_vd_pools [N:1]
-```
-
----
-
-## ⚠️ MIGRATION NOTES
-
-### Known Issues Fixed:
-
-#### 1. Double Prefix Issue (Fixed 2025-10-14)
-- **Problem:** Table `bz_bz_vd_product_pools` (double bz_ prefix)
-- **Solution:** Migration script `includes/migrations/fix-double-prefix.php`
-- **Action:** Automatically renames/merges to `bz_vd_product_pools`
-- **Status:** ✅ Resolved
-
-#### 2. Table Name Confusion (Fixed 2025-10-14)
-- **Problem:** Test scripts looking for `vd_licenses`, `vd_devices` (don't exist)
-- **Correct Names:** `vd_license_keys`, `vd_license_devices`
-- **Solution:** Updated all test scripts and documentation
-- **Status:** ✅ Resolved
-
-### Schema Versions:
-- **v1.0.0** - Initial release schema (2025-10-14)
-- **Compatibility:** WordPress 6.0+, PHP 7.4+, MySQL 5.7+/MariaDB 10.3+
-
----
-
-## 🛠️ MAINTENANCE COMMANDS
-
-### Check Table Existence:
-```sql
-SHOW TABLES LIKE 'bz_vd_%';
-```
-
-### Check Table Sizes:
-```sql
-SELECT
-    table_name as 'Table',
-    table_rows as 'Rows',
-    ROUND(((data_length + index_length) / 1024 / 1024), 2) as 'Size (MB)'
-FROM information_schema.TABLES
-WHERE table_schema = DATABASE()
-AND table_name LIKE 'bz_vd_%'
-ORDER BY table_rows DESC;
-```
-
-### Clean Old Access Logs (90+ days):
-```sql
-DELETE FROM bz_vd_license_access_log
-WHERE created_at < DATE_SUB(NOW(), INTERVAL 90 DAY);
-```
-
----
-
-## 📚 REFERENCES
-
-- **Business Flows:** See FLOW_1_Admin_Setup.xml, FLOW_2_Customer_Purchase.xml, FLOW_3_Customer_Access.xml
-- **Configuration:** See ENVIRONMENT_CONFIG_COMPLETE.md
-- **API Documentation:** See includes/class-vd-rest-api.php
-- **Migration Scripts:** See includes/migrations/
-- **Testing:** See tests/quick-check.php
-
----
-
-**For developers:** Always reference this document when writing database queries or tests.
-**For administrators:** Use this for understanding data relationships and troubleshooting.
-**For testers:** Use correct table names from the mapping section.
-
-> Last verified: 2025-10-14 with database containing 201 total tables, 14 VD plugin tables active
+]
