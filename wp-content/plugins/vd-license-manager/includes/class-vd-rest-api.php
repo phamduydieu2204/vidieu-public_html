@@ -374,48 +374,15 @@ class VD_REST_API {
      * @return bool|WP_Error
      */
     private function check_vps($ip) {
-        global $wpdb;
+        // SCHEMA COMPLIANCE NOTE: Table 'vd_datacenter_ip_ranges' does not exist in schema
+        // VPS detection is handled via device fingerprinting (bz_vd_device_fingerprints.is_vps)
+        // IP-based VPS blocking is disabled until proper schema integration
 
-        $table_name = $wpdb->prefix . 'vd_datacenter_ip_ranges';
+        // TODO: Implement VPS detection using existing schema tables:
+        // - Use bz_vd_device_fingerprints.is_vps for device-level detection
+        // - Or integrate IP ranges into existing table structure
 
-        // Check if table exists
-        $table_exists = $wpdb->get_var($wpdb->prepare(
-            "SHOW TABLES LIKE %s",
-            $table_name
-        ));
-
-        if (!$table_exists) {
-            // Table doesn't exist, skip VPS check
-            return true;
-        }
-
-        $ip_long = ip2long($ip);
-
-        if (!$ip_long) {
-            // Invalid IP, allow access
-            return true;
-        }
-
-        $is_vps = $wpdb->get_row($wpdb->prepare(
-            "SELECT * FROM $table_name
-             WHERE %d BETWEEN ip_start_long AND ip_end_long
-             LIMIT 1",
-            $ip_long
-        ));
-
-        if ($is_vps) {
-            return new WP_Error(
-                'vps_blocked',
-                sprintf(
-                    'Truy cập từ VPS/Datacenter bị chặn. IP: %s, Nhà cung cấp: %s',
-                    $ip,
-                    $is_vps->provider_name ?? 'Unknown'
-                ),
-                array('status' => 403)
-            );
-        }
-
-        return true;
+        return true; // Allow all IPs (VPS detection via device fingerprinting still active)
     }
 
     /**

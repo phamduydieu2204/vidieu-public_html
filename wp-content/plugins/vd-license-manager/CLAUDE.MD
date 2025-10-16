@@ -1068,28 +1068,88 @@ Examples:
    - Use EXACT table and column names from schema
    - Follow EXACT data types and constraints
 
-2. **When adding new tables/columns:**
-   - Update `docs/database_schema.md` FIRST
-   - Then implement in code
-   - Never create database objects not in schema
+2. **When adding new tables/columns (DEPLOYMENT PHASE):**
+   - ⚠️ **CRITICAL: Plugin is in deployment phase - special rules apply**
+   - Check `docs/database_schema.md` for existing tables/columns first
+   - Look for similar/related tables that could be reused or merged
+   - Check for columns with similar functionality that could be repurposed
+   - **ONLY if truly needed:** Add new table/column using guidelines below
 
-3. **When modifying existing structure:**
+3. **DEPLOYMENT PHASE - Adding New Tables/Columns:**
+   ```php
+   // ✅ CORRECT PROCESS for deployment phase:
+
+   // Step 1: Check existing schema thoroughly
+   // - Is there a similar table that could be extended?
+   // - Are there columns that serve the same purpose?
+   // - Can functionality be merged with existing structure?
+
+   // Step 2: If new table/column is truly needed:
+   // - Modify table creation code in includes/class-vd-lm-database.php
+   // - Update docs/database_schema.md to reflect actual state
+   // - DO NOT create migration files (tables have no data yet)
+
+   // Step 3: Implementation example:
+   private static function create_new_feature_table($charset_collate) {
+       global $wpdb;
+       $table_name = $wpdb->prefix . 'vd_new_feature';
+
+       $sql = "CREATE TABLE $table_name (
+           id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+           feature_data text NOT NULL,
+           created_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+           PRIMARY KEY (id)
+       ) $charset_collate;";
+
+       require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
+       dbDelta($sql);
+   }
+   ```
+
+4. **When modifying existing structure:**
    - Update `docs/database_schema.md` FIRST
-   - Create migration script
+   - Modify table creation code directly (no migration needed during deployment)
    - Test against schema compliance
 
-**❌ NEVER DO:**
+**❌ NEVER DO (DEPLOYMENT PHASE):**
 ```php
+// Wrong - creating migration files during deployment
+// DO NOT DO THIS - tables have no data yet!
+class VD_Add_New_Column_Migration {
+    public function migrate() {
+        // ❌ Wrong approach during deployment
+    }
+}
+
+// Wrong - adding tables without checking existing schema
+$wpdb->query("CREATE TABLE new_table...");  // ❌ Did you check if similar table exists?
+
 // Wrong - hardcoded table/column names without schema reference
-$wpdb->query("SELECT login_password FROM accounts");  // Column doesn't exist in schema!
-$wpdb->query("SELECT cookie FROM accounts");          // Should be 'cookies'!
+$wpdb->query("SELECT login_password FROM accounts");  // ❌ Column doesn't exist in schema!
+$wpdb->query("SELECT cookie FROM accounts");          // ❌ Should be 'cookies'!
 ```
 
-**✅ ALWAYS DO:**
+**✅ ALWAYS DO (DEPLOYMENT PHASE):**
 ```php
 // Correct - verify against docs/database_schema.md first
 $wpdb->query("SELECT account_password FROM {$wpdb->prefix}vd_provider_accounts");  // ✅ Matches schema
 $wpdb->query("SELECT cookies FROM {$wpdb->prefix}vd_provider_accounts");           // ✅ Matches schema
+
+// Correct - modify table creation directly in database class
+private static function create_new_feature_table($charset_collate) {
+    // ✅ Add to includes/class-vd-lm-database.php
+    // ✅ Update docs/database_schema.md
+    // ✅ No migration needed (no existing data)
+}
+```
+
+**⚠️ DEPLOYMENT PHASE WARNING:**
+```
+Plugin is currently in deployment phase (no production data).
+- Tables are empty, safe to modify structure directly
+- Use table creation code, NOT migration scripts
+- Always check existing schema for similar functionality first
+- Update schema documentation to match actual state
 ```
 
 **Schema Compliance Checklist:**
@@ -1098,6 +1158,22 @@ $wpdb->query("SELECT cookies FROM {$wpdb->prefix}vd_provider_accounts");        
 - [ ] Verify column names match schema exactly
 - [ ] Update schema file BEFORE implementing changes
 - [ ] Test all queries against actual schema structure
+
+**DEPLOYMENT PHASE - New Table/Column Checklist:**
+- [ ] **STEP 1:** Check existing schema for similar functionality
+  - [ ] Search for tables with related purpose
+  - [ ] Look for columns that could serve same function
+  - [ ] Consider if existing structure can be extended
+  - [ ] Evaluate if functionality can be merged with existing tables
+- [ ] **STEP 2:** If truly new table/column needed:
+  - [ ] Modify `includes/class-vd-lm-database.php` table creation methods
+  - [ ] Add call to new table creation in `create_tables()` method
+  - [ ] Update `docs/database_schema.md` to reflect actual state
+  - [ ] **DO NOT** create migration files (no existing data)
+- [ ] **STEP 3:** Verify implementation:
+  - [ ] Test table creation on fresh install
+  - [ ] Verify schema file matches actual database structure
+  - [ ] Confirm all references use correct table/column names
 
 ### **Rule 4: Always Use Prepared Statements**
 
